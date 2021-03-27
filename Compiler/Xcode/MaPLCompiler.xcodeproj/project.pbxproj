@@ -1,0 +1,415 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9B8839B9260FEACB00CFE16B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839B8260FEACB00CFE16B /* main.cpp */; };
+		9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */; };
+		9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */; };
+		9B883A06260FEF6F00CFE16B /* libantlr4-runtime.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8839F0260FEDCC00CFE16B /* libantlr4-runtime.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9B8839EF260FEDCC00CFE16B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 37D727AA1867AF1E007B6D10;
+			remoteInfo = antlr4;
+		};
+		9B8839F1260FEDCC00CFE16B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 37C147171B4D5A04008EDDDB;
+			remoteInfo = antlr4_static;
+		};
+		9B8839F3260FEDCC00CFE16B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 270C67F01CDB4F1E00116E17;
+			remoteInfo = antlr4_ios;
+		};
+		9B883A02260FEEAE00CFE16B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 37D727A91867AF1E007B6D10;
+			remoteInfo = antlr4;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9B8839B3260FEACB00CFE16B /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		9B8839B5260FEACB00CFE16B /* MaPLCompiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLCompiler; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B8839B8260FEACB00CFE16B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = antlrcpp.xcodeproj; path = ../ANTLR4/runtime/Cpp/runtime/antlrcpp.xcodeproj; sourceTree = "<group>"; };
+		9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MaPLParser.cpp; path = "../../c++/MaPLParser.cpp"; sourceTree = "<group>"; };
+		9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MaPLLexer.cpp; path = "../../c++/MaPLLexer.cpp"; sourceTree = "<group>"; };
+		9B8839FB260FEDDF00CFE16B /* MaPLLexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MaPLLexer.h; path = "../../c++/MaPLLexer.h"; sourceTree = "<group>"; };
+		9B8839FC260FEDDF00CFE16B /* MaPLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MaPLParser.h; path = "../../c++/MaPLParser.h"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9B8839B2260FEACB00CFE16B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B883A06260FEF6F00CFE16B /* libantlr4-runtime.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9B8839AC260FEACB00CFE16B = {
+			isa = PBXGroup;
+			children = (
+				9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */,
+				9B8839B7260FEACB00CFE16B /* MaPLCompiler */,
+				9B8839DF260FECBD00CFE16B /* Generated Code */,
+				9B8839B6260FEACB00CFE16B /* Products */,
+				9B8839DB260FEC0A00CFE16B /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		9B8839B6260FEACB00CFE16B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9B8839B5260FEACB00CFE16B /* MaPLCompiler */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9B8839B7260FEACB00CFE16B /* MaPLCompiler */ = {
+			isa = PBXGroup;
+			children = (
+				9B8839B8260FEACB00CFE16B /* main.cpp */,
+			);
+			path = MaPLCompiler;
+			sourceTree = "<group>";
+		};
+		9B8839DB260FEC0A00CFE16B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		9B8839DF260FECBD00CFE16B /* Generated Code */ = {
+			isa = PBXGroup;
+			children = (
+				9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */,
+				9B8839FB260FEDDF00CFE16B /* MaPLLexer.h */,
+				9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */,
+				9B8839FC260FEDDF00CFE16B /* MaPLParser.h */,
+			);
+			path = "Generated Code";
+			sourceTree = "<group>";
+		};
+		9B8839EA260FEDCC00CFE16B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9B8839F0260FEDCC00CFE16B /* libantlr4-runtime.dylib */,
+				9B8839F2260FEDCC00CFE16B /* libantlr4-runtime.a */,
+				9B8839F4260FEDCC00CFE16B /* antlr4_ios.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9B8839B4260FEACB00CFE16B /* MaPLCompiler */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B8839BC260FEACB00CFE16B /* Build configuration list for PBXNativeTarget "MaPLCompiler" */;
+			buildPhases = (
+				9B883A00260FEDF300CFE16B /* ShellScript */,
+				9B8839B1260FEACB00CFE16B /* Sources */,
+				9B8839B2260FEACB00CFE16B /* Frameworks */,
+				9B8839B3260FEACB00CFE16B /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9B883A03260FEEAE00CFE16B /* PBXTargetDependency */,
+			);
+			name = MaPLCompiler;
+			productName = MaPLCompiler;
+			productReference = 9B8839B5260FEACB00CFE16B /* MaPLCompiler */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9B8839AD260FEACB00CFE16B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1240;
+				TargetAttributes = {
+					9B8839B4260FEACB00CFE16B = {
+						CreatedOnToolsVersion = 12.4;
+					};
+				};
+			};
+			buildConfigurationList = 9B8839B0260FEACB00CFE16B /* Build configuration list for PBXProject "MaPLCompiler" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 9B8839AC260FEACB00CFE16B;
+			productRefGroup = 9B8839B6260FEACB00CFE16B /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 9B8839EA260FEDCC00CFE16B /* Products */;
+					ProjectRef = 9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				9B8839B4260FEACB00CFE16B /* MaPLCompiler */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		9B8839F0260FEDCC00CFE16B /* libantlr4-runtime.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = "libantlr4-runtime.dylib";
+			remoteRef = 9B8839EF260FEDCC00CFE16B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		9B8839F2260FEDCC00CFE16B /* libantlr4-runtime.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libantlr4-runtime.a";
+			remoteRef = 9B8839F1260FEDCC00CFE16B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		9B8839F4260FEDCC00CFE16B /* antlr4_ios.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = antlr4_ios.framework;
+			remoteRef = 9B8839F3260FEDCC00CFE16B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		9B883A00260FEDF300CFE16B /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Regenerate the C++ parser and lexer using ANTLR4.\n\"${SRCROOT}/../build_parser.sh\" C++\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9B8839B1260FEACB00CFE16B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */,
+				9B8839B9260FEACB00CFE16B /* main.cpp in Sources */,
+				9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9B883A03260FEEAE00CFE16B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = antlr4;
+			targetProxy = 9B883A02260FEEAE00CFE16B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		9B8839BA260FEACB00CFE16B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../ANTLR4/runtime/Cpp/runtime/src\"/**";
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		9B8839BB260FEACB00CFE16B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/../ANTLR4/runtime/Cpp/runtime/src\"/**";
+				MACOSX_DEPLOYMENT_TARGET = 11.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		9B8839BD260FEACB00CFE16B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		9B8839BE260FEACB00CFE16B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9B8839B0260FEACB00CFE16B /* Build configuration list for PBXProject "MaPLCompiler" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B8839BA260FEACB00CFE16B /* Debug */,
+				9B8839BB260FEACB00CFE16B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9B8839BC260FEACB00CFE16B /* Build configuration list for PBXNativeTarget "MaPLCompiler" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B8839BD260FEACB00CFE16B /* Debug */,
+				9B8839BE260FEACB00CFE16B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9B8839AD260FEACB00CFE16B /* Project object */;
+}
