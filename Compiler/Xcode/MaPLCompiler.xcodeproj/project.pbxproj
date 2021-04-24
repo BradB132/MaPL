@@ -10,7 +10,8 @@
 		9B8839B9260FEACB00CFE16B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839B8260FEACB00CFE16B /* main.cpp */; };
 		9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */; };
 		9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */; };
-		9B883A06260FEF6F00CFE16B /* libantlr4-runtime.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8839F0260FEDCC00CFE16B /* libantlr4-runtime.dylib */; };
+		9B883A0B26102B9E00CFE16B /* MaPLFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B883A0926102B9E00CFE16B /* MaPLFile.cpp */; };
+		9B883A1E2630FB4D00CFE16B /* libantlr4-runtime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8839F2260FEDCC00CFE16B /* libantlr4-runtime.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,12 +36,12 @@
 			remoteGlobalIDString = 270C67F01CDB4F1E00116E17;
 			remoteInfo = antlr4_ios;
 		};
-		9B883A02260FEEAE00CFE16B /* PBXContainerItemProxy */ = {
+		9B883A142630FA6B00CFE16B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 37D727A91867AF1E007B6D10;
-			remoteInfo = antlr4;
+			remoteGlobalIDString = 37C147161B4D5A04008EDDDB;
+			remoteInfo = antlr4_static;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -64,6 +65,8 @@
 		9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MaPLLexer.cpp; path = "../../c++/MaPLLexer.cpp"; sourceTree = "<group>"; };
 		9B8839FB260FEDDF00CFE16B /* MaPLLexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MaPLLexer.h; path = "../../c++/MaPLLexer.h"; sourceTree = "<group>"; };
 		9B8839FC260FEDDF00CFE16B /* MaPLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MaPLParser.h; path = "../../c++/MaPLParser.h"; sourceTree = "<group>"; };
+		9B883A0926102B9E00CFE16B /* MaPLFile.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLFile.cpp; sourceTree = "<group>"; };
+		9B883A0A26102B9E00CFE16B /* MaPLFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLFile.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,7 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B883A06260FEF6F00CFE16B /* libantlr4-runtime.dylib in Frameworks */,
+				9B883A1E2630FB4D00CFE16B /* libantlr4-runtime.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,6 +104,8 @@
 			isa = PBXGroup;
 			children = (
 				9B8839B8260FEACB00CFE16B /* main.cpp */,
+				9B883A0926102B9E00CFE16B /* MaPLFile.cpp */,
+				9B883A0A26102B9E00CFE16B /* MaPLFile.h */,
 			);
 			path = MaPLCompiler;
 			sourceTree = "<group>";
@@ -148,7 +153,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				9B883A03260FEEAE00CFE16B /* PBXTargetDependency */,
+				9B883A152630FA6B00CFE16B /* PBXTargetDependency */,
 			);
 			name = MaPLCompiler;
 			productName = MaPLCompiler;
@@ -245,16 +250,17 @@
 				9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */,
 				9B8839B9260FEACB00CFE16B /* main.cpp in Sources */,
 				9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */,
+				9B883A0B26102B9E00CFE16B /* MaPLFile.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		9B883A03260FEEAE00CFE16B /* PBXTargetDependency */ = {
+		9B883A152630FA6B00CFE16B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = antlr4;
-			targetProxy = 9B883A02260FEEAE00CFE16B /* PBXContainerItemProxy */;
+			name = antlr4_static;
+			targetProxy = 9B883A142630FA6B00CFE16B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
