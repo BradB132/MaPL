@@ -10,11 +10,14 @@
     string UUID;
     Object childForUUID(string);
 }
-#type Array: Object, Hashable {
+#type Array<T>: Object, Hashable {
     int count;
-    Object [int];
+    T [int];
 }
 
 for(int i = 0; i < 5; i++) {
     print("Hello World #" + i);
 }
+
+global.map["test"] = "ABC";
+global.count++;

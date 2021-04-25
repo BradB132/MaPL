@@ -19,12 +19,29 @@ statement
 
 imperativeStatement
     :    variableDeclaration
-    |    variableAssign
-    |    unaryOperation
+    |    assignStatement
+    |    unaryStatement
     |    objectExpression
     |    BREAK
     |    CONTINUE
     |    RETURN
+    ;
+
+assignStatement
+    :    objectExpression
+         (
+             ASSIGN |
+             ADD_ASSIGN |
+             SUBTRACT_ASSIGN |
+             MULTIPLY_ASSIGN |
+             DIVIDE_ASSIGN |
+             EXPONENT_ASSIGN |
+             MOD_ASSIGN
+         ) expression
+    ;
+
+unaryStatement
+    :    objectExpression (INCREMENT|DECREMENT)
     ;
 
 // EXPRESSIONS
@@ -65,24 +82,6 @@ objectExpression
 // VARIABLES
 variableDeclaration
     :    type identifier (ASSIGN expression)?
-    ;
-
-variableAssign
-    :    identifier
-         (
-             ASSIGN |
-             ADD_ASSIGN |
-             SUBTRACT_ASSIGN |
-             MULTIPLY_ASSIGN |
-             DIVIDE_ASSIGN |
-             EXPONENT_ASSIGN |
-             MOD_ASSIGN
-         ) expression
-    ;
-
-unaryOperation
-    :    identifier (INCREMENT|DECREMENT)
-    |    (INCREMENT|DECREMENT) identifier
     ;
 
 type
@@ -127,13 +126,15 @@ switchStatement : SWITCH expression SCOPE_OPEN innerSwitchStatement+ SCOPE_CLOSE
 // API DECLARATIONS
 apiDeclaration
     :    API_GLOBAL apiFunction
-    |    API_TYPE identifier (SWITCH_DELIMITER identifier (ARG_DELIMITER identifier)*)? SCOPE_OPEN
+    |    API_TYPE identifier apiGenerics? apiInheritance? SCOPE_OPEN
          (
              apiFunction |
              apiSubscript
          )* SCOPE_CLOSE
     ;
 
+apiGenerics : LESS_THAN identifier (ARG_DELIMITER identifier)* GREATER_THAN ;
+apiInheritance : SWITCH_DELIMITER identifier (ARG_DELIMITER identifier)* ;
 apiFunction : type identifier (PAREN_OPEN (type (ARG_DELIMITER type)*)? PAREN_CLOSE)? STATEMENT_DELIMITER ;
 apiSubscript : type SUBSCRIPT_OPEN type SUBSCRIPT_CLOSE STATEMENT_DELIMITER ;
 
