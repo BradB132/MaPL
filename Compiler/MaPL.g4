@@ -85,8 +85,16 @@ variableDeclaration
     ;
 
 type
-    :    DECL_INT
-    |    DECL_FLOAT
+    :    DECL_INT8
+    |    DECL_INT16
+    |    DECL_INT32
+    |    DECL_INT64
+    |    DECL_UINT8
+    |    DECL_UINT16
+    |    DECL_UINT32
+    |    DECL_UINT64
+    |    DECL_FLOAT32
+    |    DECL_FLOAT64
     |    DECL_BOOL
     |    DECL_STRING
     |    identifier
@@ -125,19 +133,21 @@ switchStatement : SWITCH expression SCOPE_OPEN innerSwitchStatement+ SCOPE_CLOSE
 
 // API DECLARATIONS
 apiDeclaration
-    :    API_GLOBAL apiFunction
-    |    API_TYPE identifier apiGenerics? apiInheritance? SCOPE_OPEN
+    :    API_GLOBAL (apiFunction | apiProperty) STATEMENT_DELIMITER
+    |    API_TYPE identifier apiInheritance? SCOPE_OPEN
          (
-             apiFunction |
-             apiSubscript
+             (
+                 apiFunction |
+                 apiProperty |
+                 apiSubscript
+             ) STATEMENT_DELIMITER
          )* SCOPE_CLOSE
     ;
 
-apiGenerics : LESS_THAN identifier (ARG_DELIMITER identifier)* GREATER_THAN ;
 apiInheritance : SWITCH_DELIMITER identifier (ARG_DELIMITER identifier)* ;
-apiFunction : type identifier (PAREN_OPEN (type (ARG_DELIMITER type)*)? PAREN_CLOSE)? STATEMENT_DELIMITER ;
-apiSubscript : type SUBSCRIPT_OPEN type SUBSCRIPT_CLOSE STATEMENT_DELIMITER ;
-
+apiFunction : type identifier PAREN_OPEN (type (ARG_DELIMITER type)*)? PAREN_CLOSE  ;
+apiProperty : API_READONLY? type identifier ;
+apiSubscript : API_READONLY? type SUBSCRIPT_OPEN type SUBSCRIPT_CLOSE ;
 apiImport : API_IMPORT STRING ;
 
 // This is a special case where a concept is encoded as both a lexer and parser rule.
@@ -155,8 +165,17 @@ identifier
     |    CONTINUE
     |    RETURN
     |    LITERAL_NULL
-    |    DECL_INT
-    |    DECL_FLOAT
+    |    API_READONLY
+    |    DECL_INT8
+    |    DECL_INT16
+    |    DECL_INT32
+    |    DECL_INT64
+    |    DECL_UINT8
+    |    DECL_UINT16
+    |    DECL_UINT32
+    |    DECL_UINT64
+    |    DECL_FLOAT32
+    |    DECL_FLOAT64
     |    DECL_BOOL
     |    DECL_STRING
     |    LITERAL_TRUE
@@ -203,8 +222,16 @@ BREAK: 'break' ;
 CONTINUE: 'continue' ;
 RETURN: 'return' ;
 LITERAL_NULL: 'NULL' ;
-DECL_INT: 'int' ;
-DECL_FLOAT: 'float' ;
+DECL_INT8: 'int8' ;
+DECL_INT16: 'int16' ;
+DECL_INT32: 'int32' ;
+DECL_INT64: 'int64' ;
+DECL_UINT8: 'uint8' ;
+DECL_UINT16: 'uint16' ;
+DECL_UINT32: 'uint32' ;
+DECL_UINT64: 'uint64' ;
+DECL_FLOAT32: 'float32' ;
+DECL_FLOAT64: 'float64' ;
 DECL_BOOL: 'bool' ;
 DECL_STRING: 'string' ;
 LITERAL_TRUE: 'true' ;
@@ -226,6 +253,7 @@ STATEMENT_DELIMITER: ';' ;
 API_GLOBAL: '#global' ;
 API_TYPE: '#type' ;
 API_IMPORT: '#import' ;
+API_READONLY: 'readonly' ;
 
 // LITERALS
 IDENTIFIER : [_a-zA-Z][_a-zA-Z0-9]* ;

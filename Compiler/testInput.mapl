@@ -1,21 +1,29 @@
 
 #import "./API.mapl"
 
-#global bool isDebug;
-#global float debugTimescale();
+#global GlobalObject global;
+
 #type Hashable {
-    int hash;
+    readonly int32 hash;
 }
 #type Object {
-    string UUID;
+    readonly string UUID;
     Object childForUUID(string);
 }
-#type Array<T>: Object, Hashable {
-    int count;
-    T [int];
+#type Array: Object, Hashable {
+    readonly int32 count;
+    Object [int32];
+}
+#type StringMap: Object, Hashable {
+    readonly int32 count;
+    string [string];
+}
+#type GlobalObject {
+    StringMap map;
+    int64 count;
 }
 
-for(int i = 0; i < 5; i++) {
+for(int8 i = 0; i < 5; i++) {
     print("Hello World #" + i);
 }
 
