@@ -4,7 +4,7 @@
 cd "$(dirname "$0")"
 
 # Make sure we know where the ANTLR jar is.
-ANTLR_PATH="/Applications/antlr-4.9.2-complete.jar"
+ANTLR_PATH="/Applications/antlr-4.9.3-complete.jar"
 if [ ! -f "${ANTLR_PATH}" ]; then
     echo "Couldn't find ANTLR. This script assumes your antlr.jar is located at '${ANTLR_PATH}'. If not, edit this script to fix the path."
     return 1
