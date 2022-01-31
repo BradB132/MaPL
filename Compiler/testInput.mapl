@@ -2,6 +2,7 @@
 #import "./API.mapl"
 
 #global GlobalObject global;
+#global void exit(uint32);
 
 #type Hashable {
     readonly int32 hash;

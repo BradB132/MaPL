@@ -145,7 +145,7 @@ apiDeclaration
     ;
 
 apiInheritance : SWITCH_DELIMITER identifier (ARG_DELIMITER identifier)* ;
-apiFunction : type identifier PAREN_OPEN (type (ARG_DELIMITER type)*)? PAREN_CLOSE  ;
+apiFunction : ( API_VOID | type ) identifier PAREN_OPEN (type (ARG_DELIMITER type)*)? PAREN_CLOSE  ;
 apiProperty : API_READONLY? type identifier ;
 apiSubscript : API_READONLY? type SUBSCRIPT_OPEN type SUBSCRIPT_CLOSE ;
 apiImport : API_IMPORT STRING ;
@@ -166,6 +166,7 @@ identifier
     |    RETURN
     |    LITERAL_NULL
     |    API_READONLY
+    |    API_VOID
     |    DECL_INT8
     |    DECL_INT16
     |    DECL_INT32
@@ -254,6 +255,7 @@ API_GLOBAL: '#global' ;
 API_TYPE: '#type' ;
 API_IMPORT: '#import' ;
 API_READONLY: 'readonly' ;
+API_VOID: 'void' ;
 
 // LITERALS
 IDENTIFIER : [_a-zA-Z][_a-zA-Z0-9]* ;
