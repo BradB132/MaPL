@@ -52,7 +52,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "&quot;${SRCROOT}/../testInput.mapl&quot;"
+            argument = "&quot;${SRCROOT}/../tests/testInput.mapl&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

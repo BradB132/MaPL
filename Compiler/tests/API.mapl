@@ -1,6 +1,3 @@
-
-#import "./API.mapl"
-
 #global GlobalObject global;
 #global void exit(uint32);
 
@@ -23,10 +20,3 @@
     StringMap map;
     int64 count;
 }
-
-for(int8 i = 0; i < 5; i++) {
-    print("Hello World #" + i);
-}
-
-global.map["test"] = "ABC";
-global.count++;

@@ -52,5 +52,5 @@ else
     rm *.tokens
     
     echo "Opening parser output in GUI..."
-    java org.antlr.v4.gui.TestRig MaPL program -gui ../testInput.mapl
+    java org.antlr.v4.gui.TestRig MaPL program -gui ../tests/testInput.mapl
 fi
