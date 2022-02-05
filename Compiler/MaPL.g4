@@ -25,6 +25,7 @@ imperativeStatement
     |    BREAK
     |    CONTINUE
     |    RETURN
+    |    EXIT
     ;
 
 assignStatement
@@ -165,6 +166,7 @@ identifier
     |    BREAK
     |    CONTINUE
     |    RETURN
+    |    EXIT
     |    LITERAL_NULL
     |    API_READONLY
     |    API_VOID
@@ -223,6 +225,7 @@ SWITCH_DEFAULT: 'default' ;
 BREAK: 'break' ;
 CONTINUE: 'continue' ;
 RETURN: 'return' ;
+EXIT: 'exit' ;
 LITERAL_NULL: 'NULL' ;
 DECL_INT8: 'int8' ;
 DECL_INT16: 'int16' ;
