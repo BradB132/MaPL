@@ -1,54 +1,67 @@
 //
-//  MaPLFile.hpp
+//  MaPLFile.h
 //  MaPLCompiler
 //
 //  Created by Brad Bambara on 3/27/21.
 //
 
-#ifndef MaPLFile_hpp
-#define MaPLFile_hpp
+#ifndef MaPLFile_h
+#define MaPLFile_h
 
 #include <stdio.h>
 #include <string>
-#include <fstream>
-#include <sstream>
 #include <filesystem>
+#include <unordered_map>
+#include <vector>
 
+#include "MaPLParser.h"
+
+class MaPLLexer;
+class MaPLCompilerContext;
+class MaPLBuffer;
+
+/**
+ * Represents a single MaPL file in from the filesystem.
+ */
 class  MaPLFile {
 public:
     
-    explicit MaPLFile(std::__fs::filesystem::path scriptFilePath);
+    /**
+     * @param normalizedFilePath The normalized filesystem path to the MaPL script file. Must be an absolute path.
+     * @param parentContext The compiling context that this file exists within.
+     */
+    MaPLFile(std::filesystem::path &normalizedFilePath, MaPLCompilerContext *parentContext);
     
     /**
-     * Reads the human-readabile (ie, non-compiled) script text from the file.
-     *
-     * @return `true` only when the raw script was read successfully.
+     * @return The bytecode representation of the script in this file. This recusrively includes bytecode from dependent files.
      */
-    bool readRawScriptFromDisk();
+    MaPLBuffer *getBytecode();
     
     /**
-     * @return A file path equivalent to the one which was passed in to the initializer. This file path is normalized so that it's more easily comparable to other paths.
+     * @return The abstract syntax tree that represents the script in this file. Does not include nodes from dependent files.
      */
-    std::__fs::filesystem::path getNormalizedFilePath();
+    MaPLParser::ProgramContext *getAST();
     
     /**
-     * @return A file path equivalent to the one which was passed in to the initializer. This file path is normalized so that it's more easily comparable to other paths.
+     * @return A list of files that were included in this file's script via #import statements.
      */
-    std::__fs::filesystem::path getNormalizedParentDirectory();
-    
-    /**
-     * This string will be empty until the raw text is loaded via the `readRawScriptFromDisk` method.
-     *
-     * @return The human-readabile (ie, non-compiled) script text from the file.
-     */
-    std::string getRawScriptText();
-    
-    // TODO: lex and parse within this class?
+    std::vector<MaPLFile *> getDependencies();
     
 private:
     
-    std::__fs::filesystem::path _normalizedFilePath;
+    bool readRawScriptFromDisk();
+    void parseRawScript();
+    
+    std::filesystem::path _normalizedFilePath;
+    MaPLCompilerContext *_parentContext;
     std::string _rawScriptText;
+    antlr4::ANTLRInputStream *_inputStream;
+    MaPLLexer *_lexer;
+    antlr4::CommonTokenStream *_tokenStream;
+    MaPLParser *_parser;
+    MaPLParser::ProgramContext *_program;
+    MaPLBuffer *_bytecode;
+    std::vector<MaPLFile *> _dependencies;
 };
 
-#endif /* MaPLFile_hpp */
+#endif /* MaPLFile_h */

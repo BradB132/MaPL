@@ -5,15 +5,10 @@
 //  Created by Brad Bambara on 3/27/21.
 //
 
-#include <iostream>
-
-#include "antlr4-runtime.h"
-#include "MaPLLexer.h"
-#include "MaPLParser.h"
+#include <stdio.h>
+#include "MaPLCompilerContext.h"
 #include "MaPLFile.h"
-#include <vector>
-
-using namespace antlr4;
+#include "MaPLBuffer.h"
 
 int main(int argc, const char ** argv) {
     // Make sure that script paths were specified.
@@ -22,21 +17,14 @@ int main(int argc, const char ** argv) {
         return 1;
     }
     
-    // Gather a collection of all script files from the args.
-    std::vector<MaPLFile> scriptFiles;
+    // Parse all script files specified in the args.
+    MaPLCompilerContext context;
     for(int i = 1; i < argc; i++) {
-        scriptFiles.push_back(MaPLFile(argv[i]));
+        MaPLFile *file = context.fileForAbsolutePath(std::filesystem::absolute(argv[i]));
+        MaPLBuffer *bytecode = file->getBytecode();
+        //TODO: write bytecode to an appropriate output path.
+        printf("bytecode length: %d\n", (int)bytecode->getByteCount());// TODO: this line just for testing, delete later.
     }
     
-    // TODO: test code, delete this line
-    scriptFiles[0].readRawScriptFromDisk();
-    
-    ANTLRInputStream input(scriptFiles[0].getRawScriptText());
-    MaPLLexer lexer(&input);
-    CommonTokenStream tokens(&lexer);
-    MaPLParser parser(&tokens);
-    
-    MaPLParser::ProgramContext *rootNode = parser.program();
-
     return 0;
 }
