@@ -69,6 +69,7 @@
 		9B8839FC260FEDDF00CFE16B /* MaPLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MaPLParser.h; path = "../../c++/MaPLParser.h"; sourceTree = "<group>"; };
 		9B883A0926102B9E00CFE16B /* MaPLFile.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLFile.cpp; sourceTree = "<group>"; };
 		9B883A0A26102B9E00CFE16B /* MaPLFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLFile.h; sourceTree = "<group>"; };
+		9BB770A627AF14E10086ECF6 /* MaPLBytecodeConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLBytecodeConstants.h; sourceTree = "<group>"; };
 		9BC8F09627A9A40C00C57FC7 /* MaPLBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLBuffer.cpp; sourceTree = "<group>"; };
 		9BC8F09727A9A40C00C57FC7 /* MaPLBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLBuffer.h; sourceTree = "<group>"; };
 		9BC8F09927A9E22E00C57FC7 /* MaPLCompilerContext.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLCompilerContext.cpp; sourceTree = "<group>"; };
@@ -116,6 +117,7 @@
 				9B883A0A26102B9E00CFE16B /* MaPLFile.h */,
 				9BC8F09627A9A40C00C57FC7 /* MaPLBuffer.cpp */,
 				9BC8F09727A9A40C00C57FC7 /* MaPLBuffer.h */,
+				9BB770A627AF14E10086ECF6 /* MaPLBytecodeConstants.h */,
 			);
 			path = MaPLCompiler;
 			sourceTree = "<group>";
