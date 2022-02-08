@@ -30,7 +30,16 @@ public:
      *
      * @return Boolean indicates success or failure of the append operation.
      */
-    bool appendBytes(void *bytes, size_t byteSize);
+    bool appendBytes(const void *bytes, size_t byteSize);
+    
+    /**
+     * Appends a single new byte onto the buffer.
+     *
+     * @param byte The new byte that will be appended onto the buffer.
+     *
+     * @return Boolean indicates success or failure of the append operation.
+     */
+    bool appendByte(u_int8_t byte);
     
     /**
      * @return The bytes stored in this buffer.

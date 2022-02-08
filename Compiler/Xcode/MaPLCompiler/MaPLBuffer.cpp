@@ -22,7 +22,7 @@ MaPLBuffer::~MaPLBuffer() {
     }
 }
 
-bool MaPLBuffer::appendBytes(void *bytes, size_t byteSize) {
+bool MaPLBuffer::appendBytes(const void *bytes, size_t byteSize) {
     size_t appendedSize = _byteCount + byteSize;
     if (appendedSize > _bufferCapacity) {
         u_int8_t *reallocBytes = (u_int8_t *)realloc(_bytes, appendedSize*2);
@@ -35,6 +35,10 @@ bool MaPLBuffer::appendBytes(void *bytes, size_t byteSize) {
     memcpy((u_int8_t *)_bytes+_byteCount, bytes, byteSize);
     _byteCount += byteSize;
     return true;
+}
+
+bool MaPLBuffer::appendByte(u_int8_t byte) {
+    return appendBytes(&byte, sizeof(u_int8_t));
 }
 
 u_int8_t *MaPLBuffer::getBytes() {
