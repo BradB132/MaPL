@@ -147,7 +147,7 @@ apiDeclaration
 
 apiInheritance : SWITCH_DELIMITER identifier (ARG_DELIMITER identifier)* ;
 apiFunction : ( API_VOID | type ) identifier PAREN_OPEN apiFunctionArgs? PAREN_CLOSE ;
-apiFunctionArgs : API_VARIADIC_ARGUMENTS | type (ARG_DELIMITER type)* (ARG_DELIMITER API_VARIADIC_ARGUMENTS) ;
+apiFunctionArgs : API_VARIADIC_ARGUMENTS | type (ARG_DELIMITER type)* (ARG_DELIMITER API_VARIADIC_ARGUMENTS)? ;
 apiProperty : API_READONLY? type identifier ;
 apiSubscript : API_READONLY? type SUBSCRIPT_OPEN type SUBSCRIPT_CLOSE ;
 apiImport : API_IMPORT STRING ;
