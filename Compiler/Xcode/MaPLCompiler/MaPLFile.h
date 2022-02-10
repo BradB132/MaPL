@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "MaPLParser.h"
+#include "BaseErrorListener.h"
 
 class MaPLLexer;
 class MaPLCompilerContext;
@@ -23,7 +24,7 @@ class MaPLBuffer;
 /**
  * Represents a single MaPL file in from the filesystem.
  */
-class  MaPLFile {
+class  MaPLFile : public antlr4::BaseErrorListener {
 public:
     
     /**
@@ -51,6 +52,11 @@ private:
     
     bool readRawScriptFromDisk();
     void parseRawScript();
+    virtual void syntaxError(antlr4::Recognizer *recognizer,
+                             antlr4::Token * offendingSymbol,
+                             size_t line, size_t charPositionInLine,
+                             const std::string &msg,
+                             std::exception_ptr e) override;
     
     std::filesystem::path _normalizedFilePath;
     MaPLCompilerContext *_parentContext;

@@ -54,6 +54,10 @@ void MaPLFile::parseRawScript() {
     _lexer = new MaPLLexer(_inputStream);
     _tokenStream = new antlr4::CommonTokenStream(_lexer);
     _parser = new MaPLParser(_tokenStream);
+    
+    _parser->getErrorListenerDispatch().removeErrorListeners();
+    _parser->addErrorListener(this);
+    
     _program = _parser->program();
     
     // Iterate over any API imports and add the corresponding files to the parent context.
@@ -109,4 +113,13 @@ MaPLBuffer *MaPLFile::getBytecode() {
     // TODO: compile this file and concat bytes.
     
     return _bytecode;
+}
+
+void MaPLFile::syntaxError(antlr4::Recognizer *recognizer,
+                                    antlr4::Token *offendingSymbol,
+                                    size_t line,
+                                    size_t charPositionInLine,
+                                    const std::string &msg,
+                                    std::exception_ptr e) {
+    printf("MaPLFile error: %s\n", msg.c_str());
 }
