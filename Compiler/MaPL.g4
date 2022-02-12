@@ -35,7 +35,6 @@ assignStatement
              SUBTRACT_ASSIGN |
              MULTIPLY_ASSIGN |
              DIVIDE_ASSIGN |
-             EXPONENT_ASSIGN |
              MOD_ASSIGN
          ) expression
     ;
@@ -46,10 +45,10 @@ unaryStatement
 
 // EXPRESSIONS
 expression
-    :    PAREN_OPEN type PAREN_CLOSE expression
-    |    expression (LOGICAL_AND | LOGICAL_OR) expression
+    :    operatorToken=PAREN_OPEN type PAREN_CLOSE expression
+    |    expression operatorToken=(LOGICAL_AND | LOGICAL_OR) expression
     |    expression
-         (
+         operatorToken=(
             LOGICAL_EQUALITY |
             LOGICAL_INEQUALITY |
             LESS_THAN |
@@ -57,19 +56,18 @@ expression
             GREATER_THAN |
             GREATER_THAN_EQUAL
          ) expression
-    |    LOGICAL_NEGATION expression
-    |    SUBTRACT expression
-    |    expression MOD expression
-    |    expression EXPONENT expression
-    |    expression (MULTIPLY | DIVIDE) expression
-    |    expression (ADD | SUBTRACT) expression
-    |    PAREN_OPEN expression PAREN_CLOSE
-    |    LITERAL_TRUE
-    |    LITERAL_FALSE
-    |    LITERAL_NULL
-    |    INT
-    |    FLOAT
-    |    STRING
+    |    operatorToken=LOGICAL_NEGATION expression
+    |    operatorToken=SUBTRACT expression
+    |    expression operatorToken=MOD expression
+    |    expression operatorToken=(MULTIPLY | DIVIDE) expression
+    |    expression operatorToken=(ADD | SUBTRACT) expression
+    |    PAREN_OPEN expression operatorToken=PAREN_CLOSE
+    |    operatorToken=LITERAL_TRUE
+    |    operatorToken=LITERAL_FALSE
+    |    operatorToken=LITERAL_NULL
+    |    operatorToken=INT
+    |    operatorToken=FLOAT
+    |    operatorToken=STRING
     |    objectExpression
     ;
     
@@ -195,8 +193,6 @@ DIVIDE: '/' ;
 DIVIDE_ASSIGN: '/=' ;
 MULTIPLY: '*' ;
 MULTIPLY_ASSIGN: '*=' ;
-EXPONENT: '^' ;
-EXPONENT_ASSIGN: '^=' ;
 MOD: '%' ;
 MOD_ASSIGN: '%=' ;
 INCREMENT: '++' ;
