@@ -65,9 +65,9 @@ expression
     |    operatorToken=LITERAL_TRUE
     |    operatorToken=LITERAL_FALSE
     |    operatorToken=LITERAL_NULL
-    |    operatorToken=INT
-    |    operatorToken=FLOAT
-    |    operatorToken=STRING
+    |    operatorToken=LITERAL_INT
+    |    operatorToken=LITERAL_FLOAT
+    |    operatorToken=LITERAL_STRING
     |    objectExpression
     ;
     
@@ -118,9 +118,9 @@ conditional : CONDITIONAL expression scope (CONDITIONAL_ELSE scope)? ;
 innerSwitchStatement
     :    SWITCH_CASE
          (
-            INT |
-            FLOAT |
-            STRING |
+            LITERAL_INT |
+            LITERAL_FLOAT |
+            LITERAL_STRING |
             LITERAL_TRUE |
             LITERAL_FALSE
          ) SWITCH_DELIMITER statement*
@@ -147,7 +147,7 @@ apiFunction : ( API_VOID | type ) identifier PAREN_OPEN apiFunctionArgs? PAREN_C
 apiFunctionArgs : API_VARIADIC_ARGUMENTS | type (ARG_DELIMITER type)* (ARG_DELIMITER API_VARIADIC_ARGUMENTS)? ;
 apiProperty : API_READONLY? type identifier ;
 apiSubscript : API_READONLY? type SUBSCRIPT_OPEN type SUBSCRIPT_CLOSE ;
-apiImport : API_IMPORT STRING ;
+apiImport : API_IMPORT LITERAL_STRING ;
 
 // This is a special case where a concept is encoded as both a lexer and parser rule.
 // All keywords must be also recognizable as identifiers, and the lexer doesn't have enough context to do this correctly.
@@ -258,14 +258,14 @@ API_VARIADIC_ARGUMENTS: '...' ;
 // LITERALS
 IDENTIFIER : [_a-zA-Z][_a-zA-Z0-9]* ;
 
-INT : DIGITS ;
-FLOAT
+LITERAL_INT : DIGITS ;
+LITERAL_FLOAT
     :    DIGITS ( '.' DIGITS )?
     |    '.' DIGITS
     ;
 fragment DIGITS : [0-9]+ ;
 
-STRING : '"' (STRING_ESC|.)*? '"' ;
+LITERAL_STRING : '"' (STRING_ESC|.)*? '"' ;
 fragment STRING_ESC : '\\"' | '\\\\' ;
 
 METADATA : '<?' .*? '?>' ;

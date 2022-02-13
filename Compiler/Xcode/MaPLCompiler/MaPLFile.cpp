@@ -66,7 +66,7 @@ void MaPLFile::parseRawScript() {
         if(!apiImport) {
             continue;
         }
-        std::string importString = apiImport->STRING()->getText();
+        std::string importString = apiImport->LITERAL_STRING()->getText();
         
         // The text will always contain the string quotes, substring call removes them.
         std::filesystem::path importPath = importString.substr(1, importString.length()-2);
