@@ -23,7 +23,9 @@ int main(int argc, const char ** argv) {
         MaPLFile *file = context.fileForAbsolutePath(std::filesystem::absolute(argv[i]));
         MaPLBuffer *bytecode = file->getBytecode();
         //TODO: write bytecode to an appropriate output path.
-        printf("bytecode length: %d\n", (int)bytecode->getByteCount());// TODO: this line just for testing, delete later.
+        if (bytecode) {
+            printf("bytecode length: %d\n", (int)bytecode->getByteCount());// TODO: this line just for testing, delete later.
+        }
     }
     
     return 0;
