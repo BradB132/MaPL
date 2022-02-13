@@ -72,9 +72,9 @@ expression
     ;
     
 objectExpression
-    :    objectExpression OBJECT_TO_MEMBER objectExpression
-    |    objectExpression SUBSCRIPT_OPEN expression SUBSCRIPT_CLOSE
-    |    identifier (PAREN_OPEN (expression (ARG_DELIMITER expression)*)? PAREN_CLOSE)?
+    :    objectExpression operatorToken=OBJECT_TO_MEMBER objectExpression
+    |    objectExpression operatorToken=SUBSCRIPT_OPEN expression SUBSCRIPT_CLOSE
+    |    identifier (operatorToken=PAREN_OPEN (expression (ARG_DELIMITER expression)*)? PAREN_CLOSE)?
     ;
 
 // VARIABLES
