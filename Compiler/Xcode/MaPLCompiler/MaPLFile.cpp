@@ -153,6 +153,7 @@ void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLBuffer *cu
 
 void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentBuffer) {
     switch (node->getRuleIndex()) {
+        // TODO: For APIs, we still need to check for duplicate types.
         // TODO: For APIs, we still need to confirm that any types which are referred to are actually declared somewhere.
         case MaPLParser::RuleStatement: {
             MaPLParser::StatementContext *statement = (MaPLParser::StatementContext *)node;
@@ -309,26 +310,14 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
     switch (expression->keyToken->getType()) {
         case MaPLParser::PAREN_OPEN: {
             // This is a typecast, return the type that is specified in the cast.
-            MaPLParser::TypeContext *type = expression->type();// TODO: Factor this out into a function that produces a MaPLType given a MaPLParser::TypeContext.
-            if (type->identifier()) {
-                return { MaPLPrimitiveType_Pointer, type->identifier()->getText() };
+            MaPLParser::TypeContext *typeContext = expression->type();
+            MaPLType type = typeForTypeContext(typeContext);
+            if (type.type == MaPLPrimitiveType_InvalidType) {
+                // Break down to the bottom of this function to log a generic error.
+                break;
             }
-            switch (type->start->getType()) {
-                case MaPLParser::DECL_INT8: return { MaPLPrimitiveType_Int8, "" };
-                case MaPLParser::DECL_INT16: return { MaPLPrimitiveType_Int16, "" };
-                case MaPLParser::DECL_INT32: return { MaPLPrimitiveType_Int32, "" };
-                case MaPLParser::DECL_INT64: return { MaPLPrimitiveType_Int64, "" };
-                case MaPLParser::DECL_UINT8: return { MaPLPrimitiveType_UInt8, "" };
-                case MaPLParser::DECL_UINT16: return { MaPLPrimitiveType_UInt16, "" };
-                case MaPLParser::DECL_UINT32: return { MaPLPrimitiveType_UInt32, "" };
-                case MaPLParser::DECL_UINT64: return { MaPLPrimitiveType_UInt64, "" };
-                case MaPLParser::DECL_FLOAT32: return { MaPLPrimitiveType_Float32, "" };
-                case MaPLParser::DECL_FLOAT64: return { MaPLPrimitiveType_Float64, "" };
-                case MaPLParser::DECL_BOOL: return { MaPLPrimitiveType_Boolean, "" };
-                case MaPLParser::DECL_STRING: return { MaPLPrimitiveType_String, "" };
-            }
+            return type;
         }
-            break;
         case MaPLParser::PAREN_CLOSE:
             // This is a nested expression, return type of the child expression.
             return dataTypeForExpression(expression->expression(0));

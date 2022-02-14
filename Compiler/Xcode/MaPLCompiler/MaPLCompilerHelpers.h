@@ -33,9 +33,9 @@ typedef enum {
     MaPLPrimitiveType_Pointer,
     
     // Numeric literals can be intepreted differently depending on surrounding context.
-    MaPLPrimitiveType_SignedInt_AmbiguousSize,
-    MaPLPrimitiveType_Int_AmbiguousSizeAndSign,
-    MaPLPrimitiveType_Float_AmbiguousSize,
+    MaPLPrimitiveType_SignedInt_AmbiguousSize, // Example: "-1".
+    MaPLPrimitiveType_Int_AmbiguousSizeAndSign, // Example: "1".
+    MaPLPrimitiveType_Float_AmbiguousSize, //  Example: "1.5".
     
     MaPLPrimitiveType_InvalidType,
 } MaPLPrimitiveType;
@@ -76,9 +76,14 @@ bool isUnsignedInt(MaPLPrimitiveType returnType);
 bool isNumeric(MaPLPrimitiveType returnType);
 
 /**
- * @return @c true if a #type is declared with the matching name within the file, or any dependencies of that file.
+ * @return A MaPLType as described by a type node in the parse tree.
  */
-bool typeExists(MaPLFile *file, std::string type);
+MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
+
+/**
+ * @return The parse tree node which represents the API type if a matching type exists, otherwise @c NULL.
+ */
+MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type);
 
 /**
  * @return The parse tree node which represents the API function if a matching function exists, otherwise @c NULL.
