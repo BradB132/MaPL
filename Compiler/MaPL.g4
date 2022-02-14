@@ -45,10 +45,10 @@ unaryStatement
 
 // EXPRESSIONS
 expression
-    :    operatorToken=PAREN_OPEN type PAREN_CLOSE expression
-    |    expression operatorToken=(LOGICAL_AND | LOGICAL_OR) expression
+    :    keyToken=PAREN_OPEN type PAREN_CLOSE expression
+    |    expression keyToken=(LOGICAL_AND | LOGICAL_OR) expression
     |    expression
-         operatorToken=(
+         keyToken=(
             LOGICAL_EQUALITY |
             LOGICAL_INEQUALITY |
             LESS_THAN |
@@ -56,25 +56,25 @@ expression
             GREATER_THAN |
             GREATER_THAN_EQUAL
          ) expression
-    |    operatorToken=LOGICAL_NEGATION expression
-    |    operatorToken=SUBTRACT expression
-    |    expression operatorToken=MOD expression
-    |    expression operatorToken=(MULTIPLY | DIVIDE) expression
-    |    expression operatorToken=(ADD | SUBTRACT) expression
-    |    PAREN_OPEN expression operatorToken=PAREN_CLOSE
-    |    operatorToken=LITERAL_TRUE
-    |    operatorToken=LITERAL_FALSE
-    |    operatorToken=LITERAL_NULL
-    |    operatorToken=LITERAL_INT
-    |    operatorToken=LITERAL_FLOAT
-    |    operatorToken=LITERAL_STRING
+    |    keyToken=LOGICAL_NEGATION expression
+    |    keyToken=SUBTRACT expression
+    |    expression keyToken=MOD expression
+    |    expression keyToken=(MULTIPLY | DIVIDE) expression
+    |    expression keyToken=(ADD | SUBTRACT) expression
+    |    PAREN_OPEN expression keyToken=PAREN_CLOSE
+    |    keyToken=LITERAL_TRUE
+    |    keyToken=LITERAL_FALSE
+    |    keyToken=LITERAL_NULL
+    |    keyToken=LITERAL_INT
+    |    keyToken=LITERAL_FLOAT
+    |    keyToken=LITERAL_STRING
     |    objectExpression
     ;
     
 objectExpression
-    :    objectExpression operatorToken=OBJECT_TO_MEMBER objectExpression
-    |    objectExpression operatorToken=SUBSCRIPT_OPEN expression SUBSCRIPT_CLOSE
-    |    identifier (operatorToken=PAREN_OPEN (expression (ARG_DELIMITER expression)*)? PAREN_CLOSE)?
+    :    objectExpression keyToken=OBJECT_TO_MEMBER objectExpression
+    |    objectExpression keyToken=SUBSCRIPT_OPEN expression SUBSCRIPT_CLOSE
+    |    identifier (keyToken=PAREN_OPEN (expression (ARG_DELIMITER expression)*)? PAREN_CLOSE)?
     ;
 
 // VARIABLES
@@ -131,8 +131,8 @@ switchStatement : SWITCH expression SCOPE_OPEN innerSwitchStatement+ SCOPE_CLOSE
 
 // API DECLARATIONS
 apiDeclaration
-    :    API_GLOBAL (apiFunction | apiProperty) STATEMENT_DELIMITER
-    |    API_TYPE identifier apiInheritance? SCOPE_OPEN
+    :    keyToken=API_GLOBAL (apiFunction | apiProperty) STATEMENT_DELIMITER
+    |    keyToken=API_TYPE identifier apiInheritance? SCOPE_OPEN
          (
              (
                  apiFunction |

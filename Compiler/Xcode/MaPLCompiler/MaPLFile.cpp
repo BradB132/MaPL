@@ -357,7 +357,7 @@ MaPLExpectedReturnType MaPLFile::reconcileNumericTypes(MaPLExpectedReturnType le
 }
 
 MaPLFunctionReturnType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expression) {
-    switch (expression->operatorToken->getType()) {
+    switch (expression->keyToken->getType()) {
         case MaPLParser::PAREN_OPEN: {
             // This is a typecast, return the type that is specified in the cast.
             MaPLParser::TypeContext *type = expression->type();
@@ -401,7 +401,7 @@ MaPLFunctionReturnType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionCon
                 // There's only one operand, so this is numeric negation instead of subtraction.
                 MaPLFunctionReturnType type1 = dataTypeForExpression(childExpressions[0]);
                 if (!isNumeric(type1.type)) {
-                    logError(expression->operatorToken, "Numeric negation can only be applied to numeric data types.");
+                    logError(expression->keyToken, "Numeric negation can only be applied to numeric data types.");
                     return { MaPLExpectedReturnType_InvalidType, "" };
                 }
                 if (type1.type == MaPLExpectedReturnType_Int_AmbiguousSizeAndSign) {
@@ -420,9 +420,9 @@ MaPLFunctionReturnType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionCon
             MaPLFunctionReturnType type2 = dataTypeForExpression(childExpressions[1]);
             if (isNumeric(type1.type) && isNumeric(type2.type)) {
                 // Types are not the same, but might be reconcilable if there's still ambiguity.
-                return { reconcileNumericTypes(type1.type, type2.type, expression->operatorToken), "" };
+                return { reconcileNumericTypes(type1.type, type2.type, expression->keyToken), "" };
             }
-            logError(expression->operatorToken, "Both operands must be numeric.");
+            logError(expression->keyToken, "Both operands must be numeric.");
             return { MaPLExpectedReturnType_InvalidType, "" };
         }
         case MaPLParser::ADD: {
@@ -432,13 +432,13 @@ MaPLFunctionReturnType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionCon
             // Plus operator could be numeric add or string concatenation.
             if (type1.type == MaPLExpectedReturnType_String &&
                 type2.type == MaPLExpectedReturnType_String &&
-                expression->operatorToken->getType() == MaPLParser::ADD) {
+                expression->keyToken->getType() == MaPLParser::ADD) {
                 return { MaPLExpectedReturnType_String, "" };
             } else if (isNumeric(type1.type) && isNumeric(type2.type)) {
                 // Types are not the same, but might be reconcilable if there's still ambiguity.
-                return { reconcileNumericTypes(type1.type, type2.type, expression->operatorToken), "" };
+                return { reconcileNumericTypes(type1.type, type2.type, expression->keyToken), "" };
             }
-            logError(expression->operatorToken, "Both operands must be either string (concatenation) or numeric (addition).");
+            logError(expression->keyToken, "Both operands must be either string (concatenation) or numeric (addition).");
             return { MaPLExpectedReturnType_InvalidType, "" };
         }
         case MaPLParser::LITERAL_INT: return { MaPLExpectedReturnType_Int_AmbiguousSizeAndSign, "" };
@@ -451,14 +451,14 @@ MaPLFunctionReturnType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionCon
     if (objectExpression) {
         return objectExpressionReturnType(objectExpression, "");
     }
-    logError(expression->operatorToken, "Type error.");
+    logError(expression->keyToken, "Type error.");
     return { MaPLExpectedReturnType_InvalidType, "" };
 }
 
 MaPLFunctionReturnType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression, std::string invokedOnType) {
-    antlr4::Token *operatorToken = expression->operatorToken;
-    if (operatorToken) {
-        switch (operatorToken->getType()) {
+    antlr4::Token *keyToken = expression->keyToken;
+    if (keyToken) {
+        switch (keyToken->getType()) {
             case MaPLParser::OBJECT_TO_MEMBER: {
                 // Find the pointer type from the prefix and supply that type information to the suffix.
                 // For example, in the expression "obj.func()", the prefix is "obj" and suffix is "func()".
@@ -466,7 +466,7 @@ MaPLFunctionReturnType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectEx
                 std::vector<MaPLParser::ObjectExpressionContext *> childExpressions = expression->objectExpression();
                 MaPLFunctionReturnType prefixType = objectExpressionReturnType(childExpressions[0], invokedOnType);
                 if (prefixType.type != MaPLExpectedReturnType_Pointer) {
-                    logError(operatorToken, "The '.' operator can only be used on pointers.");
+                    logError(keyToken, "The '.' operator can only be used on pointers.");
                     return { MaPLExpectedReturnType_InvalidType, "" };
                 }
                 return objectExpressionReturnType(childExpressions[1], prefixType.pointerType);
@@ -496,6 +496,6 @@ MaPLFunctionReturnType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectEx
             }
         }
     }
-    logError(operatorToken, "Error determining the type of this expression.");
+    logError(keyToken, "Error determining the type of this expression.");
     return { MaPLExpectedReturnType_InvalidType, "" };
 }
