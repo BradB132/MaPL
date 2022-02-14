@@ -100,67 +100,6 @@ std::vector<MaPLFile *> MaPLFile::getDependencies() {
     return _dependencies;
 }
 
-MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file, std::string type, std::string name) {
-    MaPLParser::ProgramContext *program = file->getParseTree();
-    if (!program) {
-        return NULL;
-    }
-    
-    // Search all API property declarations in this file.
-    bool isGlobal = type.empty();
-    for (MaPLParser::StatementContext *statement : program->statement()) {
-        MaPLParser::ApiDeclarationContext *apiDeclaration = statement->apiDeclaration();
-        if (!apiDeclaration) { continue; }
-        switch (apiDeclaration->keyToken->getType()) {
-            case MaPLParser::API_GLOBAL: {
-                if (!isGlobal) { continue; }
-                MaPLParser::ApiPropertyContext *property = apiDeclaration->apiProperty(0);
-                if (!property) { continue; }
-                MaPLParser::IdentifierContext *identifier = property->identifier();
-                if (identifier && identifier->getText() == name) {
-                    return property;
-                }
-            }
-                break;
-            case MaPLParser::API_TYPE: {
-                if (isGlobal) { continue; }
-                MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
-                if (!identifier || identifier->getText() != type) {
-                    continue;
-                }
-                for (MaPLParser::ApiPropertyContext *property : apiDeclaration->apiProperty()) {
-                    MaPLParser::IdentifierContext *identifier = property->identifier();
-                    if (identifier && identifier->getText() == name) {
-                        return property;
-                    }
-                }
-                MaPLParser::ApiInheritanceContext *inheritance = apiDeclaration->apiInheritance();
-                if (inheritance) {
-                    for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
-                        MaPLParser::ApiPropertyContext *foundProperty = findProperty(file, identifier->getText(), name);
-                        if (foundProperty) {
-                            return foundProperty;
-                        }
-                    }
-                }
-            }
-                break;
-            default:
-                break;
-        }
-    }
-    
-    // If no matching property was found in this file, recurse through all dependent files.
-    for (MaPLFile *dependency : file->getDependencies()) {
-        MaPLParser::ApiPropertyContext *foundProperty = findProperty(dependency, type, name);
-        if (foundProperty) {
-            return foundProperty;
-        }
-    }
-    
-    return NULL;
-}
-
 MaPLBuffer *MaPLFile::getBytecode() {
     if (_bytecode) {
         return _bytecode;
@@ -190,7 +129,7 @@ void MaPLFile::syntaxError(antlr4::Recognizer *recognizer,
                                     size_t charPositionInLine,
                                     const std::string &msg,
                                     std::exception_ptr e) {
-    // This method is overriding `ANTLRErrorListener`. Forward this call to the more generally usable function.
+    // This method is overriding ANTLRErrorListener. Forward this call to the more generally usable function.
     logError(offendingSymbol, msg);
 }
 
@@ -214,6 +153,7 @@ void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLBuffer *cu
 
 void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentBuffer) {
     switch (node->getRuleIndex()) {
+        // TODO: For APIs, we still need to confirm that any types which are referred to are actually declared somewhere.
         case MaPLParser::RuleStatement: {
             MaPLParser::StatementContext *statement = (MaPLParser::StatementContext *)node;
             antlr4::tree::TerminalNode *terminalNode = statement->METADATA();
@@ -305,65 +245,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
     }
 }
 
-bool isAmbiguousNumericType(MaPLExpectedReturnType returnType) {
-    switch (returnType) {
-        case MaPLExpectedReturnType_Float_AmbiguousSize:
-        case MaPLExpectedReturnType_SignedInt_AmbiguousSize:
-        case MaPLExpectedReturnType_Int_AmbiguousSizeAndSign:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool isFloat(MaPLExpectedReturnType returnType) {
-    switch (returnType) {
-        case MaPLExpectedReturnType_Float32:
-        case MaPLExpectedReturnType_Float64:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool isSignedInt(MaPLExpectedReturnType returnType) {
-    switch (returnType) {
-        case MaPLExpectedReturnType_Int8:
-        case MaPLExpectedReturnType_Int16:
-        case MaPLExpectedReturnType_Int32:
-        case MaPLExpectedReturnType_Int64:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool isUnsignedInt(MaPLExpectedReturnType returnType) {
-    switch (returnType) {
-        case MaPLExpectedReturnType_UInt8:
-        case MaPLExpectedReturnType_UInt16:
-        case MaPLExpectedReturnType_UInt32:
-        case MaPLExpectedReturnType_UInt64:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool isNumeric(MaPLExpectedReturnType returnType) {
-    return isFloat(returnType) ||
-           isSignedInt(returnType) ||
-           isUnsignedInt(returnType) ||
-           isAmbiguousNumericType(returnType);
-}
-
-MaPLExpectedReturnType MaPLFile::typeReconciliationError(antlr4::Token *errorToken) {
+MaPLPrimitiveType MaPLFile::typeReconciliationError(antlr4::Token *errorToken) {
     logError(errorToken, "Operands must have matching types.");
-    return MaPLExpectedReturnType_InvalidType;
+    return MaPLPrimitiveType_InvalidType;
 }
 
-MaPLExpectedReturnType MaPLFile::reconcileNumericTypes(MaPLExpectedReturnType left,
-                                                       MaPLExpectedReturnType right,
+MaPLPrimitiveType MaPLFile::reconcileNumericTypes(MaPLPrimitiveType left,
+                                                       MaPLPrimitiveType right,
                                                        antlr4::Token *errorToken) {
     if (left == right) {
         return left;
@@ -380,13 +268,13 @@ MaPLExpectedReturnType MaPLFile::reconcileNumericTypes(MaPLExpectedReturnType le
         
         // Signed integers can store any ambiguous non-float numbers.
         if (isSignedInt(left)) {
-            if (right == MaPLExpectedReturnType_Float_AmbiguousSize) {
+            if (right == MaPLPrimitiveType_Float_AmbiguousSize) {
                 return typeReconciliationError(errorToken);
             }
             return left;
         }
         if (isSignedInt(right)) {
-            if (left == MaPLExpectedReturnType_Float_AmbiguousSize) {
+            if (left == MaPLPrimitiveType_Float_AmbiguousSize) {
                 return typeReconciliationError(errorToken);
             }
             return right;
@@ -394,50 +282,50 @@ MaPLExpectedReturnType MaPLFile::reconcileNumericTypes(MaPLExpectedReturnType le
         
         // Unsigned integers can store only ambiguously-sized, unsigned numbers.
         if (isUnsignedInt(left)) {
-            if (right == MaPLExpectedReturnType_Int_AmbiguousSizeAndSign) {
+            if (right == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                 return left;
             }
             return typeReconciliationError(errorToken);
         }
         if (isUnsignedInt(right)) {
-            if (left == MaPLExpectedReturnType_Int_AmbiguousSizeAndSign) {
+            if (left == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                 return right;
             }
             return typeReconciliationError(errorToken);
         }
         
         // All pairings containing a specific type have been handled above. All remaining are some combination of ambiguous types.
-        if (left == MaPLExpectedReturnType_Float_AmbiguousSize || right == MaPLExpectedReturnType_Float_AmbiguousSize) {
+        if (left == MaPLPrimitiveType_Float_AmbiguousSize || right == MaPLPrimitiveType_Float_AmbiguousSize) {
             // All ambigous integer types can convert to float.
-            return MaPLExpectedReturnType_Float_AmbiguousSize;
+            return MaPLPrimitiveType_Float_AmbiguousSize;
         }
         // Only permutation remaining is SignedInt_AmbiguousSize and Int_AmbiguousSizeAndSign.
-        return MaPLExpectedReturnType_SignedInt_AmbiguousSize;
+        return MaPLPrimitiveType_SignedInt_AmbiguousSize;
     }
     return typeReconciliationError(errorToken);
 }
 
-MaPLFunctionReturnType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expression) {
+MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expression) {
     switch (expression->keyToken->getType()) {
         case MaPLParser::PAREN_OPEN: {
             // This is a typecast, return the type that is specified in the cast.
-            MaPLParser::TypeContext *type = expression->type();
+            MaPLParser::TypeContext *type = expression->type();// TODO: Factor this out into a function that produces a MaPLType given a MaPLParser::TypeContext.
             if (type->identifier()) {
-                return { MaPLExpectedReturnType_Pointer, type->identifier()->getText() };
+                return { MaPLPrimitiveType_Pointer, type->identifier()->getText() };
             }
             switch (type->start->getType()) {
-                case MaPLParser::DECL_INT8: return { MaPLExpectedReturnType_Int8, "" };
-                case MaPLParser::DECL_INT16: return { MaPLExpectedReturnType_Int16, "" };
-                case MaPLParser::DECL_INT32: return { MaPLExpectedReturnType_Int32, "" };
-                case MaPLParser::DECL_INT64: return { MaPLExpectedReturnType_Int64, "" };
-                case MaPLParser::DECL_UINT8: return { MaPLExpectedReturnType_UInt8, "" };
-                case MaPLParser::DECL_UINT16: return { MaPLExpectedReturnType_UInt16, "" };
-                case MaPLParser::DECL_UINT32: return { MaPLExpectedReturnType_UInt32, "" };
-                case MaPLParser::DECL_UINT64: return { MaPLExpectedReturnType_UInt64, "" };
-                case MaPLParser::DECL_FLOAT32: return { MaPLExpectedReturnType_Float32, "" };
-                case MaPLParser::DECL_FLOAT64: return { MaPLExpectedReturnType_Float64, "" };
-                case MaPLParser::DECL_BOOL: return { MaPLExpectedReturnType_Boolean, "" };
-                case MaPLParser::DECL_STRING: return { MaPLExpectedReturnType_String, "" };
+                case MaPLParser::DECL_INT8: return { MaPLPrimitiveType_Int8, "" };
+                case MaPLParser::DECL_INT16: return { MaPLPrimitiveType_Int16, "" };
+                case MaPLParser::DECL_INT32: return { MaPLPrimitiveType_Int32, "" };
+                case MaPLParser::DECL_INT64: return { MaPLPrimitiveType_Int64, "" };
+                case MaPLParser::DECL_UINT8: return { MaPLPrimitiveType_UInt8, "" };
+                case MaPLParser::DECL_UINT16: return { MaPLPrimitiveType_UInt16, "" };
+                case MaPLParser::DECL_UINT32: return { MaPLPrimitiveType_UInt32, "" };
+                case MaPLParser::DECL_UINT64: return { MaPLPrimitiveType_UInt64, "" };
+                case MaPLParser::DECL_FLOAT32: return { MaPLPrimitiveType_Float32, "" };
+                case MaPLParser::DECL_FLOAT64: return { MaPLPrimitiveType_Float64, "" };
+                case MaPLParser::DECL_BOOL: return { MaPLPrimitiveType_Boolean, "" };
+                case MaPLParser::DECL_STRING: return { MaPLPrimitiveType_String, "" };
             }
         }
             break;
@@ -455,19 +343,19 @@ MaPLFunctionReturnType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionCon
         case MaPLParser::LOGICAL_NEGATION: // Intentional fallthrough.
         case MaPLParser::LITERAL_TRUE: // Intentional fallthrough.
         case MaPLParser::LITERAL_FALSE:
-            return { MaPLExpectedReturnType_Boolean, "" };
+            return { MaPLPrimitiveType_Boolean, "" };
         case MaPLParser::SUBTRACT: {
             std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
             if (childExpressions.size() == 1) {
                 // There's only one operand, so this is numeric negation instead of subtraction.
-                MaPLFunctionReturnType type1 = dataTypeForExpression(childExpressions[0]);
+                MaPLType type1 = dataTypeForExpression(childExpressions[0]);
                 if (!isNumeric(type1.type)) {
                     logError(expression->keyToken, "Numeric negation can only be applied to numeric data types.");
-                    return { MaPLExpectedReturnType_InvalidType, "" };
+                    return { MaPLPrimitiveType_InvalidType, "" };
                 }
-                if (type1.type == MaPLExpectedReturnType_Int_AmbiguousSizeAndSign) {
+                if (type1.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                     // If the datatype is ambiguous, but it's being negated, it must be a signed int.
-                    return { MaPLExpectedReturnType_SignedInt_AmbiguousSize, "" };
+                    return { MaPLPrimitiveType_SignedInt_AmbiguousSize, "" };
                 }
                 return type1;
             }
@@ -477,35 +365,35 @@ MaPLFunctionReturnType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionCon
         case MaPLParser::MULTIPLY: // Intentional fallthrough.
         case MaPLParser::DIVIDE: {
             std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-            MaPLFunctionReturnType type1 = dataTypeForExpression(childExpressions[0]);
-            MaPLFunctionReturnType type2 = dataTypeForExpression(childExpressions[1]);
+            MaPLType type1 = dataTypeForExpression(childExpressions[0]);
+            MaPLType type2 = dataTypeForExpression(childExpressions[1]);
             if (isNumeric(type1.type) && isNumeric(type2.type)) {
                 // Types are not the same, but might be reconcilable if there's still ambiguity.
                 return { reconcileNumericTypes(type1.type, type2.type, expression->keyToken), "" };
             }
             logError(expression->keyToken, "Both operands must be numeric.");
-            return { MaPLExpectedReturnType_InvalidType, "" };
+            return { MaPLPrimitiveType_InvalidType, "" };
         }
         case MaPLParser::ADD: {
             std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-            MaPLFunctionReturnType type1 = dataTypeForExpression(childExpressions[0]);
-            MaPLFunctionReturnType type2 = dataTypeForExpression(childExpressions[1]);
+            MaPLType type1 = dataTypeForExpression(childExpressions[0]);
+            MaPLType type2 = dataTypeForExpression(childExpressions[1]);
             // Plus operator could be numeric add or string concatenation.
-            if (type1.type == MaPLExpectedReturnType_String &&
-                type2.type == MaPLExpectedReturnType_String &&
+            if (type1.type == MaPLPrimitiveType_String &&
+                type2.type == MaPLPrimitiveType_String &&
                 expression->keyToken->getType() == MaPLParser::ADD) {
-                return { MaPLExpectedReturnType_String, "" };
+                return { MaPLPrimitiveType_String, "" };
             } else if (isNumeric(type1.type) && isNumeric(type2.type)) {
                 // Types are not the same, but might be reconcilable if there's still ambiguity.
                 return { reconcileNumericTypes(type1.type, type2.type, expression->keyToken), "" };
             }
             logError(expression->keyToken, "Both operands must be either string (concatenation) or numeric (addition).");
-            return { MaPLExpectedReturnType_InvalidType, "" };
+            return { MaPLPrimitiveType_InvalidType, "" };
         }
-        case MaPLParser::LITERAL_INT: return { MaPLExpectedReturnType_Int_AmbiguousSizeAndSign, "" };
-        case MaPLParser::LITERAL_FLOAT: return { MaPLExpectedReturnType_Float_AmbiguousSize, "" };
-        case MaPLParser::LITERAL_STRING: return { MaPLExpectedReturnType_String, "" };
-        case MaPLParser::LITERAL_NULL: return { MaPLExpectedReturnType_Pointer, "" };
+        case MaPLParser::LITERAL_INT: return { MaPLPrimitiveType_Int_AmbiguousSizeAndSign, "" };
+        case MaPLParser::LITERAL_FLOAT: return { MaPLPrimitiveType_Float_AmbiguousSize, "" };
+        case MaPLParser::LITERAL_STRING: return { MaPLPrimitiveType_String, "" };
+        case MaPLParser::LITERAL_NULL: return { MaPLPrimitiveType_Pointer, "" };
             
     }
     MaPLParser::ObjectExpressionContext* objectExpression = expression->objectExpression();
@@ -513,10 +401,10 @@ MaPLFunctionReturnType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionCon
         return objectExpressionReturnType(objectExpression, "");
     }
     logError(expression->keyToken, "Type error.");
-    return { MaPLExpectedReturnType_InvalidType, "" };
+    return { MaPLPrimitiveType_InvalidType, "" };
 }
 
-MaPLFunctionReturnType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression, std::string invokedOnType) {
+MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression, std::string invokedOnType) {
     antlr4::Token *keyToken = expression->keyToken;
     if (keyToken) {
         switch (keyToken->getType()) {
@@ -525,10 +413,10 @@ MaPLFunctionReturnType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectEx
                 // For example, in the expression "obj.func()", the prefix is "obj" and suffix is "func()".
                 // To understand the return type of "func()", we have to understand it's being invoked on "obj".
                 std::vector<MaPLParser::ObjectExpressionContext *> childExpressions = expression->objectExpression();
-                MaPLFunctionReturnType prefixType = objectExpressionReturnType(childExpressions[0], invokedOnType);
-                if (prefixType.type != MaPLExpectedReturnType_Pointer) {
+                MaPLType prefixType = objectExpressionReturnType(childExpressions[0], invokedOnType);
+                if (prefixType.type != MaPLPrimitiveType_Pointer) {
                     logError(keyToken, "The '.' operator can only be used on pointers.");
-                    return { MaPLExpectedReturnType_InvalidType, "" };
+                    return { MaPLPrimitiveType_InvalidType, "" };
                 }
                 return objectExpressionReturnType(childExpressions[1], prefixType.pointerType);
             }
@@ -558,5 +446,5 @@ MaPLFunctionReturnType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectEx
         }
     }
     logError(keyToken, "Error determining the type of this expression.");
-    return { MaPLExpectedReturnType_InvalidType, "" };
+    return { MaPLPrimitiveType_InvalidType, "" };
 }

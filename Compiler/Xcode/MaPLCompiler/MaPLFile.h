@@ -16,40 +16,11 @@
 
 #include "MaPLParser.h"
 #include "BaseErrorListener.h"
+#include "MaPLCompilerHelpers.h"
 
 class MaPLLexer;
 class MaPLCompilerContext;
 class MaPLBuffer;
-
-typedef enum {
-    MaPLExpectedReturnType_Int8,
-    MaPLExpectedReturnType_Int16,
-    MaPLExpectedReturnType_Int32,
-    MaPLExpectedReturnType_Int64,
-    MaPLExpectedReturnType_UInt8,
-    MaPLExpectedReturnType_UInt16,
-    MaPLExpectedReturnType_UInt32,
-    MaPLExpectedReturnType_UInt64,
-    MaPLExpectedReturnType_Float32,
-    MaPLExpectedReturnType_Float64,
-    MaPLExpectedReturnType_String,
-    MaPLExpectedReturnType_Boolean,
-    MaPLExpectedReturnType_Pointer,
-    
-    // Numeric literals can be intepreted differently depending on surrounding context.
-    MaPLExpectedReturnType_SignedInt_AmbiguousSize,
-    MaPLExpectedReturnType_Int_AmbiguousSizeAndSign,
-    MaPLExpectedReturnType_Float_AmbiguousSize,
-    
-    MaPLExpectedReturnType_InvalidType,
-} MaPLExpectedReturnType;
-
-typedef struct {
-    // Specifies the type of primitive value that will be returned from a call to the host program.
-    MaPLExpectedReturnType type;
-    // In the case that `type` is a pointer, what is the name of the `#type` that it represents.
-    std::string pointerType;
-} MaPLFunctionReturnType;
 
 /**
  * Represents a single MaPL file in from the filesystem.
@@ -90,13 +61,13 @@ private:
                              const std::string &msg,
                              std::exception_ptr e) override;
     void logError(antlr4::Token *token, const std::string &msg);
-    MaPLFunctionReturnType dataTypeForExpression(MaPLParser::ExpressionContext *expression);
-    MaPLExpectedReturnType reconcileNumericTypes(MaPLExpectedReturnType left,
-                                                 MaPLExpectedReturnType right,
-                                                 antlr4::Token *errorToken);
-    MaPLExpectedReturnType typeReconciliationError(antlr4::Token *errorToken);
-    MaPLFunctionReturnType objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
-                                                      std::string invokedOnType);
+    MaPLType dataTypeForExpression(MaPLParser::ExpressionContext *expression);
+    MaPLPrimitiveType reconcileNumericTypes(MaPLPrimitiveType left,
+                                            MaPLPrimitiveType right,
+                                            antlr4::Token *errorToken);
+    MaPLPrimitiveType typeReconciliationError(antlr4::Token *errorToken);
+    MaPLType objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
+                                        std::string invokedOnType);
     
     std::filesystem::path _normalizedFilePath;
     MaPLCompilerContext *_parentContext;

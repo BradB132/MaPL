@@ -26,7 +26,7 @@ public:
      * Appends new bytes onto the buffer.
      *
      * @param bytes The new bytes that will be appended onto the buffer.
-     * @param byteSize The number of bytes that should be appended from the `bytes` parameter.
+     * @param byteSize The number of bytes that should be appended from the @c bytes parameter.
      *
      * @return Boolean indicates success or failure of the append operation.
      */
@@ -47,7 +47,7 @@ public:
     u_int8_t *getBytes();
     
     /**
-     * @return The number of bytes in the buffer returned via the getBytes` method.
+     * @return The number of bytes in the buffer returned via the @c getBytes method.
      */
     size_t getByteCount();
     

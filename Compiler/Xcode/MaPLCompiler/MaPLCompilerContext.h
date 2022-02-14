@@ -23,7 +23,7 @@ public:
     /**
      * @param absoluteFilePath The absolute filesystem path to the MaPL script file.
      *
-     * @return The `MaPLFile` for the script at the given `absoluteFilePath`. NULL if error.
+     * @return The @c MaPLFile for the script at the given @c absoluteFilePath. @c NULL if error.
      */
     MaPLFile *fileForAbsolutePath(std::filesystem::path absoluteFilePath);
     

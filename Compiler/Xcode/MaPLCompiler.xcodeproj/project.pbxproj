@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9B0ED97E27BAA81400BE2857 /* MaPLCompilerHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */; };
 		9B8839B9260FEACB00CFE16B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839B8260FEACB00CFE16B /* main.cpp */; };
 		9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */; };
 		9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */; };
@@ -60,6 +61,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLCompilerHelpers.cpp; sourceTree = "<group>"; };
+		9B0ED97D27BAA81400BE2857 /* MaPLCompilerHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLCompilerHelpers.h; sourceTree = "<group>"; };
 		9B8839B5260FEACB00CFE16B /* MaPLCompiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLCompiler; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B8839B8260FEACB00CFE16B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = antlrcpp.xcodeproj; path = ../ANTLR4/runtime/Cpp/runtime/antlrcpp.xcodeproj; sourceTree = "<group>"; };
@@ -118,6 +121,8 @@
 				9BC8F09627A9A40C00C57FC7 /* MaPLBuffer.cpp */,
 				9BC8F09727A9A40C00C57FC7 /* MaPLBuffer.h */,
 				9BB770A627AF14E10086ECF6 /* MaPLBytecodeConstants.h */,
+				9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */,
+				9B0ED97D27BAA81400BE2857 /* MaPLCompilerHelpers.h */,
 			);
 			path = MaPLCompiler;
 			sourceTree = "<group>";
@@ -261,6 +266,7 @@
 			files = (
 				9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */,
 				9B8839B9260FEACB00CFE16B /* main.cpp in Sources */,
+				9B0ED97E27BAA81400BE2857 /* MaPLCompilerHelpers.cpp in Sources */,
 				9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */,
 				9BC8F09827A9A40C00C57FC7 /* MaPLBuffer.cpp in Sources */,
 				9BC8F09B27A9E22E00C57FC7 /* MaPLCompilerContext.cpp in Sources */,
