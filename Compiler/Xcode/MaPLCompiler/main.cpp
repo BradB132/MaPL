@@ -6,7 +6,7 @@
 //
 
 #include <stdio.h>
-#include "MaPLCompilerContext.h"
+#include "MaPLFileCache.h"
 #include "MaPLFile.h"
 #include "MaPLBuffer.h"
 
@@ -18,9 +18,9 @@ int main(int argc, const char ** argv) {
     }
     
     // Parse all script files specified in the args.
-    MaPLCompilerContext context;
+    MaPLFileCache fileCache;
     for(int i = 1; i < argc; i++) {
-        MaPLFile *file = context.fileForAbsolutePath(std::filesystem::absolute(argv[i]));
+        MaPLFile *file = fileCache.fileForAbsolutePath(std::filesystem::absolute(argv[i]));
         MaPLBuffer *bytecode = file->getBytecode();
         //TODO: write bytecode to an appropriate output path.
         if (bytecode) {

@@ -11,13 +11,13 @@
 
 #include "antlr4-runtime.h"
 #include "MaPLLexer.h"
-#include "MaPLCompilerContext.h"
+#include "MaPLFileCache.h"
 #include "MaPLBuffer.h"
 #include "MaPLBytecodeConstants.h"
 
-MaPLFile::MaPLFile(std::filesystem::path &normalizedFilePath, MaPLCompilerContext *parentContext) :
+MaPLFile::MaPLFile(std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache) :
     _normalizedFilePath(normalizedFilePath),
-    _parentContext(parentContext),
+    _fileCache(fileCache),
     _rawScriptText(""),
     _inputStream(NULL),
     _lexer(NULL),
@@ -78,7 +78,7 @@ bool MaPLFile::parseRawScript() {
         }
         importPath = importPath.lexically_normal();
         
-        MaPLFile *dependencyFile = _parentContext->fileForAbsolutePath(importPath);
+        MaPLFile *dependencyFile = _fileCache->fileForAbsolutePath(importPath);
         if (!dependencyFile) {
             logError(apiImport->start, "Unable to resolve path for import statement: "+importString);
             continue;

@@ -1,12 +1,12 @@
 //
-//  MaPLCompilerContext.h
+//  MaPLFileCache.h
 //  MaPLCompiler
 //
 //  Created by Brad Bambara on 2/1/22.
 //
 
-#ifndef MaPLCompilerContext_h
-#define MaPLCompilerContext_h
+#ifndef MaPLFileCache_h
+#define MaPLFileCache_h
 
 #include <stdio.h>
 #include <filesystem>
@@ -17,7 +17,7 @@ class MaPLFile;
 /**
  * An object that caches the state of the compiler as it traverses the dependency graph of multiple script files.
  */
-class  MaPLCompilerContext {
+class  MaPLFileCache {
 public:
     
     /**
@@ -32,4 +32,4 @@ private:
     std::unordered_map<std::string, MaPLFile *> files;
 };
 
-#endif /* MaPLCompilerContext_h */
+#endif /* MaPLFileCache_h */

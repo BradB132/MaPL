@@ -1,14 +1,14 @@
 //
-//  MaPLCompilerContext.cpp
+//  MaPLFileCache.cpp
 //  MaPLCompiler
 //
 //  Created by Brad Bambara on 2/1/22.
 //
 
-#include "MaPLCompilerContext.h"
+#include "MaPLFileCache.h"
 #include "MaPLFile.h"
 
-MaPLFile *MaPLCompilerContext::fileForAbsolutePath(std::filesystem::path absoluteFilePath) {
+MaPLFile *MaPLFileCache::fileForAbsolutePath(std::filesystem::path absoluteFilePath) {
     // Verify that the path is normalized.
     if (!absoluteFilePath.is_absolute()) {
         return NULL;

@@ -19,7 +19,7 @@
 #include "MaPLCompilerHelpers.h"
 
 class MaPLLexer;
-class MaPLCompilerContext;
+class MaPLFileCache;
 class MaPLBuffer;
 
 /**
@@ -30,9 +30,9 @@ public:
     
     /**
      * @param normalizedFilePath The normalized filesystem path to the MaPL script file. Must be an absolute path.
-     * @param parentContext The compiling context that this file exists within.
+     * @param fileCache The file cache that this object can use to fetch information about any dependent files.
      */
-    MaPLFile(std::filesystem::path &normalizedFilePath, MaPLCompilerContext *parentContext);
+    MaPLFile(std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache);
     
     /**
      * @return The bytecode representation of the script in this file. This recusrively includes bytecode from dependent files. NULL if error.
@@ -70,7 +70,7 @@ private:
                                         std::string invokedOnType);
     
     std::filesystem::path _normalizedFilePath;
-    MaPLCompilerContext *_parentContext;
+    MaPLFileCache *_fileCache;
     std::string _rawScriptText;
     MaPLBuffer *_bytecode;
     std::vector<MaPLFile *> _dependencies;
