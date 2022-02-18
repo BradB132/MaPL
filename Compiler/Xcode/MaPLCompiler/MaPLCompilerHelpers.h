@@ -81,12 +81,12 @@ bool isNumeric(MaPLPrimitiveType returnType);
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
 
 /**
- * @return The parse tree node which represents the API type if a matching type exists, otherwise @c NULL.
+ * @return The parse tree node which represents the API type, if a matching type exists. Otherwise @c NULL.
  */
 MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type);
 
 /**
- * @return The parse tree node which represents the API function if a matching function exists, otherwise @c NULL.
+ * @return The parse tree node which represents the API function, if a matching function exists. Otherwise @c NULL.
  */
 MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                                              std::string type,
@@ -94,14 +94,14 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                                              std::vector<MaPLType> parameterTypes);
 
 /**
- * @return The parse tree node which represents the API subscript if a matching subscript exists, otherwise @c NULL.
+ * @return The parse tree node which represents the API subscript, if a matching subscript exists. Otherwise @c NULL.
  */
 MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
                                                std::string type,
                                                MaPLType indexType);
 
 /**
- * @return The parse tree node which represents the API property if a matching property exists, otherwise @c NULL.
+ * @return The parse tree node which represents the API property, if a matching property exists. Otherwise @c NULL.
  */
 MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                                              std::string type,
