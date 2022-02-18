@@ -35,7 +35,12 @@ assignStatement
              SUBTRACT_ASSIGN |
              MULTIPLY_ASSIGN |
              DIVIDE_ASSIGN |
-             MOD_ASSIGN
+             MOD_ASSIGN |
+             BITWISE_AND_ASSIGN |
+             BITWISE_OR_ASSIGN |
+             BITWISE_XOR_ASSIGN |
+             BITWISE_SHIFT_LEFT_ASSIGN |
+             BITWISE_SHIFT_RIGHT_ASSIGN
          ) expression
     ;
 
@@ -47,6 +52,7 @@ unaryStatement
 expression
     :    keyToken=PAREN_OPEN type PAREN_CLOSE expression
     |    expression keyToken=(LOGICAL_AND | LOGICAL_OR) expression
+    |    expression keyToken=(BITWISE_AND | BITWISE_XOR | BITWISE_OR) expression
     |    expression
          keyToken=(
             LOGICAL_EQUALITY |
@@ -56,11 +62,13 @@ expression
             GREATER_THAN |
             GREATER_THAN_EQUAL
          ) expression
-    |    keyToken=LOGICAL_NEGATION expression
-    |    keyToken=SUBTRACT expression
+    |    keyToken=(LOGICAL_NEGATION | SUBTRACT | BITWISE_NEGATION) expression
+    |    expression keyToken=(BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
     |    expression keyToken=MOD expression
     |    expression keyToken=(MULTIPLY | DIVIDE) expression
     |    expression keyToken=(ADD | SUBTRACT) expression
+    |    expression keyToken=TERNARY_CONDITIONAL expression SWITCH_DELIMITER expression
+    |    expression keyToken=NULL_COALESCING expression
     |    PAREN_OPEN expression keyToken=PAREN_CLOSE
     |    keyToken=LITERAL_TRUE
     |    keyToken=LITERAL_FALSE
@@ -206,6 +214,17 @@ LESS_THAN: '<' ;
 LESS_THAN_EQUAL: '<=' ;
 GREATER_THAN: '>' ;
 GREATER_THAN_EQUAL: '>=' ;
+BITWISE_NEGATION: '~';
+BITWISE_AND: '&';
+BITWISE_AND_ASSIGN: '&=';
+BITWISE_OR: '|';
+BITWISE_OR_ASSIGN: '|=';
+BITWISE_XOR: '^';
+BITWISE_XOR_ASSIGN: '^=';
+BITWISE_SHIFT_LEFT: '<<';
+BITWISE_SHIFT_LEFT_ASSIGN: '<<=';
+BITWISE_SHIFT_RIGHT: '>>';
+BITWISE_SHIFT_RIGHT_ASSIGN: '>>=';
 
 // KEYWORDS
 LOOP_WHILE: 'while' ;
@@ -245,6 +264,8 @@ SUBSCRIPT_CLOSE: ']' ;
 OBJECT_TO_MEMBER: '.' ;
 ARG_DELIMITER: ',' ;
 SWITCH_DELIMITER: ':' ;
+TERNARY_CONDITIONAL: '?' ;
+NULL_COALESCING: '??' ;
 STATEMENT_DELIMITER: ';' ;
 
 // API
