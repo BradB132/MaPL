@@ -8,8 +8,8 @@
 #include "MaPLCompilerHelpers.h"
 #include "MaPLFile.h"
 
-bool isAmbiguousNumericType(MaPLPrimitiveType returnType) {
-    switch (returnType) {
+bool isAmbiguousNumericType(MaPLPrimitiveType type) {
+    switch (type) {
         case MaPLPrimitiveType_Float_AmbiguousSize:
         case MaPLPrimitiveType_SignedInt_AmbiguousSize:
         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
@@ -19,8 +19,8 @@ bool isAmbiguousNumericType(MaPLPrimitiveType returnType) {
     }
 }
 
-bool isFloat(MaPLPrimitiveType returnType) {
-    switch (returnType) {
+bool isFloat(MaPLPrimitiveType type) {
+    switch (type) {
         case MaPLPrimitiveType_Float32:
         case MaPLPrimitiveType_Float64:
             return true;
@@ -29,8 +29,8 @@ bool isFloat(MaPLPrimitiveType returnType) {
     }
 }
 
-bool isSignedInt(MaPLPrimitiveType returnType) {
-    switch (returnType) {
+bool isSignedInt(MaPLPrimitiveType type) {
+    switch (type) {
         case MaPLPrimitiveType_Int8:
         case MaPLPrimitiveType_Int16:
         case MaPLPrimitiveType_Int32:
@@ -41,8 +41,8 @@ bool isSignedInt(MaPLPrimitiveType returnType) {
     }
 }
 
-bool isUnsignedInt(MaPLPrimitiveType returnType) {
-    switch (returnType) {
+bool isUnsignedInt(MaPLPrimitiveType type) {
+    switch (type) {
         case MaPLPrimitiveType_UInt8:
         case MaPLPrimitiveType_UInt16:
         case MaPLPrimitiveType_UInt32:
@@ -53,11 +53,18 @@ bool isUnsignedInt(MaPLPrimitiveType returnType) {
     }
 }
 
-bool isNumeric(MaPLPrimitiveType returnType) {
-    return isFloat(returnType) ||
-           isSignedInt(returnType) ||
-           isUnsignedInt(returnType) ||
-           isAmbiguousNumericType(returnType);
+bool isIntegral(MaPLPrimitiveType type) {
+    return isSignedInt(type) ||
+           isUnsignedInt(type) ||
+           type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign ||
+           type == MaPLPrimitiveType_SignedInt_AmbiguousSize;
+}
+
+bool isNumeric(MaPLPrimitiveType type) {
+    return isFloat(type) ||
+           isSignedInt(type) ||
+           isUnsignedInt(type) ||
+           isAmbiguousNumericType(type);
 }
 
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
@@ -131,7 +138,7 @@ MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type) {
     if (!program) { return NULL; }
     for (MaPLParser::StatementContext *statement : program->statement()) {
         MaPLParser::ApiDeclarationContext *apiDeclaration = statement->apiDeclaration();
-        if (!apiDeclaration && apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
+        if (apiDeclaration && apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
             MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
             if (identifier && identifier->getText() == type) {
                 return apiDeclaration;

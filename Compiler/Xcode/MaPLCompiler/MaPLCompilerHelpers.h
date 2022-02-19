@@ -37,6 +37,8 @@ typedef enum {
     MaPLPrimitiveType_Int_AmbiguousSizeAndSign, // Example: "1".
     MaPLPrimitiveType_Float_AmbiguousSize, //  Example: "1.5".
     
+    MaPLPrimitiveType_Void,
+    
     MaPLPrimitiveType_InvalidType,
 } MaPLPrimitiveType;
 
@@ -53,27 +55,32 @@ typedef struct {
 /**
  * @return @c true if the primitive type is an ambiguous numeric type.
  */
-bool isAmbiguousNumericType(MaPLPrimitiveType returnType);
+bool isAmbiguousNumericType(MaPLPrimitiveType type);
 
 /**
  * @return @c true if the primitive type is a non-ambiguous floating point type.
  */
-bool isFloat(MaPLPrimitiveType returnType);
+bool isFloat(MaPLPrimitiveType type);
 
 /**
  * @return @c true if the primitive type is a non-ambiguous signed integer type.
  */
-bool isSignedInt(MaPLPrimitiveType returnType);
+bool isSignedInt(MaPLPrimitiveType type);
 
 /**
  * @return @c true if the primitive type is a non-ambiguous unsigned integer type.
  */
-bool isUnsignedInt(MaPLPrimitiveType returnType);
+bool isUnsignedInt(MaPLPrimitiveType type);
+
+/**
+ * @return @c true if the primitive type is an integer type (signed or unsigned). Includes ambiguous integers.
+ */
+bool isIntegral(MaPLPrimitiveType type);
 
 /**
  * @return @c true if the primitive type is numeric, including ambiguous types.
  */
-bool isNumeric(MaPLPrimitiveType returnType);
+bool isNumeric(MaPLPrimitiveType type);
 
 /**
  * @return A MaPLType as described by a type node in the parse tree.

@@ -62,9 +62,9 @@ private:
                              std::exception_ptr e) override;
     void logError(antlr4::Token *token, const std::string &msg);
     MaPLType dataTypeForExpression(MaPLParser::ExpressionContext *expression);
-    MaPLPrimitiveType reconcileNumericTypes(MaPLPrimitiveType left,
-                                            MaPLPrimitiveType right,
-                                            antlr4::Token *errorToken);
+    MaPLPrimitiveType reconcileTypes(MaPLPrimitiveType left,
+                                     MaPLPrimitiveType right,
+                                     antlr4::Token *errorToken);
     MaPLPrimitiveType typeReconciliationError(antlr4::Token *errorToken);
     MaPLType objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
                                         std::string invokedOnType);
