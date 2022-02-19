@@ -72,19 +72,19 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
         return { MaPLPrimitiveType_Pointer, typeContext->identifier()->getText() };
     }
     switch (typeContext->start->getType()) {
-        case MaPLParser::DECL_INT8: return { MaPLPrimitiveType_Int8, "" };
-        case MaPLParser::DECL_INT16: return { MaPLPrimitiveType_Int16, "" };
-        case MaPLParser::DECL_INT32: return { MaPLPrimitiveType_Int32, "" };
-        case MaPLParser::DECL_INT64: return { MaPLPrimitiveType_Int64, "" };
-        case MaPLParser::DECL_UINT8: return { MaPLPrimitiveType_UInt8, "" };
-        case MaPLParser::DECL_UINT16: return { MaPLPrimitiveType_UInt16, "" };
-        case MaPLParser::DECL_UINT32: return { MaPLPrimitiveType_UInt32, "" };
-        case MaPLParser::DECL_UINT64: return { MaPLPrimitiveType_UInt64, "" };
-        case MaPLParser::DECL_FLOAT32: return { MaPLPrimitiveType_Float32, "" };
-        case MaPLParser::DECL_FLOAT64: return { MaPLPrimitiveType_Float64, "" };
-        case MaPLParser::DECL_BOOL: return { MaPLPrimitiveType_Boolean, "" };
-        case MaPLParser::DECL_STRING: return { MaPLPrimitiveType_String, "" };
-        default: return { MaPLPrimitiveType_InvalidType, "" };
+        case MaPLParser::DECL_INT8: return { MaPLPrimitiveType_Int8 };
+        case MaPLParser::DECL_INT16: return { MaPLPrimitiveType_Int16 };
+        case MaPLParser::DECL_INT32: return { MaPLPrimitiveType_Int32 };
+        case MaPLParser::DECL_INT64: return { MaPLPrimitiveType_Int64 };
+        case MaPLParser::DECL_UINT8: return { MaPLPrimitiveType_UInt8 };
+        case MaPLParser::DECL_UINT16: return { MaPLPrimitiveType_UInt16 };
+        case MaPLParser::DECL_UINT32: return { MaPLPrimitiveType_UInt32 };
+        case MaPLParser::DECL_UINT64: return { MaPLPrimitiveType_UInt64 };
+        case MaPLParser::DECL_FLOAT32: return { MaPLPrimitiveType_Float32 };
+        case MaPLParser::DECL_FLOAT64: return { MaPLPrimitiveType_Float64 };
+        case MaPLParser::DECL_BOOL: return { MaPLPrimitiveType_Boolean };
+        case MaPLParser::DECL_STRING: return { MaPLPrimitiveType_String };
+        default: return { MaPLPrimitiveType_InvalidType };
     }
 }
 
