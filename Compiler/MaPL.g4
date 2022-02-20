@@ -67,8 +67,8 @@ expression
     |    expression keyToken=MOD expression
     |    expression keyToken=(MULTIPLY | DIVIDE) expression
     |    expression keyToken=(ADD | SUBTRACT) expression
-    |    expression keyToken=TERNARY_CONDITIONAL expression SWITCH_DELIMITER expression
-    |    expression keyToken=NULL_COALESCING expression
+    |    <assoc=right> expression keyToken=TERNARY_CONDITIONAL expression SWITCH_DELIMITER expression
+    |    <assoc=right> expression keyToken=NULL_COALESCING expression
     |    PAREN_OPEN expression keyToken=PAREN_CLOSE
     |    keyToken=LITERAL_TRUE
     |    keyToken=LITERAL_FALSE
