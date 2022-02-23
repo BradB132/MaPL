@@ -5,6 +5,9 @@
 //  Created by Brad Bambara on 2/14/22.
 //
 
+#include <set>
+#include <vector>
+
 #include "MaPLCompilerHelpers.h"
 #include "MaPLFile.h"
 
@@ -131,6 +134,37 @@ bool isCompatibleType(MaPLParser::TypeContext *typeContext, MaPLType type) {
         case MaPLParser::DECL_STRING: return type.type == MaPLPrimitiveType_String;
         default: return false;
     }
+}
+
+std::set<std::string> superclasses(MaPLFile *file, std::string type) {
+    std::set<std::string> allClasses;
+    MaPLParser::ApiDeclarationContext *typeContext = findType(file, type);
+    if (!typeContext) {
+        return allClasses;
+    }
+    MaPLParser::ApiInheritanceContext *inheritance = typeContext->apiInheritance();
+    if (!inheritance) {
+        return allClasses;
+    }
+    for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
+        std::string parentType = identifier->getText();
+        allClasses.insert(parentType);
+        std::set<std::string> parentClasses = superclasses(file, parentType);
+        allClasses.insert(parentClasses.begin(), parentClasses.end());
+    }
+    return allClasses;
+}
+
+std::vector<std::string> mutualSuperclasses(MaPLFile *file, std::string type1, std::string type2) {
+    std::set<std::string> superclasses1 = superclasses(file, type1);
+    std::set<std::string> superclasses2 = superclasses(file, type2);
+    std::vector<std::string> mutuals;
+    for (std::string superclass : superclasses1) {
+        if (superclasses2.count(superclass)) {
+            mutuals.push_back(superclass);
+        }
+    }
+    return mutuals;
 }
 
 MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type) {

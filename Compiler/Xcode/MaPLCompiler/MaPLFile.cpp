@@ -310,129 +310,152 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
     return typeReconciliationError(errorToken);
 }
 
+MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expression1,
+                                            MaPLParser::ExpressionContext *expression2,
+                                            antlr4::Token *errorToken) {
+    MaPLType type1 = dataTypeForExpression(expression1);
+    MaPLType type2 = dataTypeForExpression(expression2);
+    MaPLPrimitiveType reconciledPrimitive = reconcileTypes(type1.type, type2.type, errorToken);
+    if (reconciledPrimitive == MaPLPrimitiveType_Pointer && type1.pointerType != type2.pointerType) {
+        // The pointer types don't match. Generate an error message that gives some context.
+        std::vector<std::string> possibleClasses = mutualSuperclasses(this, type1.pointerType, type2.pointerType);
+        std::string errorSuffix;
+        size_t possibleClassCount = possibleClasses.size();
+        if (possibleClassCount == 1) {
+            // In the case where there's only one possible choice, make the inference.
+            return { MaPLPrimitiveType_Pointer, possibleClasses[0] };
+        }
+        if (possibleClassCount == 0) {
+            errorSuffix = "There are no common ancestor classes for the subclasses '"+type1.pointerType+"' and '"+type2.pointerType+"'.";
+        } else {
+            errorSuffix = "The possible ancestor classes for '"+type1.pointerType+"' and '"+type2.pointerType+"' are ";
+            for (size_t i = 0; i < possibleClassCount; i++) {
+                std::string possibleClass = possibleClasses[i];
+                errorSuffix += "'"+possibleClass+"'";
+                if (i == (possibleClassCount-1)) {
+                    errorSuffix += ".";
+                } else {
+                    errorSuffix += ", ";
+                }
+            }
+        }
+        logError(errorToken, "The return type of this expression is ambiguous and cannot be determined. Both expressions must have a matching type. "+errorSuffix);
+        return { MaPLPrimitiveType_InvalidType };
+    }
+    return type1;
+}
+
 MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expression) {
-    switch (expression->keyToken->getType()) {
-        case MaPLParser::PAREN_OPEN: {
-            // This is a typecast, return the type that is specified in the cast.
-            MaPLParser::TypeContext *typeContext = expression->type();
-            MaPLType type = typeForTypeContext(typeContext);
-            if (type.type == MaPLPrimitiveType_InvalidType) {
-                // Break down to the bottom of this function to log a generic error.
-                break;
-            }
-            return type;
-        }
-        case MaPLParser::PAREN_CLOSE:
-            // This is a nested expression, return type of the child expression.
-            return dataTypeForExpression(expression->expression(0));
-        case MaPLParser::LOGICAL_AND: // Intentional fallthrough.
-        case MaPLParser::LOGICAL_OR: // Intentional fallthrough.
-        case MaPLParser::LOGICAL_EQUALITY: // Intentional fallthrough.
-        case MaPLParser::LOGICAL_INEQUALITY: // Intentional fallthrough.
-        case MaPLParser::LESS_THAN: // Intentional fallthrough.
-        case MaPLParser::LESS_THAN_EQUAL: // Intentional fallthrough.
-        case MaPLParser::GREATER_THAN: // Intentional fallthrough.
-        case MaPLParser::GREATER_THAN_EQUAL: // Intentional fallthrough.
-        case MaPLParser::LOGICAL_NEGATION: // Intentional fallthrough.
-        case MaPLParser::LITERAL_TRUE: // Intentional fallthrough.
-        case MaPLParser::LITERAL_FALSE:
-            return { MaPLPrimitiveType_Boolean };
-        case MaPLParser::SUBTRACT: {
-            std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-            if (childExpressions.size() == 1) {
-                // There's only one operand, so this is numeric negation instead of subtraction.
-                MaPLType type = dataTypeForExpression(childExpressions[0]);
-                if (isUnsignedInt(type.type)) {
-                    logError(expression->keyToken, "Unsigned integers cannot be negated.");
-                    return { MaPLPrimitiveType_InvalidType };
-                }
-                if (type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
-                    // If the datatype is ambiguous, but it's being negated, it must be a signed int.
-                    return { MaPLPrimitiveType_SignedInt_AmbiguousSize };
-                }
-                if (isNumeric(type.type)) {
-                    return type;
-                }
-                logError(expression->keyToken, "Numeric negation can only be applied to numeric data types.");
-                return { MaPLPrimitiveType_InvalidType };
-            }
-        }
-            // Intentional fallthrough handles the binary subtraction operator.
-        case MaPLParser::MOD: // Intentional fallthrough.
-        case MaPLParser::MULTIPLY: // Intentional fallthrough.
-        case MaPLParser::DIVIDE: {
-            std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-            MaPLType type1 = dataTypeForExpression(childExpressions[0]);
-            MaPLType type2 = dataTypeForExpression(childExpressions[1]);
-            if (isNumeric(type1.type) && isNumeric(type2.type)) {
-                return { reconcileTypes(type1.type, type2.type, expression->keyToken) };
-            }
-            logError(expression->keyToken, "Both operands must be numeric.");
-            return { MaPLPrimitiveType_InvalidType };
-        }
-        case MaPLParser::ADD: {
-            std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-            MaPLType type1 = dataTypeForExpression(childExpressions[0]);
-            MaPLType type2 = dataTypeForExpression(childExpressions[1]);
-            // Plus operator could be numeric add or string concatenation.
-            if (type1.type == MaPLPrimitiveType_String &&
-                type2.type == MaPLPrimitiveType_String &&
-                expression->keyToken->getType() == MaPLParser::ADD) {
-                return { MaPLPrimitiveType_String };
-            } else if (isNumeric(type1.type) && isNumeric(type2.type)) {
-                return { reconcileTypes(type1.type, type2.type, expression->keyToken) };
-            }
-            logError(expression->keyToken, "Both operands must be either string (concatenation) or numeric (addition).");
-            return { MaPLPrimitiveType_InvalidType };
-        }
-        case MaPLParser::BITWISE_AND: // Intentional fallthrough.
-        case MaPLParser::BITWISE_XOR: // Intentional fallthrough.
-        case MaPLParser::BITWISE_OR: // Intentional fallthrough.
-        case MaPLParser::BITWISE_SHIFT_LEFT: // Intentional fallthrough.
-        case MaPLParser::BITWISE_SHIFT_RIGHT: {
-            std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-            MaPLType type1 = dataTypeForExpression(childExpressions[0]);
-            MaPLType type2 = dataTypeForExpression(childExpressions[1]);
-            if (isIntegral(type1.type) && isIntegral(type2.type)) {
-                return { reconcileTypes(type1.type, type2.type, expression->keyToken) };
-            }
-            logError(expression->keyToken, "Both operands must be integers.");
-            return { MaPLPrimitiveType_InvalidType };
-        }
-        case MaPLParser::BITWISE_NEGATION: {
-                MaPLType type = dataTypeForExpression(expression->expression(0));
-                if (!isIntegral(type.type)) {
-                    logError(expression->keyToken, "Bitwise negation can only be applied to integer data types.");
-                    return { MaPLPrimitiveType_InvalidType };
+    if (expression->keyToken) {
+        switch (expression->keyToken->getType()) {
+            case MaPLParser::PAREN_OPEN: {
+                // This is a typecast, return the type that is specified in the cast.
+                MaPLParser::TypeContext *typeContext = expression->type();
+                MaPLType type = typeForTypeContext(typeContext);
+                if (type.type == MaPLPrimitiveType_InvalidType) {
+                    // Break down to the bottom of this function to log a generic error.
+                    break;
                 }
                 return type;
+            }
+            case MaPLParser::PAREN_CLOSE:
+                // This is a nested expression, return type of the child expression.
+                return dataTypeForExpression(expression->expression(0));
+            case MaPLParser::LOGICAL_AND: // Intentional fallthrough.
+            case MaPLParser::LOGICAL_OR: // Intentional fallthrough.
+            case MaPLParser::LOGICAL_EQUALITY: // Intentional fallthrough.
+            case MaPLParser::LOGICAL_INEQUALITY: // Intentional fallthrough.
+            case MaPLParser::LESS_THAN: // Intentional fallthrough.
+            case MaPLParser::LESS_THAN_EQUAL: // Intentional fallthrough.
+            case MaPLParser::GREATER_THAN: // Intentional fallthrough.
+            case MaPLParser::GREATER_THAN_EQUAL: // Intentional fallthrough.
+            case MaPLParser::LOGICAL_NEGATION: // Intentional fallthrough.
+            case MaPLParser::LITERAL_TRUE: // Intentional fallthrough.
+            case MaPLParser::LITERAL_FALSE:
+                return { MaPLPrimitiveType_Boolean };
+            case MaPLParser::SUBTRACT: {
+                std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                if (childExpressions.size() == 1) {
+                    // There's only one operand, so this is numeric negation instead of subtraction.
+                    MaPLType type = dataTypeForExpression(childExpressions[0]);
+                    if (isUnsignedInt(type.type)) {
+                        logError(expression->keyToken, "Unsigned integers cannot be negated.");
+                        return { MaPLPrimitiveType_InvalidType };
+                    }
+                    if (type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
+                        // If the datatype is ambiguous, but it's being negated, it must be a signed int.
+                        return { MaPLPrimitiveType_SignedInt_AmbiguousSize };
+                    }
+                    if (isNumeric(type.type)) {
+                        return type;
+                    }
+                    logError(expression->keyToken, "Numeric negation can only be applied to numeric data types.");
+                    return { MaPLPrimitiveType_InvalidType };
+                }
+            }
+                // Intentional fallthrough handles the binary subtraction operator.
+            case MaPLParser::MOD: // Intentional fallthrough.
+            case MaPLParser::MULTIPLY: // Intentional fallthrough.
+            case MaPLParser::DIVIDE: {
+                std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                MaPLType type1 = dataTypeForExpression(childExpressions[0]);
+                MaPLType type2 = dataTypeForExpression(childExpressions[1]);
+                if (isNumeric(type1.type) && isNumeric(type2.type)) {
+                    return { reconcileTypes(type1.type, type2.type, expression->keyToken) };
+                }
+                logError(expression->keyToken, "Both operands must be numeric.");
+                return { MaPLPrimitiveType_InvalidType };
+            }
+            case MaPLParser::ADD: {
+                std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                MaPLType type1 = dataTypeForExpression(childExpressions[0]);
+                MaPLType type2 = dataTypeForExpression(childExpressions[1]);
+                // Plus operator could be numeric add or string concatenation.
+                if (type1.type == MaPLPrimitiveType_String &&
+                    type2.type == MaPLPrimitiveType_String &&
+                    expression->keyToken->getType() == MaPLParser::ADD) {
+                    return { MaPLPrimitiveType_String };
+                } else if (isNumeric(type1.type) && isNumeric(type2.type)) {
+                    return { reconcileTypes(type1.type, type2.type, expression->keyToken) };
+                }
+                logError(expression->keyToken, "Both operands must be either string (concatenation) or numeric (addition).");
+                return { MaPLPrimitiveType_InvalidType };
+            }
+            case MaPLParser::BITWISE_AND: // Intentional fallthrough.
+            case MaPLParser::BITWISE_XOR: // Intentional fallthrough.
+            case MaPLParser::BITWISE_OR: // Intentional fallthrough.
+            case MaPLParser::BITWISE_SHIFT_LEFT: // Intentional fallthrough.
+            case MaPLParser::BITWISE_SHIFT_RIGHT: {
+                std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                MaPLType type1 = dataTypeForExpression(childExpressions[0]);
+                MaPLType type2 = dataTypeForExpression(childExpressions[1]);
+                if (isIntegral(type1.type) && isIntegral(type2.type)) {
+                    return { reconcileTypes(type1.type, type2.type, expression->keyToken) };
+                }
+                logError(expression->keyToken, "Both operands must be integers.");
+                return { MaPLPrimitiveType_InvalidType };
+            }
+            case MaPLParser::BITWISE_NEGATION: {
+                    MaPLType type = dataTypeForExpression(expression->expression(0));
+                    if (!isIntegral(type.type)) {
+                        logError(expression->keyToken, "Bitwise negation can only be applied to integer data types.");
+                        return { MaPLPrimitiveType_InvalidType };
+                    }
+                    return type;
+            }
+            case MaPLParser::TERNARY_CONDITIONAL: {
+                std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                return reconcileExpressionTypes(childExpressions[1], childExpressions[2], expression->keyToken);
+            }
+            case MaPLParser::NULL_COALESCING: {
+                std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                return reconcileExpressionTypes(childExpressions[0], childExpressions[1], expression->keyToken);
+            }
+            case MaPLParser::LITERAL_INT: return { MaPLPrimitiveType_Int_AmbiguousSizeAndSign };
+            case MaPLParser::LITERAL_FLOAT: return { MaPLPrimitiveType_Float_AmbiguousSize };
+            case MaPLParser::LITERAL_STRING: return { MaPLPrimitiveType_String };
+            case MaPLParser::LITERAL_NULL: return { MaPLPrimitiveType_Pointer };
         }
-        case MaPLParser::TERNARY_CONDITIONAL: {
-            std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-            MaPLType type1 = dataTypeForExpression(childExpressions[1]);
-            MaPLType type2 = dataTypeForExpression(childExpressions[2]);
-            MaPLPrimitiveType reconciledPrimitive = reconcileTypes(type1.type, type2.type, expression->keyToken);
-            // TODO: It's inherently not possible to determine what type this is if pointer #type names don't match.
-            // There could always be more than one match because of multiple inheritance,
-            // but those matches are not necessarily compatible with each other.
-            // This breaks the ability to look ahead and see the type of an expression.
-            // This could potentially be resolved using the same ambigous primitive idea from the numeric types?
-            // Alternatively, MaPL could omit ternary conditional and null coalescing language features.
-            return { reconciledPrimitive };
-        }
-        case MaPLParser::NULL_COALESCING: {
-            std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-            MaPLType type1 = dataTypeForExpression(childExpressions[1]);
-            MaPLType type2 = dataTypeForExpression(childExpressions[2]);
-            MaPLPrimitiveType reconciledPrimitive = reconcileTypes(type1.type, type2.type, expression->keyToken);
-            // TODO: Ditto the long TODO comment above.
-            return { reconciledPrimitive };
-        }
-        case MaPLParser::LITERAL_INT: return { MaPLPrimitiveType_Int_AmbiguousSizeAndSign };
-        case MaPLParser::LITERAL_FLOAT: return { MaPLPrimitiveType_Float_AmbiguousSize };
-        case MaPLParser::LITERAL_STRING: return { MaPLPrimitiveType_String };
-        case MaPLParser::LITERAL_NULL: return { MaPLPrimitiveType_Pointer };
-            
     }
     MaPLParser::ObjectExpressionContext* objectExpression = expression->objectExpression();
     if (objectExpression) {
@@ -511,7 +534,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                                                          propertyName);
             if (!property) {
                 if (invokedOnType.empty()) {
-                    logError(expression->identifier()->start, "Unable to find a global '"+propertyName+"' property.");
+                    logError(expression->identifier()->start, "Unable to find a variable or global property named '"+propertyName+"'.");
                 } else {
                     logError(expression->identifier()->start, "Unable to find a '"+propertyName+"' property on type '"+invokedOnType+"'.");
                 }

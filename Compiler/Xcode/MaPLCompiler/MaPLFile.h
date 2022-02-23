@@ -65,6 +65,9 @@ private:
     MaPLPrimitiveType reconcileTypes(MaPLPrimitiveType left,
                                      MaPLPrimitiveType right,
                                      antlr4::Token *errorToken);
+    MaPLType reconcileExpressionTypes(MaPLParser::ExpressionContext *expression1,
+                                      MaPLParser::ExpressionContext *expression2,
+                                      antlr4::Token *errorToken);
     MaPLPrimitiveType typeReconciliationError(antlr4::Token *errorToken);
     MaPLType objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
                                         std::string invokedOnType);
