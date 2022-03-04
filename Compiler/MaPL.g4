@@ -67,7 +67,7 @@ expression
     |    expression keyToken=MOD expression
     |    expression keyToken=(MULTIPLY | DIVIDE) expression
     |    expression keyToken=(ADD | SUBTRACT) expression
-    |    <assoc=right> expression keyToken=TERNARY_CONDITIONAL expression SWITCH_DELIMITER expression
+    |    <assoc=right> expression keyToken=TERNARY_CONDITIONAL expression COLON expression
     |    <assoc=right> expression keyToken=NULL_COALESCING expression
     |    PAREN_OPEN expression keyToken=PAREN_CLOSE
     |    keyToken=LITERAL_TRUE
@@ -131,8 +131,8 @@ innerSwitchStatement
             LITERAL_STRING |
             LITERAL_TRUE |
             LITERAL_FALSE
-         ) SWITCH_DELIMITER statement*
-    |    SWITCH_DEFAULT SWITCH_DELIMITER statement*
+         ) COLON statement*
+    |    SWITCH_DEFAULT COLON statement*
     ;
 
 switchStatement : SWITCH expression SCOPE_OPEN innerSwitchStatement+ SCOPE_CLOSE ;
@@ -150,7 +150,7 @@ apiDeclaration
          )* SCOPE_CLOSE
     ;
 
-apiInheritance : SWITCH_DELIMITER identifier (ARG_DELIMITER identifier)* ;
+apiInheritance : COLON identifier (ARG_DELIMITER identifier)* ;
 apiFunction : ( API_VOID | type ) identifier PAREN_OPEN apiFunctionArgs? PAREN_CLOSE ;
 apiFunctionArgs : API_VARIADIC_ARGUMENTS | type (ARG_DELIMITER type)* (ARG_DELIMITER API_VARIADIC_ARGUMENTS)? ;
 apiProperty : API_READONLY? type identifier ;
@@ -263,7 +263,7 @@ SUBSCRIPT_OPEN: '[' ;
 SUBSCRIPT_CLOSE: ']' ;
 OBJECT_TO_MEMBER: '.' ;
 ARG_DELIMITER: ',' ;
-SWITCH_DELIMITER: ':' ;
+COLON: ':' ;
 TERNARY_CONDITIONAL: '?' ;
 NULL_COALESCING: '??' ;
 STATEMENT_DELIMITER: ';' ;

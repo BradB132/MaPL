@@ -247,7 +247,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
 }
 
 MaPLPrimitiveType MaPLFile::typeReconciliationError(antlr4::Token *errorToken) {
-    logError(errorToken, "Operands must have matching types.");
+    logError(errorToken, "Type mismatch.");
     return MaPLPrimitiveType_InvalidType;
 }
 
@@ -326,9 +326,9 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
             return { MaPLPrimitiveType_Pointer, possibleClasses[0] };
         }
         if (possibleClassCount == 0) {
-            errorSuffix = "There are no common ancestor classes for the subclasses '"+type1.pointerType+"' and '"+type2.pointerType+"'.";
+            errorSuffix = "There are no common ancestors for the types '"+type1.pointerType+"' and '"+type2.pointerType+"'.";
         } else {
-            errorSuffix = "The possible ancestor classes for '"+type1.pointerType+"' and '"+type2.pointerType+"' are ";
+            errorSuffix = "The possible ancestor types for '"+type1.pointerType+"' and '"+type2.pointerType+"' are ";
             for (size_t i = 0; i < possibleClassCount; i++) {
                 std::string possibleClass = possibleClasses[i];
                 errorSuffix += "'"+possibleClass+"'";
@@ -342,7 +342,7 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
         logError(errorToken, "The return type of this expression is ambiguous and cannot be determined. Both expressions must have a matching type. "+errorSuffix);
         return { MaPLPrimitiveType_InvalidType };
     }
-    return type1;
+    return { reconciledPrimitive, type1.pointerType };
 }
 
 MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expression) {
@@ -461,7 +461,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
     if (objectExpression) {
         return objectExpressionReturnType(objectExpression, "");
     }
-    logError(expression->keyToken, "Type error.");
+    logError(expression->keyToken, "Error determining the type of this expression.");
     return { MaPLPrimitiveType_InvalidType };
 }
 
