@@ -13,6 +13,7 @@
 #include "MaPLLexer.h"
 #include "MaPLFileCache.h"
 #include "MaPLBuffer.h"
+#include "MaPLVariableStack.h"
 #include "MaPLBytecodeConstants.h"
 
 MaPLFile::MaPLFile(std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache) :
@@ -24,7 +25,8 @@ MaPLFile::MaPLFile(std::filesystem::path &normalizedFilePath, MaPLFileCache *fil
     _tokenStream(NULL),
     _parser(NULL),
     _program(NULL),
-    _bytecode(NULL)
+    _bytecode(NULL),
+    _variableStack(NULL)
 {
 }
 

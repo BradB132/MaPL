@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9B0ED97E27BAA81400BE2857 /* MaPLCompilerHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */; };
+		9B76DBF927D1B4CF00362D4F /* MaPLVariableStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B76DBF727D1B4CF00362D4F /* MaPLVariableStack.cpp */; };
 		9B8839B9260FEACB00CFE16B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839B8260FEACB00CFE16B /* main.cpp */; };
 		9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */; };
 		9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */; };
@@ -63,6 +64,8 @@
 /* Begin PBXFileReference section */
 		9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLCompilerHelpers.cpp; sourceTree = "<group>"; };
 		9B0ED97D27BAA81400BE2857 /* MaPLCompilerHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLCompilerHelpers.h; sourceTree = "<group>"; };
+		9B76DBF727D1B4CF00362D4F /* MaPLVariableStack.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLVariableStack.cpp; sourceTree = "<group>"; };
+		9B76DBF827D1B4CF00362D4F /* MaPLVariableStack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLVariableStack.h; sourceTree = "<group>"; };
 		9B8839B5260FEACB00CFE16B /* MaPLCompiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLCompiler; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B8839B8260FEACB00CFE16B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = antlrcpp.xcodeproj; path = ../ANTLR4/runtime/Cpp/runtime/antlrcpp.xcodeproj; sourceTree = "<group>"; };
@@ -120,6 +123,8 @@
 				9B883A0A26102B9E00CFE16B /* MaPLFile.h */,
 				9BC8F09627A9A40C00C57FC7 /* MaPLBuffer.cpp */,
 				9BC8F09727A9A40C00C57FC7 /* MaPLBuffer.h */,
+				9B76DBF727D1B4CF00362D4F /* MaPLVariableStack.cpp */,
+				9B76DBF827D1B4CF00362D4F /* MaPLVariableStack.h */,
 				9BB770A627AF14E10086ECF6 /* MaPLBytecodeConstants.h */,
 				9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */,
 				9B0ED97D27BAA81400BE2857 /* MaPLCompilerHelpers.h */,
@@ -266,6 +271,7 @@
 			files = (
 				9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */,
 				9B8839B9260FEACB00CFE16B /* main.cpp in Sources */,
+				9B76DBF927D1B4CF00362D4F /* MaPLVariableStack.cpp in Sources */,
 				9B0ED97E27BAA81400BE2857 /* MaPLCompilerHelpers.cpp in Sources */,
 				9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */,
 				9BC8F09827A9A40C00C57FC7 /* MaPLBuffer.cpp in Sources */,

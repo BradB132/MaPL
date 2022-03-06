@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string>
 #include "MaPLParser.h"
+#include "MaPLBytecodeConstants.h"
 
 class MaPLFile;
 
@@ -81,6 +82,11 @@ bool isIntegral(MaPLPrimitiveType type);
  * @return @c true if the primitive type is numeric, including ambiguous types.
  */
 bool isNumeric(MaPLPrimitiveType type);
+
+/**
+ * @return The number of bytes required for each of the primitive types. @c 0 if type is invalid, void, or ambiguous.
+ */
+MaPL_Index byteSizeOfType(MaPLPrimitiveType type);
 
 /**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.

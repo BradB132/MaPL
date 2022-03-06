@@ -11,6 +11,10 @@
 // Byte sizes for MaPL bytecode.
 typedef u_int8_t MaPL_Instruction;
 typedef u_int16_t MaPL_Index;
+struct MaPL_String {
+    char* stringValue;
+    bool isAllocated;
+};
 
 //PRIMITIVE LITERALS
 #define MAPL_BYTE_LITERAL_INT8 1

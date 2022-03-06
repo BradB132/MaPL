@@ -21,6 +21,7 @@
 class MaPLLexer;
 class MaPLFileCache;
 class MaPLBuffer;
+class MaPLVariableStack;
 
 /**
  * Represents a single MaPL file in from the filesystem.
@@ -80,6 +81,7 @@ private:
     MaPLFileCache *_fileCache;
     std::string _rawScriptText;
     MaPLBuffer *_bytecode;
+    MaPLVariableStack *_variableStack;
     std::vector<MaPLFile *> _dependencies;
     
     antlr4::ANTLRInputStream *_inputStream;

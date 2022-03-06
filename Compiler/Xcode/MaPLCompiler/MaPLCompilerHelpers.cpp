@@ -70,6 +70,31 @@ bool isNumeric(MaPLPrimitiveType type) {
            isAmbiguousNumericType(type);
 }
 
+MaPL_Index byteSizeOfType(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt8: // Intentional fallthrough.
+        case MaPLPrimitiveType_Boolean:
+            return 1;
+        case MaPLPrimitiveType_Int16: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt16:
+            return 2;
+        case MaPLPrimitiveType_Int32: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt32: // Intentional fallthrough.
+        case MaPLPrimitiveType_Float32:
+            return 4;
+        case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+        case MaPLPrimitiveType_Float64:
+            return 8;
+        case MaPLPrimitiveType_String:
+            return sizeof(MaPL_String);
+        case MaPLPrimitiveType_Pointer:
+            return sizeof(void *);
+        default: return 0;
+    }
+}
+
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     if (typeContext->identifier()) {
         return { MaPLPrimitiveType_Pointer, typeContext->identifier()->getText() };
