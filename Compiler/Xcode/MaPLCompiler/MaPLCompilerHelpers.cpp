@@ -118,45 +118,45 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
 
 bool isCompatibleType(MaPLParser::TypeContext *typeContext, MaPLType type) {
     if (typeContext->identifier()) {
-        return type.type == MaPLPrimitiveType_Pointer && typeContext->identifier()->getText() == type.pointerType;
+        return type.primitiveType == MaPLPrimitiveType_Pointer && typeContext->identifier()->getText() == type.pointerType;
     }
     switch (typeContext->start->getType()) {
         case MaPLParser::DECL_INT8:
-            return type.type == MaPLPrimitiveType_Int8 ||
-                   type.type == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+            return type.primitiveType == MaPLPrimitiveType_Int8 ||
+                   type.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
+                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLParser::DECL_INT16:
-            return type.type == MaPLPrimitiveType_Int16 ||
-                   type.type == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+            return type.primitiveType == MaPLPrimitiveType_Int16 ||
+                   type.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
+                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLParser::DECL_INT32:
-            return type.type == MaPLPrimitiveType_Int32 ||
-                   type.type == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+            return type.primitiveType == MaPLPrimitiveType_Int32 ||
+                   type.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
+                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLParser::DECL_INT64:
-            return type.type == MaPLPrimitiveType_Int64 ||
-                   type.type == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+            return type.primitiveType == MaPLPrimitiveType_Int64 ||
+                   type.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
+                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLParser::DECL_UINT8:
-            return type.type == MaPLPrimitiveType_UInt8 ||
-                   type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+            return type.primitiveType == MaPLPrimitiveType_UInt8 ||
+                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLParser::DECL_UINT16:
-            return type.type == MaPLPrimitiveType_UInt16 ||
-                   type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+            return type.primitiveType == MaPLPrimitiveType_UInt16 ||
+                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLParser::DECL_UINT32:
-            return type.type == MaPLPrimitiveType_UInt32 ||
-                   type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+            return type.primitiveType == MaPLPrimitiveType_UInt32 ||
+                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLParser::DECL_UINT64:
-            return type.type == MaPLPrimitiveType_UInt64 ||
-                   type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+            return type.primitiveType == MaPLPrimitiveType_UInt64 ||
+                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLParser::DECL_FLOAT32:
-            return type.type == MaPLPrimitiveType_Float32 ||
-                   type.type == MaPLPrimitiveType_Float_AmbiguousSize;
+            return type.primitiveType == MaPLPrimitiveType_Float32 ||
+                   type.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
         case MaPLParser::DECL_FLOAT64:
-            return type.type == MaPLPrimitiveType_Float64 ||
-                   type.type == MaPLPrimitiveType_Float_AmbiguousSize;
-        case MaPLParser::DECL_BOOL: return type.type == MaPLPrimitiveType_Boolean;
-        case MaPLParser::DECL_STRING: return type.type == MaPLPrimitiveType_String;
+            return type.primitiveType == MaPLPrimitiveType_Float64 ||
+                   type.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
+        case MaPLParser::DECL_BOOL: return type.primitiveType == MaPLPrimitiveType_Boolean;
+        case MaPLParser::DECL_STRING: return type.primitiveType == MaPLPrimitiveType_String;
         default: return false;
     }
 }

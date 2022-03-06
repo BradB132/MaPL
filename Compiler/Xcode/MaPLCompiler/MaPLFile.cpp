@@ -317,7 +317,7 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
                                             antlr4::Token *errorToken) {
     MaPLType type1 = dataTypeForExpression(expression1);
     MaPLType type2 = dataTypeForExpression(expression2);
-    MaPLPrimitiveType reconciledPrimitive = reconcileTypes(type1.type, type2.type, errorToken);
+    MaPLPrimitiveType reconciledPrimitive = reconcileTypes(type1.primitiveType, type2.primitiveType, errorToken);
     if (reconciledPrimitive == MaPLPrimitiveType_Pointer && type1.pointerType != type2.pointerType) {
         // The pointer types don't match. Generate an error message that gives some context.
         std::vector<std::string> possibleClasses = mutualSuperclasses(this, type1.pointerType, type2.pointerType);
@@ -354,7 +354,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 // This is a typecast, return the type that is specified in the cast.
                 MaPLParser::TypeContext *typeContext = expression->type();
                 MaPLType type = typeForTypeContext(typeContext);
-                if (type.type == MaPLPrimitiveType_InvalidType) {
+                if (type.primitiveType == MaPLPrimitiveType_InvalidType) {
                     // Break down to the bottom of this function to log a generic error.
                     break;
                 }
@@ -380,15 +380,15 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 if (childExpressions.size() == 1) {
                     // There's only one operand, so this is numeric negation instead of subtraction.
                     MaPLType type = dataTypeForExpression(childExpressions[0]);
-                    if (isUnsignedInt(type.type)) {
+                    if (isUnsignedInt(type.primitiveType)) {
                         logError(this, expression->keyToken, "Unsigned integers cannot be negated.");
                         return { MaPLPrimitiveType_InvalidType };
                     }
-                    if (type.type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
+                    if (type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                         // If the datatype is ambiguous, but it's being negated, it must be a signed int.
                         return { MaPLPrimitiveType_SignedInt_AmbiguousSize };
                     }
-                    if (isNumeric(type.type)) {
+                    if (isNumeric(type.primitiveType)) {
                         return type;
                     }
                     logError(this, expression->keyToken, "Numeric negation can only be applied to numeric data types.");
@@ -402,8 +402,8 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
                 MaPLType type1 = dataTypeForExpression(childExpressions[0]);
                 MaPLType type2 = dataTypeForExpression(childExpressions[1]);
-                if (isNumeric(type1.type) && isNumeric(type2.type)) {
-                    return { reconcileTypes(type1.type, type2.type, expression->keyToken) };
+                if (isNumeric(type1.primitiveType) && isNumeric(type2.primitiveType)) {
+                    return { reconcileTypes(type1.primitiveType, type2.primitiveType, expression->keyToken) };
                 }
                 logError(this, expression->keyToken, "Both operands must be numeric.");
                 return { MaPLPrimitiveType_InvalidType };
@@ -413,12 +413,12 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 MaPLType type1 = dataTypeForExpression(childExpressions[0]);
                 MaPLType type2 = dataTypeForExpression(childExpressions[1]);
                 // Plus operator could be numeric add or string concatenation.
-                if (type1.type == MaPLPrimitiveType_String &&
-                    type2.type == MaPLPrimitiveType_String &&
+                if (type1.primitiveType == MaPLPrimitiveType_String &&
+                    type2.primitiveType == MaPLPrimitiveType_String &&
                     expression->keyToken->getType() == MaPLParser::ADD) {
                     return { MaPLPrimitiveType_String };
-                } else if (isNumeric(type1.type) && isNumeric(type2.type)) {
-                    return { reconcileTypes(type1.type, type2.type, expression->keyToken) };
+                } else if (isNumeric(type1.primitiveType) && isNumeric(type2.primitiveType)) {
+                    return { reconcileTypes(type1.primitiveType, type2.primitiveType, expression->keyToken) };
                 }
                 logError(this, expression->keyToken, "Both operands must be either string (concatenation) or numeric (addition).");
                 return { MaPLPrimitiveType_InvalidType };
@@ -431,15 +431,15 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
                 MaPLType type1 = dataTypeForExpression(childExpressions[0]);
                 MaPLType type2 = dataTypeForExpression(childExpressions[1]);
-                if (isIntegral(type1.type) && isIntegral(type2.type)) {
-                    return { reconcileTypes(type1.type, type2.type, expression->keyToken) };
+                if (isIntegral(type1.primitiveType) && isIntegral(type2.primitiveType)) {
+                    return { reconcileTypes(type1.primitiveType, type2.primitiveType, expression->keyToken) };
                 }
                 logError(this, expression->keyToken, "Both operands must be integers.");
                 return { MaPLPrimitiveType_InvalidType };
             }
             case MaPLParser::BITWISE_NEGATION: {
                     MaPLType type = dataTypeForExpression(expression->expression(0));
-                    if (!isIntegral(type.type)) {
+                    if (!isIntegral(type.primitiveType)) {
                         logError(this, expression->keyToken, "Bitwise negation can only be applied to integer data types.");
                         return { MaPLPrimitiveType_InvalidType };
                     }
@@ -477,7 +477,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 // To understand the return type of "func()", we have to understand it's being invoked on "obj".
                 std::vector<MaPLParser::ObjectExpressionContext *> childExpressions = expression->objectExpression();
                 MaPLType prefixType = objectExpressionReturnType(childExpressions[0], invokedOnType);
-                if (prefixType.type != MaPLPrimitiveType_Pointer) {
+                if (prefixType.primitiveType != MaPLPrimitiveType_Pointer) {
                     logError(this, keyToken, "The '.' operator can only be used on pointers.");
                     return { MaPLPrimitiveType_InvalidType };
                 }
@@ -486,7 +486,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
             case MaPLParser::SUBSCRIPT_OPEN: {
                 // Subscript invocation.
                 MaPLType prefixType = objectExpressionReturnType(expression->objectExpression(0), invokedOnType);
-                if (prefixType.type != MaPLPrimitiveType_Pointer) {
+                if (prefixType.primitiveType != MaPLPrimitiveType_Pointer) {
                     logError(this, keyToken, "The subscript operator can only be used on pointers.");
                     return { MaPLPrimitiveType_InvalidType };
                 }
@@ -530,11 +530,11 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
         if (identifier) {
             std::string propertyOrVariableName = identifier->getText();
             
-            // Variables cannot be invoked on types, otherwise prefer recognizing this identifier as a variable.
+            // Prefer recognizing this identifier as a variable.
             bool isInvokedOnType = !invokedOnType.empty();
             if (!isInvokedOnType) {
                 MaPLVariable variable = _variableStack->getVariable(propertyOrVariableName);
-                if (variable.type.type != MaPLPrimitiveType_InvalidType) {
+                if (variable.type.primitiveType != MaPLPrimitiveType_InvalidType) {
                     return variable.type;
                 }
             }

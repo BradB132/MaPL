@@ -48,8 +48,8 @@ enum MaPLPrimitiveType {
  */
 struct MaPLType {
     // Specifies the type of primitive value. All objects are represented as "Pointer" primitives.
-    MaPLPrimitiveType type;
-    // If @c type is a pointer, this is the name of the #type that the pointer implements.
+    MaPLPrimitiveType primitiveType;
+    // If @c primitiveType is a pointer, this is the name of the #type that the pointer implements.
     std::string pointerType;
 };
 

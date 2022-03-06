@@ -28,14 +28,14 @@ MaPL_Index MaPLVariableStack::maximumMemoryUsed() {
 }
 
 bool MaPLVariableStack::declareVariable(std::string variableName, MaPLVariable variable) {
-    MaPL_Index variableSize = byteSizeOfType(variable.type.type);
+    MaPL_Index variableSize = byteSizeOfType(variable.type.primitiveType);
     if (!variableSize) {
         logError(variable.file, variable.token, "Failure declaring variable '"+variableName+"' with ambiguous type.");
         return false;
     }
     
     MaPLVariable existingVariable = getVariable(variableName);
-    if (existingVariable.type.type != MaPLPrimitiveType_InvalidType) {
+    if (existingVariable.type.primitiveType != MaPLPrimitiveType_InvalidType) {
         logError(variable.file, variable.token, "Variable '"+variableName+"' conflicts with a previously-declared variable of the same name.");
         logError(existingVariable.file, existingVariable.token, "Variable '"+variableName+"' later comes into conflict with a variable of the same name.");
         return false;
@@ -45,7 +45,7 @@ bool MaPLVariableStack::declareVariable(std::string variableName, MaPLVariable v
     MaPL_Index currentOffset = 0;
     for (std::unordered_map<std::string, MaPLVariable> frame : _stack) {
         for (std::pair<std::string, MaPLVariable> pair : frame) {
-            currentOffset += byteSizeOfType(pair.second.type.type);
+            currentOffset += byteSizeOfType(pair.second.type.primitiveType);
         }
     }
     
