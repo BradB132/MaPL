@@ -9,6 +9,12 @@
 #define MaPLBuffer_h
 
 #include <stdio.h>
+#include <vector>
+
+struct MaPLBufferAnnotation {
+    int32_t annotation;
+    size_t annotationLocation;
+};
 
 /**
  * A wrapper for an array of bytes. Allows for easily concatinating bytes while compiling the bytecode.
@@ -51,11 +57,22 @@ public:
      */
     size_t getByteCount();
     
+    /**
+     * Adds a single annotation.
+     */
+    void addAnnotation(MaPLBufferAnnotation annotation);
+    
+    /**
+     * @return A list of all added annotations.
+     */
+    std::vector<MaPLBufferAnnotation> getAnnotations();
+    
 private:
     
     u_int8_t *_bytes;
     size_t _byteCount;
     size_t _bufferCapacity;
+    std::vector<MaPLBufferAnnotation> _annotations;
 };
 
 #endif /* MaPLBuffer_h */

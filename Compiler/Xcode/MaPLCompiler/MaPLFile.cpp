@@ -154,9 +154,9 @@ void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLBuffer *cu
 }
 
 void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentBuffer) {
-    // TODO: For APIs, we still need to check for duplicate types.
     switch (node->getRuleIndex()) {
         case MaPLParser::RuleApiDeclaration:
+            // TODO: For #type declarations, check for duplicate types and functions, properties, and subscripts within types.
             compileChildNodes(node, currentBuffer);
             break;
         case MaPLParser::RuleApiInheritance: {
@@ -225,22 +225,30 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
             break;
         case MaPLParser::RuleImperativeStatement: {
             MaPLParser::ImperativeStatementContext *statement = (MaPLParser::ImperativeStatementContext *)node;
-            antlr4::tree::TerminalNode *terminalNode = statement->BREAK();
-            if (terminalNode) {
-                // TODO: implement this.
-                break;
+            if (statement->keyToken) {
+                switch (statement->keyToken->getType()) {
+                    case MaPLParser::BREAK: {
+                        currentBuffer->addAnnotation({ MaPLParser::BREAK, currentBuffer->getByteCount() });
+                        currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_FORWARD);
+                        MaPL_Index placeholderIndex = 0;
+                        currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
+                    }
+                        break;
+                    case MaPLParser::CONTINUE: {
+                        currentBuffer->addAnnotation({ MaPLParser::CONTINUE, currentBuffer->getByteCount() });
+                        currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
+                        MaPL_Index placeholderIndex = 0;
+                        currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
+                    }
+                        break;
+                    case MaPLParser::EXIT:
+                        currentBuffer->appendByte(MAPL_BYTE_PROGRAM_EXIT);
+                        break;
+                    default: break;
+                }
+            } else {
+                compileChildNodes(node, currentBuffer);
             }
-            terminalNode = statement->CONTINUE();
-            if (terminalNode) {
-                // TODO: implement this.
-                break;
-            }
-            terminalNode = statement->EXIT();
-            if (terminalNode) {
-                currentBuffer->appendByte(MAPL_BYTE_PROGRAM_EXIT);
-                break;
-            }
-            compileChildNodes(node, currentBuffer);
         }
             break;
         case MaPLParser::RuleAssignStatement: {

@@ -48,3 +48,11 @@ u_int8_t *MaPLBuffer::getBytes() {
 size_t MaPLBuffer::getByteCount() {
     return _byteCount;
 }
+
+void MaPLBuffer::addAnnotation(MaPLBufferAnnotation annotation) {
+    _annotations.push_back(annotation);
+}
+
+std::vector<MaPLBufferAnnotation> MaPLBuffer::getAnnotations() {
+    return _annotations;
+}

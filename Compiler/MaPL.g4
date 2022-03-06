@@ -21,9 +21,9 @@ imperativeStatement
     |    assignStatement
     |    unaryStatement
     |    objectExpression
-    |    BREAK
-    |    CONTINUE
-    |    EXIT
+    |    keyToken=BREAK
+    |    keyToken=CONTINUE
+    |    keyToken=EXIT
     ;
 
 assignStatement
