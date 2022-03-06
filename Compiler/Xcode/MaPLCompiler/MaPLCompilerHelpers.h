@@ -17,7 +17,7 @@ class MaPLFile;
 /**
  * Describes all literal types, and some states where the types are still ambiguous.
  */
-typedef enum {
+enum MaPLPrimitiveType {
     MaPLPrimitiveType_Int8,
     MaPLPrimitiveType_Int16,
     MaPLPrimitiveType_Int32,
@@ -40,17 +40,17 @@ typedef enum {
     MaPLPrimitiveType_Void,
     
     MaPLPrimitiveType_InvalidType,
-} MaPLPrimitiveType;
+};
 
 /**
  * Describes the full type of any MaPL variable, parameter, or return type. This includes the name of the #type if it's not a primitive.
  */
-typedef struct {
+struct MaPLType {
     // Specifies the type of primitive value. All objects are represented as "Pointer" primitives.
     MaPLPrimitiveType type;
     // If @c type is a pointer, this is the name of the #type that the pointer implements.
     std::string pointerType;
-} MaPLType;
+};
 
 /**
  * @return @c true if the primitive type is an ambiguous numeric type.
