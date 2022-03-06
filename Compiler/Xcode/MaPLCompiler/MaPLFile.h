@@ -77,9 +77,10 @@ private:
     MaPLType reconcileExpressionTypes(MaPLParser::ExpressionContext *expression1,
                                       MaPLParser::ExpressionContext *expression2,
                                       antlr4::Token *errorToken);
-    MaPLPrimitiveType typeReconciliationError(antlr4::Token *errorToken);
     MaPLType objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
                                         std::string invokedOnType);
+    MaPLPrimitiveType typeReconciliationError(antlr4::Token *errorToken);
+    void missingTypeError(antlr4::Token *errorToken, std::string typeName);
     
     std::filesystem::path _normalizedFilePath;
     MaPLFileCache *_fileCache;

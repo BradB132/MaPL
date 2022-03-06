@@ -154,9 +154,61 @@ void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLBuffer *cu
 }
 
 void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentBuffer) {
+    // TODO: For APIs, we still need to check for duplicate types.
     switch (node->getRuleIndex()) {
-        // TODO: For APIs, we still need to check for duplicate types.
-        // TODO: For APIs, we still need to confirm that any types which are referred to are actually declared somewhere.
+        case MaPLParser::RuleApiDeclaration:
+            compileChildNodes(node, currentBuffer);
+            break;
+        case MaPLParser::RuleApiInheritance: {
+            MaPLParser::ApiInheritanceContext *inheritance = (MaPLParser::ApiInheritanceContext *)node;
+            for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
+                if (!findType(this, identifier->getText())) {
+                    missingTypeError(identifier->start, identifier->getText());
+                }
+            }
+        }
+            break;
+        case MaPLParser::RuleApiFunction: {
+            MaPLParser::ApiFunctionContext *function = (MaPLParser::ApiFunctionContext *)node;
+            if (!function->API_VOID()) {
+                MaPLParser::TypeContext *typeContext = function->type();
+                MaPLType returnType = typeForTypeContext(typeContext);
+                if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType)) {
+                    missingTypeError(typeContext->start, returnType.pointerType);
+                }
+            }
+            compileNode(function->apiFunctionArgs(), currentBuffer);
+        }
+            break;
+        case MaPLParser::RuleApiFunctionArgs: {
+            MaPLParser::ApiFunctionArgsContext *args = (MaPLParser::ApiFunctionArgsContext *)node;
+            for (MaPLParser::TypeContext *typeContext : args->type()) {
+                MaPLType parameterType = typeForTypeContext(typeContext);
+                if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType)) {
+                    missingTypeError(typeContext->start, parameterType.pointerType);
+                }
+            }
+        }
+            break;
+        case MaPLParser::RuleApiProperty: {
+            MaPLParser::ApiPropertyContext *property = (MaPLParser::ApiPropertyContext *)node;
+            MaPLParser::TypeContext *typeContext = property->type();
+            MaPLType returnType = typeForTypeContext(typeContext);
+            if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType)) {
+                missingTypeError(typeContext->start, returnType.pointerType);
+            }
+        }
+            break;
+        case MaPLParser::RuleApiSubscript: {
+            MaPLParser::ApiSubscriptContext *subscript = (MaPLParser::ApiSubscriptContext *)node;
+            for (MaPLParser::TypeContext *typeContext : subscript->type()) {
+                MaPLType type = typeForTypeContext(typeContext);
+                if (type.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, type.pointerType)) {
+                    missingTypeError(typeContext->start, type.pointerType);
+                }
+            }
+        }
+            break;
         case MaPLParser::RuleStatement: {
             MaPLParser::StatementContext *statement = (MaPLParser::StatementContext *)node;
             antlr4::tree::TerminalNode *terminalNode = statement->METADATA();
@@ -251,6 +303,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
 MaPLPrimitiveType MaPLFile::typeReconciliationError(antlr4::Token *errorToken) {
     logError(this, errorToken, "Type mismatch.");
     return MaPLPrimitiveType_InvalidType;
+}
+
+void MaPLFile::missingTypeError(antlr4::Token *errorToken, std::string typeName) {
+    logError(this, errorToken, "Unable to find the type declaration for '"+typeName+"'.");
 }
 
 MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
