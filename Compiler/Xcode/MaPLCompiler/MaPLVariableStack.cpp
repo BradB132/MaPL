@@ -30,6 +30,14 @@ MaPL_Index MaPLVariableStack::maximumMemoryUsed() {
 bool MaPLVariableStack::declareVariable(std::string variableName, MaPLVariable variable) {
     MaPL_Index variableSize = byteSizeOfType(variable.type.type);
     if (!variableSize) {
+        logError(variable.file, variable.token, "Failure declaring variable '"+variableName+"' with ambiguous type.");
+        return false;
+    }
+    
+    MaPLVariable existingVariable = getVariable(variableName);
+    if (existingVariable.type.type != MaPLPrimitiveType_InvalidType) {
+        logError(variable.file, variable.token, "Variable '"+variableName+"' conflicts with a previously-declared variable of the same name.");
+        logError(existingVariable.file, existingVariable.token, "Variable '"+variableName+"' later comes into conflict with a variable of the same name.");
         return false;
     }
     
@@ -64,6 +72,6 @@ MaPLVariable MaPLVariableStack::getVariable(std::string variableName) {
     return { MaPLPrimitiveType_InvalidType, 0 };
 }
 
-std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getGlobalVariables() {
+std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getTopLevelVariables() {
     return _stack[0];
 }

@@ -67,7 +67,7 @@ public:
     /**
      * @return A mapping of all variables that are not within a nested scope.
      */
-    std::unordered_map<std::string, MaPLVariable> getGlobalVariables();
+    std::unordered_map<std::string, MaPLVariable> getTopLevelVariables();
     
 private:
     

@@ -41,6 +41,11 @@ public:
     MaPLBuffer *getBytecode();
     
     /**
+     * @return The variable stack containing all top-level variables declared in this file. This recusrively includes variables from dependent files. NULL if error.
+     */
+    MaPLVariableStack *getVariableStack();
+    
+    /**
      * @return The parse tree that represents the script in this file. Does not include nodes from dependent files. NULL if error.
      */
     MaPLParser::ProgramContext *getParseTree();
@@ -57,7 +62,6 @@ public:
     
 private:
     
-    bool readRawScriptFromDisk();
     bool parseRawScript();
     void compileChildNodes(antlr4::ParserRuleContext *node, MaPLBuffer *currentBuffer);
     void compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentBuffer);
@@ -79,7 +83,6 @@ private:
     
     std::filesystem::path _normalizedFilePath;
     MaPLFileCache *_fileCache;
-    std::string _rawScriptText;
     MaPLBuffer *_bytecode;
     MaPLVariableStack *_variableStack;
     std::vector<MaPLFile *> _dependencies;

@@ -19,41 +19,32 @@
 MaPLFile::MaPLFile(std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache) :
     _normalizedFilePath(normalizedFilePath),
     _fileCache(fileCache),
-    _rawScriptText(""),
     _inputStream(NULL),
     _lexer(NULL),
     _tokenStream(NULL),
     _parser(NULL),
     _program(NULL),
     _bytecode(NULL),
-    _variableStack(NULL)
+    _variableStack(new MaPLVariableStack())
 {
-}
-
-bool MaPLFile::readRawScriptFromDisk() {
-    if (!_rawScriptText.empty()) {
-        return true;
-    }
-    std::ifstream inputStream(_normalizedFilePath);
-    if (!inputStream) {
-        return false;
-    }
-    std::stringstream stringBuffer;
-    stringBuffer << inputStream.rdbuf();
-    _rawScriptText = stringBuffer.str();
-    return true;
 }
 
 bool MaPLFile::parseRawScript() {
     if (_program) {
         return true;
     }
-    if (!readRawScriptFromDisk()) {
+    // Read the raw script from the file system.
+    std::ifstream inputStream(_normalizedFilePath);
+    if (!inputStream) {
         logError(this, NULL, "Unable to read script file.");
         return false;
     }
+    std::stringstream stringBuffer;
+    stringBuffer << inputStream.rdbuf();
+    std::string rawScriptText = stringBuffer.str();
     
-    _inputStream = new antlr4::ANTLRInputStream(_rawScriptText);
+    // Parse the program with ANTLR.
+    _inputStream = new antlr4::ANTLRInputStream(rawScriptText);
     _lexer = new MaPLLexer(_inputStream);
     _tokenStream = new antlr4::CommonTokenStream(_lexer);
     _parser = new MaPLParser(_tokenStream);
@@ -63,7 +54,7 @@ bool MaPLFile::parseRawScript() {
     
     _program = _parser->program();
     
-    // Iterate over any API imports and add the corresponding files to the parent context.
+    // Iterate over any API imports and add the corresponding files to the file cache.
     for(MaPLParser::StatementContext *statement : _program->statement()) {
         MaPLParser::ApiImportContext *apiImport = statement->apiImport();
         if(!apiImport) {
@@ -111,11 +102,17 @@ MaPLBuffer *MaPLFile::getBytecode() {
     }
     _bytecode = new MaPLBuffer(10);
     
-    // Concatenate all preceding bytecode from dependencies.
+    // Concatenate all preceding bytecode and variables from dependencies.
     for(MaPLFile *file : _dependencies) {
         MaPLBuffer *dependencyBytecode = file->getBytecode();
         if (dependencyBytecode) {
             _bytecode->appendBytes(dependencyBytecode->getBytes(), dependencyBytecode->getByteCount());
+        }
+        MaPLVariableStack *dependencyStack = file->getVariableStack();
+        if (dependencyStack) {
+            for (std::pair<std::string, MaPLVariable> pair : dependencyStack->getTopLevelVariables()) {
+                _variableStack->declareVariable(pair.first, pair.second);
+            }
         }
     }
     
@@ -123,6 +120,14 @@ MaPLBuffer *MaPLFile::getBytecode() {
     compileChildNodes(_program, _bytecode);
     
     return _bytecode;
+}
+
+MaPLVariableStack *MaPLFile::getVariableStack() {
+    // Compile the script if needed.
+    if (!getBytecode()) {
+        return NULL;
+    }
+    return _variableStack;
 }
 
 std::filesystem::path MaPLFile::getNormalizedFilePath() {
@@ -316,12 +321,12 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
     if (reconciledPrimitive == MaPLPrimitiveType_Pointer && type1.pointerType != type2.pointerType) {
         // The pointer types don't match. Generate an error message that gives some context.
         std::vector<std::string> possibleClasses = mutualSuperclasses(this, type1.pointerType, type2.pointerType);
-        std::string errorSuffix;
         size_t possibleClassCount = possibleClasses.size();
         if (possibleClassCount == 1) {
             // In the case where there's only one possible choice, make the inference.
             return { MaPLPrimitiveType_Pointer, possibleClasses[0] };
         }
+        std::string errorSuffix;
         if (possibleClassCount == 0) {
             errorSuffix = "There are no common ancestors for the types '"+type1.pointerType+"' and '"+type2.pointerType+"'.";
         } else {
@@ -523,17 +528,26 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
     } else {
         MaPLParser::IdentifierContext *identifier = expression->identifier();
         if (identifier) {
-            // TODO: Handle script variables. Prefer variables over properties.
+            std::string propertyOrVariableName = identifier->getText();
             
-            std::string propertyName = expression->identifier()->getText();
+            // Variables cannot be invoked on types, otherwise prefer recognizing this identifier as a variable.
+            bool isInvokedOnType = !invokedOnType.empty();
+            if (!isInvokedOnType) {
+                MaPLVariable variable = _variableStack->getVariable(propertyOrVariableName);
+                if (variable.type.type != MaPLPrimitiveType_InvalidType) {
+                    return variable.type;
+                }
+            }
+            
+            // The name doesn't match a variable, check if it matches a property.
             MaPLParser::ApiPropertyContext *property = findProperty(this,
-                                                         invokedOnType,
-                                                         propertyName);
+                                                                    invokedOnType,
+                                                                    propertyOrVariableName);
             if (!property) {
-                if (invokedOnType.empty()) {
-                    logError(this, expression->identifier()->start, "Unable to find a variable or global property named '"+propertyName+"'.");
+                if (isInvokedOnType) {
+                    logError(this, identifier->start, "Unable to find a '"+propertyOrVariableName+"' property on type '"+invokedOnType+"'.");
                 } else {
-                    logError(this, expression->identifier()->start, "Unable to find a '"+propertyName+"' property on type '"+invokedOnType+"'.");
+                    logError(this, identifier->start, "Unable to find a variable or global property named '"+propertyOrVariableName+"'.");
                 }
                 return { MaPLPrimitiveType_InvalidType };
             }
