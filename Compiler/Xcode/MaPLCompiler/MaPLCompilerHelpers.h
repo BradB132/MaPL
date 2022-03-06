@@ -119,4 +119,9 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                                              std::string type,
                                              std::string name);
 
+/**
+ * Function for logging errors. In order to maintain consistent output, all errors should go through this function.
+ */
+void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg);
+
 #endif /* MaPLCompilerHelpers_h */

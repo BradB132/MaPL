@@ -358,3 +358,11 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
     
     return NULL;
 }
+
+void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg) {
+    if (token) {
+        printf("%s %ld:%ld: %s\n", file->getNormalizedFilePath().c_str(), token->getLine(), token->getCharPositionInLine(), msg.c_str());
+    } else {
+        printf("%s: %s\n", file->getNormalizedFilePath().c_str(), msg.c_str());
+    }
+}

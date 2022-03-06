@@ -49,6 +49,11 @@ public:
      */
     std::vector<MaPLFile *> getDependencies();
     
+    /**
+     * @return The path in the filesystem that points to this file.
+     */
+    std::filesystem::path getNormalizedFilePath();
+    
 private:
     
     bool readRawScriptFromDisk();
@@ -60,7 +65,6 @@ private:
                              size_t line, size_t charPositionInLine,
                              const std::string &msg,
                              std::exception_ptr e) override;
-    void logError(antlr4::Token *token, const std::string &msg);
     MaPLType dataTypeForExpression(MaPLParser::ExpressionContext *expression);
     MaPLPrimitiveType reconcileTypes(MaPLPrimitiveType left,
                                      MaPLPrimitiveType right,
