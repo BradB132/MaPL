@@ -10,7 +10,6 @@ statement
     |    forLoop
     |    doWhileLoop
     |    conditional
-    |    switchStatement
     |    apiDeclaration
     |    apiImport
     |    METADATA
@@ -121,21 +120,8 @@ forLoopControlStatements
 
 doWhileLoop : LOOP_DO scope LOOP_WHILE expression STATEMENT_DELIMITER ;
 
-conditional : CONDITIONAL expression scope (CONDITIONAL_ELSE scope)? ;
-
-innerSwitchStatement
-    :    SWITCH_CASE
-         (
-            LITERAL_INT |
-            LITERAL_FLOAT |
-            LITERAL_STRING |
-            LITERAL_TRUE |
-            LITERAL_FALSE
-         ) COLON statement*
-    |    SWITCH_DEFAULT COLON statement*
-    ;
-
-switchStatement : SWITCH expression SCOPE_OPEN innerSwitchStatement+ SCOPE_CLOSE ;
+conditional : CONDITIONAL expression scope conditionalElse? ;
+conditionalElse : CONDITIONAL_ELSE (scope | conditional) ;
 
 // API DECLARATIONS
 apiDeclaration
@@ -165,9 +151,6 @@ identifier
     |    LOOP_DO
     |    CONDITIONAL
     |    CONDITIONAL_ELSE
-    |    SWITCH
-    |    SWITCH_CASE
-    |    SWITCH_DEFAULT
     |    BREAK
     |    CONTINUE
     |    EXIT
@@ -232,9 +215,6 @@ LOOP_FOR: 'for' ;
 LOOP_DO: 'do' ;
 CONDITIONAL: 'if' ;
 CONDITIONAL_ELSE: 'else' ;
-SWITCH: 'switch' ;
-SWITCH_CASE: 'case' ;
-SWITCH_DEFAULT: 'default' ;
 BREAK: 'break' ;
 CONTINUE: 'continue' ;
 EXIT: 'exit' ;
