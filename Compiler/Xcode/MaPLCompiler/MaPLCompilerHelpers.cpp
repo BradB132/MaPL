@@ -95,6 +95,48 @@ MaPL_Index byteSizeOfType(MaPLPrimitiveType type) {
     }
 }
 
+std::string descriptorForType(MaPLType type) {
+    switch (type.primitiveType) {
+        case MaPLPrimitiveType_Int8: return "'int8'";
+        case MaPLPrimitiveType_Int16: return "'int16'";
+        case MaPLPrimitiveType_Int32: return "'int32'";
+        case MaPLPrimitiveType_Int64: return "'int64'";
+        case MaPLPrimitiveType_UInt8: return "'uint8'";
+        case MaPLPrimitiveType_UInt16: return "'uint16'";
+        case MaPLPrimitiveType_UInt32: return "'uint32'";
+        case MaPLPrimitiveType_UInt64: return "'uint64'";
+        case MaPLPrimitiveType_Float32: return "'float32'";
+        case MaPLPrimitiveType_Float64: return "'float64'";
+        case MaPLPrimitiveType_Boolean: return "'bool'";
+        case MaPLPrimitiveType_String: return "'string'";
+        case MaPLPrimitiveType_Pointer: return "'"+type.pointerType+"' pointer";
+        case MaPLPrimitiveType_SignedInt_AmbiguousSize: return "signed integer";
+        case MaPLPrimitiveType_Int_AmbiguousSizeAndSign: return "integer";
+        case MaPLPrimitiveType_Float_AmbiguousSize: return "floating point";
+        case MaPLPrimitiveType_Void: return "'void'";
+        case MaPLPrimitiveType_InvalidType: return "invalid type";
+    }
+}
+
+MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_ASSIGN;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_ASSIGN;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_ASSIGN;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_ASSIGN;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_ASSIGN;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_ASSIGN;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_ASSIGN;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_ASSIGN;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_ASSIGN;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_ASSIGN;
+        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_ASSIGN;
+        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_ASSIGN;
+        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_ASSIGN;
+        default: return 0;
+    }
+}
+
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     if (typeContext->identifier()) {
         return { MaPLPrimitiveType_Pointer, typeContext->identifier()->getText() };
@@ -116,47 +158,34 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     }
 }
 
-bool isCompatibleType(MaPLParser::TypeContext *typeContext, MaPLType type) {
-    if (typeContext->identifier()) {
-        return type.primitiveType == MaPLPrimitiveType_Pointer && typeContext->identifier()->getText() == type.pointerType;
+bool isCompatibleType(MaPLType concreteType, MaPLType expressionType) {
+    // Handle direct matches first.
+    if (concreteType.primitiveType == expressionType.primitiveType) {
+        if (concreteType.primitiveType == MaPLPrimitiveType_Pointer) {
+            return concreteType.pointerType == expressionType.pointerType;
+        }
+        return true;
     }
-    switch (typeContext->start->getType()) {
-        case MaPLParser::DECL_INT8:
-            return type.primitiveType == MaPLPrimitiveType_Int8 ||
-                   type.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLParser::DECL_INT16:
-            return type.primitiveType == MaPLPrimitiveType_Int16 ||
-                   type.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLParser::DECL_INT32:
-            return type.primitiveType == MaPLPrimitiveType_Int32 ||
-                   type.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLParser::DECL_INT64:
-            return type.primitiveType == MaPLPrimitiveType_Int64 ||
-                   type.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLParser::DECL_UINT8:
-            return type.primitiveType == MaPLPrimitiveType_UInt8 ||
-                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLParser::DECL_UINT16:
-            return type.primitiveType == MaPLPrimitiveType_UInt16 ||
-                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLParser::DECL_UINT32:
-            return type.primitiveType == MaPLPrimitiveType_UInt32 ||
-                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLParser::DECL_UINT64:
-            return type.primitiveType == MaPLPrimitiveType_UInt64 ||
-                   type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLParser::DECL_FLOAT32:
-            return type.primitiveType == MaPLPrimitiveType_Float32 ||
-                   type.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
-        case MaPLParser::DECL_FLOAT64:
-            return type.primitiveType == MaPLPrimitiveType_Float64 ||
-                   type.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
-        case MaPLParser::DECL_BOOL: return type.primitiveType == MaPLPrimitiveType_Boolean;
-        case MaPLParser::DECL_STRING: return type.primitiveType == MaPLPrimitiveType_String;
+    // Handle all the ways that the concrete type could accept ambiguity from the expression.
+    switch (concreteType.primitiveType) {
+        case MaPLPrimitiveType_Int8:
+            return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
+                   expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_Int16:
+            return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
+                   expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_Int32:
+            return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
+                   expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_Int64:
+            return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
+                   expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_UInt8: return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_UInt16: return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_UInt32: return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_UInt64: return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_Float32: return expressionType.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
+        case MaPLPrimitiveType_Float64: return expressionType.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
         default: return false;
     }
 }
@@ -233,7 +262,7 @@ bool functionIsCompatible(MaPLParser::ApiFunctionContext *function,
     }
     // Confirm compatible types for all arguments.
     for (int32_t i = 0; i < typeContexts.size(); i++) {
-        if (!isCompatibleType(typeContexts[i], parameterTypes[i])) {
+        if (!isCompatibleType(typeForTypeContext(typeContexts[i]), parameterTypes[i])) {
             return false;
         }
     }
@@ -307,7 +336,7 @@ MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
         return NULL;
     }
     for (MaPLParser::ApiSubscriptContext *subscript : typeDeclaration->apiSubscript()) {
-        if (isCompatibleType(subscript->type(1), indexType)) {
+        if (isCompatibleType(typeForTypeContext(subscript->type(1)), indexType)) {
             return subscript;
         }
     }

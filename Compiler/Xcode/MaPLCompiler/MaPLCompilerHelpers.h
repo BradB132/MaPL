@@ -84,9 +84,24 @@ bool isIntegral(MaPLPrimitiveType type);
 bool isNumeric(MaPLPrimitiveType type);
 
 /**
+ * @return @c true if @c expressionType can be assigned to a variable of @c concreteType without error.
+ */
+bool isCompatibleType(MaPLType concreteType, MaPLType expressionType);
+
+/**
  * @return The number of bytes required for each of the primitive types. @c 0 if type is invalid, void, or ambiguous.
  */
 MaPL_Index byteSizeOfType(MaPLPrimitiveType type);
+
+/**
+ * @return A human-readable string that describes the type.
+ */
+std::string descriptorForType(MaPLType type);
+
+/**
+ * @return The instruction byte that indicates an assignment for the corresponding primitive type.
+ */
+MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.

@@ -28,7 +28,7 @@ imperativeStatement
 
 assignStatement
     :    objectExpression
-         (
+         keyToken=(
              ASSIGN |
              ADD_ASSIGN |
              SUBTRACT_ASSIGN |

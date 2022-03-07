@@ -153,6 +153,17 @@ void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLBuffer *cu
     }
 }
 
+void MaPLFile::compileExpressionWithRequiredType(MaPLType expectedType,
+                                                 MaPLParser::ExpressionContext *expression,
+                                                 MaPLBuffer *currentBuffer) {
+    MaPLType expressionType = dataTypeForExpression(expression);
+    if (!isCompatibleType(expectedType, expressionType)) {
+        std::string error = "Expression is required to be of type "+descriptorForType(expectedType)+", but was "+descriptorForType(expressionType)+" instead.";
+        logError(this, expression->start, error);
+    }
+    compileNode(expression, currentBuffer);
+}
+
 void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentBuffer) {
     switch (node->getRuleIndex()) {
         case MaPLParser::RuleApiDeclaration:
@@ -218,9 +229,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
                 currentBuffer->appendByte(MAPL_BYTE_METADATA);
                 const char *metadataChars = trimmedMetadata.c_str();
                 currentBuffer->appendBytes(metadataChars, strlen(metadataChars)+1);
-                break;
+            } else {
+                compileChildNodes(node, currentBuffer);
             }
-            compileChildNodes(node, currentBuffer);
         }
             break;
         case MaPLParser::RuleImperativeStatement: {
@@ -251,24 +262,31 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
             }
         }
             break;
+        case MaPLParser::RuleVariableDeclaration: {
+            MaPLParser::VariableDeclarationContext *declaration = (MaPLParser::VariableDeclarationContext *)node;
+            
+            // Claim a spot in memory for this variable.
+            MaPLParser::IdentifierContext *identifier = declaration->identifier();
+            MaPLVariable variable = { typeForTypeContext(declaration->type()), this, identifier->start };
+            _variableStack->declareVariable(identifier->getText(), variable);
+            
+            // Assign the value to this variable if needed.
+            MaPLParser::ExpressionContext *expression = declaration->expression();
+            if (expression) {
+                currentBuffer->appendByte(assignmentInstructionForPrimitive(variable.type.primitiveType));
+                MaPL_Index variableByteOffset = _variableStack->getVariable(identifier->getText()).byteOffset;
+                currentBuffer->appendBytes(&variableByteOffset, sizeof(MaPL_Index));
+                compileExpressionWithRequiredType(variable.type, expression, currentBuffer);
+            }
+        }
+            break;
         case MaPLParser::RuleAssignStatement: {
             MaPLParser::AssignStatementContext *assignment = (MaPLParser::AssignStatementContext *)node;
-            
-            // Object expression is on the left side (receiving the assignment). This can be any object expression except for a function call.
-            MaPLParser::ObjectExpressionContext *terminalObjectExpression = assignment->objectExpression();
-            while (terminalObjectExpression->OBJECT_TO_MEMBER()) {
-                terminalObjectExpression = terminalObjectExpression->objectExpression(1);
-            }
-            if (terminalObjectExpression->PAREN_OPEN()) {
-                logError(this, terminalObjectExpression->start, "Functions are read only.");
-                break;
-            }
             // TODO: assigning to object expressions will be relatively complex, revisit this last.
         }
             break;
         case MaPLParser::RuleUnaryStatement: {
             MaPLParser::UnaryStatementContext *statement = (MaPLParser::UnaryStatementContext *)node;
-            MaPLParser::ObjectExpressionContext *objectExpression = statement->objectExpression();
             // TODO: assigning to object expressions will be relatively complex, revisit this last.
         }
             break;
@@ -295,11 +313,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
             // TODO: implement other terminal nodes.
             
             // Object expressions can be handled by compiling child nodes.
-            compileChildNodes(node, currentBuffer);
-        }
-            break;
-        case MaPLParser::RuleVariableDeclaration: {
-            MaPLParser::VariableDeclarationContext *declaration = (MaPLParser::VariableDeclarationContext *)node;
             compileChildNodes(node, currentBuffer);
         }
             break;
