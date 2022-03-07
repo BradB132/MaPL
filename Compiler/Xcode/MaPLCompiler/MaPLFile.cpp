@@ -117,7 +117,7 @@ MaPLBuffer *MaPLFile::getBytecode() {
     }
     
     // Compile the bytecode from this file.
-    compileChildNodes(_program, _bytecode);
+    compileChildNodes(_program, { MaPLPrimitiveType_InvalidType }, _bytecode);
     
     return _bytecode;
 }
@@ -144,31 +144,20 @@ void MaPLFile::syntaxError(antlr4::Recognizer *recognizer,
     logError(this, offendingSymbol, msg);
 }
 
-void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLBuffer *currentBuffer) {
+void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLType expectedType, MaPLBuffer *currentBuffer) {
     for (antlr4::tree::ParseTree *child : node->children) {
         antlr4::ParserRuleContext *ruleContext = dynamic_cast<antlr4::ParserRuleContext *>(child);
         if (ruleContext) {
-            compileNode(ruleContext, currentBuffer);
+            compileNode(ruleContext, expectedType, currentBuffer);
         }
     }
 }
 
-void MaPLFile::compileExpressionWithRequiredType(MaPLType expectedType,
-                                                 MaPLParser::ExpressionContext *expression,
-                                                 MaPLBuffer *currentBuffer) {
-    MaPLType expressionType = dataTypeForExpression(expression);
-    if (!isCompatibleType(expectedType, expressionType)) {
-        std::string error = "Expression is required to be of type "+descriptorForType(expectedType)+", but was "+descriptorForType(expressionType)+" instead.";
-        logError(this, expression->start, error);
-    }
-    compileNode(expression, currentBuffer);
-}
-
-void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentBuffer) {
+void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedType, MaPLBuffer *currentBuffer) {
     switch (node->getRuleIndex()) {
         case MaPLParser::RuleApiDeclaration:
             // TODO: For #type declarations, check for duplicate types and functions, properties, and subscripts within types.
-            compileChildNodes(node, currentBuffer);
+            compileChildNodes(node, expectedType, currentBuffer);
             break;
         case MaPLParser::RuleApiInheritance: {
             MaPLParser::ApiInheritanceContext *inheritance = (MaPLParser::ApiInheritanceContext *)node;
@@ -188,7 +177,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
                     missingTypeError(typeContext->start, returnType.pointerType);
                 }
             }
-            compileNode(function->apiFunctionArgs(), currentBuffer);
+            compileNode(function->apiFunctionArgs(), expectedType, currentBuffer);
         }
             break;
         case MaPLParser::RuleApiFunctionArgs: {
@@ -230,7 +219,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
                 const char *metadataChars = trimmedMetadata.c_str();
                 currentBuffer->appendBytes(metadataChars, strlen(metadataChars)+1);
             } else {
-                compileChildNodes(node, currentBuffer);
+                compileChildNodes(node, expectedType, currentBuffer);
             }
         }
             break;
@@ -258,7 +247,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
                     default: break;
                 }
             } else {
-                compileChildNodes(node, currentBuffer);
+                compileChildNodes(node, expectedType, currentBuffer);
             }
         }
             break;
@@ -282,7 +271,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
                 currentBuffer->appendByte(assignmentInstructionForPrimitive(variable.type.primitiveType));
                 MaPL_Index variableByteOffset = _variableStack->getVariable(variableName).byteOffset;
                 currentBuffer->appendBytes(&variableByteOffset, sizeof(MaPL_Index));
-                compileExpressionWithRequiredType(variable.type, expression, currentBuffer);
+                compileNode(expression, variable.type, currentBuffer);
             }
         }
             break;
@@ -296,30 +285,175 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
             // TODO: assigning to object expressions will be relatively complex, revisit this last.
         }
             break;
+        case MaPLParser::RuleObjectExpression: {
+            MaPLParser::ObjectExpressionContext *expression = (MaPLParser::ObjectExpressionContext *)node;
+            switch (expression->keyToken->getType()) {
+                case MaPLParser::OBJECT_TO_MEMBER: // Compound object expression.
+                    
+                    break;
+                case MaPLParser::SUBSCRIPT_OPEN: // Subscript invocation.
+                    
+                    break;
+                case MaPLParser::PAREN_OPEN: // Function invocation.
+                    
+                    break;
+                default: // Property invokation.
+                    
+                    break;
+            }
+        }
+            break;
         case MaPLParser::RuleExpression: {
             MaPLParser::ExpressionContext *expression = (MaPLParser::ExpressionContext *)node;
-            antlr4::tree::TerminalNode *terminalNode = expression->PAREN_OPEN();
-            if (terminalNode) {
-                // Expressions with parens are either a typecast or nested parenthesized expression.
-                MaPLParser::TypeContext *type = expression->type();
-                if (type) {
-                    switch (type->start->getType()) {
-                        case MaPLParser::DECL_INT8:
-                            // TODO: add cases for all primitives, default case handles objects.
-                            break;
-                        default:
-                            break;
-                    }
-                } else {
-                    // Nested expressions can be handled by compiling child nodes.
-                    compileChildNodes(node, currentBuffer);
+            if (expectedType.primitiveType != MaPLPrimitiveType_InvalidType) {
+                MaPLType expressionType = dataTypeForExpression(expression);
+                if(!isCompatibleType(expectedType, expressionType)) {
+                    std::string error = "Expression is required to be of type "+descriptorForType(expectedType)+", but was "+descriptorForType(expressionType)+" instead.";
+                    logError(this, expression->start, error);
                 }
-                break;
             }
-            // TODO: implement other terminal nodes.
             
-            // Object expressions can be handled by compiling child nodes.
-            compileChildNodes(node, currentBuffer);
+            if (expression->keyToken) {
+                switch (expression->keyToken->getType()) {
+                    case MaPLParser::PAREN_OPEN: { // Typecast.
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::LOGICAL_AND:
+                        currentBuffer->appendByte(MAPL_BYTE_LOGICAL_AND);
+                        compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
+                        compileNode(expression->expression(1), { MaPLPrimitiveType_Boolean }, currentBuffer);
+                        break;
+                    case MaPLParser::LOGICAL_OR:
+                        currentBuffer->appendByte(MAPL_BYTE_LOGICAL_OR);
+                        compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
+                        compileNode(expression->expression(1), { MaPLPrimitiveType_Boolean }, currentBuffer);
+                        break;
+                    case MaPLParser::BITWISE_AND: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::BITWISE_XOR: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::BITWISE_OR: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::LOGICAL_EQUALITY: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::LOGICAL_INEQUALITY: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::LESS_THAN: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::LESS_THAN_EQUAL: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::GREATER_THAN: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::GREATER_THAN_EQUAL: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::LOGICAL_NEGATION: {
+                        currentBuffer->appendByte(MAPL_BYTE_LOGICAL_NEGATION);
+                        compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
+                    }
+                        break;
+                    case MaPLParser::BITWISE_NEGATION: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::BITWISE_SHIFT_LEFT: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::BITWISE_SHIFT_RIGHT: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::MOD: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::MULTIPLY: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::DIVIDE: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::ADD: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::SUBTRACT: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::TERNARY_CONDITIONAL: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::NULL_COALESCING: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::PAREN_CLOSE: // Parenthesized expression.
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
+                        break;
+                    case MaPLParser::LITERAL_TRUE:
+                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_BOOLEAN_TRUE);
+                        break;
+                    case MaPLParser::LITERAL_FALSE:
+                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_BOOLEAN_FALSE);
+                        break;
+                    case MaPLParser::LITERAL_NULL:
+                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_NULL);
+                        break;
+                    case MaPLParser::LITERAL_INT: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::LITERAL_FLOAT: {
+                        // TODO: Implement this.
+                    }
+                        break;
+                    case MaPLParser::LITERAL_STRING: {
+                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_STRING);
+                        
+                        // The text will always contain the string quotes, substring call removes them.
+                        std::string literalString = expression->LITERAL_STRING()->getText();
+                        std::filesystem::path string = literalString.substr(1, literalString.length()-2);
+                        
+                        // Append the string.
+                        const char* cString = string.c_str();
+                        size_t length = strlen(cString);
+                        currentBuffer->appendBytes(cString, length);
+                        
+                        // Append the null char to terminate the string.
+                        currentBuffer->appendByte(0);
+                    }
+                        break;
+                    default: break;
+                }
+            } else {
+                MaPLParser::ObjectExpressionContext *objectExpression = expression->objectExpression();
+                if (objectExpression) {
+                    compileNode(objectExpression, expectedType, currentBuffer);
+                }
+            }
         }
             break;
         default:
