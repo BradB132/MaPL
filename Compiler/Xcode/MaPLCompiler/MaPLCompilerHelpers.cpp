@@ -168,15 +168,9 @@ bool isCompatibleType(MaPLType concreteType, MaPLType expressionType) {
     }
     // Handle all the ways that the concrete type could accept ambiguity from the expression.
     switch (concreteType.primitiveType) {
-        case MaPLPrimitiveType_Int8:
-            return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLPrimitiveType_Int16:
-            return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLPrimitiveType_Int32:
-            return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
-                   expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_Int8: // Intentional fallthrough.
+        case MaPLPrimitiveType_Int16: // Intentional fallthrough.
+        case MaPLPrimitiveType_Int32: // Intentional fallthrough.
         case MaPLPrimitiveType_Int64:
             return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
                    expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
