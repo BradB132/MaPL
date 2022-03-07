@@ -84,7 +84,7 @@ bool isIntegral(MaPLPrimitiveType type);
 bool isNumeric(MaPLPrimitiveType type);
 
 /**
- * @return @c true if @c expressionType can be assigned to a variable of @c concreteType without error.
+ * @return @c true if @c expressionType can be assigned to a variable of @c concreteType without error. @c false if @c concreteType is ambiguous.
  */
 bool isCompatibleType(MaPLType concreteType, MaPLType expressionType);
 

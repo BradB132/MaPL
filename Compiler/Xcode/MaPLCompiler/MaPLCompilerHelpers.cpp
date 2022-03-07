@@ -180,12 +180,14 @@ bool isCompatibleType(MaPLType concreteType, MaPLType expressionType) {
         case MaPLPrimitiveType_Int64:
             return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
                    expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLPrimitiveType_UInt8: return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLPrimitiveType_UInt16: return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLPrimitiveType_UInt32: return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLPrimitiveType_UInt64: return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLPrimitiveType_Float32: return expressionType.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
-        case MaPLPrimitiveType_Float64: return expressionType.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
+        case MaPLPrimitiveType_UInt8: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt16: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt32: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt64:
+            return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
+        case MaPLPrimitiveType_Float32: // Intentional fallthrough.
+        case MaPLPrimitiveType_Float64:
+            return expressionType.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
         default: return false;
     }
 }
