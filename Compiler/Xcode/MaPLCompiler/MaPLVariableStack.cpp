@@ -69,7 +69,7 @@ MaPLVariable MaPLVariableStack::getVariable(std::string variableName) {
             }
         }
     }
-    return { MaPLPrimitiveType_InvalidType, 0 };
+    return { { MaPLPrimitiveType_InvalidType } };
 }
 
 std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getTopLevelVariables() {

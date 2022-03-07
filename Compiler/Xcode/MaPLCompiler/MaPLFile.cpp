@@ -264,17 +264,23 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLBuffer *currentB
             break;
         case MaPLParser::RuleVariableDeclaration: {
             MaPLParser::VariableDeclarationContext *declaration = (MaPLParser::VariableDeclarationContext *)node;
+            MaPLParser::IdentifierContext *identifier = declaration->identifier();
+            std::string variableName = identifier->getText();
+            
+            // Check if this variable name conflicts with any global property.
+            if (findProperty(this, "", variableName)) {
+                logError(this, identifier->start, "Variable with name '"+variableName+"' conflicts with global property of the same name.");
+            }
             
             // Claim a spot in memory for this variable.
-            MaPLParser::IdentifierContext *identifier = declaration->identifier();
             MaPLVariable variable = { typeForTypeContext(declaration->type()), this, identifier->start };
-            _variableStack->declareVariable(identifier->getText(), variable);
+            _variableStack->declareVariable(variableName, variable);
             
             // Assign the value to this variable if needed.
             MaPLParser::ExpressionContext *expression = declaration->expression();
             if (expression) {
                 currentBuffer->appendByte(assignmentInstructionForPrimitive(variable.type.primitiveType));
-                MaPL_Index variableByteOffset = _variableStack->getVariable(identifier->getText()).byteOffset;
+                MaPL_Index variableByteOffset = _variableStack->getVariable(variableName).byteOffset;
                 currentBuffer->appendBytes(&variableByteOffset, sizeof(MaPL_Index));
                 compileExpressionWithRequiredType(variable.type, expression, currentBuffer);
             }

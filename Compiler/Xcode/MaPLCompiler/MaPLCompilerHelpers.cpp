@@ -413,6 +413,7 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
     return NULL;
 }
 
+// TODO: Convert struct params throughout this program, where applicable, to use 'const' and '&' like is done for this function.
 void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg) {
     if (token) {
         printf("%s %ld:%ld: %s\n", file->getNormalizedFilePath().c_str(), token->getLine(), token->getCharPositionInLine(), msg.c_str());
