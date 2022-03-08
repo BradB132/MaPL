@@ -194,33 +194,35 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     }
 }
 
-bool isCompatibleType(MaPLFile *file, MaPLType concreteType, MaPLType expressionType) {
+bool isAssignable(MaPLFile *file, MaPLType expressionType, MaPLType assignToType) {
     // Handle direct matches first.
-    if (concreteType.primitiveType == expressionType.primitiveType) {
-        if (concreteType.primitiveType == MaPLPrimitiveType_Pointer) {
+    if (assignToType.primitiveType == expressionType.primitiveType) {
+        if (assignToType.primitiveType == MaPLPrimitiveType_Pointer) {
             // Empty "pointerType" indicates a null literal. Nulls are assignable to any type of pointer.
             return expressionType.pointerType == "" ||
-                   concreteType.pointerType == expressionType.pointerType ||
-                   inheritsFromType(file, expressionType.pointerType, concreteType.pointerType);
+                   assignToType.pointerType == expressionType.pointerType ||
+                   inheritsFromType(file, expressionType.pointerType, assignToType.pointerType);
         }
         return true;
     }
     // Handle all the ways that the concrete type could accept ambiguity from the expression.
-    switch (concreteType.primitiveType) {
+    switch (assignToType.primitiveType) {
+        case MaPLPrimitiveType_UInt8: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt16: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt32: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt64:
+            return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLPrimitiveType_Int8: // Intentional fallthrough.
         case MaPLPrimitiveType_Int16: // Intentional fallthrough.
         case MaPLPrimitiveType_Int32: // Intentional fallthrough.
         case MaPLPrimitiveType_Int64:
             return expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
                    expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
-        case MaPLPrimitiveType_UInt8: // Intentional fallthrough.
-        case MaPLPrimitiveType_UInt16: // Intentional fallthrough.
-        case MaPLPrimitiveType_UInt32: // Intentional fallthrough.
-        case MaPLPrimitiveType_UInt64:
-            return expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         case MaPLPrimitiveType_Float32: // Intentional fallthrough.
         case MaPLPrimitiveType_Float64:
-            return expressionType.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize;
+            return expressionType.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize ||
+                   expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize ||
+                   expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign;
         default: return false;
     }
 }
@@ -302,7 +304,7 @@ bool functionIsCompatible(MaPLFile *file,
     }
     // Confirm compatible types for all arguments.
     for (int32_t i = 0; i < typeContexts.size(); i++) {
-        if (!isCompatibleType(file, typeForTypeContext(typeContexts[i]), parameterTypes[i])) {
+        if (!isAssignable(file, parameterTypes[i], typeForTypeContext(typeContexts[i]))) {
             return false;
         }
     }
@@ -376,7 +378,7 @@ MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
         return NULL;
     }
     for (MaPLParser::ApiSubscriptContext *subscript : typeDeclaration->apiSubscript()) {
-        if (isCompatibleType(file, typeForTypeContext(subscript->type(1)), indexType)) {
+        if (isAssignable(file, indexType, typeForTypeContext(subscript->type(1)))) {
             return subscript;
         }
     }

@@ -310,7 +310,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             MaPLParser::ExpressionContext *expression = (MaPLParser::ExpressionContext *)node;
             if (expectedType.primitiveType != MaPLPrimitiveType_InvalidType) {
                 MaPLType expressionType = dataTypeForExpression(expression);
-                if(!isCompatibleType(this, expectedType, expressionType)) {
+                if(!isAssignable(this, expressionType, expectedType)) {
                     std::string error = "Expression is required to be of type "+descriptorForType(expectedType)+", but was "+descriptorForType(expressionType)+" instead.";
                     logError(this, expression->start, error);
                 }
