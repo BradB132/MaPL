@@ -287,19 +287,22 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             break;
         case MaPLParser::RuleObjectExpression: {
             MaPLParser::ObjectExpressionContext *expression = (MaPLParser::ObjectExpressionContext *)node;
-            switch (expression->keyToken->getType()) {
-                case MaPLParser::OBJECT_TO_MEMBER: // Compound object expression.
-                    
-                    break;
-                case MaPLParser::SUBSCRIPT_OPEN: // Subscript invocation.
-                    
-                    break;
-                case MaPLParser::PAREN_OPEN: // Function invocation.
-                    
-                    break;
-                default: // Property invokation.
-                    
-                    break;
+            if (expression->keyToken) {
+                switch (expression->keyToken->getType()) {
+                    case MaPLParser::OBJECT_TO_MEMBER: // Compound object expression.
+                        
+                        break;
+                    case MaPLParser::SUBSCRIPT_OPEN: // Subscript invocation.
+                        
+                        break;
+                    case MaPLParser::PAREN_OPEN: // Function invocation.
+                        
+                        break;
+                    default: break;
+                }
+            } else {
+                // Property invokation.
+                
             }
         }
             break;
