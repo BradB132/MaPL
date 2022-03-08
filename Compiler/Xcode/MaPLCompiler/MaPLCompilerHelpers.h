@@ -86,7 +86,7 @@ bool isNumeric(MaPLPrimitiveType type);
 /**
  * @return @c true if @c expressionType can be assigned to a variable of @c concreteType without error. @c false if @c concreteType is ambiguous.
  */
-bool isCompatibleType(MaPLType concreteType, MaPLType expressionType);
+bool isCompatibleType(MaPLFile *file, MaPLType concreteType, MaPLType expressionType);
 
 /**
  * @return The number of bytes required for each of the primitive types. @c 0 if type is invalid, void, or ambiguous.
@@ -107,6 +107,11 @@ MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.
  */
 std::vector<std::string> mutualAncestorTypes(MaPLFile *file, std::string type1, std::string type2);
+
+/**
+ * @return @c true if @c possibleAncestorType is an ancestor of @c type.
+ */
+bool inheritsFromType(MaPLFile *file, std::string type, std::string possibleAncestorType);
 
 /**
  * @return A MaPLType as described by a type node in the parse tree.

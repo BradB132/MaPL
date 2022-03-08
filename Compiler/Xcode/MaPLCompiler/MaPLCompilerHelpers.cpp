@@ -158,11 +158,14 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     }
 }
 
-bool isCompatibleType(MaPLType concreteType, MaPLType expressionType) {
+bool isCompatibleType(MaPLFile *file, MaPLType concreteType, MaPLType expressionType) {
     // Handle direct matches first.
     if (concreteType.primitiveType == expressionType.primitiveType) {
         if (concreteType.primitiveType == MaPLPrimitiveType_Pointer) {
-            return concreteType.pointerType == expressionType.pointerType;
+            // Empty "pointerType" indicates a null literal. Nulls are assignable to any type of pointer.
+            return expressionType.pointerType == "" ||
+                   concreteType.pointerType == expressionType.pointerType ||
+                   inheritsFromType(file, expressionType.pointerType, concreteType.pointerType);
         }
         return true;
     }
@@ -217,6 +220,10 @@ std::vector<std::string> mutualAncestorTypes(MaPLFile *file, std::string type1, 
     return mutuals;
 }
 
+bool inheritsFromType(MaPLFile *file, std::string type, std::string possibleAncestorType) {
+    return findAncestorTypes(file, type).count(possibleAncestorType) > 0;
+}
+
 MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type) {
     MaPLParser::ProgramContext *program = file->getParseTree();
     if (!program) { return NULL; }
@@ -238,7 +245,8 @@ MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type) {
     return NULL;
 }
 
-bool functionIsCompatible(MaPLParser::ApiFunctionContext *function,
+bool functionIsCompatible(MaPLFile *file,
+                          MaPLParser::ApiFunctionContext *function,
                           std::string name,
                           std::vector<MaPLType> parameterTypes) {
     // Confirm matching function name.
@@ -258,7 +266,7 @@ bool functionIsCompatible(MaPLParser::ApiFunctionContext *function,
     }
     // Confirm compatible types for all arguments.
     for (int32_t i = 0; i < typeContexts.size(); i++) {
-        if (!isCompatibleType(typeForTypeContext(typeContexts[i]), parameterTypes[i])) {
+        if (!isCompatibleType(file, typeForTypeContext(typeContexts[i]), parameterTypes[i])) {
             return false;
         }
     }
@@ -281,7 +289,7 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
             case MaPLParser::API_GLOBAL: {
                 if (!isGlobal) { continue; }
                 MaPLParser::ApiFunctionContext *function = apiDeclaration->apiFunction(0);
-                if (function && functionIsCompatible(function, name, parameterTypes)) {
+                if (function && functionIsCompatible(file, function, name, parameterTypes)) {
                     return function;
                 }
             }
@@ -293,7 +301,7 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                     continue;
                 }
                 for (MaPLParser::ApiFunctionContext *function : apiDeclaration->apiFunction()) {
-                    if (functionIsCompatible(function, name, parameterTypes)) {
+                    if (functionIsCompatible(file, function, name, parameterTypes)) {
                         return function;
                     }
                 }
@@ -332,7 +340,7 @@ MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
         return NULL;
     }
     for (MaPLParser::ApiSubscriptContext *subscript : typeDeclaration->apiSubscript()) {
-        if (isCompatibleType(typeForTypeContext(subscript->type(1)), indexType)) {
+        if (isCompatibleType(file, typeForTypeContext(subscript->type(1)), indexType)) {
             return subscript;
         }
     }
