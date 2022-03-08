@@ -104,6 +104,16 @@ std::string descriptorForType(MaPLType type);
 MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
+ * @return The instruction byte that indicates an typecast from the corresponding primitive type.
+ */
+MaPL_Instruction typecastFromInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates an typecast to the corresponding primitive type.
+ */
+MaPL_Instruction typecastToInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.
  */
 std::vector<std::string> mutualAncestorTypes(MaPLFile *file, std::string type1, std::string type2);

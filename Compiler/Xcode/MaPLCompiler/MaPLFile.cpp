@@ -319,7 +319,58 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             if (expression->keyToken) {
                 switch (expression->keyToken->getType()) {
                     case MaPLParser::PAREN_OPEN: { // Typecast.
-                        // TODO: Implement this.
+                        MaPLType castType = typeForTypeContext(expression->type());
+                        MaPLType expressionType = dataTypeForExpression(expression->expression(0));
+                        if (castType.primitiveType == expressionType.primitiveType) {
+                            // The cast doesn't involve any casting between primitive types, and so is a no-op in terms of bytecode.
+                            if (castType.primitiveType == MaPLPrimitiveType_Pointer &&
+                                castType.pointerType != expressionType.pointerType &&
+                                !inheritsFromType(this, castType.pointerType, expressionType.pointerType) &&
+                                !inheritsFromType(this, expressionType.pointerType, castType.pointerType)) {
+                                // Cast is between two pointer types. This only makes sense if the types have some child/ancestor relationship.
+                                logError(this, expression->type()->start, "Cast attempted between incompatible pointers. The types '"+castType.pointerType+"' and '"+expressionType.pointerType+"' have no child/ancestor relationship.");
+                            }
+                            compileNode(expression->expression(0), { MaPLPrimitiveType_InvalidType }, currentBuffer);
+                            break;
+                        }
+                        if (castType.primitiveType == MaPLPrimitiveType_Pointer) {
+                            logError(this, expression->type()->start, "Cannot cast primitive "+descriptorForType(expressionType)+" type to a pointer type.");
+                            break;
+                        }
+                        if (expressionType.primitiveType == MaPLPrimitiveType_Pointer) {
+                            if (castType.primitiveType == MaPLPrimitiveType_String) {
+                                currentBuffer->appendByte(MAPL_BYTE_TYPECAST_FROM_POINTER_TO_STRING);
+                                compileNode(expression->expression(0), { MaPLPrimitiveType_InvalidType }, currentBuffer);
+                                break;
+                            } else {
+                                logError(this, expression->type()->start, "Pointer types can only be cast to 'string' or other pointer types with a child/ancestor relationship.");
+                                break;
+                            }
+                        }
+                        MaPLPrimitiveType typeToExpect = MaPLPrimitiveType_InvalidType;
+                        if (isAmbiguousNumericType(expressionType.primitiveType)) {
+                            // The expression is ambiguous. The subsequent compile call should resolve it to a concrete type.
+                            // Pick the matching concrete type that is most permissive (largest byte width).
+                            if (expressionType.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize) {
+                                typeToExpect = MaPLPrimitiveType_Float64;
+                                expressionType.primitiveType = MaPLPrimitiveType_Float64;
+                            } else if (expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
+                                typeToExpect = MaPLPrimitiveType_UInt64;
+                                expressionType.primitiveType = MaPLPrimitiveType_UInt64;
+                            } else if (expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize) {
+                                typeToExpect = MaPLPrimitiveType_Int64;
+                                expressionType.primitiveType = MaPLPrimitiveType_Int64;
+                            }
+                        }
+                        MaPL_Instruction castFrom = typecastFromInstructionForPrimitive(expressionType.primitiveType);
+                        MaPL_Instruction castTo = typecastToInstructionForPrimitive(castType.primitiveType);
+                        if (!castTo || !castFrom) {
+                            logError(this, expression->type()->start, "Unable to cast from type "+descriptorForType(expressionType)+" to "+descriptorForType(castType)+".");
+                            break;
+                        }
+                        currentBuffer->appendByte(castFrom);
+                        currentBuffer->appendByte(castTo);
+                        compileNode(expression->expression(0), { typeToExpect }, currentBuffer);
                     }
                         break;
                     case MaPLParser::LOGICAL_AND:

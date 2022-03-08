@@ -137,6 +137,42 @@ MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type) {
     }
 }
 
+MaPL_Instruction typecastFromInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_TYPECAST_TO_INT8;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_TYPECAST_TO_INT16;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_TYPECAST_TO_INT32;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_TYPECAST_TO_INT64;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_TYPECAST_TO_UINT8;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_TYPECAST_TO_UINT16;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_TYPECAST_TO_UINT32;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_TYPECAST_TO_UINT64;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_TYPECAST_TO_FLOAT32;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_TYPECAST_TO_FLOAT64;
+        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_TYPECAST_TO_BOOLEAN;
+        case MaPLPrimitiveType_String: return MAPL_BYTE_TYPECAST_TO_STRING;
+        default: return 0;
+    }
+}
+
+MaPL_Instruction typecastToInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_TYPECAST_FROM_INT8;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_TYPECAST_FROM_INT16;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_TYPECAST_FROM_INT32;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_TYPECAST_FROM_INT64;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_TYPECAST_FROM_UINT8;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_TYPECAST_FROM_UINT16;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_TYPECAST_FROM_UINT32;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_TYPECAST_FROM_UINT64;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_TYPECAST_FROM_FLOAT32;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_TYPECAST_FROM_FLOAT64;
+        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_TYPECAST_FROM_BOOLEAN;
+        case MaPLPrimitiveType_String: return MAPL_BYTE_TYPECAST_FROM_STRING;
+        default: return 0;
+    }
+}
+
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     if (typeContext->identifier()) {
         return { MaPLPrimitiveType_Pointer, typeContext->identifier()->getText() };
