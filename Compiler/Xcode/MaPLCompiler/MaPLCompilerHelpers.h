@@ -106,7 +106,7 @@ MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);
 /**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.
  */
-std::vector<std::string> mutualSuperclasses(MaPLFile *file, std::string type1, std::string type2);
+std::vector<std::string> mutualAncestorTypes(MaPLFile *file, std::string type1, std::string type2);
 
 /**
  * @return A MaPLType as described by a type node in the parse tree.

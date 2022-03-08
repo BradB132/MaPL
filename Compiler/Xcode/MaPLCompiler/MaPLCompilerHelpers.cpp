@@ -186,32 +186,32 @@ bool isCompatibleType(MaPLType concreteType, MaPLType expressionType) {
     }
 }
 
-std::set<std::string> superclasses(MaPLFile *file, std::string type) {
-    std::set<std::string> allClasses;
+std::set<std::string> findAncestorTypes(MaPLFile *file, std::string type) {
+    std::set<std::string> allAncestorTypes;
     MaPLParser::ApiDeclarationContext *typeContext = findType(file, type);
     if (!typeContext) {
-        return allClasses;
+        return allAncestorTypes;
     }
     MaPLParser::ApiInheritanceContext *inheritance = typeContext->apiInheritance();
     if (!inheritance) {
-        return allClasses;
+        return allAncestorTypes;
     }
     for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
         std::string parentType = identifier->getText();
-        allClasses.insert(parentType);
-        std::set<std::string> parentClasses = superclasses(file, parentType);
-        allClasses.insert(parentClasses.begin(), parentClasses.end());
+        allAncestorTypes.insert(parentType);
+        std::set<std::string> ancestorTypes = findAncestorTypes(file, parentType);
+        allAncestorTypes.insert(ancestorTypes.begin(), ancestorTypes.end());
     }
-    return allClasses;
+    return allAncestorTypes;
 }
 
-std::vector<std::string> mutualSuperclasses(MaPLFile *file, std::string type1, std::string type2) {
-    std::set<std::string> superclasses1 = superclasses(file, type1);
-    std::set<std::string> superclasses2 = superclasses(file, type2);
+std::vector<std::string> mutualAncestorTypes(MaPLFile *file, std::string type1, std::string type2) {
+    std::set<std::string> ancestors1 = findAncestorTypes(file, type1);
+    std::set<std::string> ancestors2 = findAncestorTypes(file, type2);
     std::vector<std::string> mutuals;
-    for (std::string superclass : superclasses1) {
-        if (superclasses2.count(superclass)) {
-            mutuals.push_back(superclass);
+    for (std::string ancestorType : ancestors1) {
+        if (ancestors2.count(ancestorType)) {
+            mutuals.push_back(ancestorType);
         }
     }
     return mutuals;

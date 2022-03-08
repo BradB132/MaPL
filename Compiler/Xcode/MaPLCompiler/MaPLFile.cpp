@@ -537,21 +537,21 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
     MaPLPrimitiveType reconciledPrimitive = reconcileTypes(type1.primitiveType, type2.primitiveType, errorToken);
     if (reconciledPrimitive == MaPLPrimitiveType_Pointer && type1.pointerType != type2.pointerType) {
         // The pointer types don't match. Generate an error message that gives some context.
-        std::vector<std::string> possibleClasses = mutualSuperclasses(this, type1.pointerType, type2.pointerType);
-        size_t possibleClassCount = possibleClasses.size();
-        if (possibleClassCount == 1) {
+        std::vector<std::string> possibleMatches = mutualAncestorTypes(this, type1.pointerType, type2.pointerType);
+        size_t possibleMatchCount = possibleMatches.size();
+        if (possibleMatchCount == 1) {
             // In the case where there's only one possible choice, make the inference.
-            return { MaPLPrimitiveType_Pointer, possibleClasses[0] };
+            return { MaPLPrimitiveType_Pointer, possibleMatches[0] };
         }
         std::string errorSuffix;
-        if (possibleClassCount == 0) {
+        if (possibleMatchCount == 0) {
             errorSuffix = "There are no common ancestors for the types '"+type1.pointerType+"' and '"+type2.pointerType+"'.";
         } else {
             errorSuffix = "The possible ancestor types for '"+type1.pointerType+"' and '"+type2.pointerType+"' are ";
-            for (size_t i = 0; i < possibleClassCount; i++) {
-                std::string possibleClass = possibleClasses[i];
-                errorSuffix += "'"+possibleClass+"'";
-                if (i == (possibleClassCount-1)) {
+            for (size_t i = 0; i < possibleMatchCount; i++) {
+                std::string possibleMatch = possibleMatches[i];
+                errorSuffix += "'"+possibleMatch+"'";
+                if (i == (possibleMatchCount-1)) {
                     errorSuffix += ".";
                 } else {
                     errorSuffix += ", ";
