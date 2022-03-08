@@ -455,6 +455,42 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
     return NULL;
 }
 
+void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::Token *token) {
+    if (!isAmbiguousNumericType(type)) {
+        return;
+    }
+    std::string message = "This expression contains numeric literals whose type remains ambiguous. An explicit cast must be added to distinguish between: ";
+    std::vector<MaPLPrimitiveType> suggestedTypes;
+    switch (type) {
+        case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+            suggestedTypes.push_back(MaPLPrimitiveType_UInt8);
+            suggestedTypes.push_back(MaPLPrimitiveType_UInt16);
+            suggestedTypes.push_back(MaPLPrimitiveType_UInt32);
+            suggestedTypes.push_back(MaPLPrimitiveType_UInt64);
+            // Intentional fallthrough.
+        case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+            suggestedTypes.push_back(MaPLPrimitiveType_Int8);
+            suggestedTypes.push_back(MaPLPrimitiveType_Int16);
+            suggestedTypes.push_back(MaPLPrimitiveType_Int32);
+            suggestedTypes.push_back(MaPLPrimitiveType_Int64);
+            // Intentional fallthrough.
+        case MaPLPrimitiveType_Float_AmbiguousSize:
+            suggestedTypes.push_back(MaPLPrimitiveType_Float32);
+            suggestedTypes.push_back(MaPLPrimitiveType_Float64);
+            break;
+        default: return;
+    }
+    for (int i = 0; i < suggestedTypes.size(); i++) {
+        message += descriptorForType({ suggestedTypes[i] });
+        if (i == suggestedTypes.size()-1) {
+            message += ".";
+        } else {
+            message += ", ";
+        }
+    }
+    logError(file, token, message);
+}
+
 // TODO: Convert struct params throughout this program, where applicable, to use 'const' and '&' like is done for this function.
 void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg) {
     if (token) {

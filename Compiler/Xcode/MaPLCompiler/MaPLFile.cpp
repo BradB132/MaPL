@@ -347,20 +347,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                                 break;
                             }
                         }
-                        MaPLPrimitiveType typeToExpect = MaPLPrimitiveType_InvalidType;
                         if (isAmbiguousNumericType(expressionType.primitiveType)) {
-                            // The expression is ambiguous. The subsequent compile call should resolve it to a concrete type.
-                            // Pick the matching concrete type that is most permissive (largest byte width).
-                            if (expressionType.primitiveType == MaPLPrimitiveType_Float_AmbiguousSize) {
-                                typeToExpect = MaPLPrimitiveType_Float64;
-                                expressionType.primitiveType = MaPLPrimitiveType_Float64;
-                            } else if (expressionType.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
-                                typeToExpect = MaPLPrimitiveType_UInt64;
-                                expressionType.primitiveType = MaPLPrimitiveType_UInt64;
-                            } else if (expressionType.primitiveType == MaPLPrimitiveType_SignedInt_AmbiguousSize) {
-                                typeToExpect = MaPLPrimitiveType_Int64;
-                                expressionType.primitiveType = MaPLPrimitiveType_Int64;
+                            if (isAssignable(this, expressionType, castType)) {
+                                // This cast doesn't change types. Instead it's clarifying what to use as the expected type for an ambiguous literal.
+                                compileNode(expression->expression(0), castType, currentBuffer);
+                            } else {
+                                logAmbiguousLiteralError(this, expressionType.primitiveType, expression->expression(0)->start);
                             }
+                            break;
                         }
                         MaPL_Instruction castFrom = typecastFromInstructionForPrimitive(expressionType.primitiveType);
                         MaPL_Instruction castTo = typecastToInstructionForPrimitive(castType.primitiveType);
@@ -370,7 +364,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         }
                         currentBuffer->appendByte(castFrom);
                         currentBuffer->appendByte(castTo);
-                        compileNode(expression->expression(0), { typeToExpect }, currentBuffer);
+                        compileNode(expression->expression(0), { MaPLPrimitiveType_InvalidType }, currentBuffer);
                     }
                         break;
                     case MaPLParser::LOGICAL_AND:

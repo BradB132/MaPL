@@ -156,6 +156,11 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                                              std::string name);
 
 /**
+ * Logs an error describing how to clarify an ambiguous literal expression.
+ */
+void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::Token *token);
+
+/**
  * Function for logging errors. In order to maintain consistent output, all errors should go through this function.
  */
 void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg);
