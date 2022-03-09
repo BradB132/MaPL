@@ -106,6 +106,7 @@ MaPLBuffer *MaPLFile::getBytecode() {
     for(MaPLFile *file : _dependencies) {
         MaPLBuffer *dependencyBytecode = file->getBytecode();
         if (dependencyBytecode) {
+            // TODO: Files after the first file will contain incorrect byteOffsets for top-level variables. Use annotations to find the variable declarations and offset them.
             _bytecode->appendBytes(dependencyBytecode->getBytes(), dependencyBytecode->getByteCount());
         }
         MaPLVariableStack *dependencyStack = file->getVariableStack();
@@ -310,14 +311,17 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             MaPLParser::ExpressionContext *expression = (MaPLParser::ExpressionContext *)node;
             if (expectedType.primitiveType != MaPLPrimitiveType_InvalidType) {
                 MaPLType expressionType = dataTypeForExpression(expression);
-                if(!isAssignable(this, expressionType, expectedType)) {
+                // If expressionType is invalid, an error describing why was already logged.
+                if(expressionType.primitiveType != MaPLPrimitiveType_InvalidType &&
+                   !isAssignable(this, expressionType, expectedType)) {
                     std::string error = "Expression is required to be of type "+descriptorForType(expectedType)+", but was "+descriptorForType(expressionType)+" instead.";
                     logError(this, expression->start, error);
                 }
             }
             
             if (expression->keyToken) {
-                switch (expression->keyToken->getType()) {
+                size_t tokenType = expression->keyToken->getType();
+                switch (tokenType) {
                     case MaPLParser::PAREN_OPEN: { // Typecast.
                         MaPLType castType = typeForTypeContext(expression->type());
                         MaPLType expressionType = dataTypeForExpression(expression->expression(0));
@@ -367,16 +371,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         compileNode(expression->expression(0), { MaPLPrimitiveType_InvalidType }, currentBuffer);
                     }
                         break;
-                    case MaPLParser::LOGICAL_AND:
-                        currentBuffer->appendByte(MAPL_BYTE_LOGICAL_AND);
-                        compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
-                        compileNode(expression->expression(1), { MaPLPrimitiveType_Boolean }, currentBuffer);
-                        break;
-                    case MaPLParser::LOGICAL_OR:
-                        currentBuffer->appendByte(MAPL_BYTE_LOGICAL_OR);
-                        compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
-                        compileNode(expression->expression(1), { MaPLPrimitiveType_Boolean }, currentBuffer);
-                        break;
+                    case MaPLParser::LOGICAL_AND: // Intentional fallthrough.
+                    case MaPLParser::LOGICAL_OR: {
+                       u_int8_t byte = tokenType == MaPLParser::LOGICAL_AND ? MAPL_BYTE_LOGICAL_AND : MAPL_BYTE_LOGICAL_OR;
+                       currentBuffer->appendByte(byte);
+                       compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
+                       compileNode(expression->expression(1), { MaPLPrimitiveType_Boolean }, currentBuffer);
+                   }
+                       break;
                     case MaPLParser::BITWISE_AND: {
                         // TODO: Implement this.
                     }

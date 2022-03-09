@@ -459,7 +459,7 @@ void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::To
     if (!isAmbiguousNumericType(type)) {
         return;
     }
-    std::string message = "This expression contains numeric literals whose type remains ambiguous. An explicit cast must be added to distinguish between: ";
+    std::string message = "This expression contains numeric literals whose type is ambiguous. An explicit cast must be added to distinguish between: ";
     std::vector<MaPLPrimitiveType> suggestedTypes;
     switch (type) {
         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
