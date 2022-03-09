@@ -159,16 +159,19 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
         case MaPLParser::RuleApiDeclaration: {
             MaPLParser::ApiDeclarationContext *apiDeclaration = (MaPLParser::ApiDeclarationContext *)node;
             if (apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
-                // This declaration is a type.
+                // Check for duplicate symbols.
                 if (findType(this, apiDeclaration->identifier()->getText(), apiDeclaration)) {
                     logError(this, apiDeclaration->identifier()->start, "Type name '"+apiDeclaration->identifier()->getText()+"' conflicts with another type of the same name.");
                 }
+                // TODO: Check for cycles in the graph of inheritance.
             }
             compileChildNodes(node, expectedType, currentBuffer);
         }
             break;
         case MaPLParser::RuleApiInheritance: {
             MaPLParser::ApiInheritanceContext *inheritance = (MaPLParser::ApiInheritanceContext *)node;
+            
+            // Check all the types referenced in this API to make sure they exist.
             for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
                 if (!findType(this, identifier->getText(), NULL)) {
                     missingTypeError(identifier->start, identifier->getText());
@@ -178,6 +181,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             break;
         case MaPLParser::RuleApiFunction: {
             MaPLParser::ApiFunctionContext *function = (MaPLParser::ApiFunctionContext *)node;
+            
+            // Check the return type referenced in this API to make sure it exists.
             if (!function->API_VOID()) {
                 MaPLParser::TypeContext *typeContext = function->type();
                 MaPLType returnType = typeForTypeContext(typeContext);
@@ -185,12 +190,15 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                     missingTypeError(typeContext->start, returnType.pointerType);
                 }
             }
+            // Check for duplicate symbols.
             // TODO: check for duplicate functions.
             compileNode(function->apiFunctionArgs(), expectedType, currentBuffer);
         }
             break;
         case MaPLParser::RuleApiFunctionArgs: {
             MaPLParser::ApiFunctionArgsContext *args = (MaPLParser::ApiFunctionArgsContext *)node;
+            
+            // Check all the types referenced in this API to make sure they exist.
             for (MaPLParser::TypeContext *typeContext : args->type()) {
                 MaPLType parameterType = typeForTypeContext(typeContext);
                 if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType, NULL)) {
@@ -201,11 +209,15 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             break;
         case MaPLParser::RuleApiProperty: {
             MaPLParser::ApiPropertyContext *property = (MaPLParser::ApiPropertyContext *)node;
+            
+            // Check the return type referenced in this API to make sure it exists.
             MaPLParser::TypeContext *typeContext = property->type();
             MaPLType returnType = typeForTypeContext(typeContext);
             if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {
                 missingTypeError(typeContext->start, returnType.pointerType);
             }
+            
+            // Check for duplicate symbols.
             MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(property->parent);
             bool isGlobal = parentApi->keyToken->getType() == MaPLParser::API_GLOBAL;
             std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
@@ -220,13 +232,21 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             break;
         case MaPLParser::RuleApiSubscript: {
             MaPLParser::ApiSubscriptContext *subscript = (MaPLParser::ApiSubscriptContext *)node;
+            
+            // Check all the types referenced in this API to make sure they exist.
             for (MaPLParser::TypeContext *typeContext : subscript->type()) {
                 MaPLType type = typeForTypeContext(typeContext);
                 if (type.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, type.pointerType, NULL)) {
                     missingTypeError(typeContext->start, type.pointerType);
                 }
             }
-            // TODO: check for duplicate subscripts.
+            
+            // Check for duplicate symbols.
+            MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(subscript->parent);
+            MaPLType indexType = typeForTypeContext(subscript->type(1));
+            if (findSubscript(this, parentApi->identifier()->getText(), indexType, subscript)) {
+                logError(this, subscript->type(1)->start, "Subscript indexed by "+descriptorForType(indexType)+" conflicts with another subscript in type '"+parentApi->identifier()->getText()+"'.");
+            }
         }
             break;
         case MaPLParser::RuleStatement: {
@@ -777,7 +797,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                     return { MaPLPrimitiveType_InvalidType };
                 }
                 MaPLType indexType = dataTypeForExpression(expression->expression(0));
-                MaPLParser::ApiSubscriptContext *subscript = findSubscript(this, prefixType.pointerType, indexType);
+                MaPLParser::ApiSubscriptContext *subscript = findSubscript(this, prefixType.pointerType, indexType, NULL);
                 if (!subscript) {
                     logError(this, expression->keyToken, "Unable to find a subscript on type '"+invokedOnType+"' that takes this type of parameter.");
                     return { MaPLPrimitiveType_InvalidType };

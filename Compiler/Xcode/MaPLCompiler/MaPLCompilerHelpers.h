@@ -154,25 +154,27 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
  * @param file The MaPLFile to use as the root of the search.
  * @param type The string name of the #type.
  * @param indexType The data type of parameter used to index into this subscript.
+ * @param excludingSubscript A subscript node to exclude from the search. This is useful when checking for duplicate symbols. Pass NULL to exclude nothing.
  *
  * @return The parse tree node which represents the API subscript, if a matching subscript exists. Otherwise @c NULL.
  */
 MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
                                                std::string type,
-                                               MaPLType indexType);
+                                               MaPLType indexType,
+                                               MaPLParser::ApiSubscriptContext *excludingSubscript);
 
 /**
  * @param file The MaPLFile to use as the root of the search.
  * @param type The string name of the #type. Use an empty string for globals.
  * @param name The name of the property.
- * @param excludingType A property node to exclude from the search. This is useful when checking for duplicate symbols. Pass NULL to exclude nothing.
+ * @param excludingProperty A property node to exclude from the search. This is useful when checking for duplicate symbols. Pass NULL to exclude nothing.
  *
  * @return The parse tree node which represents the API property, if a matching property exists. Otherwise @c NULL.
  */
 MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                                              std::string type,
                                              std::string name,
-                                             MaPLParser::ApiPropertyContext *excludingType);
+                                             MaPLParser::ApiPropertyContext *excludingProperty);
 
 /**
  * Logs an error describing how to clarify an ambiguous literal expression.
