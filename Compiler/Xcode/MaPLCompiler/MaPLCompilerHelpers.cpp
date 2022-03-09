@@ -399,7 +399,8 @@ MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
 
 MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                                              std::string type,
-                                             std::string name) {
+                                             std::string name,
+                                             MaPLParser::ApiPropertyContext *excludingType) {
     MaPLParser::ProgramContext *program = file->getParseTree();
     if (!program) { return NULL; }
     
@@ -412,7 +413,7 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
             case MaPLParser::API_GLOBAL: {
                 if (!isGlobal) { continue; }
                 MaPLParser::ApiPropertyContext *property = apiDeclaration->apiProperty(0);
-                if (!property) { continue; }
+                if (!property || (excludingType && excludingType == property)) { continue; }
                 MaPLParser::IdentifierContext *identifier = property->identifier();
                 if (identifier && identifier->getText() == name) {
                     return property;
@@ -426,6 +427,9 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                     continue;
                 }
                 for (MaPLParser::ApiPropertyContext *property : apiDeclaration->apiProperty()) {
+                    if (excludingType && excludingType == property) {
+                        continue;
+                    }
                     MaPLParser::IdentifierContext *identifier = property->identifier();
                     if (identifier && identifier->getText() == name) {
                         return property;
@@ -434,7 +438,7 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                 MaPLParser::ApiInheritanceContext *inheritance = apiDeclaration->apiInheritance();
                 if (inheritance) {
                     for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
-                        MaPLParser::ApiPropertyContext *foundProperty = findProperty(file, identifier->getText(), name);
+                        MaPLParser::ApiPropertyContext *foundProperty = findProperty(file, identifier->getText(), name, excludingType);
                         if (foundProperty) {
                             return foundProperty;
                         }
@@ -449,7 +453,7 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
     
     // If no matching property was found in this file, recurse through all dependent files.
     for (MaPLFile *dependency : file->getDependencies()) {
-        MaPLParser::ApiPropertyContext *foundProperty = findProperty(dependency, type, name);
+        MaPLParser::ApiPropertyContext *foundProperty = findProperty(dependency, type, name, excludingType);
         if (foundProperty) {
             return foundProperty;
         }

@@ -161,7 +161,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             if (apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
                 // This declaration is a type.
                 if (findType(this, apiDeclaration->identifier()->getText(), apiDeclaration)) {
-                    logError(this, apiDeclaration->identifier()->start, "Type name '"+apiDeclaration->identifier()->getText()+"' conflicts with existing type name.");
+                    logError(this, apiDeclaration->identifier()->start, "Type name '"+apiDeclaration->identifier()->getText()+"' conflicts with another type of the same name.");
                 }
             }
             compileChildNodes(node, expectedType, currentBuffer);
@@ -206,7 +206,16 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {
                 missingTypeError(typeContext->start, returnType.pointerType);
             }
-            // TODO: check for duplicate properties.
+            MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(property->parent);
+            bool isGlobal = parentApi->keyToken->getType() == MaPLParser::API_GLOBAL;
+            std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
+            if (findProperty(this, parentTypeName, property->identifier()->getText(), property)) {
+                if (isGlobal) {
+                    logError(this, property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another global property.");
+                } else {
+                    logError(this, property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another property in type '"+parentTypeName+"'.");
+                }
+            }
         }
             break;
         case MaPLParser::RuleApiSubscript: {
@@ -268,7 +277,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             std::string variableName = identifier->getText();
             
             // Check if this variable name conflicts with any global property.
-            if (findProperty(this, "", variableName)) {
+            if (findProperty(this, "", variableName, NULL)) {
                 logError(this, identifier->start, "Variable with name '"+variableName+"' conflicts with global property of the same name.");
             }
             
@@ -819,7 +828,8 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
             // The name doesn't match a variable, check if it matches a property.
             MaPLParser::ApiPropertyContext *property = findProperty(this,
                                                                     invokedOnType,
-                                                                    propertyOrVariableName);
+                                                                    propertyOrVariableName,
+                                                                    NULL);
             if (!property) {
                 if (isInvokedOnType) {
                     logError(this, identifier->start, "Unable to find a '"+propertyOrVariableName+"' property on type '"+invokedOnType+"'.");

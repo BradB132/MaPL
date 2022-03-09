@@ -138,6 +138,11 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
 MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, MaPLParser::ApiDeclarationContext *excludingType);
 
 /**
+ * @param file The MaPLFile to use as the root of the search.
+ * @param type The string name of the #type. Use an empty string for globals.
+ * @param name The name of the function.
+ * @param parameterTypes A list of data types corresponding to the type of each parameter. Types must not be ambiguous.
+ *
  * @return The parse tree node which represents the API function, if a matching function exists. Otherwise @c NULL.
  */
 MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
@@ -146,6 +151,10 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                                              std::vector<MaPLType> parameterTypes);
 
 /**
+ * @param file The MaPLFile to use as the root of the search.
+ * @param type The string name of the #type.
+ * @param indexType The data type of parameter used to index into this subscript.
+ *
  * @return The parse tree node which represents the API subscript, if a matching subscript exists. Otherwise @c NULL.
  */
 MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
@@ -153,11 +162,17 @@ MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
                                                MaPLType indexType);
 
 /**
+ * @param file The MaPLFile to use as the root of the search.
+ * @param type The string name of the #type. Use an empty string for globals.
+ * @param name The name of the property.
+ * @param excludingType A property node to exclude from the search. This is useful when checking for duplicate symbols. Pass NULL to exclude nothing.
+ *
  * @return The parse tree node which represents the API property, if a matching property exists. Otherwise @c NULL.
  */
 MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                                              std::string type,
-                                             std::string name);
+                                             std::string name,
+                                             MaPLParser::ApiPropertyContext *excludingType);
 
 /**
  * Logs an error describing how to clarify an ambiguous literal expression.
