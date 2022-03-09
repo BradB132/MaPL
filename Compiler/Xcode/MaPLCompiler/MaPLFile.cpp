@@ -608,7 +608,7 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
                 }
             }
         }
-        logError(this, errorToken, "The return type of this expression is ambiguous and cannot be determined. Both expressions must have a matching type. "+errorSuffix);
+        logError(this, errorToken, "The return type of this operator is ambiguous and cannot be determined. Expressions in both branches of the conditional must have a matching type. "+errorSuffix);
         return { MaPLPrimitiveType_InvalidType };
     }
     return { reconciledPrimitive, type1.pointerType };
