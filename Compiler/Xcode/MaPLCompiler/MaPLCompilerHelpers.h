@@ -129,9 +129,13 @@ bool inheritsFromType(MaPLFile *file, std::string type, std::string possibleAnce
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
 
 /**
+ * @param file The MaPLFile to use as the root of the search.
+ * @param type The string name of the #type.
+ * @param excludingType A type node to exclude from the search. This is useful when checking for duplicate symbols. Pass NULL to exclude nothing.
+ *
  * @return The parse tree node which represents the API type, if a matching type exists. Otherwise @c NULL.
  */
-MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type);
+MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, MaPLParser::ApiDeclarationContext *excludingType);
 
 /**
  * @return The parse tree node which represents the API function, if a matching function exists. Otherwise @c NULL.

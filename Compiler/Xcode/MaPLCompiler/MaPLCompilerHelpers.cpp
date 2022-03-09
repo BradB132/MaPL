@@ -229,7 +229,7 @@ bool isAssignable(MaPLFile *file, MaPLType expressionType, MaPLType assignToType
 
 std::set<std::string> findAncestorTypes(MaPLFile *file, std::string type) {
     std::set<std::string> allAncestorTypes;
-    MaPLParser::ApiDeclarationContext *typeContext = findType(file, type);
+    MaPLParser::ApiDeclarationContext *typeContext = findType(file, type, NULL);
     if (!typeContext) {
         return allAncestorTypes;
     }
@@ -262,20 +262,23 @@ bool inheritsFromType(MaPLFile *file, std::string type, std::string possibleAnce
     return findAncestorTypes(file, type).count(possibleAncestorType) > 0;
 }
 
-MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type) {
+MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, MaPLParser::ApiDeclarationContext *excludingType) {
     MaPLParser::ProgramContext *program = file->getParseTree();
     if (!program) { return NULL; }
     for (MaPLParser::StatementContext *statement : program->statement()) {
         MaPLParser::ApiDeclarationContext *apiDeclaration = statement->apiDeclaration();
-        if (apiDeclaration && apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
-            MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
-            if (identifier && identifier->getText() == type) {
-                return apiDeclaration;
-            }
+        if (!apiDeclaration ||
+            (excludingType && excludingType == apiDeclaration) ||
+            apiDeclaration->keyToken->getType() != MaPLParser::API_TYPE) {
+            continue;
+        }
+        MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
+        if (identifier && identifier->getText() == type) {
+            return apiDeclaration;
         }
     }
     for (MaPLFile *dependency : file->getDependencies()) {
-        MaPLParser::ApiDeclarationContext *apiDeclaration = findType(dependency, type);
+        MaPLParser::ApiDeclarationContext *apiDeclaration = findType(dependency, type, excludingType);
         if (apiDeclaration) {
             return apiDeclaration;
         }
@@ -373,7 +376,7 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
 MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
                                                std::string type,
                                                MaPLType indexType) {
-    MaPLParser::ApiDeclarationContext *typeDeclaration = findType(file, type);
+    MaPLParser::ApiDeclarationContext *typeDeclaration = findType(file, type, NULL);
     if (!typeDeclaration) {
         return NULL;
     }

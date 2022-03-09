@@ -13,6 +13,7 @@
 int main(int argc, const char ** argv) {
     // Make sure that script paths were specified.
     if (argc < 2) {
+        // TODO: make this error message a more verbose description of what usage should look like.
         printf("No paths specified. Pass in the paths of the script(s) as arguments.\n");
         return 1;
     }

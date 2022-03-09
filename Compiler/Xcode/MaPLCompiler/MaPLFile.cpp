@@ -156,14 +156,21 @@ void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLType expec
 
 void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedType, MaPLBuffer *currentBuffer) {
     switch (node->getRuleIndex()) {
-        case MaPLParser::RuleApiDeclaration:
-            // TODO: For #type declarations, check for duplicate types and functions, properties, and subscripts within types.
+        case MaPLParser::RuleApiDeclaration: {
+            MaPLParser::ApiDeclarationContext *apiDeclaration = (MaPLParser::ApiDeclarationContext *)node;
+            if (apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
+                // This declaration is a type.
+                if (findType(this, apiDeclaration->identifier()->getText(), apiDeclaration)) {
+                    logError(this, apiDeclaration->identifier()->start, "Type name '"+apiDeclaration->identifier()->getText()+"' conflicts with existing type name.");
+                }
+            }
             compileChildNodes(node, expectedType, currentBuffer);
+        }
             break;
         case MaPLParser::RuleApiInheritance: {
             MaPLParser::ApiInheritanceContext *inheritance = (MaPLParser::ApiInheritanceContext *)node;
             for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
-                if (!findType(this, identifier->getText())) {
+                if (!findType(this, identifier->getText(), NULL)) {
                     missingTypeError(identifier->start, identifier->getText());
                 }
             }
@@ -174,10 +181,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             if (!function->API_VOID()) {
                 MaPLParser::TypeContext *typeContext = function->type();
                 MaPLType returnType = typeForTypeContext(typeContext);
-                if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType)) {
+                if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {
                     missingTypeError(typeContext->start, returnType.pointerType);
                 }
             }
+            // TODO: check for duplicate functions.
             compileNode(function->apiFunctionArgs(), expectedType, currentBuffer);
         }
             break;
@@ -185,7 +193,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             MaPLParser::ApiFunctionArgsContext *args = (MaPLParser::ApiFunctionArgsContext *)node;
             for (MaPLParser::TypeContext *typeContext : args->type()) {
                 MaPLType parameterType = typeForTypeContext(typeContext);
-                if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType)) {
+                if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType, NULL)) {
                     missingTypeError(typeContext->start, parameterType.pointerType);
                 }
             }
@@ -195,19 +203,21 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             MaPLParser::ApiPropertyContext *property = (MaPLParser::ApiPropertyContext *)node;
             MaPLParser::TypeContext *typeContext = property->type();
             MaPLType returnType = typeForTypeContext(typeContext);
-            if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType)) {
+            if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {
                 missingTypeError(typeContext->start, returnType.pointerType);
             }
+            // TODO: check for duplicate properties.
         }
             break;
         case MaPLParser::RuleApiSubscript: {
             MaPLParser::ApiSubscriptContext *subscript = (MaPLParser::ApiSubscriptContext *)node;
             for (MaPLParser::TypeContext *typeContext : subscript->type()) {
                 MaPLType type = typeForTypeContext(typeContext);
-                if (type.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, type.pointerType)) {
+                if (type.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, type.pointerType, NULL)) {
                     missingTypeError(typeContext->start, type.pointerType);
                 }
             }
+            // TODO: check for duplicate subscripts.
         }
             break;
         case MaPLParser::RuleStatement: {
