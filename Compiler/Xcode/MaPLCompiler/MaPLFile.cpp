@@ -100,6 +100,9 @@ MaPLBuffer *MaPLFile::getBytecode() {
     if (!parseRawScript()) {
         return NULL;
     }
+    if(findInheritanceCycle(this)) {
+        return NULL;
+    }
     _bytecode = new MaPLBuffer(10);
     
     // Concatenate all preceding bytecode and variables from dependencies.
@@ -165,23 +168,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                 // Check for duplicate symbols.
                 if (findType(this, typeName, apiDeclaration)) {
                     logError(this, identifier->start, "Type name '"+typeName+"' conflicts with another type of the same name.");
-                }
-                
-                // Check for cycles in the inheritance graph.
-                std::vector<std::string> cycle = findInheritanceCycle(this, typeName);
-                if (cycle.size() > 0) {
-                    std::string cycleDescriptor;
-                    for (int i = 0; i < cycle.size(); i++) {
-                        cycleDescriptor += cycle[i];
-                        if (i < cycle.size()-1) {
-                            cycleDescriptor += " -> ";
-                        }
-                    }
-                    cycleDescriptor += ".";
-                    logError(this, identifier->start, "Type inheritance forms a cycle: "+cycleDescriptor);
-                    
-                    // The traversal of the parse tree will cause a stack overflow if there's a cycle in this graph. Return early.
-                    break;
                 }
             }
             compileChildNodes(node, expectedType, currentBuffer);

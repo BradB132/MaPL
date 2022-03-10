@@ -141,9 +141,9 @@ std::vector<std::string> mutualAncestorTypes(MaPLFile *file, std::string type1, 
 bool inheritsFromType(MaPLFile *file, std::string type, std::string possibleAncestorType);
 
 /**
- * @return A list of type names that form an inheritance cycle. Empty list if no cycle exists.
+ * @return @c true if the #type declarations in @c file contain an inheritance cycle.
  */
-std::vector<std::string> findInheritanceCycle(MaPLFile *file, std::string type);
+bool findInheritanceCycle(MaPLFile *file);
 
 /**
  * @return A MaPLType as described by a type node in the parse tree.
