@@ -57,7 +57,7 @@ struct MaPLType {
  * Describes how variadic arguments should be interpreted when searching for functions.
  */
 enum MaPLParameterStrategy {
-    // Candidate functions with variadic args can successfully match longer parameter lists.
+    // Candidate functions with variadic args can successfully match longer parameter lists. Parameters can be ambiguous types.
     MaPLParameterStrategy_Flexible,
     // Only matches functions that use variadic arguments. List of params must exactly match function params.
     MaPLParameterStrategy_Exact_IncludeVariadicArgs,
@@ -153,7 +153,7 @@ MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, Ma
  * @param file The MaPLFile to use as the root of the search.
  * @param type The string name of the #type. Use an empty string for globals.
  * @param name The name of the function.
- * @param parameterTypes A list of data types corresponding to the type of each parameter. Types must not be ambiguous.
+ * @param parameterTypes A list of data types corresponding to the type of each parameter. Types must not be ambiguous if @c parameterStrategy is exact.
  * @param parameterStrategy The strategy that this function will use with comparing @c parameterTypes against the parameters declared in the API.
  * @param excludingFunction A function node to exclude from the search. This is useful when checking for duplicate symbols. Pass NULL to exclude nothing.
  *
