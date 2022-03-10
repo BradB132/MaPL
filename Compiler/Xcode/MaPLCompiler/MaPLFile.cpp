@@ -173,7 +173,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                     for (int i = 0; i < cycle.size(); i++) {
                         cycleDescriptor += cycle[i];
                         if (i < cycle.size()-1) {
-                            cycleDescriptor += ", ";
+                            cycleDescriptor += " -> ";
                         }
                     }
                     cycleDescriptor += ".";
