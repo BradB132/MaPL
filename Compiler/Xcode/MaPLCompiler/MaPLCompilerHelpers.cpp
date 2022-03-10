@@ -97,19 +97,19 @@ MaPL_Index byteSizeOfType(MaPLPrimitiveType type) {
 
 std::string descriptorForType(MaPLType type) {
     switch (type.primitiveType) {
-        case MaPLPrimitiveType_Int8: return "'int8'";
-        case MaPLPrimitiveType_Int16: return "'int16'";
-        case MaPLPrimitiveType_Int32: return "'int32'";
-        case MaPLPrimitiveType_Int64: return "'int64'";
-        case MaPLPrimitiveType_UInt8: return "'uint8'";
-        case MaPLPrimitiveType_UInt16: return "'uint16'";
-        case MaPLPrimitiveType_UInt32: return "'uint32'";
-        case MaPLPrimitiveType_UInt64: return "'uint64'";
-        case MaPLPrimitiveType_Float32: return "'float32'";
-        case MaPLPrimitiveType_Float64: return "'float64'";
-        case MaPLPrimitiveType_Boolean: return "'bool'";
-        case MaPLPrimitiveType_String: return "'string'";
-        case MaPLPrimitiveType_Pointer: return "'"+type.pointerType+"' pointer";
+        case MaPLPrimitiveType_Int8: return "int8";
+        case MaPLPrimitiveType_Int16: return "int16";
+        case MaPLPrimitiveType_Int32: return "int32";
+        case MaPLPrimitiveType_Int64: return "int64";
+        case MaPLPrimitiveType_UInt8: return "uint8";
+        case MaPLPrimitiveType_UInt16: return "uint16";
+        case MaPLPrimitiveType_UInt32: return "uint32";
+        case MaPLPrimitiveType_UInt64: return "uint64";
+        case MaPLPrimitiveType_Float32: return "float32";
+        case MaPLPrimitiveType_Float64: return "float64";
+        case MaPLPrimitiveType_Boolean: return "bool";
+        case MaPLPrimitiveType_String: return "string";
+        case MaPLPrimitiveType_Pointer: return type.pointerType;
         case MaPLPrimitiveType_SignedInt_AmbiguousSize: return "signed integer";
         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign: return "integer";
         case MaPLPrimitiveType_Float_AmbiguousSize: return "floating point";
@@ -289,11 +289,13 @@ MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, Ma
 bool functionIsCompatible(MaPLFile *file,
                           MaPLParser::ApiFunctionContext *function,
                           std::string name,
-                          std::vector<MaPLType> parameterTypes) {
+                          std::vector<MaPLType> parameterTypes,
+                          MaPLParameterStrategy parameterStrategy) {
     // Confirm matching function name.
     if (name != function->identifier()->getText()) {
         return false;
     }
+    
     // Confirm matching number of arguments.
     MaPLParser::ApiFunctionArgsContext *args = function->apiFunctionArgs();
     if (!args) {
@@ -301,23 +303,49 @@ bool functionIsCompatible(MaPLFile *file,
     }
     bool hasVariadicArgs = args->API_VARIADIC_ARGUMENTS() != NULL;
     std::vector<MaPLParser::TypeContext *> typeContexts = args->type();
-    if ((!hasVariadicArgs && typeContexts.size() != parameterTypes.size()) ||
-        (hasVariadicArgs && typeContexts.size() > parameterTypes.size())) {
-        return false;
-    }
-    // Confirm compatible types for all arguments.
-    for (int32_t i = 0; i < typeContexts.size(); i++) {
-        if (!isAssignable(file, parameterTypes[i], typeForTypeContext(typeContexts[i]))) {
+    if (parameterStrategy == MaPLParameterStrategy_Flexible) {
+        // It's possible to match longer parameter lists, but only if this function has variadic args.
+        if ((!hasVariadicArgs && typeContexts.size() != parameterTypes.size()) ||
+            (hasVariadicArgs && typeContexts.size() > parameterTypes.size())) {
             return false;
         }
+        
+        // Confirm assignable types for all arguments.
+        for (int32_t i = 0; i < typeContexts.size(); i++) {
+            if (!isAssignable(file, parameterTypes[i], typeForTypeContext(typeContexts[i]))) {
+                return false;
+            }
+        }
+    } else {
+        // This strategy requires an exact match in number of args.
+        if (typeContexts.size() != parameterTypes.size()) {
+            return false;
+        }
+        bool expectingVariadicArgs = parameterStrategy == MaPLParameterStrategy_Exact_IncludeVariadicArgs;
+        if (expectingVariadicArgs != hasVariadicArgs) {
+            return false;
+        }
+        
+        // Confirm exact matching types for all arguments.
+        for (int32_t i = 0; i < typeContexts.size(); i++) {
+            MaPLType searchedParamType = parameterTypes[i];
+            MaPLType declaredParamType = typeForTypeContext(typeContexts[i]);
+            if (searchedParamType.primitiveType != declaredParamType.primitiveType ||
+                (searchedParamType.primitiveType == MaPLPrimitiveType_Pointer && searchedParamType.pointerType != declaredParamType.pointerType)) {
+                return false;
+            }
+        }
     }
+    
     return true;
 }
 
 MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                                              std::string type,
                                              std::string name,
-                                             std::vector<MaPLType> parameterTypes) {
+                                             std::vector<MaPLType> parameterTypes,
+                                             MaPLParameterStrategy parameterStrategy,
+                                             MaPLParser::ApiFunctionContext *excludingFunction) {
     MaPLParser::ProgramContext *program = file->getParseTree();
     if (!program) { return NULL; }
     
@@ -330,7 +358,10 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
             case MaPLParser::API_GLOBAL: {
                 if (!isGlobal) { continue; }
                 MaPLParser::ApiFunctionContext *function = apiDeclaration->apiFunction(0);
-                if (function && functionIsCompatible(file, function, name, parameterTypes)) {
+                if (!function || (excludingFunction && excludingFunction == function)) {
+                    continue;
+                }
+                if (functionIsCompatible(file, function, name, parameterTypes, parameterStrategy)) {
                     return function;
                 }
             }
@@ -342,14 +373,22 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                     continue;
                 }
                 for (MaPLParser::ApiFunctionContext *function : apiDeclaration->apiFunction()) {
-                    if (functionIsCompatible(file, function, name, parameterTypes)) {
+                    if (excludingFunction && excludingFunction == function) {
+                        continue;
+                    }
+                    if (functionIsCompatible(file, function, name, parameterTypes, parameterStrategy)) {
                         return function;
                     }
                 }
                 MaPLParser::ApiInheritanceContext *inheritance = apiDeclaration->apiInheritance();
                 if (inheritance) {
                     for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
-                        MaPLParser::ApiFunctionContext *foundFunction = findFunction(file, identifier->getText(), name, parameterTypes);
+                        MaPLParser::ApiFunctionContext *foundFunction = findFunction(file,
+                                                                                     identifier->getText(),
+                                                                                     name,
+                                                                                     parameterTypes,
+                                                                                     parameterStrategy,
+                                                                                     excludingFunction);
                         if (foundFunction) {
                             return foundFunction;
                         }
@@ -364,7 +403,12 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
     
     // If no matching function was found in this file, recurse through all dependent files.
     for (MaPLFile *dependency : file->getDependencies()) {
-        MaPLParser::ApiFunctionContext *foundFunction = findFunction(dependency, type, name, parameterTypes);
+        MaPLParser::ApiFunctionContext *foundFunction = findFunction(dependency,
+                                                                     type,
+                                                                     name,
+                                                                     parameterTypes,
+                                                                     parameterStrategy,
+                                                                     excludingFunction);
         if (foundFunction) {
             return foundFunction;
         }

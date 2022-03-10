@@ -54,6 +54,18 @@ struct MaPLType {
 };
 
 /**
+ * Describes how variadic arguments should be interpreted when searching for functions.
+ */
+enum MaPLParameterStrategy {
+    // Candidate functions with variadic args can successfully match longer parameter lists.
+    MaPLParameterStrategy_Flexible,
+    // Only matches functions that use variadic arguments. List of params must exactly match function params.
+    MaPLParameterStrategy_Exact_IncludeVariadicArgs,
+    // Only matches functions that don't use variadic arguments. List of params must exactly match function params.
+    MaPLParameterStrategy_Exact_NoVariadicArgs,
+};
+
+/**
  * @return @c true if the primitive type is an ambiguous numeric type.
  */
 bool isAmbiguousNumericType(MaPLPrimitiveType type);
@@ -142,13 +154,17 @@ MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, Ma
  * @param type The string name of the #type. Use an empty string for globals.
  * @param name The name of the function.
  * @param parameterTypes A list of data types corresponding to the type of each parameter. Types must not be ambiguous.
+ * @param parameterStrategy The strategy that this function will use with comparing @c parameterTypes against the parameters declared in the API.
+ * @param excludingFunction A function node to exclude from the search. This is useful when checking for duplicate symbols. Pass NULL to exclude nothing.
  *
  * @return The parse tree node which represents the API function, if a matching function exists. Otherwise @c NULL.
  */
 MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                                              std::string type,
                                              std::string name,
-                                             std::vector<MaPLType> parameterTypes);
+                                             std::vector<MaPLType> parameterTypes,
+                                             MaPLParameterStrategy parameterStrategy,
+                                             MaPLParser::ApiFunctionContext *excludingFunction);
 
 /**
  * @param file The MaPLFile to use as the root of the search.

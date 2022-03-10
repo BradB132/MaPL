@@ -190,19 +190,38 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                     missingTypeError(typeContext->start, returnType.pointerType);
                 }
             }
-            // Check for duplicate symbols.
-            // TODO: check for duplicate functions.
-            compileNode(function->apiFunctionArgs(), expectedType, currentBuffer);
-        }
-            break;
-        case MaPLParser::RuleApiFunctionArgs: {
-            MaPLParser::ApiFunctionArgsContext *args = (MaPLParser::ApiFunctionArgsContext *)node;
-            
-            // Check all the types referenced in this API to make sure they exist.
+            MaPLParser::ApiFunctionArgsContext *args = function->apiFunctionArgs();
+            std::vector<MaPLType> parameterTypes;
             for (MaPLParser::TypeContext *typeContext : args->type()) {
                 MaPLType parameterType = typeForTypeContext(typeContext);
+                parameterTypes.push_back(parameterType);
+                // Check all the types referenced in this API to make sure they exist.
                 if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType, NULL)) {
                     missingTypeError(typeContext->start, parameterType.pointerType);
+                }
+            }
+            
+            // Check for duplicate symbols.
+            MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(function->parent);
+            bool isGlobal = parentApi->keyToken->getType() == MaPLParser::API_GLOBAL;
+            std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
+            MaPLParameterStrategy strategy = args->API_VARIADIC_ARGUMENTS() != NULL ? MaPLParameterStrategy_Exact_IncludeVariadicArgs : MaPLParameterStrategy_Exact_NoVariadicArgs;
+            if (findFunction(this, parentTypeName, function->identifier()->getText(), parameterTypes, strategy, function)) {
+                std::string functionSignature = function->identifier()->getText()+"(";
+                for (int i = 0; i < parameterTypes.size(); i++) {
+                    functionSignature += descriptorForType(parameterTypes[i]);
+                    if (i < parameterTypes.size()-1) {
+                        functionSignature += ", ";
+                    }
+                }
+                if (strategy == MaPLParameterStrategy_Exact_IncludeVariadicArgs) {
+                    functionSignature += ", ...";
+                }
+                functionSignature += ")";
+                if (isGlobal) {
+                    logError(this, function->identifier()->start, "Function '"+functionSignature+"' conflicts with another global function with the same name and parameters.");
+                } else {
+                    logError(this, function->identifier()->start, "Function '"+functionSignature+"' conflicts with another function with the same name and parameters in type '"+parentTypeName+"' or one of its parent types.");
                 }
             }
         }
@@ -223,9 +242,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
             if (findProperty(this, parentTypeName, property->identifier()->getText(), property)) {
                 if (isGlobal) {
-                    logError(this, property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another global property.");
+                    logError(this, property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another global property with the same name.");
                 } else {
-                    logError(this, property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another property in type '"+parentTypeName+"'.");
+                    logError(this, property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another property with the same name in type '"+parentTypeName+"' or one of its parent types.");
                 }
             }
         }
@@ -245,7 +264,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(subscript->parent);
             MaPLType indexType = typeForTypeContext(subscript->type(1));
             if (findSubscript(this, parentApi->identifier()->getText(), indexType, subscript)) {
-                logError(this, subscript->type(1)->start, "Subscript indexed by "+descriptorForType(indexType)+" conflicts with another subscript in type '"+parentApi->identifier()->getText()+"'.");
+                logError(this, subscript->type(1)->start, "Subscript indexed by "+descriptorForType(indexType)+" conflicts with another subscript in type '"+parentApi->identifier()->getText()+"' or one of its parent types.");
             }
         }
             break;
@@ -814,7 +833,9 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 MaPLParser::ApiFunctionContext *function = findFunction(this,
                                                                         invokedOnType,
                                                                         functionName,
-                                                                        parameterTypes);
+                                                                        parameterTypes,
+                                                                        MaPLParameterStrategy_Flexible,
+                                                                        NULL);
                 if (!function) {
                     if (invokedOnType.empty()) {
                         logError(this, expression->identifier()->start, "Unable to find a global '"+functionName+"' function with matching parameters.");
