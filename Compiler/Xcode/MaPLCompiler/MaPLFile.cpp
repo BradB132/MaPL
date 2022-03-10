@@ -178,6 +178,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                     }
                     cycleDescriptor += ".";
                     logError(this, identifier->start, "Type inheritance forms a cycle: "+cycleDescriptor);
+                    
+                    // The traversal of the parse tree will cause a stack overflow if there's a cycle in this graph. Return early.
+                    break;
                 }
             }
             compileChildNodes(node, expectedType, currentBuffer);
