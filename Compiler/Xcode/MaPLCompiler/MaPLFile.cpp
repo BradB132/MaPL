@@ -192,12 +192,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             }
             MaPLParser::ApiFunctionArgsContext *args = function->apiFunctionArgs();
             std::vector<MaPLType> parameterTypes;
-            for (MaPLParser::TypeContext *typeContext : args->type()) {
-                MaPLType parameterType = typeForTypeContext(typeContext);
-                parameterTypes.push_back(parameterType);
-                // Check all the types referenced in this API to make sure they exist.
-                if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType, NULL)) {
-                    missingTypeError(typeContext->start, parameterType.pointerType);
+            if (args) {
+                for (MaPLParser::TypeContext *typeContext : args->type()) {
+                    MaPLType parameterType = typeForTypeContext(typeContext);
+                    parameterTypes.push_back(parameterType);
+                    // Check all the types referenced in this API to make sure they exist.
+                    if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType, NULL)) {
+                        missingTypeError(typeContext->start, parameterType.pointerType);
+                    }
                 }
             }
             
@@ -205,7 +207,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(function->parent);
             bool isGlobal = parentApi->keyToken->getType() == MaPLParser::API_GLOBAL;
             std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
-            MaPLParameterStrategy strategy = args->API_VARIADIC_ARGUMENTS() != NULL ? MaPLParameterStrategy_Exact_IncludeVariadicArgs : MaPLParameterStrategy_Exact_NoVariadicArgs;
+            MaPLParameterStrategy strategy = args && args->API_VARIADIC_ARGUMENTS() != NULL ? MaPLParameterStrategy_Exact_IncludeVariadicArgs : MaPLParameterStrategy_Exact_NoVariadicArgs;
             if (findFunction(this, parentTypeName, function->identifier()->getText(), parameterTypes, strategy, function)) {
                 std::string functionSignature = function->identifier()->getText()+"(";
                 for (int i = 0; i < parameterTypes.size(); i++) {
