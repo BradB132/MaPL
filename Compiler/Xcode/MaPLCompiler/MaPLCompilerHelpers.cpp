@@ -262,6 +262,40 @@ bool inheritsFromType(MaPLFile *file, std::string type, std::string possibleAnce
     return findAncestorTypes(file, type).count(possibleAncestorType) > 0;
 }
 
+std::vector<std::string> findInheritanceCycle(MaPLFile *file, std::string type, std::set<std::string> seenTypes) {
+    std::vector<std::string> cycleVector;
+    if (seenTypes.count(type) > 0) {
+        // This graph contains a cycle.
+        cycleVector.push_back(type);
+        return cycleVector;
+    }
+    MaPLParser::ApiDeclarationContext *apiType = findType(file, type, NULL);
+    if (!apiType) {
+        return cycleVector;
+    }
+    MaPLParser::ApiInheritanceContext *inheritance = apiType->apiInheritance();
+    if (!inheritance) {
+        return cycleVector;
+    }
+    seenTypes.insert(type);
+    for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
+        std::string parentTypeName = identifier->getText();
+        std::vector<std::string> foundCycle = findInheritanceCycle(file, parentTypeName, seenTypes);
+        if (foundCycle.size() > 0) {
+            cycleVector.push_back(type);
+            cycleVector.insert(cycleVector.end(), foundCycle.begin(), foundCycle.end());
+            break;
+        }
+    }
+    seenTypes.erase(type);
+    return cycleVector;
+}
+
+std::vector<std::string> findInheritanceCycle(MaPLFile *file, std::string type) {
+    std::set<std::string> seenTypes;
+    return findInheritanceCycle(file, type, seenTypes);
+}
+
 MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, MaPLParser::ApiDeclarationContext *excludingType) {
     MaPLParser::ProgramContext *program = file->getParseTree();
     if (!program) { return NULL; }

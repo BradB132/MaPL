@@ -159,11 +159,26 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
         case MaPLParser::RuleApiDeclaration: {
             MaPLParser::ApiDeclarationContext *apiDeclaration = (MaPLParser::ApiDeclarationContext *)node;
             if (apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
+                MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
+                std::string typeName = identifier->getText();
                 // Check for duplicate symbols.
-                if (findType(this, apiDeclaration->identifier()->getText(), apiDeclaration)) {
-                    logError(this, apiDeclaration->identifier()->start, "Type name '"+apiDeclaration->identifier()->getText()+"' conflicts with another type of the same name.");
+                if (findType(this, typeName, apiDeclaration)) {
+                    logError(this, identifier->start, "Type name '"+typeName+"' conflicts with another type of the same name.");
                 }
-                // TODO: Check for cycles in the graph of inheritance.
+                
+                // Check for cycles in the inheritance graph.
+                std::vector<std::string> cycle = findInheritanceCycle(this, typeName);
+                if (cycle.size() > 0) {
+                    std::string cycleDescriptor;
+                    for (int i = 0; i < cycle.size(); i++) {
+                        cycleDescriptor += cycle[i];
+                        if (i < cycle.size()-1) {
+                            cycleDescriptor += ", ";
+                        }
+                    }
+                    cycleDescriptor += ".";
+                    logError(this, identifier->start, "Type inheritance forms a cycle: "+cycleDescriptor);
+                }
             }
             compileChildNodes(node, expectedType, currentBuffer);
         }
