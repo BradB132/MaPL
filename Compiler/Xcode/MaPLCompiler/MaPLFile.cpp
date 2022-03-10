@@ -161,6 +161,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             if (apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
                 MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
                 std::string typeName = identifier->getText();
+                
                 // Check for duplicate symbols.
                 if (findType(this, typeName, apiDeclaration)) {
                     logError(this, identifier->start, "Type name '"+typeName+"' conflicts with another type of the same name.");
@@ -227,17 +228,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
             MaPLParameterStrategy strategy = args && args->API_VARIADIC_ARGUMENTS() != NULL ? MaPLParameterStrategy_Exact_IncludeVariadicArgs : MaPLParameterStrategy_Exact_NoVariadicArgs;
             if (findFunction(this, parentTypeName, function->identifier()->getText(), parameterTypes, strategy, function)) {
-                std::string functionSignature = function->identifier()->getText()+"(";
-                for (int i = 0; i < parameterTypes.size(); i++) {
-                    functionSignature += descriptorForType(parameterTypes[i]);
-                    if (i < parameterTypes.size()-1) {
-                        functionSignature += ", ";
-                    }
-                }
-                if (strategy == MaPLParameterStrategy_Exact_IncludeVariadicArgs) {
-                    functionSignature += ", ...";
-                }
-                functionSignature += ")";
+                std::string functionSignature = descriptorForFunction(function->identifier()->getText(),
+                                                                      parameterTypes,
+                                                                      strategy == MaPLParameterStrategy_Exact_IncludeVariadicArgs);
                 if (isGlobal) {
                     logError(this, function->identifier()->start, "Function '"+functionSignature+"' conflicts with another global function with the same name and parameters.");
                 } else {
@@ -838,7 +831,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 MaPLType indexType = dataTypeForExpression(expression->expression(0));
                 MaPLParser::ApiSubscriptContext *subscript = findSubscript(this, prefixType.pointerType, indexType, NULL);
                 if (!subscript) {
-                    logError(this, expression->keyToken, "Unable to find a subscript on type '"+invokedOnType+"' that takes this type of parameter.");
+                    logError(this, expression->keyToken, "Unable to find a subscript on type '"+prefixType.pointerType+"' with an index parameter of type "+descriptorForType(indexType)+".");
                     return { MaPLPrimitiveType_InvalidType };
                 }
                 return typeForTypeContext(subscript->type(0));
@@ -857,10 +850,13 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                                                                         MaPLParameterStrategy_Flexible,
                                                                         NULL);
                 if (!function) {
+                    std::string functionSignature = descriptorForFunction(functionName,
+                                                                          parameterTypes,
+                                                                          false);
                     if (invokedOnType.empty()) {
-                        logError(this, expression->identifier()->start, "Unable to find a global '"+functionName+"' function with matching parameters.");
+                        logError(this, expression->identifier()->start, "Unable to find a global '"+functionSignature+"' function.");
                     } else {
-                        logError(this, expression->identifier()->start, "Unable to find a '"+functionName+"' function on type '"+invokedOnType+"' with matching parameters.");
+                        logError(this, expression->identifier()->start, "Unable to find a '"+functionSignature+"' function on type '"+invokedOnType+"'.");
                     }
                     return { MaPLPrimitiveType_InvalidType };
                 }

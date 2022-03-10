@@ -111,6 +111,11 @@ MaPL_Index byteSizeOfType(MaPLPrimitiveType type);
 std::string descriptorForType(MaPLType type);
 
 /**
+ * @return A human-readable string that describes the signature of a function.
+ */
+std::string descriptorForFunction(std::string name, std::vector<MaPLType> parameterTypes, bool hasVariadicArgs);
+
+/**
  * @return The instruction byte that indicates an assignment for the corresponding primitive type.
  */
 MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);

@@ -109,13 +109,28 @@ std::string descriptorForType(MaPLType type) {
         case MaPLPrimitiveType_Float64: return "float64";
         case MaPLPrimitiveType_Boolean: return "bool";
         case MaPLPrimitiveType_String: return "string";
-        case MaPLPrimitiveType_Pointer: return type.pointerType;
+        case MaPLPrimitiveType_Pointer: return type.pointerType.empty() ? "NULL" : type.pointerType;
         case MaPLPrimitiveType_SignedInt_AmbiguousSize: return "signed integer";
         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign: return "integer";
         case MaPLPrimitiveType_Float_AmbiguousSize: return "floating point";
         case MaPLPrimitiveType_Void: return "'void'";
         case MaPLPrimitiveType_InvalidType: return "invalid type";
     }
+}
+
+std::string descriptorForFunction(std::string name, std::vector<MaPLType> parameterTypes, bool hasVariadicArgs) {
+    std::string functionDescriptor = name+"(";
+    for (int i = 0; i < parameterTypes.size(); i++) {
+        functionDescriptor += descriptorForType(parameterTypes[i]);
+        if (i < parameterTypes.size()-1) {
+            functionDescriptor += ", ";
+        }
+    }
+    if (hasVariadicArgs) {
+        functionDescriptor += ", ...";
+    }
+    functionDescriptor += ")";
+    return functionDescriptor;
 }
 
 MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type) {
