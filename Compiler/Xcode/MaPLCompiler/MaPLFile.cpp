@@ -361,7 +361,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                     default: break;
                 }
             } else {
-                // Property invokation.
+                // Property invocation.
                 
             }
         }
@@ -475,11 +475,139 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
                     case MaPLParser::LOGICAL_EQUALITY: {
-                        // TODO: Implement this.
+                        MaPLParser::ExpressionContext *leftExpression = expression->expression(0);
+                        MaPLParser::ExpressionContext *rightExpression = expression->expression(1);
+                        MaPLType leftType = dataTypeForExpression(leftExpression);
+                        MaPLType rightType = dataTypeForExpression(rightExpression);
+                        MaPLPrimitiveType reconciledType = reconcileTypes(leftType.primitiveType,
+                                                                          rightType.primitiveType,
+                                                                          expression->keyToken);
+                        if (reconciledType == MaPLPrimitiveType_TypeError) {
+                            // If there was a type reconciliation error, it's been logged already.
+                            break;
+                        }
+                        if (isAmbiguousNumericType(reconciledType)) {
+                            logAmbiguousLiteralError(this, reconciledType, expression->keyToken);
+                            break;
+                        }
+                        switch (reconciledType) {
+                            case MaPLPrimitiveType_Int8:
+                                currentBuffer->appendByte(MAPL_BYTE_INT8_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Int16:
+                                currentBuffer->appendByte(MAPL_BYTE_INT16_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Int32:
+                                currentBuffer->appendByte(MAPL_BYTE_INT32_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Int64:
+                                currentBuffer->appendByte(MAPL_BYTE_INT64_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_UInt8:
+                                currentBuffer->appendByte(MAPL_BYTE_UINT8_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_UInt16:
+                                currentBuffer->appendByte(MAPL_BYTE_UINT16_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_UInt32:
+                                currentBuffer->appendByte(MAPL_BYTE_UINT32_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_UInt64:
+                                currentBuffer->appendByte(MAPL_BYTE_UINT64_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Float32:
+                                currentBuffer->appendByte(MAPL_BYTE_FLOAT32_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Float64:
+                                currentBuffer->appendByte(MAPL_BYTE_FLOAT64_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Boolean:
+                                currentBuffer->appendByte(MAPL_BYTE_BOOLEAN_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_String:
+                                currentBuffer->appendByte(MAPL_BYTE_STRING_LOGICAL_EQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Pointer:
+                                currentBuffer->appendByte(MAPL_BYTE_POINTER_LOGICAL_EQUALITY);
+                                break;
+                            default: break;
+                        }
+                        // Pointers can compare memory addresses without need for equal #type.
+                        if (reconciledType == MaPLPrimitiveType_Pointer) {
+                            compileNode(leftExpression, leftType, currentBuffer);
+                            compileNode(rightExpression, rightType, currentBuffer);
+                        } else {
+                            compileNode(leftExpression, { reconciledType }, currentBuffer);
+                            compileNode(rightExpression, { reconciledType }, currentBuffer);
+                        }
                     }
                         break;
                     case MaPLParser::LOGICAL_INEQUALITY: {
-                        // TODO: Implement this.
+                        MaPLParser::ExpressionContext *leftExpression = expression->expression(0);
+                        MaPLParser::ExpressionContext *rightExpression = expression->expression(1);
+                        MaPLType leftType = dataTypeForExpression(leftExpression);
+                        MaPLType rightType = dataTypeForExpression(rightExpression);
+                        MaPLPrimitiveType reconciledType = reconcileTypes(leftType.primitiveType,
+                                                                          rightType.primitiveType,
+                                                                          expression->keyToken);
+                        if (reconciledType == MaPLPrimitiveType_TypeError) {
+                            // If there was a type reconciliation error, it's been logged already.
+                            break;
+                        }
+                        if (isAmbiguousNumericType(reconciledType)) {
+                            logAmbiguousLiteralError(this, reconciledType, expression->keyToken);
+                            break;
+                        }
+                        switch (reconciledType) {
+                            case MaPLPrimitiveType_Int8:
+                                currentBuffer->appendByte(MAPL_BYTE_INT8_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Int16:
+                                currentBuffer->appendByte(MAPL_BYTE_INT16_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Int32:
+                                currentBuffer->appendByte(MAPL_BYTE_INT32_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Int64:
+                                currentBuffer->appendByte(MAPL_BYTE_INT64_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_UInt8:
+                                currentBuffer->appendByte(MAPL_BYTE_UINT8_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_UInt16:
+                                currentBuffer->appendByte(MAPL_BYTE_UINT16_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_UInt32:
+                                currentBuffer->appendByte(MAPL_BYTE_UINT32_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_UInt64:
+                                currentBuffer->appendByte(MAPL_BYTE_UINT64_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Float32:
+                                currentBuffer->appendByte(MAPL_BYTE_FLOAT32_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Float64:
+                                currentBuffer->appendByte(MAPL_BYTE_FLOAT64_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Boolean:
+                                currentBuffer->appendByte(MAPL_BYTE_BOOLEAN_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_String:
+                                currentBuffer->appendByte(MAPL_BYTE_STRING_LOGICAL_INEQUALITY);
+                                break;
+                            case MaPLPrimitiveType_Pointer:
+                                currentBuffer->appendByte(MAPL_BYTE_POINTER_LOGICAL_INEQUALITY);
+                                break;
+                            default: break;
+                        }
+                        // Pointers can compare memory addresses without need for equal #type.
+                        if (reconciledType == MaPLPrimitiveType_Pointer) {
+                            compileNode(leftExpression, leftType, currentBuffer);
+                            compileNode(rightExpression, rightType, currentBuffer);
+                        } else {
+                            compileNode(leftExpression, { reconciledType }, currentBuffer);
+                            compileNode(rightExpression, { reconciledType }, currentBuffer);
+                        }
                     }
                         break;
                     case MaPLParser::LESS_THAN: {
@@ -507,16 +635,19 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         break;
                     case MaPLParser::MOD:
+                        // TODO: account for numeric ambiguity.
                         currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MODULO);
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
                     case MaPLParser::MULTIPLY:
+                        // TODO: account for numeric ambiguity.
                         currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MULTIPLY);
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
                     case MaPLParser::DIVIDE: {
+                        // TODO: account for numeric ambiguity.
                         currentBuffer->appendByte(MAPL_BYTE_NUMERIC_DIVIDE);
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         compileNode(expression->expression(1), expectedType, currentBuffer);
