@@ -60,7 +60,7 @@ public:
     bool declareVariable(std::string variableName, MaPLVariable variable);
     
     /**
-     * @return The @c MaPLVariable with the given name. If the variable does not exist, its @c primitiveType will be @c MaPLPrimitiveType_InvalidType.
+     * @return The @c MaPLVariable with the given name. If the variable does not exist, its @c primitiveType will be @c MaPLPrimitiveType_TypeError.
      */
     MaPLVariable getVariable(std::string variableName);
 

@@ -113,8 +113,9 @@ std::string descriptorForType(MaPLType type) {
         case MaPLPrimitiveType_SignedInt_AmbiguousSize: return "signed integer";
         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign: return "integer";
         case MaPLPrimitiveType_Float_AmbiguousSize: return "floating point";
-        case MaPLPrimitiveType_Void: return "'void'";
-        case MaPLPrimitiveType_InvalidType: return "invalid type";
+        case MaPLPrimitiveType_Void: return "void";
+        case MaPLPrimitiveType_Uninitialized: return "uninitialized";
+        case MaPLPrimitiveType_TypeError: return "invalid type";
     }
 }
 
@@ -205,7 +206,7 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
         case MaPLParser::DECL_FLOAT64: return { MaPLPrimitiveType_Float64 };
         case MaPLParser::DECL_BOOL: return { MaPLPrimitiveType_Boolean };
         case MaPLParser::DECL_STRING: return { MaPLPrimitiveType_String };
-        default: return { MaPLPrimitiveType_InvalidType };
+        default: return { MaPLPrimitiveType_TypeError };
     }
 }
 

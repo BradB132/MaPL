@@ -19,6 +19,8 @@ class MaPLFile;
  * Describes all literal types, and some states where the types are still ambiguous.
  */
 enum MaPLPrimitiveType {
+    MaPLPrimitiveType_Uninitialized = 0,
+    
     MaPLPrimitiveType_Int8,
     MaPLPrimitiveType_Int16,
     MaPLPrimitiveType_Int32,
@@ -40,7 +42,7 @@ enum MaPLPrimitiveType {
     
     MaPLPrimitiveType_Void,
     
-    MaPLPrimitiveType_InvalidType,
+    MaPLPrimitiveType_TypeError,
 };
 
 /**
