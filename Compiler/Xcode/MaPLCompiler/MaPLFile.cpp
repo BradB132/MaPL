@@ -454,21 +454,25 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
-                    case MaPLParser::BITWISE_XOR: {
-                        // TODO: Implement this.
-                    }
+                    case MaPLParser::BITWISE_XOR:
+                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_XOR);
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
+                        compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
-                    case MaPLParser::BITWISE_OR: {
-                        // TODO: Implement this.
-                    }
+                    case MaPLParser::BITWISE_OR:
+                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_OR);
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
+                        compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
-                    case MaPLParser::BITWISE_SHIFT_LEFT: {
-                        // TODO: Implement this.
-                    }
+                    case MaPLParser::BITWISE_SHIFT_LEFT:
+                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_LEFT);
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
+                        compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
-                    case MaPLParser::BITWISE_SHIFT_RIGHT: {
-                        // TODO: Implement this.
-                    }
+                    case MaPLParser::BITWISE_SHIFT_RIGHT:
+                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_RIGHT);
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
+                        compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
                     case MaPLParser::LOGICAL_EQUALITY: {
                         // TODO: Implement this.
@@ -499,9 +503,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
                     }
                         break;
-                    case MaPLParser::BITWISE_NEGATION: {
-                        // TODO: Implement this.
-                    }
+                    case MaPLParser::BITWISE_NEGATION:
+                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_NEGATION);
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
                         break;
                     case MaPLParser::MOD: {
                         // TODO: Implement this.
