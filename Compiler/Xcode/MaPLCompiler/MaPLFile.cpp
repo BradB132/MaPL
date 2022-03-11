@@ -406,11 +406,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                             compileNode(expression->expression(0), expressionType, currentBuffer);
                             break;
                         }
+                        // All pointer-to-pointer casts already handled above. No primitive can cast to pointer.
                         if (castType.primitiveType == MaPLPrimitiveType_Pointer) {
                             logError(this, expression->type()->start, "Cannot cast primitive "+descriptorForType(expressionType)+" type to a pointer type.");
                             break;
                         }
                         if (expressionType.primitiveType == MaPLPrimitiveType_Pointer) {
+                            // Strings are the only primitive that can cast from pointer (to print the memory address of pointers).
                             if (castType.primitiveType == MaPLPrimitiveType_String) {
                                 currentBuffer->appendByte(MAPL_BYTE_TYPECAST_FROM_POINTER_TO_STRING);
                                 compileNode(expression->expression(0), expressionType, currentBuffer);
@@ -440,108 +442,43 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         compileNode(expression->expression(0), expressionType, currentBuffer);
                     }
                         break;
-                    case MaPLParser::LOGICAL_AND:
-                        currentBuffer->appendByte(MAPL_BYTE_LOGICAL_AND);
+                    case MaPLParser::LOGICAL_AND: // Intentional fallthrough.
+                    case MaPLParser::LOGICAL_OR:
+                        if (tokenType == MaPLParser::LOGICAL_AND) {
+                            currentBuffer->appendByte(MAPL_BYTE_LOGICAL_AND);
+                        } else {
+                            currentBuffer->appendByte(MAPL_BYTE_LOGICAL_OR);
+                        }
                         compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
                         compileNode(expression->expression(1), { MaPLPrimitiveType_Boolean }, currentBuffer);
-                    case MaPLParser::LOGICAL_OR:
-                       currentBuffer->appendByte(MAPL_BYTE_LOGICAL_OR);
-                       compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
-                       compileNode(expression->expression(1), { MaPLPrimitiveType_Boolean }, currentBuffer);
-                       break;
-                    case MaPLParser::BITWISE_AND:
-                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_AND);
-                        compileNode(expression->expression(0), expectedType, currentBuffer);
-                        compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
-                    case MaPLParser::BITWISE_XOR:
-                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_XOR);
-                        compileNode(expression->expression(0), expectedType, currentBuffer);
-                        compileNode(expression->expression(1), expectedType, currentBuffer);
-                        break;
-                    case MaPLParser::BITWISE_OR:
-                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_OR);
-                        compileNode(expression->expression(0), expectedType, currentBuffer);
-                        compileNode(expression->expression(1), expectedType, currentBuffer);
-                        break;
-                    case MaPLParser::BITWISE_SHIFT_LEFT:
-                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_LEFT);
-                        compileNode(expression->expression(0), expectedType, currentBuffer);
-                        compileNode(expression->expression(1), expectedType, currentBuffer);
-                        break;
+                    case MaPLParser::BITWISE_AND: // Intentional fallthrough.
+                    case MaPLParser::BITWISE_XOR: // Intentional fallthrough.
+                    case MaPLParser::BITWISE_OR: // Intentional fallthrough.
+                    case MaPLParser::BITWISE_SHIFT_LEFT: // Intentional fallthrough.
                     case MaPLParser::BITWISE_SHIFT_RIGHT:
-                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_RIGHT);
-                        compileNode(expression->expression(0), expectedType, currentBuffer);
-                        compileNode(expression->expression(1), expectedType, currentBuffer);
-                        break;
-                    case MaPLParser::LOGICAL_EQUALITY: {
-                        MaPLParser::ExpressionContext *leftExpression = expression->expression(0);
-                        MaPLParser::ExpressionContext *rightExpression = expression->expression(1);
-                        MaPLType leftType = dataTypeForExpression(leftExpression);
-                        MaPLType rightType = dataTypeForExpression(rightExpression);
-                        MaPLPrimitiveType reconciledType = reconcileTypes(leftType.primitiveType,
-                                                                          rightType.primitiveType,
-                                                                          expression->keyToken);
-                        if (reconciledType == MaPLPrimitiveType_TypeError) {
-                            // If there was a type reconciliation error, it's been logged already.
-                            break;
-                        }
-                        if (isAmbiguousNumericType(reconciledType)) {
-                            logAmbiguousLiteralError(this, reconciledType, expression->keyToken);
-                            break;
-                        }
-                        switch (reconciledType) {
-                            case MaPLPrimitiveType_Int8:
-                                currentBuffer->appendByte(MAPL_BYTE_INT8_LOGICAL_EQUALITY);
+                        switch (tokenType) {
+                            case MaPLParser::BITWISE_AND:
+                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_AND);
                                 break;
-                            case MaPLPrimitiveType_Int16:
-                                currentBuffer->appendByte(MAPL_BYTE_INT16_LOGICAL_EQUALITY);
+                            case MaPLParser::BITWISE_XOR:
+                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_XOR);
                                 break;
-                            case MaPLPrimitiveType_Int32:
-                                currentBuffer->appendByte(MAPL_BYTE_INT32_LOGICAL_EQUALITY);
+                            case MaPLParser::BITWISE_OR:
+                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_OR);
                                 break;
-                            case MaPLPrimitiveType_Int64:
-                                currentBuffer->appendByte(MAPL_BYTE_INT64_LOGICAL_EQUALITY);
+                            case MaPLParser::BITWISE_SHIFT_LEFT:
+                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_LEFT);
                                 break;
-                            case MaPLPrimitiveType_UInt8:
-                                currentBuffer->appendByte(MAPL_BYTE_UINT8_LOGICAL_EQUALITY);
-                                break;
-                            case MaPLPrimitiveType_UInt16:
-                                currentBuffer->appendByte(MAPL_BYTE_UINT16_LOGICAL_EQUALITY);
-                                break;
-                            case MaPLPrimitiveType_UInt32:
-                                currentBuffer->appendByte(MAPL_BYTE_UINT32_LOGICAL_EQUALITY);
-                                break;
-                            case MaPLPrimitiveType_UInt64:
-                                currentBuffer->appendByte(MAPL_BYTE_UINT64_LOGICAL_EQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Float32:
-                                currentBuffer->appendByte(MAPL_BYTE_FLOAT32_LOGICAL_EQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Float64:
-                                currentBuffer->appendByte(MAPL_BYTE_FLOAT64_LOGICAL_EQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Boolean:
-                                currentBuffer->appendByte(MAPL_BYTE_BOOLEAN_LOGICAL_EQUALITY);
-                                break;
-                            case MaPLPrimitiveType_String:
-                                currentBuffer->appendByte(MAPL_BYTE_STRING_LOGICAL_EQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Pointer:
-                                currentBuffer->appendByte(MAPL_BYTE_POINTER_LOGICAL_EQUALITY);
+                            case MaPLParser::BITWISE_SHIFT_RIGHT:
+                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_RIGHT);
                                 break;
                             default: break;
                         }
-                        // Pointers can compare memory addresses without need for equal #type.
-                        if (reconciledType == MaPLPrimitiveType_Pointer) {
-                            compileNode(leftExpression, leftType, currentBuffer);
-                            compileNode(rightExpression, rightType, currentBuffer);
-                        } else {
-                            compileNode(leftExpression, { reconciledType }, currentBuffer);
-                            compileNode(rightExpression, { reconciledType }, currentBuffer);
-                        }
-                    }
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
+                        compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
+                    case MaPLParser::LOGICAL_EQUALITY: // Intentional fallthrough.
                     case MaPLParser::LOGICAL_INEQUALITY: {
                         MaPLParser::ExpressionContext *leftExpression = expression->expression(0);
                         MaPLParser::ExpressionContext *rightExpression = expression->expression(1);
@@ -558,47 +495,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                             logAmbiguousLiteralError(this, reconciledType, expression->keyToken);
                             break;
                         }
-                        switch (reconciledType) {
-                            case MaPLPrimitiveType_Int8:
-                                currentBuffer->appendByte(MAPL_BYTE_INT8_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Int16:
-                                currentBuffer->appendByte(MAPL_BYTE_INT16_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Int32:
-                                currentBuffer->appendByte(MAPL_BYTE_INT32_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Int64:
-                                currentBuffer->appendByte(MAPL_BYTE_INT64_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_UInt8:
-                                currentBuffer->appendByte(MAPL_BYTE_UINT8_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_UInt16:
-                                currentBuffer->appendByte(MAPL_BYTE_UINT16_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_UInt32:
-                                currentBuffer->appendByte(MAPL_BYTE_UINT32_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_UInt64:
-                                currentBuffer->appendByte(MAPL_BYTE_UINT64_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Float32:
-                                currentBuffer->appendByte(MAPL_BYTE_FLOAT32_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Float64:
-                                currentBuffer->appendByte(MAPL_BYTE_FLOAT64_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Boolean:
-                                currentBuffer->appendByte(MAPL_BYTE_BOOLEAN_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_String:
-                                currentBuffer->appendByte(MAPL_BYTE_STRING_LOGICAL_INEQUALITY);
-                                break;
-                            case MaPLPrimitiveType_Pointer:
-                                currentBuffer->appendByte(MAPL_BYTE_POINTER_LOGICAL_INEQUALITY);
-                                break;
-                            default: break;
+                        if (tokenType == MaPLParser::LOGICAL_EQUALITY) {
+                            currentBuffer->appendByte(equalityInstructionForPrimitive(reconciledType));
+                        } else {
+                            currentBuffer->appendByte(inequalityInstructionForPrimitive(reconciledType));
                         }
                         // Pointers can compare memory addresses without need for equal #type.
                         if (reconciledType == MaPLPrimitiveType_Pointer) {
@@ -610,20 +510,44 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         }
                     }
                         break;
-                    case MaPLParser::LESS_THAN: {
-                        // TODO: Implement this.
-                    }
-                        break;
-                    case MaPLParser::LESS_THAN_EQUAL: {
-                        // TODO: Implement this.
-                    }
-                        break;
-                    case MaPLParser::GREATER_THAN: {
-                        // TODO: Implement this.
-                    }
-                        break;
+                    case MaPLParser::LESS_THAN: // Intentional fallthrough.
+                    case MaPLParser::LESS_THAN_EQUAL: // Intentional fallthrough.
+                    case MaPLParser::GREATER_THAN: // Intentional fallthrough.
                     case MaPLParser::GREATER_THAN_EQUAL: {
-                        // TODO: Implement this.
+                        MaPLParser::ExpressionContext *leftExpression = expression->expression(0);
+                        MaPLParser::ExpressionContext *rightExpression = expression->expression(1);
+                        MaPLPrimitiveType reconciledType = reconcileTypes(dataTypeForExpression(leftExpression).primitiveType,
+                                                                          dataTypeForExpression(rightExpression).primitiveType,
+                                                                          expression->keyToken);
+                        if (reconciledType == MaPLPrimitiveType_TypeError) {
+                            // If there was a type reconciliation error, it's been logged already.
+                            break;
+                        }
+                        if (isAmbiguousNumericType(reconciledType)) {
+                            logAmbiguousLiteralError(this, reconciledType, expression->keyToken);
+                            break;
+                        }
+                        if (!isNumeric(reconciledType)) {
+                            logNonNumericOperandsError(this, expression->keyToken);
+                            break;
+                        }
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                currentBuffer->appendByte(lessThanInstructionForPrimitive(reconciledType));
+                                break;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                currentBuffer->appendByte(lessThanOrEqualInstructionForPrimitive(reconciledType));
+                                break;
+                            case MaPLParser::GREATER_THAN:
+                                currentBuffer->appendByte(greaterThanInstructionForPrimitive(reconciledType));
+                                break;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                currentBuffer->appendByte(greaterThanOrEqualInstructionForPrimitive(reconciledType));
+                                break;
+                            default: break;
+                        }
+                        compileNode(leftExpression, { reconciledType }, currentBuffer);
+                        compileNode(rightExpression, { reconciledType }, currentBuffer);
                     }
                         break;
                     case MaPLParser::LOGICAL_NEGATION:
@@ -881,7 +805,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 if (isNumeric(type1.primitiveType) && isNumeric(type2.primitiveType)) {
                     return { reconcileTypes(type1.primitiveType, type2.primitiveType, expression->keyToken) };
                 }
-                logError(this, expression->keyToken, "Both operands must be numeric.");
+                logNonNumericOperandsError(this, expression->keyToken);
                 return { MaPLPrimitiveType_TypeError };
             }
             case MaPLParser::ADD: {

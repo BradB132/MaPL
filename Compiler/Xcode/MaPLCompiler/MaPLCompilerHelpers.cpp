@@ -198,6 +198,108 @@ MaPL_Instruction typecastToInstructionForPrimitive(MaPLPrimitiveType type) {
     }
 }
 
+MaPL_Instruction equalityInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_LOGICAL_EQUALITY;
+        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_LOGICAL_EQUALITY;
+        default: return 0;
+    }
+}
+
+MaPL_Instruction inequalityInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_LOGICAL_INEQUALITY;
+        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_LOGICAL_INEQUALITY;
+        default: return 0;
+    }
+}
+
+MaPL_Instruction lessThanInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_LESS_THAN;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_LESS_THAN;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_LESS_THAN;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_LESS_THAN;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_LESS_THAN;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_LESS_THAN;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_LESS_THAN;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_LESS_THAN;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_LESS_THAN;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_LESS_THAN;
+        default: return 0;
+    }
+}
+
+MaPL_Instruction lessThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_LESS_THAN_EQUAL;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_LESS_THAN_EQUAL;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_LESS_THAN_EQUAL;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_LESS_THAN_EQUAL;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_LESS_THAN_EQUAL;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_LESS_THAN_EQUAL;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_LESS_THAN_EQUAL;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_LESS_THAN_EQUAL;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_LESS_THAN_EQUAL;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_LESS_THAN_EQUAL;
+        default: return 0;
+    }
+}
+
+MaPL_Instruction greaterThanInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_GREATER_THAN;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_GREATER_THAN;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_GREATER_THAN;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_GREATER_THAN;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_GREATER_THAN;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_GREATER_THAN;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_GREATER_THAN;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_GREATER_THAN;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_GREATER_THAN;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_GREATER_THAN;
+        default: return 0;
+    }
+}
+
+MaPL_Instruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_GREATER_THAN_EQUAL;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_GREATER_THAN_EQUAL;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_GREATER_THAN_EQUAL;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_GREATER_THAN_EQUAL;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_GREATER_THAN_EQUAL;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_GREATER_THAN_EQUAL;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_GREATER_THAN_EQUAL;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_GREATER_THAN_EQUAL;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_GREATER_THAN_EQUAL;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_GREATER_THAN_EQUAL;
+        default: return 0;
+    }
+}
+
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     if (typeContext->identifier()) {
         return { MaPLPrimitiveType_Pointer, typeContext->identifier()->getText() };
@@ -626,6 +728,10 @@ void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::To
         }
     }
     logError(file, token, message);
+}
+
+void logNonNumericOperandsError(MaPLFile *file, antlr4::Token *token) {
+    logError(file, token, "Both operands must be numeric.");
 }
 
 // TODO: Convert struct params throughout this program, where applicable, to use 'const' and '&' like is done for this function.

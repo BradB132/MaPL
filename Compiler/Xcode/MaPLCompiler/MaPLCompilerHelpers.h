@@ -128,14 +128,44 @@ std::string descriptorForFunction(std::string name, std::vector<MaPLType> parame
 MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
- * @return The instruction byte that indicates an typecast from the corresponding primitive type.
+ * @return The instruction byte that indicates a typecast from the corresponding primitive type.
  */
 MaPL_Instruction typecastFromInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
- * @return The instruction byte that indicates an typecast to the corresponding primitive type.
+ * @return The instruction byte that indicates a typecast to the corresponding primitive type.
  */
 MaPL_Instruction typecastToInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates an equality comparison corresponding to @c type.
+ */
+MaPL_Instruction equalityInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates an inequality comparison corresponding to @c type.
+ */
+MaPL_Instruction inequalityInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates a less than comparison corresponding to @c type.
+ */
+MaPL_Instruction lessThanInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates a less than or equal comparison corresponding to @c type.
+ */
+MaPL_Instruction lessThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates a greater than comparison corresponding to @c type.
+ */
+MaPL_Instruction greaterThanInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates a greater than or equal comparison corresponding to @c type.
+ */
+MaPL_Instruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.
@@ -213,6 +243,11 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
  * Logs an error describing how to clarify an ambiguous literal expression.
  */
 void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::Token *token);
+
+/**
+ * Logs an error describing how both operands for an expression must be numeric.
+ */
+void logNonNumericOperandsError(MaPLFile *file, antlr4::Token *token);
 
 /**
  * Function for logging errors. In order to maintain consistent output, all errors should go through this function.
