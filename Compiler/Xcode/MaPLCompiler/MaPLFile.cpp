@@ -368,14 +368,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
             break;
         case MaPLParser::RuleExpression: {
             MaPLParser::ExpressionContext *expression = (MaPLParser::ExpressionContext *)node;
-            if (expectedType.primitiveType == MaPLPrimitiveType_Uninitialized) {
+            if (!isConcreteType(expectedType.primitiveType)) {
                 // It's safe to assume initialized expectedType in every context in which expressions are found:
                 //   On the right side of an assignment. -> Implied by the type being assigned to.
                 //   Nested within other expressions. -> Inherited from parent expression.
-                //   As an index for a subscript. -> Type predicted by index param.
-                //   As a parameter for a function. -> Type predicted by param. Untyped for variadic args, but can "logAmbiguousLiteralError" if needed.
+                //   As an index for a subscript. -> Type implied by index param.
+                //   As a parameter for a function. -> Type implied by param. Untyped for variadic args, but can "logAmbiguousLiteralError" if needed.
                 //   As the conditional for a control flow statement (if, while, for, doWhile). -> Always bool.
-                logError(this, expression->start, "Internal compiler error. No expected type for expression.");
+                logError(this, expression->start, "Internal compiler error. No concrete expected type for expression.");
                 break;
             }
             MaPLType expressionType = dataTypeForExpression(expression);

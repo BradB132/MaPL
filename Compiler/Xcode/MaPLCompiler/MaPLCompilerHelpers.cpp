@@ -13,8 +13,8 @@
 
 bool isAmbiguousNumericType(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Float_AmbiguousSize:
-        case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+        case MaPLPrimitiveType_Float_AmbiguousSize: // Intentional fallthrough.
+        case MaPLPrimitiveType_SignedInt_AmbiguousSize: // Intentional fallthrough.
         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
             return true;
         default:
@@ -24,7 +24,7 @@ bool isAmbiguousNumericType(MaPLPrimitiveType type) {
 
 bool isFloat(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Float32:
+        case MaPLPrimitiveType_Float32: // Intentional fallthrough.
         case MaPLPrimitiveType_Float64:
             return true;
         default:
@@ -34,9 +34,9 @@ bool isFloat(MaPLPrimitiveType type) {
 
 bool isSignedInt(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8:
-        case MaPLPrimitiveType_Int16:
-        case MaPLPrimitiveType_Int32:
+        case MaPLPrimitiveType_Int8: // Intentional fallthrough.
+        case MaPLPrimitiveType_Int16: // Intentional fallthrough.
+        case MaPLPrimitiveType_Int32: // Intentional fallthrough.
         case MaPLPrimitiveType_Int64:
             return true;
         default:
@@ -46,9 +46,9 @@ bool isSignedInt(MaPLPrimitiveType type) {
 
 bool isUnsignedInt(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_UInt8:
-        case MaPLPrimitiveType_UInt16:
-        case MaPLPrimitiveType_UInt32:
+        case MaPLPrimitiveType_UInt8: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt16: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt32: // Intentional fallthrough.
         case MaPLPrimitiveType_UInt64:
             return true;
         default:
@@ -68,6 +68,26 @@ bool isNumeric(MaPLPrimitiveType type) {
            isSignedInt(type) ||
            isUnsignedInt(type) ||
            isAmbiguousNumericType(type);
+}
+
+bool isConcreteType(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: // Intentional fallthrough.
+        case MaPLPrimitiveType_Int16: // Intentional fallthrough.
+        case MaPLPrimitiveType_Int32: // Intentional fallthrough.
+        case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt8: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt16: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt32: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+        case MaPLPrimitiveType_Float32: // Intentional fallthrough.
+        case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+        case MaPLPrimitiveType_String: // Intentional fallthrough.
+        case MaPLPrimitiveType_Boolean: // Intentional fallthrough.
+        case MaPLPrimitiveType_Pointer:
+            return true;
+        default: return false;
+    }
 }
 
 MaPL_Index byteSizeOfType(MaPLPrimitiveType type) {
@@ -214,14 +234,14 @@ bool isAssignable(MaPLFile *file, MaPLType expressionType, MaPLType assignToType
     // Handle direct matches first.
     if (assignToType.primitiveType == expressionType.primitiveType) {
         if (assignToType.primitiveType == MaPLPrimitiveType_Pointer) {
-            // Empty "pointerType" indicates a null literal. Nulls are assignable to any type of pointer.
-            return expressionType.pointerType == "" ||
+            // Empty "pointerType" indicates a NULL literal. Nulls are assignable to any type of pointer.
+            return expressionType.pointerType.empty() ||
                    assignToType.pointerType == expressionType.pointerType ||
                    inheritsFromType(file, expressionType.pointerType, assignToType.pointerType);
         }
         return true;
     }
-    // Handle all the ways that the concrete type could accept ambiguity from the expression.
+    // Handle all the ways that a concrete numeric type could accept ambiguity from the expression.
     switch (assignToType.primitiveType) {
         case MaPLPrimitiveType_UInt8: // Intentional fallthrough.
         case MaPLPrimitiveType_UInt16: // Intentional fallthrough.

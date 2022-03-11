@@ -98,6 +98,11 @@ bool isIntegral(MaPLPrimitiveType type);
 bool isNumeric(MaPLPrimitiveType type);
 
 /**
+ * @return @c false if the primitive type is ambiguous, void, uninitialized, or error.
+ */
+bool isConcreteType(MaPLPrimitiveType type);
+
+/**
  * @return @c true if @c expressionType can be assigned to a variable of @c assignToType without error. @c false if @c assignToType is ambiguous.
  */
 bool isAssignable(MaPLFile *file, MaPLType expressionType, MaPLType assignToType);
