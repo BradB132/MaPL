@@ -75,17 +75,17 @@ bool isAmbiguousNumericType(MaPLPrimitiveType type);
 /**
  * @return @c true if the primitive type is a non-ambiguous floating point type.
  */
-bool isFloat(MaPLPrimitiveType type);
+bool isConcreteFloat(MaPLPrimitiveType type);
 
 /**
  * @return @c true if the primitive type is a non-ambiguous signed integer type.
  */
-bool isSignedInt(MaPLPrimitiveType type);
+bool isConcreteSignedInt(MaPLPrimitiveType type);
 
 /**
  * @return @c true if the primitive type is a non-ambiguous unsigned integer type.
  */
-bool isUnsignedInt(MaPLPrimitiveType type);
+bool isConcreteUnsignedInt(MaPLPrimitiveType type);
 
 /**
  * @return @c true if the primitive type is an integer type (signed or unsigned). Includes ambiguous integers.

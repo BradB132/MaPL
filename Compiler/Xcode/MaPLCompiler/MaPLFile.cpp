@@ -746,17 +746,17 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
     // point numbers, even though the number on the left looks like an integer literal.
     if (isAmbiguousNumericType(left) || isAmbiguousNumericType(right)) {
         // Any ambiguous number can be stored in a float.
-        if (isFloat(left)) { return left; }
-        if (isFloat(right)) { return right; }
+        if (isConcreteFloat(left)) { return left; }
+        if (isConcreteFloat(right)) { return right; }
         
         // Signed integers can store any ambiguous non-float numbers.
-        if (isSignedInt(left)) {
+        if (isConcreteSignedInt(left)) {
             if (right == MaPLPrimitiveType_Float_AmbiguousSize) {
                 return typeReconciliationError(errorToken);
             }
             return left;
         }
-        if (isSignedInt(right)) {
+        if (isConcreteSignedInt(right)) {
             if (left == MaPLPrimitiveType_Float_AmbiguousSize) {
                 return typeReconciliationError(errorToken);
             }
@@ -764,13 +764,13 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
         }
         
         // Unsigned integers can store only ambiguously-sized, unsigned numbers.
-        if (isUnsignedInt(left)) {
+        if (isConcreteUnsignedInt(left)) {
             if (right == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                 return left;
             }
             return typeReconciliationError(errorToken);
         }
-        if (isUnsignedInt(right)) {
+        if (isConcreteUnsignedInt(right)) {
             if (left == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                 return right;
             }
@@ -856,7 +856,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 if (childExpressions.size() == 1) {
                     // There's only one operand, so this is numeric negation instead of subtraction.
                     MaPLType type = dataTypeForExpression(childExpressions[0]);
-                    if (isUnsignedInt(type.primitiveType)) {
+                    if (isConcreteUnsignedInt(type.primitiveType)) {
                         logError(this, expression->keyToken, "Unsigned integers cannot be negated.");
                         return { MaPLPrimitiveType_TypeError };
                     }

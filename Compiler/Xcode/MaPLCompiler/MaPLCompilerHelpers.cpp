@@ -22,7 +22,7 @@ bool isAmbiguousNumericType(MaPLPrimitiveType type) {
     }
 }
 
-bool isFloat(MaPLPrimitiveType type) {
+bool isConcreteFloat(MaPLPrimitiveType type) {
     switch (type) {
         case MaPLPrimitiveType_Float32: // Intentional fallthrough.
         case MaPLPrimitiveType_Float64:
@@ -32,7 +32,7 @@ bool isFloat(MaPLPrimitiveType type) {
     }
 }
 
-bool isSignedInt(MaPLPrimitiveType type) {
+bool isConcreteSignedInt(MaPLPrimitiveType type) {
     switch (type) {
         case MaPLPrimitiveType_Int8: // Intentional fallthrough.
         case MaPLPrimitiveType_Int16: // Intentional fallthrough.
@@ -44,7 +44,7 @@ bool isSignedInt(MaPLPrimitiveType type) {
     }
 }
 
-bool isUnsignedInt(MaPLPrimitiveType type) {
+bool isConcreteUnsignedInt(MaPLPrimitiveType type) {
     switch (type) {
         case MaPLPrimitiveType_UInt8: // Intentional fallthrough.
         case MaPLPrimitiveType_UInt16: // Intentional fallthrough.
@@ -57,37 +57,26 @@ bool isUnsignedInt(MaPLPrimitiveType type) {
 }
 
 bool isIntegral(MaPLPrimitiveType type) {
-    return isSignedInt(type) ||
-           isUnsignedInt(type) ||
+    return isConcreteSignedInt(type) ||
+           isConcreteUnsignedInt(type) ||
            type == MaPLPrimitiveType_Int_AmbiguousSizeAndSign ||
            type == MaPLPrimitiveType_SignedInt_AmbiguousSize;
 }
 
 bool isNumeric(MaPLPrimitiveType type) {
-    return isFloat(type) ||
-           isSignedInt(type) ||
-           isUnsignedInt(type) ||
+    return isConcreteFloat(type) ||
+           isConcreteSignedInt(type) ||
+           isConcreteUnsignedInt(type) ||
            isAmbiguousNumericType(type);
 }
 
 bool isConcreteType(MaPLPrimitiveType type) {
-    switch (type) {
-        case MaPLPrimitiveType_Int8: // Intentional fallthrough.
-        case MaPLPrimitiveType_Int16: // Intentional fallthrough.
-        case MaPLPrimitiveType_Int32: // Intentional fallthrough.
-        case MaPLPrimitiveType_Int64: // Intentional fallthrough.
-        case MaPLPrimitiveType_UInt8: // Intentional fallthrough.
-        case MaPLPrimitiveType_UInt16: // Intentional fallthrough.
-        case MaPLPrimitiveType_UInt32: // Intentional fallthrough.
-        case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
-        case MaPLPrimitiveType_Float32: // Intentional fallthrough.
-        case MaPLPrimitiveType_Float64: // Intentional fallthrough.
-        case MaPLPrimitiveType_String: // Intentional fallthrough.
-        case MaPLPrimitiveType_Boolean: // Intentional fallthrough.
-        case MaPLPrimitiveType_Pointer:
-            return true;
-        default: return false;
-    }
+    return isConcreteFloat(type) ||
+           isConcreteSignedInt(type) ||
+           isConcreteUnsignedInt(type) ||
+           type == MaPLPrimitiveType_Boolean ||
+           type == MaPLPrimitiveType_String ||
+           type == MaPLPrimitiveType_Pointer;
 }
 
 MaPL_Index byteSizeOfType(MaPLPrimitiveType type) {
