@@ -558,32 +558,44 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         currentBuffer->appendByte(MAPL_BYTE_BITWISE_NEGATION);
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         break;
-                    case MaPLParser::MOD:
-                        // TODO: account for numeric ambiguity.
-                        currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MODULO);
-                        compileNode(expression->expression(0), expectedType, currentBuffer);
-                        compileNode(expression->expression(1), expectedType, currentBuffer);
-                        break;
-                    case MaPLParser::MULTIPLY:
-                        // TODO: account for numeric ambiguity.
-                        currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MULTIPLY);
-                        compileNode(expression->expression(0), expectedType, currentBuffer);
-                        compileNode(expression->expression(1), expectedType, currentBuffer);
-                        break;
-                    case MaPLParser::DIVIDE: {
-                        // TODO: account for numeric ambiguity.
-                        currentBuffer->appendByte(MAPL_BYTE_NUMERIC_DIVIDE);
-                        compileNode(expression->expression(0), expectedType, currentBuffer);
-                        compileNode(expression->expression(1), expectedType, currentBuffer);
-                    }
-                        break;
-                    case MaPLParser::ADD: {
-                        // TODO: Distinguish between string concat and numeric add.
-                    }
-                        break;
                     case MaPLParser::SUBTRACT: {
-                        // TODO: Distinguish between subtraction and numeric negation.
+                        std::vector<MaPLParser::ExpressionContext *> expressions = expression->expression();
+                        if (expressions.size() == 1) {
+                            // This is numeric negation (instead of subtraction).
+                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_NEGATION);
+                            compileNode(expressions[0], expectedType, currentBuffer);
+                            break;
+                        }
                     }
+                        // Intentional fallthrough handles the binary subtraction operator.
+                    case MaPLParser::ADD: // Intentional fallthrough.
+                    case MaPLParser::MOD: // Intentional fallthrough.
+                    case MaPLParser::MULTIPLY: // Intentional fallthrough.
+                    case MaPLParser::DIVIDE:
+                        switch (tokenType) {
+                            case MaPLParser::ADD:
+                                if (expectedType.primitiveType == MaPLPrimitiveType_String) {
+                                    currentBuffer->appendByte(MAPL_BYTE_STRING_CONCAT);
+                                } else {
+                                    currentBuffer->appendByte(MAPL_BYTE_NUMERIC_ADD);
+                                }
+                                break;
+                            case MaPLParser::SUBTRACT:
+                                currentBuffer->appendByte(MAPL_BYTE_NUMERIC_SUBTRACT);
+                                break;
+                            case MaPLParser::MOD:
+                                currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MODULO);
+                                break;
+                            case MaPLParser::MULTIPLY:
+                                currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MULTIPLY);
+                                break;
+                            case MaPLParser::DIVIDE:
+                                currentBuffer->appendByte(MAPL_BYTE_NUMERIC_DIVIDE);
+                                break;
+                            default: break;
+                        }
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
+                        compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
                     case MaPLParser::TERNARY_CONDITIONAL: {
                         // TODO: Implement this.
