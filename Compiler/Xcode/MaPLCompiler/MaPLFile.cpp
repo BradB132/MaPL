@@ -921,8 +921,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 MaPLType type2 = dataTypeForExpression(childExpressions[1]);
                 // Plus operator could be numeric add or string concatenation.
                 if (type1.primitiveType == MaPLPrimitiveType_String &&
-                    type2.primitiveType == MaPLPrimitiveType_String &&
-                    expression->keyToken->getType() == MaPLParser::ADD) {
+                    type2.primitiveType == MaPLPrimitiveType_String) {
                     return { MaPLPrimitiveType_String };
                 } else if (isNumeric(type1.primitiveType) && isNumeric(type2.primitiveType)) {
                     return { reconcileTypes(type1.primitiveType, type2.primitiveType, expression->keyToken) };
