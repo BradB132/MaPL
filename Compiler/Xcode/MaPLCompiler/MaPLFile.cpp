@@ -388,6 +388,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                 logError(this, expression->start, error);
             }
             
+            // TODO: check if this expression is a compile-time constant (ie, all leaves on parse tree are literals). If so, resolve it to a literal value.
+            
             if (expression->keyToken) {
                 size_t tokenType = expression->keyToken->getType();
                 switch (tokenType) {
@@ -408,7 +410,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         }
                         // All pointer-to-pointer casts already handled above. No primitive can cast to pointer.
                         if (castType.primitiveType == MaPLPrimitiveType_Pointer) {
-                            logError(this, expression->type()->start, "Cannot cast primitive "+descriptorForType(expressionType)+" type to a pointer type.");
+                            logError(this, expression->type()->start, "Cannot cast primitive "+descriptorForType(expressionType)+" type to pointer type "+descriptorForType(castType)+".");
                             break;
                         }
                         if (expressionType.primitiveType == MaPLPrimitiveType_Pointer) {
@@ -418,7 +420,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                                 compileNode(expression->expression(0), expressionType, currentBuffer);
                                 break;
                             } else {
-                                logError(this, expression->type()->start, "Pointer types, like "+descriptorForType(expressionType)+", can only be cast to 'string' or other pointer types with a child/ancestor relationship.");
+                                logError(this, expression->type()->start, "Pointer types, like "+descriptorForType(expressionType)+", can only be cast to other pointer types with a child/ancestor relationship or 'string'.");
                                 break;
                             }
                         }
@@ -618,11 +620,89 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                         currentBuffer->appendByte(MAPL_BYTE_LITERAL_NULL);
                         break;
                     case MaPLParser::LITERAL_INT: {
-                        // TODO: Implement this.
+                        std::string intAsString = expression->LITERAL_INT()->getText();
+                        switch (expectedType.primitiveType) {
+                            case MaPLPrimitiveType_Int8: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_INT8);
+                                int8_t value = (int8_t)std::stoi(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_Int16: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_INT16);
+                                int16_t value = (int16_t)std::stoi(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_Int32: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_INT32);
+                                int32_t value = (int32_t)std::stoi(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_Int64: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_INT64);
+                                int64_t value = (int64_t)std::stoll(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_UInt8: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_UINT8);
+                                u_int8_t value = (u_int8_t)std::stoul(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_UInt16: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_UINT16);
+                                u_int16_t value = (u_int16_t)std::stoul(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_UInt32: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_UINT32);
+                                u_int32_t value = (u_int32_t)std::stoul(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_UInt64: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_UINT64);
+                                u_int64_t value = (u_int64_t)std::stoull(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_Float32: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_FLOAT32);
+                                float_t value = (float_t)std::stof(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_Float64: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_FLOAT64);
+                                double_t value = (double_t)std::stod(intAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            default: break;
+                        }
                     }
                         break;
                     case MaPLParser::LITERAL_FLOAT: {
-                        // TODO: Implement this.
+                        std::string floatAsString = expression->LITERAL_FLOAT()->getText();
+                        switch (expectedType.primitiveType) {
+                            case MaPLPrimitiveType_Float32: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_FLOAT32);
+                                float_t value = (float_t)std::stof(floatAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            case MaPLPrimitiveType_Float64: {
+                                currentBuffer->appendByte(MAPL_BYTE_LITERAL_FLOAT64);
+                                double_t value = (double_t)std::stod(floatAsString);
+                                currentBuffer->appendBytes(&value, sizeof(value));
+                            }
+                                break;
+                            default: break;
+                        }
                     }
                         break;
                     case MaPLParser::LITERAL_STRING: {
@@ -650,6 +730,21 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedTyp
                 }
             }
         }
+            break;
+        case MaPLParser::RuleWhileLoop:
+            // TODO: Implement this.
+            break;
+        case MaPLParser::RuleForLoop:
+            // TODO: Implement this.
+            break;
+        case MaPLParser::RuleDoWhileLoop:
+            // TODO: Implement this.
+            break;
+        case MaPLParser::RuleConditional:
+            // TODO: Implement this.
+            break;
+        case MaPLParser::RuleScope:
+            // TODO: Implement this.
             break;
         default:
             break;
