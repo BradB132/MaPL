@@ -321,6 +321,568 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     }
 }
 
+MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castType) {
+    MaPLLiteral returnVal = { { castType.primitiveType } };
+    switch (castType.primitiveType) {
+        case MaPLPrimitiveType_Int8:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    return literal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.int8Value = (int8_t)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.int8Value = (int8_t)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.int8Value = (int8_t)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.int8Value = (int8_t)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.int8Value = (int8_t)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.int8Value = (int8_t)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.int8Value = (int8_t)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.int8Value = (int8_t)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.int8Value = (int8_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.int8Value = (int8_t)std::stoi(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.int8Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_Int16:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.int16Value = (int16_t)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    return literal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.int16Value = (int16_t)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.int16Value = (int16_t)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.int16Value = (int16_t)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.int16Value = (int16_t)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.int16Value = (int16_t)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.int16Value = (int16_t)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.int16Value = (int16_t)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.int16Value = (int16_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.int16Value = (int16_t)std::stoi(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.int16Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_Int32:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.int32Value = (int32_t)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.int32Value = (int32_t)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    return literal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.int32Value = (int32_t)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.int32Value = (int32_t)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.int32Value = (int32_t)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.int32Value = (int32_t)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.int32Value = (int32_t)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.int32Value = (int32_t)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.int32Value = (int32_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.int32Value = (int32_t)std::stoi(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.int32Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_Int64:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.int64Value = (int64_t)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.int64Value = (int64_t)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.int64Value = (int64_t)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64:
+                    return literal;
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.int64Value = literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.int64Value = (int64_t)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.int64Value = (int64_t)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.int64Value = (int64_t)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.int64Value = (int64_t)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.int64Value = (int64_t)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.int64Value = (int64_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.int64Value = (int64_t)std::stoll(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.int64Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_UInt8:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.uInt8Value = (u_int8_t)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.uInt8Value = (u_int8_t)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.uInt8Value = (u_int8_t)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.uInt8Value = (u_int8_t)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    return literal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.uInt8Value = (u_int8_t)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.uInt8Value = (u_int8_t)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.uInt8Value = (u_int8_t)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.uInt8Value = (u_int8_t)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.uInt8Value = (u_int8_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.uInt8Value = (u_int8_t)std::stoul(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.uInt8Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_UInt16:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.uInt16Value = (u_int16_t)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.uInt16Value = (u_int16_t)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.uInt16Value = (u_int16_t)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.uInt16Value = (u_int16_t)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.uInt16Value = (u_int16_t)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    return literal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.uInt16Value = (u_int16_t)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.uInt16Value = (u_int16_t)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.uInt16Value = (u_int16_t)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.uInt16Value = (u_int16_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.uInt16Value = (u_int16_t)std::stoul(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.uInt16Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_UInt32:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.uInt32Value = (u_int32_t)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.uInt32Value = (u_int32_t)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.uInt32Value = (u_int32_t)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.uInt32Value = (u_int32_t)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.uInt32Value = (u_int32_t)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.uInt32Value = (u_int32_t)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    return literal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.uInt32Value = (u_int32_t)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.uInt32Value = (u_int32_t)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.uInt32Value = (u_int32_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.uInt32Value = (u_int32_t)std::stoul(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.uInt32Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_UInt64:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.uInt64Value = (u_int64_t)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.uInt64Value = (u_int64_t)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.uInt64Value = (u_int64_t)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.uInt64Value = (u_int64_t)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.uInt64Value = (u_int64_t)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.uInt64Value = (u_int64_t)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.uInt64Value = (u_int64_t)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64:
+                    return literal;
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.uInt64Value = literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.uInt64Value = (u_int64_t)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.uInt64Value = (u_int64_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.uInt64Value = (u_int64_t)std::stoull(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.uInt64Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_Float32:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.float32Value = (float_t)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.float32Value = (float_t)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.float32Value = (float_t)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.float32Value = (float_t)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.float32Value = (float_t)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.float32Value = (float_t)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.float32Value = (float_t)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.float32Value = (float_t)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    return literal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.float32Value = (float_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.float32Value = (float_t)std::stof(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.float32Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_Float64:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.float64Value = (double_t)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.float64Value = (double_t)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.float64Value = (double_t)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.float64Value = (double_t)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.float64Value = (double_t)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.float64Value = (double_t)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.float64Value = (double_t)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.float64Value = (double_t)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.float64Value = (double_t)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64:
+                    return literal;
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.float64Value = literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.float64Value = (double_t)std::stod(literal.stringValue);
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.float64Value = literal.booleanValue ? 1 : 0;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_String:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.stringValue = std::to_string(literal.int8Value);
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.stringValue = std::to_string(literal.int16Value);
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.stringValue = std::to_string(literal.int32Value);
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.stringValue = std::to_string(literal.int64Value);
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.stringValue = std::to_string(literal.uInt8Value);
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.stringValue = std::to_string(literal.uInt16Value);
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.stringValue = std::to_string(literal.uInt32Value);
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.stringValue = std::to_string(literal.uInt64Value);
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.stringValue = std::to_string(literal.float32Value);
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.stringValue = std::to_string(literal.float64Value);
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    return literal;
+                case MaPLPrimitiveType_Boolean:
+                    returnVal.stringValue = literal.booleanValue ? "true" : "false";
+                    return returnVal;
+                case MaPLPrimitiveType_Pointer:
+                    // NULL is the only possible literal pointer.
+                    returnVal.stringValue = "0x0000000000000000";
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_Boolean:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Int8:
+                    returnVal.booleanValue = (bool)literal.int8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int16:
+                    returnVal.booleanValue = (bool)literal.int16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int32:
+                    returnVal.booleanValue = (bool)literal.int32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.booleanValue = (bool)literal.int64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt8:
+                    returnVal.booleanValue = (bool)literal.uInt8Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt16:
+                    returnVal.booleanValue = (bool)literal.uInt16Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt32:
+                    returnVal.booleanValue = (bool)literal.uInt32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.booleanValue = (bool)literal.uInt64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float32:
+                    returnVal.booleanValue = (bool)literal.float32Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    returnVal.booleanValue = (bool)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_String:
+                    returnVal.booleanValue = literal.stringValue == "true";
+                    return returnVal;
+                case MaPLPrimitiveType_Boolean:
+                    return literal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_Float_AmbiguousSize:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_Float_AmbiguousSize:
+                    return literal;
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    returnVal.int64Value = (int64_t)literal.float64Value;
+                    return returnVal;
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.uInt64Value = (u_int64_t)literal.float64Value;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+            switch (literal.type.primitiveType) {
+                case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                    return literal;
+                case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                    returnVal.uInt64Value = (u_int64_t)literal.int64Value;
+                    return returnVal;
+                default: break;
+            }
+            break;
+        case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+            if (literal.type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
+                return literal;
+            }
+            break;
+        default: break;
+    }
+    return { { MaPLPrimitiveType_TypeError } };
+}
+
 bool isAssignable(MaPLFile *file, MaPLType expressionType, MaPLType assignToType) {
     // Handle direct matches first.
     if (assignToType.primitiveType == expressionType.primitiveType) {

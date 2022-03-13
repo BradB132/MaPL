@@ -56,6 +56,30 @@ struct MaPLType {
 };
 
 /**
+ * Describes the value of a literal expression.
+ */
+struct MaPLLiteral {
+    // The type of the expression.
+    MaPLType type;
+    // The value of the expression.
+    union {
+        int8_t int8Value;
+        int16_t int16Value;
+        int32_t int32Value;
+        int64_t int64Value;
+        u_int8_t uInt8Value;
+        u_int16_t uInt16Value;
+        u_int32_t uInt32Value;
+        u_int64_t uInt64Value;
+        float_t float32Value;
+        double_t float64Value;
+        bool booleanValue;
+    };
+    // String value (C++ disallows declaring this as part of a union).
+    std::string stringValue;
+};
+
+/**
  * Describes how variadic arguments should be interpreted when searching for functions.
  */
 enum MaPLParameterStrategy {
@@ -183,9 +207,14 @@ bool inheritsFromType(MaPLFile *file, std::string type, std::string possibleAnce
 bool findInheritanceCycle(MaPLFile *file);
 
 /**
- * @return A MaPLType as described by a type node in the parse tree.
+ * @return A @c MaPLType as described by a type node in the parse tree.
  */
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
+
+/**
+ * @return The value of @c literal after being cast to @c castType.
+ */
+MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castType);
 
 /**
  * @param file The MaPLFile to use as the root of the search.
