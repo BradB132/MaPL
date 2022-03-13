@@ -8,7 +8,7 @@
 #include "MaPLFileCache.h"
 #include "MaPLFile.h"
 
-MaPLFile *MaPLFileCache::fileForAbsolutePath(std::filesystem::path absoluteFilePath) {
+MaPLFile *MaPLFileCache::fileForAbsolutePath(const std::filesystem::path &absoluteFilePath) {
     // Verify that the path is normalized.
     if (!absoluteFilePath.is_absolute()) {
         return NULL;

@@ -129,7 +129,7 @@ bool isConcreteType(MaPLPrimitiveType type);
 /**
  * @return @c true if @c expressionType can be assigned to a variable of @c assignToType without error. @c false if @c assignToType is ambiguous.
  */
-bool isAssignable(MaPLFile *file, MaPLType expressionType, MaPLType assignToType);
+bool isAssignable(MaPLFile *file, const MaPLType &expressionType, const MaPLType &assignToType);
 
 /**
  * @return The number of bytes required for each of the primitive types. @c 0 if type is invalid, void, or ambiguous.
@@ -139,12 +139,12 @@ MaPL_Index byteSizeOfType(MaPLPrimitiveType type);
 /**
  * @return A human-readable string that describes the type.
  */
-std::string descriptorForType(MaPLType type);
+std::string descriptorForType(const MaPLType &type);
 
 /**
  * @return A human-readable string that describes the signature of a function.
  */
-std::string descriptorForFunction(std::string name, std::vector<MaPLType> parameterTypes, bool hasVariadicArgs);
+std::string descriptorForFunction(const std::string &name, const std::vector<MaPLType> &parameterTypes, bool hasVariadicArgs);
 
 /**
  * @return The instruction byte that indicates an assignment for the corresponding primitive type.
@@ -194,12 +194,12 @@ MaPL_Instruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType typ
 /**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.
  */
-std::vector<std::string> mutualAncestorTypes(MaPLFile *file, std::string type1, std::string type2);
+std::vector<std::string> mutualAncestorTypes(MaPLFile *file, const std::string &type1, const std::string &type2);
 
 /**
  * @return @c true if @c possibleAncestorType is an ancestor of @c type.
  */
-bool inheritsFromType(MaPLFile *file, std::string type, std::string possibleAncestorType);
+bool inheritsFromType(MaPLFile *file, const std::string &type, const std::string &possibleAncestorType);
 
 /**
  * @return @c true if the #type declarations in @c file contain an inheritance cycle.
@@ -223,7 +223,7 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
  *
  * @return The parse tree node which represents the API type, if a matching type exists. Otherwise @c NULL.
  */
-MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, MaPLParser::ApiDeclarationContext *excludingType);
+MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, const std::string &type, MaPLParser::ApiDeclarationContext *excludingType);
 
 /**
  * @param file The MaPLFile to use as the root of the search.
@@ -236,9 +236,9 @@ MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, Ma
  * @return The parse tree node which represents the API function, if a matching function exists. Otherwise @c NULL.
  */
 MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
-                                             std::string type,
-                                             std::string name,
-                                             std::vector<MaPLType> parameterTypes,
+                                             const std::string &type,
+                                             const std::string &name,
+                                             const std::vector<MaPLType> &parameterTypes,
                                              MaPLParameterStrategy parameterStrategy,
                                              MaPLParser::ApiFunctionContext *excludingFunction);
 
@@ -251,8 +251,8 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
  * @return The parse tree node which represents the API subscript, if a matching subscript exists. Otherwise @c NULL.
  */
 MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
-                                               std::string type,
-                                               MaPLType indexType,
+                                               const std::string &type,
+                                               const MaPLType &indexType,
                                                MaPLParser::ApiSubscriptContext *excludingSubscript);
 
 /**
@@ -264,8 +264,8 @@ MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
  * @return The parse tree node which represents the API property, if a matching property exists. Otherwise @c NULL.
  */
 MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
-                                             std::string type,
-                                             std::string name,
+                                             const std::string &type,
+                                             const std::string &name,
                                              MaPLParser::ApiPropertyContext *excludingProperty);
 
 /**

@@ -25,7 +25,7 @@ public:
      *
      * @return The @c MaPLFile for the script at the given @c absoluteFilePath. @c NULL if error.
      */
-    MaPLFile *fileForAbsolutePath(std::filesystem::path absoluteFilePath);
+    MaPLFile *fileForAbsolutePath(const std::filesystem::path &absoluteFilePath);
     
 private:
     

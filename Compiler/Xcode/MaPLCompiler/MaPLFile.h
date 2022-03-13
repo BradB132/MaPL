@@ -63,8 +63,8 @@ public:
 private:
     
     bool parseRawScript();
-    void compileChildNodes(antlr4::ParserRuleContext *node, MaPLType expectedType, MaPLBuffer *currentBuffer);
-    void compileNode(antlr4::ParserRuleContext *node, MaPLType expectedType, MaPLBuffer *currentBuffer);
+    void compileChildNodes(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer);
+    void compileNode(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer);
     virtual void syntaxError(antlr4::Recognizer *recognizer,
                              antlr4::Token * offendingSymbol,
                              size_t line, size_t charPositionInLine,
@@ -78,9 +78,9 @@ private:
                                       MaPLParser::ExpressionContext *expression2,
                                       antlr4::Token *errorToken);
     MaPLType objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
-                                        std::string invokedOnType);
+                                        const std::string &invokedOnType);
     MaPLPrimitiveType typeReconciliationError(antlr4::Token *errorToken);
-    void missingTypeError(antlr4::Token *errorToken, std::string typeName);
+    void missingTypeError(antlr4::Token *errorToken, const std::string &typeName);
     
     std::filesystem::path _normalizedFilePath;
     MaPLFileCache *_fileCache;

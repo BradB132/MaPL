@@ -148,7 +148,7 @@ void MaPLFile::syntaxError(antlr4::Recognizer *recognizer,
     logError(this, offendingSymbol, msg);
 }
 
-void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLType expectedType, MaPLBuffer *currentBuffer) {
+void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer) {
     for (antlr4::tree::ParseTree *child : node->children) {
         antlr4::ParserRuleContext *ruleContext = dynamic_cast<antlr4::ParserRuleContext *>(child);
         if (ruleContext) {
@@ -157,7 +157,7 @@ void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, MaPLType expec
     }
 }
 
-void MaPLFile::compileNode(antlr4::ParserRuleContext *node, MaPLType expectedType, MaPLBuffer *currentBuffer) {
+void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer) {
     switch (node->getRuleIndex()) {
         case MaPLParser::RuleApiDeclaration: {
             MaPLParser::ApiDeclarationContext *apiDeclaration = (MaPLParser::ApiDeclarationContext *)node;
@@ -756,7 +756,7 @@ MaPLPrimitiveType MaPLFile::typeReconciliationError(antlr4::Token *errorToken) {
     return MaPLPrimitiveType_TypeError;
 }
 
-void MaPLFile::missingTypeError(antlr4::Token *errorToken, std::string typeName) {
+void MaPLFile::missingTypeError(antlr4::Token *errorToken, const std::string &typeName) {
     logError(this, errorToken, "Unable to find the type declaration for '"+typeName+"'.");
 }
 
@@ -973,7 +973,8 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
     return { MaPLPrimitiveType_TypeError };
 }
 
-MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression, std::string invokedOnType) {
+MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
+                                              const std::string &invokedOnType) {
     antlr4::Token *keyToken = expression->keyToken;
     if (keyToken) {
         switch (keyToken->getType()) {

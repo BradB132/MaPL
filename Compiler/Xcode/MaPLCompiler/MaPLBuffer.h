@@ -60,7 +60,7 @@ public:
     /**
      * Adds a single annotation.
      */
-    void addAnnotation(MaPLBufferAnnotation annotation);
+    void addAnnotation(const MaPLBufferAnnotation &annotation);
     
     /**
      * @return A list of all added annotations.

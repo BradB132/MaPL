@@ -49,7 +49,7 @@ size_t MaPLBuffer::getByteCount() {
     return _byteCount;
 }
 
-void MaPLBuffer::addAnnotation(MaPLBufferAnnotation annotation) {
+void MaPLBuffer::addAnnotation(const MaPLBufferAnnotation &annotation) {
     _annotations.push_back(annotation);
 }
 

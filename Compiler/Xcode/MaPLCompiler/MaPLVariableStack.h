@@ -57,12 +57,12 @@ public:
      *
      * @return @c true if declaration is successful.
      */
-    bool declareVariable(std::string variableName, MaPLVariable variable);
+    bool declareVariable(const std::string &variableName, MaPLVariable variable);
     
     /**
      * @return The @c MaPLVariable with the given name. If the variable does not exist, its @c primitiveType will be @c MaPLPrimitiveType_TypeError.
      */
-    MaPLVariable getVariable(std::string variableName);
+    MaPLVariable getVariable(const std::string &variableName);
 
     /**
      * @return A mapping of all variables that are not within a nested scope.

@@ -27,7 +27,7 @@ MaPL_Index MaPLVariableStack::maximumMemoryUsed() {
     return _maximumMemoryUsed;
 }
 
-bool MaPLVariableStack::declareVariable(std::string variableName, MaPLVariable variable) {
+bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVariable variable) {
     MaPL_Index variableSize = byteSizeOfType(variable.type.primitiveType);
     if (!variableSize) {
         logError(variable.file, variable.token, "Failure declaring variable '"+variableName+"' with ambiguous type.");
@@ -61,7 +61,7 @@ bool MaPLVariableStack::declareVariable(std::string variableName, MaPLVariable v
     return true;
 }
 
-MaPLVariable MaPLVariableStack::getVariable(std::string variableName) {
+MaPLVariable MaPLVariableStack::getVariable(const std::string &variableName) {
     for (std::unordered_map<std::string, MaPLVariable> frame : _stack) {
         for (std::pair<std::string, MaPLVariable> pair : frame) {
             if (pair.first == variableName) {

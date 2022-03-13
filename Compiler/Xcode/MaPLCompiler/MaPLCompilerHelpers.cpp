@@ -104,7 +104,7 @@ MaPL_Index byteSizeOfType(MaPLPrimitiveType type) {
     }
 }
 
-std::string descriptorForType(MaPLType type) {
+std::string descriptorForType(const MaPLType &type) {
     switch (type.primitiveType) {
         case MaPLPrimitiveType_Int8: return "int8";
         case MaPLPrimitiveType_Int16: return "int16";
@@ -128,7 +128,7 @@ std::string descriptorForType(MaPLType type) {
     }
 }
 
-std::string descriptorForFunction(std::string name, std::vector<MaPLType> parameterTypes, bool hasVariadicArgs) {
+std::string descriptorForFunction(const std::string &name, const std::vector<MaPLType> &parameterTypes, bool hasVariadicArgs) {
     std::string functionDescriptor = name+"(";
     for (int i = 0; i < parameterTypes.size(); i++) {
         functionDescriptor += descriptorForType(parameterTypes[i]);
@@ -883,7 +883,7 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
     return { { MaPLPrimitiveType_TypeError } };
 }
 
-bool isAssignable(MaPLFile *file, MaPLType expressionType, MaPLType assignToType) {
+bool isAssignable(MaPLFile *file, const MaPLType &expressionType, const MaPLType &assignToType) {
     // Handle direct matches first.
     if (assignToType.primitiveType == expressionType.primitiveType) {
         if (assignToType.primitiveType == MaPLPrimitiveType_Pointer) {
@@ -935,7 +935,7 @@ std::set<std::string> findAncestorTypes(MaPLFile *file, std::string type) {
     return allAncestorTypes;
 }
 
-std::vector<std::string> mutualAncestorTypes(MaPLFile *file, std::string type1, std::string type2) {
+std::vector<std::string> mutualAncestorTypes(MaPLFile *file, const std::string &type1, const std::string &type2) {
     std::set<std::string> ancestors1 = findAncestorTypes(file, type1);
     std::set<std::string> ancestors2 = findAncestorTypes(file, type2);
     std::vector<std::string> mutuals;
@@ -947,7 +947,7 @@ std::vector<std::string> mutualAncestorTypes(MaPLFile *file, std::string type1, 
     return mutuals;
 }
 
-bool inheritsFromType(MaPLFile *file, std::string type, std::string possibleAncestorType) {
+bool inheritsFromType(MaPLFile *file, const std::string &type, const std::string &possibleAncestorType) {
     return findAncestorTypes(file, type).count(possibleAncestorType) > 0;
 }
 
@@ -1008,7 +1008,7 @@ bool findInheritanceCycle(MaPLFile *file) {
     return false;
 }
 
-MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, MaPLParser::ApiDeclarationContext *excludingType) {
+MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, const std::string &type, MaPLParser::ApiDeclarationContext *excludingType) {
     MaPLParser::ProgramContext *program = file->getParseTree();
     if (!program) { return NULL; }
     for (MaPLParser::StatementContext *statement : program->statement()) {
@@ -1034,8 +1034,8 @@ MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, std::string type, Ma
 
 bool functionIsCompatible(MaPLFile *file,
                           MaPLParser::ApiFunctionContext *function,
-                          std::string name,
-                          std::vector<MaPLType> parameterTypes,
+                          const std::string &name,
+                          const std::vector<MaPLType> &parameterTypes,
                           MaPLParameterStrategy parameterStrategy) {
     // Confirm matching function name.
     if (name != function->identifier()->getText()) {
@@ -1087,9 +1087,9 @@ bool functionIsCompatible(MaPLFile *file,
 }
 
 MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
-                                             std::string type,
-                                             std::string name,
-                                             std::vector<MaPLType> parameterTypes,
+                                             const std::string &type,
+                                             const std::string &name,
+                                             const std::vector<MaPLType> &parameterTypes,
                                              MaPLParameterStrategy parameterStrategy,
                                              MaPLParser::ApiFunctionContext *excludingFunction) {
     MaPLParser::ProgramContext *program = file->getParseTree();
@@ -1164,8 +1164,8 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
 }
 
 MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
-                                               std::string type,
-                                               MaPLType indexType,
+                                               const std::string &type,
+                                               const MaPLType &indexType,
                                                MaPLParser::ApiSubscriptContext *excludingSubscript) {
     MaPLParser::ApiDeclarationContext *typeDeclaration = findType(file, type, NULL);
     if (!typeDeclaration) {
@@ -1192,8 +1192,8 @@ MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
 }
 
 MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
-                                             std::string type,
-                                             std::string name,
+                                             const std::string &type,
+                                             const std::string &name,
                                              MaPLParser::ApiPropertyContext *excludingProperty) {
     MaPLParser::ProgramContext *program = file->getParseTree();
     if (!program) { return NULL; }
@@ -1296,7 +1296,6 @@ void logNonNumericOperandsError(MaPLFile *file, antlr4::Token *token) {
     logError(file, token, "Both operands must be numeric.");
 }
 
-// TODO: Convert struct params throughout this program, where applicable, to use 'const' and '&' like is done for this function.
 void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg) {
     if (token) {
         printf("%s %ld:%ld: %s\n", file->getNormalizedFilePath().c_str(), token->getLine(), token->getCharPositionInLine(), msg.c_str());
