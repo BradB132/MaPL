@@ -70,6 +70,7 @@ private:
                              size_t line, size_t charPositionInLine,
                              const std::string &msg,
                              std::exception_ptr e) override;
+    MaPLLiteral constantValueForExpression(MaPLParser::ExpressionContext *expression);
     MaPLType dataTypeForExpression(MaPLParser::ExpressionContext *expression);
     MaPLPrimitiveType reconcileTypes(MaPLPrimitiveType left,
                                      MaPLPrimitiveType right,

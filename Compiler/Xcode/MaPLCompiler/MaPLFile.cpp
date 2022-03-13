@@ -754,7 +754,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
 MaPLPrimitiveType MaPLFile::typeReconciliationError(MaPLPrimitiveType left,
                                                     MaPLPrimitiveType right,
                                                     antlr4::Token *errorToken) {
-    logError(this, errorToken, "Type mismatch. Cannot combine "+descriptorForPrimitive(left)+" and "+descriptorForPrimitive(right)+" types in this way.");
+    if (errorToken) {
+        logError(this, errorToken, "Type mismatch. Cannot combine "+descriptorForPrimitive(left)+" and "+descriptorForPrimitive(right)+" types in this way.");
+    }
     return MaPLPrimitiveType_TypeError;
 }
 
@@ -854,6 +856,788 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
         return { MaPLPrimitiveType_TypeError };
     }
     return { reconciledPrimitive, type1.pointerType };
+}
+
+MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *expression) {
+    if (expression->keyToken) {
+        size_t tokenType = expression->keyToken->getType();
+        switch (tokenType) {
+            case MaPLParser::PAREN_OPEN: { // Typecast.
+                MaPLLiteral literal = castLiteralToType(constantValueForExpression(expression->expression(0)),
+                                                        typeForTypeContext(expression->type()));
+                if (literal.type.primitiveType != MaPLPrimitiveType_TypeError) {
+                    return literal;
+                }
+            }
+            case MaPLParser::PAREN_CLOSE: // Nested expression.
+                return constantValueForExpression(expression->expression(0));
+            case MaPLParser::LOGICAL_AND: // Intentional fallthrough.
+            case MaPLParser::LOGICAL_OR: // Intentional fallthrough.
+            case MaPLParser::LOGICAL_EQUALITY: // Intentional fallthrough.
+            case MaPLParser::LOGICAL_INEQUALITY: {
+                MaPLLiteral left = constantValueForExpression(expression->expression(0));
+                if (left.type.primitiveType != MaPLPrimitiveType_Boolean) { break; }
+                MaPLLiteral right = constantValueForExpression(expression->expression(1));
+                if (right.type.primitiveType != MaPLPrimitiveType_Boolean) { break; }
+                MaPLLiteral literal = { { MaPLPrimitiveType_Boolean } };
+                switch (tokenType) {
+                    case MaPLParser::LOGICAL_AND:
+                        literal.booleanValue = left.booleanValue && right.booleanValue;
+                        return literal;
+                    case MaPLParser::LOGICAL_OR:
+                        literal.booleanValue = left.booleanValue || right.booleanValue;
+                        return literal;
+                    case MaPLParser::LOGICAL_EQUALITY:
+                        literal.booleanValue = left.booleanValue == right.booleanValue;
+                        return literal;
+                    case MaPLParser::LOGICAL_INEQUALITY:
+                        literal.booleanValue = left.booleanValue != right.booleanValue;
+                        return literal;
+                    default: break;
+                }
+            }
+            case MaPLParser::LESS_THAN: // Intentional fallthrough.
+            case MaPLParser::LESS_THAN_EQUAL: // Intentional fallthrough.
+            case MaPLParser::GREATER_THAN: // Intentional fallthrough.
+            case MaPLParser::GREATER_THAN_EQUAL: {
+                MaPLLiteral left = constantValueForExpression(expression->expression(0));
+                if (!isNumeric(left.type.primitiveType)) { break; }
+                MaPLLiteral right = constantValueForExpression(expression->expression(1));
+                if (!isNumeric(right.type.primitiveType)) { break; }
+                
+                // Because literals can be ambiguous, types must be reconciled and typecast.
+                MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
+                if (!isNumeric(reconciledType.primitiveType)) { break; }
+                left = castLiteralToType(left, reconciledType);
+                right = castLiteralToType(right, reconciledType);
+                
+                MaPLLiteral returnVal = { { MaPLPrimitiveType_Boolean } };
+                switch (reconciledType.primitiveType) {
+                    case MaPLPrimitiveType_Int8:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.int8Value < right.int8Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.int8Value <= right.int8Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.int8Value > right.int8Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.int8Value >= right.int8Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Int16:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.int16Value < right.int16Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.int16Value <= right.int16Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.int16Value > right.int16Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.int16Value >= right.int16Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Int32:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.int32Value < right.int32Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.int32Value <= right.int32Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.int32Value > right.int32Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.int32Value >= right.int32Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.int64Value < right.int64Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.int64Value <= right.int64Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.int64Value > right.int64Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.int64Value >= right.int64Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt8:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.uInt8Value < right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.uInt8Value <= right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.uInt8Value > right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.uInt8Value >= right.uInt8Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt16:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.uInt16Value < right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.uInt16Value <= right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.uInt16Value > right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.uInt16Value >= right.uInt16Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt32:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.uInt32Value < right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.uInt32Value <= right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.uInt32Value > right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.uInt32Value >= right.uInt32Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.uInt64Value < right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.uInt64Value <= right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.uInt64Value > right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.uInt64Value >= right.uInt64Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Float32:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.float32Value < right.float32Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.float32Value <= right.float32Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.float32Value > right.float32Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.float32Value >= right.float32Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_Float_AmbiguousSize:
+                        switch (tokenType) {
+                            case MaPLParser::LESS_THAN:
+                                returnVal.booleanValue = left.float64Value < right.float64Value;
+                                return returnVal;
+                            case MaPLParser::LESS_THAN_EQUAL:
+                                returnVal.booleanValue = left.float64Value <= right.float64Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN:
+                                returnVal.booleanValue = left.float64Value > right.float64Value;
+                                return returnVal;
+                            case MaPLParser::GREATER_THAN_EQUAL:
+                                returnVal.booleanValue = left.float64Value >= right.float64Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    default: break;
+                }
+            }
+                break;
+            case MaPLParser::LOGICAL_NEGATION: {
+                MaPLLiteral literal = constantValueForExpression(expression->expression(0));
+                if (literal.type.primitiveType != MaPLPrimitiveType_Boolean) { break; }
+                literal.booleanValue = !literal.booleanValue;
+                return literal;
+            }
+            case MaPLParser::LITERAL_TRUE: // Intentional fallthrough.
+            case MaPLParser::LITERAL_FALSE: {
+                MaPLLiteral literal = { { MaPLPrimitiveType_Boolean } };
+                literal.booleanValue = tokenType == MaPLParser::LITERAL_TRUE;
+                return  literal;
+            }
+            case MaPLParser::SUBTRACT: {
+                std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                if (childExpressions.size() == 1) {
+                    // There's only one operand, so this is numeric negation instead of subtraction.
+                    MaPLLiteral literal = constantValueForExpression(childExpressions[0]);
+                    switch (literal.type.primitiveType) {
+                        case MaPLPrimitiveType_Int8:
+                            literal.int8Value = -literal.int8Value;
+                            return literal;
+                        case MaPLPrimitiveType_Int16:
+                            literal.int16Value = -literal.int16Value;
+                            return literal;
+                        case MaPLPrimitiveType_Int32:
+                            literal.int32Value = -literal.int32Value;
+                            return literal;
+                        case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                        case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                            literal.int64Value = -literal.int64Value;
+                            return literal;
+                        case MaPLPrimitiveType_Float32:
+                            literal.float32Value = -literal.float32Value;
+                            return literal;
+                        case MaPLPrimitiveType_Float64:
+                        case MaPLPrimitiveType_Float_AmbiguousSize:
+                            literal.float64Value = -literal.float64Value;
+                            return literal;
+                        case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                            literal = castLiteralToType(literal, { MaPLPrimitiveType_SignedInt_AmbiguousSize });
+                            literal.int64Value = -literal.int64Value;
+                            return literal;
+                        default: break;
+                    }
+                    break;
+                }
+            }
+                // Intentional fallthrough handles the binary subtraction operator.
+            case MaPLParser::MOD: // Intentional fallthrough.
+            case MaPLParser::MULTIPLY: // Intentional fallthrough.
+            case MaPLParser::DIVIDE: {
+                MaPLLiteral left = constantValueForExpression(expression->expression(0));
+                if (!isNumeric(left.type.primitiveType)) { break; }
+                MaPLLiteral right = constantValueForExpression(expression->expression(1));
+                if (!isNumeric(right.type.primitiveType)) { break; }
+                
+                // Because literals can be ambiguous, types must be reconciled and typecast.
+                MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
+                if (!isNumeric(reconciledType.primitiveType)) { break; }
+                left = castLiteralToType(left, reconciledType);
+                right = castLiteralToType(right, reconciledType);
+                
+                MaPLLiteral returnVal = { reconciledType };
+                switch (reconciledType.primitiveType) {
+                    case MaPLPrimitiveType_Int8:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.int8Value = left.int8Value - right.int8Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.int8Value = left.int8Value % right.int8Value;
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.int8Value = left.int8Value * right.int8Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.int8Value = left.int8Value / right.int8Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Int16:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.int16Value = left.int16Value - right.int16Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.int16Value = left.int16Value % right.int16Value;
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.int16Value = left.int16Value * right.int16Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.int16Value = left.int16Value / right.int16Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Int32:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.int32Value = left.int32Value - right.int32Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.int32Value = left.int32Value % right.int32Value;
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.int32Value = left.int32Value * right.int32Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.int32Value = left.int32Value / right.int32Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.int64Value = left.int64Value - right.int64Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.int64Value = left.int64Value % right.int64Value;
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.int64Value = left.int64Value * right.int64Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.int64Value = left.int64Value / right.int64Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt8:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.uInt8Value = left.uInt8Value - right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.uInt8Value = left.uInt8Value % right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.uInt8Value = left.uInt8Value * right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.uInt8Value = left.uInt8Value / right.uInt8Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt16:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.uInt16Value = left.uInt16Value - right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.uInt16Value = left.uInt16Value % right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.uInt16Value = left.uInt16Value * right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.uInt16Value = left.uInt16Value / right.uInt16Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt32:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.uInt32Value = left.uInt32Value - right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.uInt32Value = left.uInt32Value % right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.uInt32Value = left.uInt32Value * right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.uInt32Value = left.uInt32Value / right.uInt32Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.uInt64Value = left.uInt64Value - right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.uInt64Value = left.uInt64Value % right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.uInt64Value = left.uInt64Value * right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.uInt64Value = left.uInt64Value / right.uInt64Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Float32:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.float32Value = left.float32Value - right.float32Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.float32Value = fmod(left.float32Value, right.float32Value);
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.float32Value = left.float32Value * right.float32Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.float32Value = left.float32Value / right.float32Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_Float_AmbiguousSize:
+                        switch (tokenType) {
+                            case MaPLParser::SUBTRACT:
+                                returnVal.float64Value = left.float64Value - right.float64Value;
+                                return returnVal;
+                            case MaPLParser::MOD:
+                                returnVal.float64Value = fmod(left.float64Value, right.float64Value);
+                                return returnVal;
+                            case MaPLParser::MULTIPLY:
+                                returnVal.float64Value = left.float64Value * right.float64Value;
+                                return returnVal;
+                            case MaPLParser::DIVIDE:
+                                returnVal.float64Value = left.float64Value / right.float64Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    default: break;
+                }
+            }
+                break;
+            case MaPLParser::ADD: {
+                MaPLLiteral left = constantValueForExpression(expression->expression(0));
+                if (!isNumeric(left.type.primitiveType) && left.type.primitiveType != MaPLPrimitiveType_String) { break; }
+                MaPLLiteral right = constantValueForExpression(expression->expression(1));
+                if (!isNumeric(right.type.primitiveType) && right.type.primitiveType != MaPLPrimitiveType_String) { break; }
+                
+                // Because literals can be ambiguous, types must be reconciled and typecast.
+                MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
+                if (!isNumeric(reconciledType.primitiveType) && reconciledType.primitiveType != MaPLPrimitiveType_String) { break; }
+                left = castLiteralToType(left, reconciledType);
+                right = castLiteralToType(right, reconciledType);
+                
+                MaPLLiteral returnVal = { reconciledType };
+                switch (reconciledType.primitiveType) {
+                    case MaPLPrimitiveType_Int8:
+                        returnVal.int8Value = left.int8Value + right.int8Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_Int16:
+                        returnVal.int16Value = left.int16Value + right.int16Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_Int32:
+                        returnVal.int32Value = left.int32Value + right.int32Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_Int64:
+                    case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                        returnVal.int64Value = left.int64Value + right.int64Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_UInt8:
+                        returnVal.uInt8Value = left.uInt8Value + right.uInt8Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_UInt16:
+                        returnVal.uInt16Value = left.uInt16Value + right.uInt16Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_UInt32:
+                        returnVal.uInt32Value = left.uInt32Value + right.uInt32Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_UInt64:
+                    case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                        returnVal.uInt64Value = left.uInt64Value + right.uInt64Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_Float32:
+                        returnVal.float32Value = left.float32Value + right.float32Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_Float64:
+                    case MaPLPrimitiveType_Float_AmbiguousSize:
+                        returnVal.float64Value = left.float64Value + right.float64Value;
+                        return returnVal;
+                    case MaPLPrimitiveType_String:
+                        returnVal.stringValue = left.stringValue + right.stringValue;
+                        return returnVal;
+                    default: break;
+                }
+            }
+                break;
+            case MaPLParser::BITWISE_AND: // Intentional fallthrough.
+            case MaPLParser::BITWISE_XOR: // Intentional fallthrough.
+            case MaPLParser::BITWISE_OR: // Intentional fallthrough.
+            case MaPLParser::BITWISE_SHIFT_LEFT: // Intentional fallthrough.
+            case MaPLParser::BITWISE_SHIFT_RIGHT: {
+                MaPLLiteral left = constantValueForExpression(expression->expression(0));
+                if (!isIntegral(left.type.primitiveType)) { break; }
+                MaPLLiteral right = constantValueForExpression(expression->expression(1));
+                if (!isIntegral(right.type.primitiveType)) { break; }
+                
+                // Because literals can be ambiguous, types must be reconciled and typecast.
+                MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
+                if (!isIntegral(reconciledType.primitiveType)) { break; }
+                left = castLiteralToType(left, reconciledType);
+                right = castLiteralToType(right, reconciledType);
+                
+                MaPLLiteral returnVal = { reconciledType };
+                switch (reconciledType.primitiveType) {
+                    case MaPLPrimitiveType_Int8:
+                        switch (tokenType) {
+                            case MaPLParser::BITWISE_AND:
+                                returnVal.int8Value = left.int8Value & right.int8Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_XOR:
+                                returnVal.int8Value = left.int8Value ^ right.int8Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_OR:
+                                returnVal.int8Value = left.int8Value | right.int8Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_LEFT:
+                                returnVal.int8Value = left.int8Value << right.int8Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_RIGHT:
+                                returnVal.int8Value = left.int8Value >> right.int8Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Int16:
+                        switch (tokenType) {
+                            case MaPLParser::BITWISE_AND:
+                                returnVal.int16Value = left.int16Value & right.int16Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_XOR:
+                                returnVal.int16Value = left.int16Value ^ right.int16Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_OR:
+                                returnVal.int16Value = left.int16Value | right.int16Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_LEFT:
+                                returnVal.int16Value = left.int16Value << right.int16Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_RIGHT:
+                                returnVal.int16Value = left.int16Value >> right.int16Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Int32:
+                        switch (tokenType) {
+                            case MaPLParser::BITWISE_AND:
+                                returnVal.int32Value = left.int32Value & right.int32Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_XOR:
+                                returnVal.int32Value = left.int32Value ^ right.int32Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_OR:
+                                returnVal.int32Value = left.int32Value | right.int32Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_LEFT:
+                                returnVal.int32Value = left.int32Value << right.int32Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_RIGHT:
+                                returnVal.int32Value = left.int32Value >> right.int32Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                        switch (tokenType) {
+                            case MaPLParser::BITWISE_AND:
+                                returnVal.int64Value = left.int64Value & right.int64Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_XOR:
+                                returnVal.int64Value = left.int64Value ^ right.int64Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_OR:
+                                returnVal.int64Value = left.int64Value | right.int64Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_LEFT:
+                                returnVal.int64Value = left.int64Value << right.int64Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_RIGHT:
+                                returnVal.int64Value = left.int64Value >> right.int64Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt8:
+                        switch (tokenType) {
+                            case MaPLParser::BITWISE_AND:
+                                returnVal.uInt8Value = left.uInt8Value & right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_XOR:
+                                returnVal.uInt8Value = left.uInt8Value ^ right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_OR:
+                                returnVal.uInt8Value = left.uInt8Value | right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_LEFT:
+                                returnVal.uInt8Value = left.uInt8Value << right.uInt8Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_RIGHT:
+                                returnVal.uInt8Value = left.uInt8Value >> right.uInt8Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt16:
+                        switch (tokenType) {
+                            case MaPLParser::BITWISE_AND:
+                                returnVal.uInt16Value = left.uInt16Value & right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_XOR:
+                                returnVal.uInt16Value = left.uInt16Value ^ right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_OR:
+                                returnVal.uInt16Value = left.uInt16Value | right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_LEFT:
+                                returnVal.uInt16Value = left.uInt16Value << right.uInt16Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_RIGHT:
+                                returnVal.uInt16Value = left.uInt16Value >> right.uInt16Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt32:
+                        switch (tokenType) {
+                            case MaPLParser::BITWISE_AND:
+                                returnVal.uInt32Value = left.uInt32Value & right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_XOR:
+                                returnVal.uInt32Value = left.uInt32Value ^ right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_OR:
+                                returnVal.uInt32Value = left.uInt32Value | right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_LEFT:
+                                returnVal.uInt32Value = left.uInt32Value << right.uInt32Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_RIGHT:
+                                returnVal.uInt32Value = left.uInt32Value >> right.uInt32Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                        switch (tokenType) {
+                            case MaPLParser::BITWISE_AND:
+                                returnVal.uInt64Value = left.uInt64Value & right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_XOR:
+                                returnVal.uInt64Value = left.uInt64Value ^ right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_OR:
+                                returnVal.uInt64Value = left.uInt64Value | right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_LEFT:
+                                returnVal.uInt64Value = left.uInt64Value << right.uInt64Value;
+                                return returnVal;
+                            case MaPLParser::BITWISE_SHIFT_RIGHT:
+                                returnVal.uInt64Value = left.uInt64Value >> right.uInt64Value;
+                                return returnVal;
+                            default: break;
+                        }
+                        break;
+                    default: break;
+                }
+            }
+            case MaPLParser::BITWISE_NEGATION: {
+                MaPLLiteral literal = constantValueForExpression(expression->expression(0));
+                switch (literal.type.primitiveType) {
+                    case MaPLPrimitiveType_Int8:
+                        literal.int8Value = ~literal.int8Value;
+                        return literal;
+                    case MaPLPrimitiveType_Int16:
+                        literal.int16Value = ~literal.int16Value;
+                        return literal;
+                    case MaPLPrimitiveType_Int32:
+                        literal.int32Value = ~literal.int32Value;
+                        return literal;
+                    case MaPLPrimitiveType_Int64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+                        literal.int64Value = ~literal.int64Value;
+                        return literal;
+                    case MaPLPrimitiveType_UInt8:
+                        literal.uInt8Value = ~literal.uInt8Value;
+                        return literal;
+                    case MaPLPrimitiveType_UInt16:
+                        literal.uInt16Value = ~literal.uInt16Value;
+                        return literal;
+                    case MaPLPrimitiveType_UInt32:
+                        literal.uInt32Value = ~literal.uInt32Value;
+                        return literal;
+                    case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
+                    case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+                        literal.uInt64Value = ~literal.uInt64Value;
+                        return literal;
+                    default: break;
+                }
+            }
+                break;
+            case MaPLParser::TERNARY_CONDITIONAL: {
+                MaPLLiteral conditionalLiteral = constantValueForExpression(expression->expression(0));
+                if (conditionalLiteral.type.primitiveType != MaPLPrimitiveType_Boolean) { break; }
+                size_t chosenExpressionIndex = conditionalLiteral.booleanValue ? 1 : 2;
+                return constantValueForExpression(expression->expression(chosenExpressionIndex));
+            }
+            case MaPLParser::NULL_COALESCING: {
+                // It's very unlikely that NULL coalescing would be a compile-time constant,
+                // though it's possible if you had an expression like "NULL ?? NULL".
+                MaPLLiteral literal = constantValueForExpression(expression->expression(0));
+                if (literal.type.primitiveType != MaPLPrimitiveType_Pointer) { break; }
+                return constantValueForExpression(expression->expression(1));
+            }
+            case MaPLParser::LITERAL_INT: {
+                std::string intAsString = expression->LITERAL_INT()->getText();
+                MaPLLiteral literal = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
+                literal.uInt64Value = (u_int64_t)std::stoull(intAsString);
+                return literal;
+            }
+            case MaPLParser::LITERAL_FLOAT: {
+                std::string floatAsString = expression->LITERAL_FLOAT()->getText();
+                MaPLLiteral literal = { { MaPLPrimitiveType_Float_AmbiguousSize } };
+                literal.float64Value = (double_t)std::stod(floatAsString);
+                return literal;
+            }
+            case MaPLParser::LITERAL_STRING: {
+                std::string literalString = expression->LITERAL_STRING()->getText();
+                // The literal text will always contain the string quotes, substring call removes them.
+                std::filesystem::path stringValue = literalString.substr(1, literalString.length()-2);
+                MaPLLiteral literal = { { MaPLPrimitiveType_String } };
+                literal.stringValue = stringValue;
+                return literal;
+            }
+            case MaPLParser::LITERAL_NULL: return { { MaPLPrimitiveType_Pointer } };
+        }
+    }
+    return { { MaPLPrimitiveType_Uninitialized } };
 }
 
 MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expression) {
