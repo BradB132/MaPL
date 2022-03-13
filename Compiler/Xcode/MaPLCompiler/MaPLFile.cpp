@@ -959,7 +959,15 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
             }
             case MaPLParser::NULL_COALESCING: {
                 std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-                return reconcileExpressionTypes(childExpressions[0], childExpressions[1], expression->keyToken);
+                MaPLType reconciledType = reconcileExpressionTypes(childExpressions[0], childExpressions[1], expression->keyToken);
+                if (reconciledType.primitiveType == MaPLPrimitiveType_TypeError) {
+                    return reconciledType;
+                }
+                if (reconciledType.primitiveType != MaPLPrimitiveType_Pointer) {
+                    logError(this, expression->keyToken, "NULL coalescing operator can only be applied to expressions which return a pointer.");
+                    return { MaPLPrimitiveType_TypeError };
+                }
+                return reconciledType;
             }
             case MaPLParser::LITERAL_INT: return { MaPLPrimitiveType_Int_AmbiguousSizeAndSign };
             case MaPLParser::LITERAL_FLOAT: return { MaPLPrimitiveType_Float_AmbiguousSize };
