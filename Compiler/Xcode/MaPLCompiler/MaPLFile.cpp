@@ -751,8 +751,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
     }
 }
 
-MaPLPrimitiveType MaPLFile::typeReconciliationError(antlr4::Token *errorToken) {
-    logError(this, errorToken, "Type mismatch.");
+MaPLPrimitiveType MaPLFile::typeReconciliationError(MaPLPrimitiveType left,
+                                                    MaPLPrimitiveType right,
+                                                    antlr4::Token *errorToken) {
+    logError(this, errorToken, "Type mismatch. Cannot combine "+descriptorForPrimitive(left)+" and "+descriptorForPrimitive(right)+" types in this way.");
     return MaPLPrimitiveType_TypeError;
 }
 
@@ -768,7 +770,7 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
     }
     // Numeric types are the only ones with ambiguity. Anything else is definitely in error.
     if (!isNumeric(left) || !isNumeric(right)) {
-        return typeReconciliationError(errorToken);
+        return typeReconciliationError(left, right, errorToken);
     }
     // This function takes a pair of types, which potentially contain ambiguity due
     // to the values being specified as literals instead of variable declarations,
@@ -783,13 +785,13 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
         // Signed integers can store any ambiguous non-float numbers.
         if (isConcreteSignedInt(left)) {
             if (right == MaPLPrimitiveType_Float_AmbiguousSize) {
-                return typeReconciliationError(errorToken);
+                return typeReconciliationError(left, right, errorToken);
             }
             return left;
         }
         if (isConcreteSignedInt(right)) {
             if (left == MaPLPrimitiveType_Float_AmbiguousSize) {
-                return typeReconciliationError(errorToken);
+                return typeReconciliationError(left, right, errorToken);
             }
             return right;
         }
@@ -799,13 +801,13 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
             if (right == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                 return left;
             }
-            return typeReconciliationError(errorToken);
+            return typeReconciliationError(left, right, errorToken);
         }
         if (isConcreteUnsignedInt(right)) {
             if (left == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                 return right;
             }
-            return typeReconciliationError(errorToken);
+            return typeReconciliationError(left, right, errorToken);
         }
         
         // All pairings containing a specific type have been handled above. All remaining are some combination of ambiguous types.
@@ -816,7 +818,7 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
         // Only permutation remaining is SignedInt_AmbiguousSize and Int_AmbiguousSizeAndSign.
         return MaPLPrimitiveType_SignedInt_AmbiguousSize;
     }
-    return typeReconciliationError(errorToken);
+    return typeReconciliationError(left, right, errorToken);
 }
 
 MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expression1,

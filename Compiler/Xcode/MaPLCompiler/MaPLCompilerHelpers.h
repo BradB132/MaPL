@@ -137,6 +137,11 @@ bool isAssignable(MaPLFile *file, const MaPLType &expressionType, const MaPLType
 MaPL_Index byteSizeOfType(MaPLPrimitiveType type);
 
 /**
+ * @return A human-readable string that describes the primitive.
+ */
+std::string descriptorForPrimitive(MaPLPrimitiveType type);
+
+/**
  * @return A human-readable string that describes the type.
  */
 std::string descriptorForType(const MaPLType &type);

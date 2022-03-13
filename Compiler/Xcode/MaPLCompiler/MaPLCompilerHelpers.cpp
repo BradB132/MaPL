@@ -104,8 +104,8 @@ MaPL_Index byteSizeOfType(MaPLPrimitiveType type) {
     }
 }
 
-std::string descriptorForType(const MaPLType &type) {
-    switch (type.primitiveType) {
+std::string descriptorForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
         case MaPLPrimitiveType_Int8: return "int8";
         case MaPLPrimitiveType_Int16: return "int16";
         case MaPLPrimitiveType_Int32: return "int32";
@@ -118,7 +118,7 @@ std::string descriptorForType(const MaPLType &type) {
         case MaPLPrimitiveType_Float64: return "float64";
         case MaPLPrimitiveType_Boolean: return "bool";
         case MaPLPrimitiveType_String: return "string";
-        case MaPLPrimitiveType_Pointer: return type.pointerType.empty() ? "NULL" : type.pointerType;
+        case MaPLPrimitiveType_Pointer: return "pointer";
         case MaPLPrimitiveType_SignedInt_AmbiguousSize: return "signed integer";
         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign: return "integer";
         case MaPLPrimitiveType_Float_AmbiguousSize: return "floating point";
@@ -126,6 +126,13 @@ std::string descriptorForType(const MaPLType &type) {
         case MaPLPrimitiveType_Uninitialized: return "uninitialized";
         case MaPLPrimitiveType_TypeError: return "invalid type";
     }
+}
+
+std::string descriptorForType(const MaPLType &type) {
+    if (type.primitiveType == MaPLPrimitiveType_Pointer) {
+        return type.pointerType.empty() ? "NULL" : type.pointerType;
+    }
+    return descriptorForPrimitive(type.primitiveType);
 }
 
 std::string descriptorForFunction(const std::string &name, const std::vector<MaPLType> &parameterTypes, bool hasVariadicArgs) {

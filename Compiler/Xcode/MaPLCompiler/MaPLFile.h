@@ -79,7 +79,9 @@ private:
                                       antlr4::Token *errorToken);
     MaPLType objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
                                         const std::string &invokedOnType);
-    MaPLPrimitiveType typeReconciliationError(antlr4::Token *errorToken);
+    MaPLPrimitiveType typeReconciliationError(MaPLPrimitiveType left,
+                                              MaPLPrimitiveType right,
+                                              antlr4::Token *errorToken);
     void missingTypeError(antlr4::Token *errorToken, const std::string &typeName);
     
     std::filesystem::path _normalizedFilePath;
