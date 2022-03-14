@@ -41,6 +41,18 @@ bool MaPLBuffer::appendByte(u_int8_t byte) {
     return appendBytes(&byte, sizeof(u_int8_t));
 }
 
+bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer) {
+    size_t previousByteCount = _byteCount;
+    if (!appendBytes(otherBuffer->getBytes(), otherBuffer->getByteCount())) {
+        return false;
+    }
+    for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
+        annotation.byteLocation += previousByteCount;
+        addAnnotation(annotation);
+    }
+    return true;
+}
+
 u_int8_t *MaPLBuffer::getBytes() {
     return _bytes;
 }
@@ -51,6 +63,10 @@ size_t MaPLBuffer::getByteCount() {
 
 void MaPLBuffer::addAnnotation(const MaPLBufferAnnotation &annotation) {
     _annotations.push_back(annotation);
+}
+
+void MaPLBuffer::clearAnnotations() {
+    _annotations.clear();
 }
 
 std::vector<MaPLBufferAnnotation> MaPLBuffer::getAnnotations() {

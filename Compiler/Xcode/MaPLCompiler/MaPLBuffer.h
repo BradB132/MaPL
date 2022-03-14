@@ -10,10 +10,14 @@
 
 #include <stdio.h>
 #include <vector>
+#include <string>
+
+#import "MaPLBytecodeConstants.h"
 
 struct MaPLBufferAnnotation {
-    int32_t annotation;
-    size_t annotationLocation;
+    size_t byteLocation;
+    MaPL_Instruction instruction;
+    std::string text;
 };
 
 /**
@@ -48,6 +52,15 @@ public:
     bool appendByte(u_int8_t byte);
     
     /**
+     * Appends the contents of another MaPLBuffer, including annotations, onto the buffer.
+     *
+     * @param otherBuffer The other buffer that will have all contents copied into this buffer.
+     *
+     * @return Boolean indicates success or failure of the append operation.
+     */
+    bool appendBuffer(MaPLBuffer *otherBuffer);
+    
+    /**
      * @return The bytes stored in this buffer.
      */
     u_int8_t *getBytes();
@@ -61,6 +74,11 @@ public:
      * Adds a single annotation.
      */
     void addAnnotation(const MaPLBufferAnnotation &annotation);
+    
+    /**
+     * Removes all annotations.
+     */
+    void clearAnnotations();
     
     /**
      * @return A list of all added annotations.

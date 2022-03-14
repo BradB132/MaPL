@@ -286,14 +286,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (statement->keyToken) {
                 switch (statement->keyToken->getType()) {
                     case MaPLParser::BREAK: {
-                        currentBuffer->addAnnotation({ MaPLParser::BREAK, currentBuffer->getByteCount() });
+                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MAPL_BYTE_CURSOR_MOVE_FORWARD });
                         currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_FORWARD);
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
                     }
                         break;
                     case MaPLParser::CONTINUE: {
-                        currentBuffer->addAnnotation({ MaPLParser::CONTINUE, currentBuffer->getByteCount() });
+                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MAPL_BYTE_CURSOR_MOVE_BACK });
                         currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
