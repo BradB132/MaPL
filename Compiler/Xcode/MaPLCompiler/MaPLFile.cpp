@@ -350,19 +350,19 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (expression->keyToken) {
                 switch (expression->keyToken->getType()) {
                     case MaPLParser::OBJECT_TO_MEMBER: // Compound object expression.
-                        
+                        // TODO: Implement this.
                         break;
                     case MaPLParser::SUBSCRIPT_OPEN: // Subscript invocation.
-                        
+                        // TODO: Implement this.
                         break;
                     case MaPLParser::PAREN_OPEN: // Function invocation.
-                        
+                        // TODO: Implement this.
                         break;
                     default: break;
                 }
             } else {
                 // Property invocation.
-                
+                // TODO: Implement this.
             }
         }
             break;
@@ -829,8 +829,40 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
             }
             case MaPLParser::PAREN_CLOSE: // Nested expression.
                 return constantValueForExpression(expression->expression(0));
-            case MaPLParser::LOGICAL_AND: // Intentional fallthrough.
-            case MaPLParser::LOGICAL_OR: // Intentional fallthrough.
+            case MaPLParser::LOGICAL_AND: {
+                MaPLLiteral left = constantValueForExpression(expression->expression(0));
+                if (left.type.primitiveType == MaPLPrimitiveType_Boolean && !left.booleanValue) {
+                    return left;
+                }
+                MaPLLiteral right = constantValueForExpression(expression->expression(1));
+                if (right.type.primitiveType == MaPLPrimitiveType_Boolean && !right.booleanValue) {
+                    return right;
+                }
+                if (left.type.primitiveType == MaPLPrimitiveType_Boolean &&
+                    right.type.primitiveType == MaPLPrimitiveType_Boolean) {
+                    MaPLLiteral literal = { { MaPLPrimitiveType_Boolean } };
+                    literal.booleanValue = left.booleanValue && right.booleanValue;
+                    return literal;
+                }
+            }
+                break;
+            case MaPLParser::LOGICAL_OR: {
+                MaPLLiteral left = constantValueForExpression(expression->expression(0));
+                if (left.type.primitiveType == MaPLPrimitiveType_Boolean && left.booleanValue) {
+                    return left;
+                }
+                MaPLLiteral right = constantValueForExpression(expression->expression(1));
+                if (right.type.primitiveType == MaPLPrimitiveType_Boolean && right.booleanValue) {
+                    return right;
+                }
+                if (left.type.primitiveType == MaPLPrimitiveType_Boolean &&
+                    right.type.primitiveType == MaPLPrimitiveType_Boolean) {
+                    MaPLLiteral literal = { { MaPLPrimitiveType_Boolean } };
+                    literal.booleanValue = left.booleanValue || right.booleanValue;
+                    return literal;
+                }
+            }
+                break;
             case MaPLParser::LOGICAL_EQUALITY: // Intentional fallthrough.
             case MaPLParser::LOGICAL_INEQUALITY: {
                 MaPLLiteral left = constantValueForExpression(expression->expression(0));
@@ -839,12 +871,6 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 if (right.type.primitiveType != MaPLPrimitiveType_Boolean) { break; }
                 MaPLLiteral literal = { { MaPLPrimitiveType_Boolean } };
                 switch (tokenType) {
-                    case MaPLParser::LOGICAL_AND:
-                        literal.booleanValue = left.booleanValue && right.booleanValue;
-                        return literal;
-                    case MaPLParser::LOGICAL_OR:
-                        literal.booleanValue = left.booleanValue || right.booleanValue;
-                        return literal;
                     case MaPLParser::LOGICAL_EQUALITY:
                         literal.booleanValue = left.booleanValue == right.booleanValue;
                         return literal;
