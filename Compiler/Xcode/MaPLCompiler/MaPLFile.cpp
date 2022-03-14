@@ -759,7 +759,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
         }
             break;
         case MaPLParser::RuleScope:
-            // TODO: Implement this.
+            _variableStack->push();
+            compileChildNodes(node, { MaPLPrimitiveType_Uninitialized }, currentBuffer);
+            _variableStack->pop();
             break;
         default:
             break;
