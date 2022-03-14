@@ -699,8 +699,58 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
         case MaPLParser::RuleDoWhileLoop:
             // TODO: Implement this.
             break;
-        case MaPLParser::RuleConditional:
-            // TODO: Implement this.
+        case MaPLParser::RuleConditional: {
+            MaPLParser::ConditionalContext *conditional = (MaPLParser::ConditionalContext *)node;
+            MaPLParser::ExpressionContext *conditionalExpression = conditional->expression();
+            MaPLType conditionalExpressionType = dataTypeForExpression(conditionalExpression);
+            
+            MaPLLiteral expressionLiteral = constantValueForExpression(conditionalExpression);
+            if (expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean) {
+                // The expression evaluated by this conditional is a compile-time constant, so it's possible to strip some dead code.
+                if (expressionLiteral.booleanValue) {
+                    // The conditional is always true. Unconditionally include the contents of the scope and desregard any "else" logic.
+                    compileNode(conditional->scope(), { MaPLPrimitiveType_Uninitialized }, currentBuffer);
+                } else {
+                    // The conditional is always false. Disregard the contents of the scope and unconditionally include any "else" logic (if it exists).
+                    MaPLParser::ConditionalElseContext *conditionalElse = conditional->conditionalElse();
+                    if (conditionalElse) {
+                        compileChildNodes(conditionalElse, { MaPLPrimitiveType_Uninitialized }, currentBuffer);
+                    }
+                }
+            } else {
+                // The expression evaluated by this conditional is not compile-time constant. Compile it normally.
+                // Conditionals are represented in bytecode as follows:
+                //   MAPL_BYTE_CONDITIONAL - Signals the start of a conditional.
+                //   Boolean expression - The boolean portion of the conditional.
+                //   MaPL_Index - If the conditional is false, this is how many bytes to skip forward.
+                //   Statements - The "true" portion of the conditional.
+                //   MaPL_Index - After the conditional content, how many bytes to skip to jump past all subsequent "else" bytes (omitted if there's no "else).
+                //   Statements - The "else" portion of the conditional (omitted if there's no "else).
+                currentBuffer->appendByte(MAPL_BYTE_CONDITIONAL);
+                compileNode(conditionalExpression, { MaPLPrimitiveType_Boolean }, currentBuffer);
+                
+                MaPLBuffer scopeBuffer(10);
+                compileNode(conditional->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
+                
+                MaPLParser::ConditionalElseContext *conditionalElse = conditional->conditionalElse();
+                MaPLBuffer elseBuffer(10);
+                if (conditionalElse) {
+                    compileChildNodes(conditionalElse, { MaPLPrimitiveType_Uninitialized }, &elseBuffer);
+                }
+                
+                MaPL_Index elseBufferSize = (MaPL_Index)elseBuffer.getByteCount();
+                if (elseBufferSize > 0) {
+                    scopeBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_FORWARD);
+                    scopeBuffer.appendBytes(&elseBufferSize, sizeof(elseBufferSize));
+                }
+                
+                MaPL_Index scopeSize = (MaPL_Index)scopeBuffer.getByteCount();
+                currentBuffer->appendBytes(&scopeSize, sizeof(scopeSize));
+                
+                currentBuffer->appendBuffer(&scopeBuffer);
+                currentBuffer->appendBuffer(&elseBuffer);
+            }
+        }
             break;
         case MaPLParser::RuleScope:
             // TODO: Implement this.
