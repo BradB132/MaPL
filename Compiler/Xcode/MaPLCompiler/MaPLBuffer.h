@@ -10,14 +10,18 @@
 
 #include <stdio.h>
 #include <vector>
-#include <string>
 
-#import "MaPLBytecodeConstants.h"
+#include "MaPLBytecodeConstants.h"
+
+enum MaPLBufferAnnotationType {
+    MaPLBufferAnnotationType_Break,
+    MaPLBufferAnnotationType_Continue,
+    MaPLBufferAnnotationType_VariableOffset,
+};
 
 struct MaPLBufferAnnotation {
     size_t byteLocation;
-    MaPL_Instruction instruction;
-    std::string text;
+    MaPLBufferAnnotationType type;
 };
 
 /**
@@ -55,10 +59,11 @@ public:
      * Appends the contents of another MaPLBuffer, including annotations, onto the buffer.
      *
      * @param otherBuffer The other buffer that will have all contents copied into this buffer.
+     * @param variableByteIncrement How much increment should be applied to the @c byteOffset for all variable declarations.
      *
      * @return Boolean indicates success or failure of the append operation.
      */
-    bool appendBuffer(MaPLBuffer *otherBuffer);
+    bool appendBuffer(MaPLBuffer *otherBuffer, MaPL_Index variableByteIncrement);
     
     /**
      * @return The bytes stored in this buffer.

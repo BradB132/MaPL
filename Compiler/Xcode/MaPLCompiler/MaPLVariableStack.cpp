@@ -23,7 +23,7 @@ void MaPLVariableStack::pop() {
     _stack.pop_back();
 }
 
-MaPL_Index MaPLVariableStack::maximumMemoryUsed() {
+MaPL_Index MaPLVariableStack::getMaximumMemoryUsed() {
     return _maximumMemoryUsed;
 }
 
@@ -72,6 +72,6 @@ MaPLVariable MaPLVariableStack::getVariable(const std::string &variableName) {
     return { { MaPLPrimitiveType_TypeError } };
 }
 
-std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getTopLevelVariables() {
+std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getGlobalVariables() {
     return _stack[0];
 }

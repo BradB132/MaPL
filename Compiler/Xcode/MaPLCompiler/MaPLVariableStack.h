@@ -12,8 +12,8 @@
 #include <vector>
 #include <unordered_map>
 
-#import "MaPLCompilerHelpers.h"
-#import "MaPLBytecodeConstants.h"
+#include "MaPLCompilerHelpers.h"
+#include "MaPLBytecodeConstants.h"
 
 /**
  * Describes the declaration of a MaPL variable.
@@ -50,7 +50,7 @@ public:
     /**
      * @return The maximum number of bytes that this stack required to store all variables, at any point during the parse tree traversal.
      */
-    MaPL_Index maximumMemoryUsed();
+    MaPL_Index getMaximumMemoryUsed();
 
     /**
      * Inserts a new variable into the top stack frame. The variable will be assigned a new @c byteOffset based on current contents of the stack.
@@ -67,7 +67,7 @@ public:
     /**
      * @return A mapping of all variables that are not within a nested scope.
      */
-    std::unordered_map<std::string, MaPLVariable> getTopLevelVariables();
+    std::unordered_map<std::string, MaPLVariable> getGlobalVariables();
     
 private:
     

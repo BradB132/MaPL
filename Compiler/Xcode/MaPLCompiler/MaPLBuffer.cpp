@@ -41,10 +41,29 @@ bool MaPLBuffer::appendByte(u_int8_t byte) {
     return appendBytes(&byte, sizeof(u_int8_t));
 }
 
-bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer) {
+bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPL_Index variableByteIncrement) {
     size_t previousByteCount = _byteCount;
-    if (!appendBytes(otherBuffer->getBytes(), otherBuffer->getByteCount())) {
-        return false;
+    size_t otherBufferCount = otherBuffer->getByteCount();
+    if (variableByteIncrement) {
+        // If this append operation requires variable byte offsets, make a copy of the data so it can be edited.
+        u_int8_t copiedBytes[otherBufferCount];
+        memcpy(copiedBytes, otherBuffer->getBytes(), otherBufferCount);
+        
+        // Increment byte offsets everywhere a variable was referenced.
+        for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
+            if (annotation.type == MaPLBufferAnnotationType_VariableOffset) {
+                MaPL_Index variableByteOffset = *((MaPL_Index *)(copiedBytes+annotation.byteLocation));
+                variableByteOffset += variableByteIncrement;
+                memcpy(copiedBytes+annotation.byteLocation, &variableByteOffset, sizeof(MaPL_Index));
+            }
+        }
+        if (!appendBytes(copiedBytes, otherBufferCount)) {
+            return false;
+        }
+    } else {
+        if (!appendBytes(otherBuffer->getBytes(), otherBufferCount)) {
+            return false;
+        }
     }
     for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
         annotation.byteLocation += previousByteCount;
@@ -69,7 +88,7 @@ void MaPLBuffer::removeAnnotation(const MaPLBufferAnnotation &annotation) {
     int i = 0;
     for (; i < _annotations.size(); i++) {
         if (annotation.byteLocation == _annotations[i].byteLocation &&
-            annotation.instruction == _annotations[i].instruction) {
+            annotation.type == _annotations[i].type) {
             break;
         }
     }

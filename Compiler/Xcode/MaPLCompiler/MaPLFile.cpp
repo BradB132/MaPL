@@ -109,15 +109,14 @@ MaPLBuffer *MaPLFile::getBytecode() {
     for(MaPLFile *file : _dependencies) {
         MaPLBuffer *dependencyBytecode = file->getBytecode();
         if (dependencyBytecode) {
-            _bytecode->appendBuffer(dependencyBytecode);
+            _bytecode->appendBuffer(dependencyBytecode, _variableStack->getMaximumMemoryUsed());
         }
         MaPLVariableStack *dependencyStack = file->getVariableStack();
         if (dependencyStack) {
-            for (std::pair<std::string, MaPLVariable> pair : dependencyStack->getTopLevelVariables()) {
+            for (std::pair<std::string, MaPLVariable> pair : dependencyStack->getGlobalVariables()) {
                 _variableStack->declareVariable(pair.first, pair.second);
             }
         }
-        // TODO: Files after the first file will contain incorrect byteOffsets for top-level variables. Use annotations to find the variable declarations and offset them.
     }
     
     // Compile the bytecode from this file.
@@ -286,20 +285,20 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (statement->keyToken) {
                 switch (statement->keyToken->getType()) {
                     case MaPLParser::BREAK: {
-                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MAPL_BYTE_CURSOR_MOVE_FORWARD });
                         if (!isInsideLoop(statement)) {
                             logError(this, statement->keyToken, "Break statements can only be used within loops.");
                         }
+                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Break });
                         currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_FORWARD);
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
                     }
                         break;
                     case MaPLParser::CONTINUE: {
-                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MAPL_BYTE_CURSOR_MOVE_BACK });
                         if (!isInsideLoop(statement)) {
                             logError(this, statement->keyToken, "Continue statements can only be used within loops.");
                         }
+                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Continue });
                         currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
@@ -333,6 +332,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::ExpressionContext *expression = declaration->expression();
             if (expression) {
                 currentBuffer->appendByte(assignmentInstructionForPrimitive(variable.type.primitiveType));
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 MaPL_Index variableByteOffset = _variableStack->getVariable(variableName).byteOffset;
                 currentBuffer->appendBytes(&variableByteOffset, sizeof(MaPL_Index));
                 compileNode(expression, variable.type, currentBuffer);
@@ -753,8 +753,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPL_Index scopeSize = (MaPL_Index)scopeBuffer.getByteCount();
                 currentBuffer->appendBytes(&scopeSize, sizeof(scopeSize));
                 
-                currentBuffer->appendBuffer(&scopeBuffer);
-                currentBuffer->appendBuffer(&elseBuffer);
+                currentBuffer->appendBuffer(&scopeBuffer, 0);
+                currentBuffer->appendBuffer(&elseBuffer, 0);
             }
         }
             break;
