@@ -65,8 +65,17 @@ void MaPLBuffer::addAnnotation(const MaPLBufferAnnotation &annotation) {
     _annotations.push_back(annotation);
 }
 
-void MaPLBuffer::clearAnnotations() {
-    _annotations.clear();
+void MaPLBuffer::removeAnnotation(const MaPLBufferAnnotation &annotation) {
+    int i = 0;
+    for (; i < _annotations.size(); i++) {
+        if (annotation.byteLocation == _annotations[i].byteLocation &&
+            annotation.instruction == _annotations[i].instruction) {
+            break;
+        }
+    }
+    if (i < _annotations.size()) {
+        _annotations.erase(_annotations.begin()+i);
+    }
 }
 
 std::vector<MaPLBufferAnnotation> MaPLBuffer::getAnnotations() {

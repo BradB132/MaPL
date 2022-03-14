@@ -76,9 +76,9 @@ public:
     void addAnnotation(const MaPLBufferAnnotation &annotation);
     
     /**
-     * Removes all annotations.
+     * Removes the matching annotation.
      */
-    void clearAnnotations();
+    void removeAnnotation(const MaPLBufferAnnotation &annotation);
     
     /**
      * @return A list of all added annotations.
