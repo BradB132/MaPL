@@ -17,13 +17,13 @@ statement
     ;
 
 imperativeStatement
-    :    variableDeclaration
+    :    keyToken=BREAK
+    |    keyToken=CONTINUE
+    |    keyToken=EXIT
+    |    variableDeclaration
     |    assignStatement
     |    unaryStatement
     |    objectExpression
-    |    keyToken=BREAK
-    |    keyToken=CONTINUE
-    |    keyToken=EXIT
     ;
 
 assignStatement

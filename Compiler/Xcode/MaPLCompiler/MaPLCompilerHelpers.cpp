@@ -1015,6 +1015,18 @@ bool findInheritanceCycle(MaPLFile *file) {
     return false;
 }
 
+bool isInsideLoop(antlr4::tree::ParseTree *node) {
+    while (node) {
+        if (dynamic_cast<MaPLParser::ForLoopContext *>(node) ||
+            dynamic_cast<MaPLParser::WhileLoopContext *>(node) ||
+            dynamic_cast<MaPLParser::DoWhileLoopContext *>(node)) {
+            return true;
+        }
+        node = node->parent;
+    }
+    return false;
+}
+
 MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, const std::string &type, MaPLParser::ApiDeclarationContext *excludingType) {
     MaPLParser::ProgramContext *program = file->getParseTree();
     if (!program) { return NULL; }

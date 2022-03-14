@@ -287,6 +287,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 switch (statement->keyToken->getType()) {
                     case MaPLParser::BREAK: {
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MAPL_BYTE_CURSOR_MOVE_FORWARD });
+                        if (!isInsideLoop(statement)) {
+                            logError(this, statement->keyToken, "Break statements can only be used within loops.");
+                        }
                         currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_FORWARD);
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
@@ -294,6 +297,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         break;
                     case MaPLParser::CONTINUE: {
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MAPL_BYTE_CURSOR_MOVE_BACK });
+                        if (!isInsideLoop(statement)) {
+                            logError(this, statement->keyToken, "Continue statements can only be used within loops.");
+                        }
                         currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
