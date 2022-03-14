@@ -50,8 +50,6 @@ unaryStatement
 // EXPRESSIONS
 expression
     :    keyToken=PAREN_OPEN type PAREN_CLOSE expression
-    |    expression keyToken=(LOGICAL_AND | LOGICAL_OR) expression
-    |    expression keyToken=(BITWISE_AND | BITWISE_XOR | BITWISE_OR) expression
     |    expression
          keyToken=(
             LOGICAL_EQUALITY |
@@ -61,11 +59,13 @@ expression
             GREATER_THAN |
             GREATER_THAN_EQUAL
          ) expression
+    |    expression keyToken=(LOGICAL_AND | LOGICAL_OR) expression
     |    keyToken=(LOGICAL_NEGATION | SUBTRACT | BITWISE_NEGATION) expression
-    |    expression keyToken=(BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
     |    expression keyToken=MOD expression
     |    expression keyToken=(MULTIPLY | DIVIDE) expression
     |    expression keyToken=(ADD | SUBTRACT) expression
+    |    expression keyToken=(BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
+    |    expression keyToken=(BITWISE_AND | BITWISE_XOR | BITWISE_OR) expression
     |    <assoc=right> expression keyToken=TERNARY_CONDITIONAL expression COLON expression
     |    <assoc=right> expression keyToken=NULL_COALESCING expression
     |    PAREN_OPEN expression keyToken=PAREN_CLOSE
