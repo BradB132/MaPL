@@ -109,8 +109,7 @@ MaPLBuffer *MaPLFile::getBytecode() {
     for(MaPLFile *file : _dependencies) {
         MaPLBuffer *dependencyBytecode = file->getBytecode();
         if (dependencyBytecode) {
-            // TODO: Files after the first file will contain incorrect byteOffsets for top-level variables. Use annotations to find the variable declarations and offset them.
-            _bytecode->appendBytes(dependencyBytecode->getBytes(), dependencyBytecode->getByteCount());
+            _bytecode->appendBuffer(dependencyBytecode);
         }
         MaPLVariableStack *dependencyStack = file->getVariableStack();
         if (dependencyStack) {
@@ -118,6 +117,7 @@ MaPLBuffer *MaPLFile::getBytecode() {
                 _variableStack->declareVariable(pair.first, pair.second);
             }
         }
+        // TODO: Files after the first file will contain incorrect byteOffsets for top-level variables. Use annotations to find the variable declarations and offset them.
     }
     
     // Compile the bytecode from this file.
@@ -347,6 +347,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             break;
         case MaPLParser::RuleObjectExpression: {
             MaPLParser::ObjectExpressionContext *expression = (MaPLParser::ObjectExpressionContext *)node;
+            // TODO: Object expressions can appear within imperative statements, but the only type of expression that's valid in that context is a function invocation. Check parent node for this type of error.
             if (expression->keyToken) {
                 switch (expression->keyToken->getType()) {
                     case MaPLParser::OBJECT_TO_MEMBER: // Compound object expression.
