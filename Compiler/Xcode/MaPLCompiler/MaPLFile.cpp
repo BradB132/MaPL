@@ -734,6 +734,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
             loopBuffer.resolveBreakAndContinueAnnotations();
+            
+            currentBuffer->appendBuffer(&loopBuffer, 0);
         }
             break;
         case MaPLParser::RuleForLoop:
