@@ -708,12 +708,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             }
             
             // "While" loops are represented in bytecode as follows:
-            //   MAPL_BYTE_CONDITIONAL - Signals the start of the loop.
-            //   ExpressionContext - The boolean expression at the top of the loop.
-            //   MaPL_Index - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
+            // ┌ MAPL_BYTE_CONDITIONAL - Signals the start of the loop.
+            // | ExpressionContext - The boolean expression at the top of the loop.
+            // └ MaPL_Index - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             //   ScopeContext - The contents of the loop.
-            //   MAPL_BYTE_CURSOR_MOVE_BACK - Signals the end of the loop.
-            //   MaPL_Index - The size of the backward move required to return to the top of the loop.
+            // ┌ MAPL_BYTE_CURSOR_MOVE_BACK - Signals the end of the loop.
+            // └ MaPL_Index - The size of the backward move required to return to the top of the loop.
             MaPLBuffer scopeBuffer(10);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
             
@@ -764,12 +764,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             } else {
                 // The expression evaluated by this conditional is not compile-time constant. Compile it normally.
                 // Conditionals are represented in bytecode as follows:
-                //   MAPL_BYTE_CONDITIONAL - Signals the start of a conditional.
-                //   ExpressionContext - The boolean expression at the top of the conditional.
-                //   MaPL_Index - If the conditional is false, this is how many bytes to skip forward to exit the conditional.
+                // ┌ MAPL_BYTE_CONDITIONAL - Signals the start of a conditional.
+                // | ExpressionContext - The boolean expression at the top of the conditional.
+                // └ MaPL_Index - If the conditional is false, this is how many bytes to skip forward to exit the conditional.
                 //   ScopeContext - The contents of the conditional.
-                //   MAPL_BYTE_CURSOR_MOVE_FORWARD - Signals the end of conditional contents (omitted if there's no "else").
-                //   MaPL_Index - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
+                // ┌ MAPL_BYTE_CURSOR_MOVE_FORWARD - Signals the end of conditional contents (omitted if there's no "else").
+                // └ MaPL_Index - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
                 //   ConditionalElseContext - The "else" portion of the conditional (omitted if there's no "else").
                 currentBuffer->appendByte(MAPL_BYTE_CONDITIONAL);
                 compileNode(conditionalExpression, { MaPLPrimitiveType_Boolean }, currentBuffer);
