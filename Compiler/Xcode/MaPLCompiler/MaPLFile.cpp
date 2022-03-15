@@ -742,8 +742,47 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
         case MaPLParser::RuleForLoop:
             // TODO: Implement this.
             break;
-        case MaPLParser::RuleDoWhileLoop:
-            // TODO: Implement this.
+        case MaPLParser::RuleDoWhileLoop: {
+            MaPLParser::DoWhileLoopContext *loop = (MaPLParser::DoWhileLoopContext *)node;
+            MaPLParser::ExpressionContext *loopExpression = loop->expression();
+            MaPLLiteral expressionLiteral = constantValueForExpression(loopExpression);
+            
+            // "Do while" loops are represented in bytecode as follows:
+            //   ScopeContext - The contents of the loop.
+            // ┌ MAPL_BYTE_CONDITIONAL - The conditional at the end of the loop.
+            // | ExpressionContext - The boolean expression at the end of the loop.
+            // └ MaPL_Index - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
+            // ┌ MAPL_BYTE_CURSOR_MOVE_BACK - Contained within the MAPL_BYTE_CONDITIONAL, loops back to the top.
+            // └ MaPL_Index - The size of the backward move required to return to the top of the loop.
+            MaPLBuffer loopBuffer(10);
+            compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &loopBuffer);
+            loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, true);
+            
+            if (expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean &&
+                !expressionLiteral.booleanValue) {
+                // The conditional at the end of the loop is always false. No need to ever repeat.
+                loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
+                currentBuffer->appendBuffer(&loopBuffer, 0);
+                break;
+            }
+            
+            // If the conditional is always true, this is an infinite "do while" loop.
+            bool infiniteLoop = expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean && expressionLiteral.booleanValue;
+            if (!infiniteLoop) {
+                loopBuffer.appendByte(MAPL_BYTE_CONDITIONAL);
+                compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
+                // This is already at the end of the loop, and just needs to skip the MAPL_BYTE_CURSOR_MOVE_BACK that makes the loop repeat.
+                MaPL_Index cursorMoveSize = sizeof(MaPL_Instruction) + sizeof(MaPL_Index);
+                loopBuffer.appendBytes(&cursorMoveSize, sizeof(cursorMoveSize));
+            }
+            loopBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
+            MaPL_Index loopSize = loopBuffer.getByteCount();
+            loopBuffer.appendBytes(&loopSize, sizeof(loopSize));
+            
+            loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
+            
+            currentBuffer->appendBuffer(&loopBuffer, 0);
+        }
             break;
         case MaPLParser::RuleConditional: {
             MaPLParser::ConditionalContext *conditional = (MaPLParser::ConditionalContext *)node;
