@@ -288,8 +288,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         if (!isInsideLoop(statement)) {
                             logError(this, statement->keyToken, "Break statements can only be used within loops.");
                         }
-                        currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_FORWARD);
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Break });
+                        currentBuffer->appendByte(0);
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
                     }
@@ -298,8 +298,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         if (!isInsideLoop(statement)) {
                             logError(this, statement->keyToken, "Continue statements can only be used within loops.");
                         }
-                        currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Continue });
+                        currentBuffer->appendByte(0);
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
                     }
@@ -733,7 +733,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPL_Index byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPL_Index);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
-            loopBuffer.resolveBreakAndContinueAnnotations();
+            loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
+            loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, false);
             
             currentBuffer->appendBuffer(&loopBuffer, 0);
         }

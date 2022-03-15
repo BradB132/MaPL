@@ -81,9 +81,12 @@ public:
     void addAnnotation(const MaPLBufferAnnotation &annotation);
     
     /**
-     * Resolves all @c Break and @c Continue annotations. This involves filling in the @c MaPL_Index values for these cursor moves and removing the corresponding annotations.
+     * Resolves all matching control flow ("Break" or "Continue") annotations. Resolved annotatinons are removed from this buffer.
+     *
+     * @param type The type of annotations that will be resolved.
+     * @param jumpToEnd If the resolution of this @c type of annotation will move the cursor to the end or beginning of the buffer.
      */
-    void resolveBreakAndContinueAnnotations();
+    void resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bool jumpToEnd);
     
     /**
      * @return A list of all added annotations.

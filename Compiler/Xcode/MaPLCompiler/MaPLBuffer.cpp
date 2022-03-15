@@ -84,26 +84,28 @@ void MaPLBuffer::addAnnotation(const MaPLBufferAnnotation &annotation) {
     _annotations.push_back(annotation);
 }
 
-void MaPLBuffer::resolveBreakAndContinueAnnotations() {
+void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bool jumpToEnd) {
     // Iterate backwards through the list so we can remove annotations as needed.
     for (size_t i = _annotations.size()-1; i >= 0; i--) {
         MaPLBufferAnnotation annotation = _annotations[i];
-        // Break and Continue annotations point to the byte position of a MaPL_Index.
-        switch (annotation.type) {
-            case MaPLBufferAnnotationType_Break: {
-                MaPL_Index offset = (_byteCount-annotation.byteLocation) - sizeof(MaPL_Index);
-                memcpy(_bytes+annotation.byteLocation, &offset, sizeof(MaPL_Index));
-                _annotations.erase(_annotations.begin()+i);
-            }
-                break;
-            case MaPLBufferAnnotationType_Continue: {
-                MaPL_Index offset = annotation.byteLocation - sizeof(MaPL_Index);
-                memcpy(_bytes+annotation.byteLocation, &offset, sizeof(MaPL_Index));
-                _annotations.erase(_annotations.begin()+i);
-            }
-                break;
-            default: break;
+        if (annotation.type != type) {
+            continue;
         }
+        // Set the cursor move using the appropriate instruction.
+        MaPL_Instruction cursorInstruction = jumpToEnd ? MAPL_BYTE_CURSOR_MOVE_FORWARD : MAPL_BYTE_CURSOR_MOVE_BACK;
+        memcpy(_bytes+annotation.byteLocation, &cursorInstruction, sizeof(cursorInstruction));
+        
+        // 'byteLocation' describes the beginning of the relevant sequence of bytes.
+        // Add the size of the instruction and index to find the end of that sequence.
+        size_t byteEndLocation = annotation.byteLocation + sizeof(MaPL_Instruction) + sizeof(MaPL_Index);
+        MaPL_Index offset;
+        if (jumpToEnd) {
+            offset = _byteCount-byteEndLocation;
+        } else {// Jump to beginning.
+            offset = byteEndLocation;
+        }
+        memcpy(_bytes+(annotation.byteLocation+sizeof(MaPL_Instruction)), &offset, sizeof(offset));
+        _annotations.erase(_annotations.begin()+i);
     }
 }
 
