@@ -288,8 +288,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         if (!isInsideLoop(statement)) {
                             logError(this, statement->keyToken, "Break statements can only be used within loops.");
                         }
-                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Break });
                         currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_FORWARD);
+                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Break });
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
                     }
@@ -298,8 +298,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         if (!isInsideLoop(statement)) {
                             logError(this, statement->keyToken, "Continue statements can only be used within loops.");
                         }
-                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Continue });
                         currentBuffer->appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
+                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Continue });
                         MaPL_Index placeholderIndex = 0;
                         currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
                     }
@@ -696,8 +696,45 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             }
         }
             break;
-        case MaPLParser::RuleWhileLoop:
-            // TODO: Implement this.
+        case MaPLParser::RuleWhileLoop: {
+            MaPLParser::WhileLoopContext *loop = (MaPLParser::WhileLoopContext *)node;
+            MaPLParser::ExpressionContext *loopExpression = loop->expression();
+            
+            MaPLLiteral expressionLiteral = constantValueForExpression(loopExpression);
+            if (expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean &&
+                !expressionLiteral.booleanValue) {
+                // If the literal is always false, this entire loop is dead code. Append nothing.
+                break;
+            }
+            
+            // "While" loops are represented in bytecode as follows:
+            //   MAPL_BYTE_CONDITIONAL - Signals the start of the loop.
+            //   ExpressionContext - The boolean expression at the top of the loop.
+            //   MaPL_Index - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
+            //   ScopeContext - The contents of the loop.
+            //   MAPL_BYTE_CURSOR_MOVE_BACK - Signals the end of the loop.
+            //   MaPL_Index - The size of the backward move required to return to the top of the loop.
+            MaPLBuffer scopeBuffer(10);
+            compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
+            
+            // If the conditional is always true, this is an infinite while loop.
+            bool infiniteLoop = expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean && expressionLiteral.booleanValue;
+            MaPLBuffer loopBuffer(10);
+            if (!infiniteLoop) {
+                // This is not an infinite loop, so the conditional must be checked on each iteration.
+                loopBuffer.appendByte(MAPL_BYTE_CONDITIONAL);
+                compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
+                // Scope size must also include the MAPL_BYTE_CURSOR_MOVE_BACK.
+                MaPL_Index scopeSize = scopeBuffer.getByteCount() + sizeof(MaPL_Instruction) + sizeof(MaPL_Index);
+                loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
+            }
+            loopBuffer.appendBuffer(&scopeBuffer, 0);
+            loopBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
+            MaPL_Index byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPL_Index);
+            loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
+            
+            loopBuffer.resolveBreakAndContinueAnnotations();
+        }
             break;
         case MaPLParser::RuleForLoop:
             // TODO: Implement this.

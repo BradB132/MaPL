@@ -84,16 +84,26 @@ void MaPLBuffer::addAnnotation(const MaPLBufferAnnotation &annotation) {
     _annotations.push_back(annotation);
 }
 
-void MaPLBuffer::removeAnnotation(const MaPLBufferAnnotation &annotation) {
-    int i = 0;
-    for (; i < _annotations.size(); i++) {
-        if (annotation.byteLocation == _annotations[i].byteLocation &&
-            annotation.type == _annotations[i].type) {
-            break;
+void MaPLBuffer::resolveBreakAndContinueAnnotations() {
+    // Iterate backwards through the list so we can remove annotations as needed.
+    for (size_t i = _annotations.size()-1; i >= 0; i--) {
+        MaPLBufferAnnotation annotation = _annotations[i];
+        // Break and Continue annotations point to the byte position of a MaPL_Index.
+        switch (annotation.type) {
+            case MaPLBufferAnnotationType_Break: {
+                MaPL_Index offset = (_byteCount-annotation.byteLocation) - sizeof(MaPL_Index);
+                memcpy(_bytes+annotation.byteLocation, &offset, sizeof(MaPL_Index));
+                _annotations.erase(_annotations.begin()+i);
+            }
+                break;
+            case MaPLBufferAnnotationType_Continue: {
+                MaPL_Index offset = annotation.byteLocation - sizeof(MaPL_Index);
+                memcpy(_bytes+annotation.byteLocation, &offset, sizeof(MaPL_Index));
+                _annotations.erase(_annotations.begin()+i);
+            }
+                break;
+            default: break;
         }
-    }
-    if (i < _annotations.size()) {
-        _annotations.erase(_annotations.begin()+i);
     }
 }
 

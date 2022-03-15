@@ -81,9 +81,9 @@ public:
     void addAnnotation(const MaPLBufferAnnotation &annotation);
     
     /**
-     * Removes the matching annotation.
+     * Resolves all @c Break and @c Continue annotations. This involves filling in the @c MaPL_Index values for these cursor moves and removing the corresponding annotations.
      */
-    void removeAnnotation(const MaPLBufferAnnotation &annotation);
+    void resolveBreakAndContinueAnnotations();
     
     /**
      * @return A list of all added annotations.
