@@ -708,7 +708,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
         case MaPLParser::RuleConditional: {
             MaPLParser::ConditionalContext *conditional = (MaPLParser::ConditionalContext *)node;
             MaPLParser::ExpressionContext *conditionalExpression = conditional->expression();
-            MaPLType conditionalExpressionType = dataTypeForExpression(conditionalExpression);
             
             MaPLLiteral expressionLiteral = constantValueForExpression(conditionalExpression);
             if (expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean) {
@@ -727,11 +726,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // The expression evaluated by this conditional is not compile-time constant. Compile it normally.
                 // Conditionals are represented in bytecode as follows:
                 //   MAPL_BYTE_CONDITIONAL - Signals the start of a conditional.
-                //   Boolean expression - The boolean portion of the conditional.
-                //   MaPL_Index - If the conditional is false, this is how many bytes to skip forward.
-                //   Statements - The "true" portion of the conditional.
-                //   MaPL_Index - After the conditional content, how many bytes to skip to jump past all subsequent "else" bytes (omitted if there's no "else).
-                //   Statements - The "else" portion of the conditional (omitted if there's no "else).
+                //   ExpressionContext - The boolean expression at the top of the conditional.
+                //   MaPL_Index - If the conditional is false, this is how many bytes to skip forward to exit the conditional.
+                //   ScopeContext - The contents of the conditional.
+                //   MAPL_BYTE_CURSOR_MOVE_FORWARD - Signals the end of conditional contents (omitted if there's no "else").
+                //   MaPL_Index - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
+                //   ConditionalElseContext - The "else" portion of the conditional (omitted if there's no "else").
                 currentBuffer->appendByte(MAPL_BYTE_CONDITIONAL);
                 compileNode(conditionalExpression, { MaPLPrimitiveType_Boolean }, currentBuffer);
                 
