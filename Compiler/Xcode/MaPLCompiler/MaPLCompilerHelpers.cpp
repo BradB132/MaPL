@@ -1015,12 +1015,15 @@ bool findInheritanceCycle(MaPLFile *file) {
     return false;
 }
 
-bool isInsideLoop(antlr4::tree::ParseTree *node) {
+bool isInsideLoopScope(antlr4::tree::ParseTree *node) {
     while (node) {
-        if (dynamic_cast<MaPLParser::ForLoopContext *>(node) ||
-            dynamic_cast<MaPLParser::WhileLoopContext *>(node) ||
-            dynamic_cast<MaPLParser::DoWhileLoopContext *>(node)) {
-            return true;
+        if (dynamic_cast<MaPLParser::ScopeContext *>(node)) {
+            antlr4::tree::ParseTree *scopeParent = node->parent;
+            if (dynamic_cast<MaPLParser::ForLoopContext *>(scopeParent) ||
+                dynamic_cast<MaPLParser::WhileLoopContext *>(scopeParent) ||
+                dynamic_cast<MaPLParser::DoWhileLoopContext *>(scopeParent)) {
+                return true;
+            }
         }
         node = node->parent;
     }

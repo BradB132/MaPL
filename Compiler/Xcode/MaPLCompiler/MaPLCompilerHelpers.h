@@ -212,9 +212,9 @@ bool inheritsFromType(MaPLFile *file, const std::string &type, const std::string
 bool findInheritanceCycle(MaPLFile *file);
 
 /**
- * @return @c true if @c node is within a "for", "while", or "do while" loop.
+ * @return @c true if @c node is within the scope of a "for", "while", or "do while" loop.
  */
-bool isInsideLoop(antlr4::tree::ParseTree *node);
+bool isInsideLoopScope(antlr4::tree::ParseTree *node);
 
 /**
  * @return A @c MaPLType as described by a type node in the parse tree.

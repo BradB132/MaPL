@@ -285,7 +285,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (statement->keyToken) {
                 switch (statement->keyToken->getType()) {
                     case MaPLParser::BREAK: {
-                        if (!isInsideLoop(statement)) {
+                        if (!isInsideLoopScope(statement)) {
                             logError(this, statement->keyToken, "Break statements can only be used within loops.");
                         }
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Break });
@@ -295,7 +295,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                         break;
                     case MaPLParser::CONTINUE: {
-                        if (!isInsideLoop(statement)) {
+                        if (!isInsideLoopScope(statement)) {
                             logError(this, statement->keyToken, "Continue statements can only be used within loops.");
                         }
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Continue });
