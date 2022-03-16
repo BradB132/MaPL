@@ -363,7 +363,23 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             break;
         case MaPLParser::RuleObjectExpression: {
             MaPLParser::ObjectExpressionContext *expression = (MaPLParser::ObjectExpressionContext *)node;
-            // TODO: Object expressions can appear within imperative statements, but the only type of expression that's valid in that context is a function invocation. Check parent node for this type of error.
+            
+            // Object expressions can appear within imperative statements, but the only type of expression that's
+            // valid in that context is a function invocation. Check parent node for this type of error.
+            if (dynamic_cast<MaPLParser::ImperativeStatementContext *>(expression->parent)) {
+                MaPLParser::ObjectExpressionContext *terminalExpression = expression;
+                if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::OBJECT_TO_MEMBER) {
+                    // This expression is a compound expression. To find the last item in the chain of expressions, get the second child.
+                    terminalExpression = terminalExpression->objectExpression(1);
+                }
+                bool isFunctionInvocation = terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::PAREN_OPEN;
+                if (!isFunctionInvocation) {
+                    // All object expressions other than function invocations are accessors. This is
+                    // supposed to be an imperative statement, so must be a function invocation.
+                    logError(this, terminalExpression->start, "This expression has no effect.");
+                }
+            }
+            
             if (expression->keyToken) {
                 switch (expression->keyToken->getType()) {
                     case MaPLParser::OBJECT_TO_MEMBER: // Compound object expression.
