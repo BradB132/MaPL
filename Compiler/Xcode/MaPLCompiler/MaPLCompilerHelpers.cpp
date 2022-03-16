@@ -150,6 +150,21 @@ std::string descriptorForFunction(const std::string &name, const std::vector<MaP
     return functionDescriptor;
 }
 
+std::string descriptorForFunction(MaPLParser::ApiFunctionContext *function) {
+    std::vector<MaPLType> parameterTypes;
+    bool hasVariadicArgs = false;
+    MaPLParser::ApiFunctionArgsContext *functionArgs = function->apiFunctionArgs();
+    if (functionArgs) {
+        hasVariadicArgs = functionArgs->API_VARIADIC_ARGUMENTS() != NULL;
+        for (MaPLParser::TypeContext *typeContext : functionArgs->type()) {
+            parameterTypes.push_back(typeForTypeContext(typeContext));
+        }
+    }
+    return descriptorForFunction(function->identifier()->getText(),
+                                 parameterTypes,
+                                 hasVariadicArgs);
+}
+
 MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
         case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_ASSIGN;

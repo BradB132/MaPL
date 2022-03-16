@@ -152,6 +152,11 @@ std::string descriptorForType(const MaPLType &type);
 std::string descriptorForFunction(const std::string &name, const std::vector<MaPLType> &parameterTypes, bool hasVariadicArgs);
 
 /**
+ * @return A human-readable string that describes the signature of a function.
+ */
+std::string descriptorForFunction(MaPLParser::ApiFunctionContext *function);
+
+/**
  * @return The instruction byte that indicates an assignment for the corresponding primitive type.
  */
 MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);

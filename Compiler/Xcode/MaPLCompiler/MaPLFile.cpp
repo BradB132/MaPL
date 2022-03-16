@@ -2008,6 +2008,23 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                     }
                     return { MaPLPrimitiveType_TypeError };
                 }
+                
+                MaPLParser::ApiFunctionContext *conflictingFunction = findFunction(this,
+                                                                                   invokedOnType,
+                                                                                   functionName,
+                                                                                   parameterTypes,
+                                                                                   MaPLParameterStrategy_Flexible,
+                                                                                   function);
+                if (conflictingFunction) {
+                    std::string errorSuffix = "This ambiguity might be resolved by renaming these APIs, or by adding a typecast to explicitly describe the type of any literal parameters.";
+                    if (invokedOnType.empty()) {
+                        logError(this, expression->identifier()->start, "This function invocation is ambiguous between global functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"'. "+errorSuffix);
+                    } else {
+                        logError(this, expression->identifier()->start, "This function invocation is ambiguous between functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"' in type '"+invokedOnType+"'. "+errorSuffix);
+                    }
+                    return { MaPLPrimitiveType_TypeError };
+                }
+                
                 if (function->API_VOID()) {
                     return { MaPLPrimitiveType_Void };
                 }
