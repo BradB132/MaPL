@@ -217,6 +217,11 @@ bool inheritsFromType(MaPLFile *file, const std::string &type, const std::string
 bool findInheritanceCycle(MaPLFile *file);
 
 /**
+ * A set of paths to files which appear multiple times in the dependency graph of @c file.
+ */
+std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file);
+
+/**
  * @return @c true if @c node is within the scope of a "for", "while", or "do while" loop.
  */
 bool isInsideLoopScope(antlr4::tree::ParseTree *node);

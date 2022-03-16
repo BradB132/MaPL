@@ -103,6 +103,16 @@ MaPLBuffer *MaPLFile::getBytecode() {
     if(findInheritanceCycle(this)) {
         return NULL;
     }
+    
+    // Check the dependency graph for duplicate includes of the same file.
+    std::set<std::filesystem::path> duplicates = findDuplicateDependencies(this);
+    for (std::filesystem::path normalizedPath : duplicates) {
+        logError(this, NULL, "File at path '"+normalizedPath.string()+"' exists more than once in the dependency graph.");
+    }
+    if (duplicates.size() > 0) {
+        return NULL;
+    }
+    
     _bytecode = new MaPLBuffer(10);
     
     // Concatenate all preceding bytecode and variables from dependencies.

@@ -1030,6 +1030,27 @@ bool findInheritanceCycle(MaPLFile *file) {
     return false;
 }
 
+std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file, std::set<std::filesystem::path> &pathSet) {
+    std::set<std::filesystem::path> returnPaths;
+    if (pathSet.count(file->getNormalizedFilePath())) {
+        returnPaths.insert(file->getNormalizedFilePath());
+        return returnPaths;
+    } else {
+        pathSet.insert(file->getNormalizedFilePath());
+    }
+    for (MaPLFile *dependentFile : file->getDependencies()) {
+        for (std::filesystem::path duplicatePath : findDuplicateDependencies(dependentFile, pathSet)) {
+            returnPaths.insert(duplicatePath);
+        }
+    }
+    return returnPaths;
+}
+
+std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file) {
+    std::set<std::filesystem::path> pathSet;
+    return findDuplicateDependencies(file, pathSet);
+}
+
 bool isInsideLoopScope(antlr4::tree::ParseTree *node) {
     while (node) {
         if (dynamic_cast<MaPLParser::ScopeContext *>(node)) {
