@@ -85,6 +85,9 @@ void MaPLBuffer::addAnnotation(const MaPLBufferAnnotation &annotation) {
 }
 
 void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bool jumpToEnd) {
+    if (_annotations.size() == 0) {
+        return;
+    }
     // Iterate backwards through the list so we can remove annotations as needed.
     for (size_t i = _annotations.size()-1; i >= 0; i--) {
         MaPLBufferAnnotation annotation = _annotations[i];
