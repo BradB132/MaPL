@@ -115,7 +115,7 @@ forLoop
     |    LOOP_FOR forLoopControlStatements scope
     ;
 forLoopControlStatements
-    :    imperativeStatement? STATEMENT_DELIMITER expression? STATEMENT_DELIMITER imperativeStatement?
+    :    firstStatement=imperativeStatement? STATEMENT_DELIMITER expression? STATEMENT_DELIMITER lastStatement=imperativeStatement?
     ;
 
 doWhileLoop : LOOP_DO scope LOOP_WHILE expression STATEMENT_DELIMITER ;
