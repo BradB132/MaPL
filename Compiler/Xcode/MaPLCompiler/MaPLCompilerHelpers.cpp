@@ -1355,6 +1355,7 @@ void logNonNumericOperandsError(MaPLFile *file, antlr4::Token *token) {
 }
 
 void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg) {
+    // TODO: Errors need to be collected somewhere within MaPLFile so we can query if the entire file compiled successfully or not.
     if (token) {
         printf("%s %ld:%ld: %s\n", file->getNormalizedFilePath().c_str(), token->getLine(), token->getCharPositionInLine(), msg.c_str());
     } else {

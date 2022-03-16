@@ -702,11 +702,18 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
                     case MaPLParser::TERNARY_CONDITIONAL: {
-                        // TODO: Implement this.
+                        std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                        currentBuffer->appendByte(MAPL_BYTE_TERNARY_CONDITIONAL);
+                        compileNode(childExpressions[0], { MaPLPrimitiveType_Boolean }, currentBuffer);
+                        compileNode(childExpressions[1], expectedType, currentBuffer);
+                        compileNode(childExpressions[2], expectedType, currentBuffer);
                     }
                         break;
                     case MaPLParser::NULL_COALESCING: {
-                        // TODO: Implement this.
+                        std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                        currentBuffer->appendByte(MAPL_BYTE_NULL_COALESCING);
+                        compileNode(childExpressions[0], expectedType, currentBuffer);
+                        compileNode(childExpressions[1], expectedType, currentBuffer);
                     }
                         break;
                     case MaPLParser::PAREN_CLOSE: // Parenthesized expression.
