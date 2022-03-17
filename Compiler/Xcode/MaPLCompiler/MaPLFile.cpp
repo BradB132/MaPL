@@ -367,6 +367,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Object expressions can appear within imperative statements, but the only type of expression that's
             // valid in that context is a function invocation. Check parent node for this type of error.
             if (dynamic_cast<MaPLParser::ImperativeStatementContext *>(expression->parent)) {
+                MaPLType returnType = objectExpressionReturnType(expression, "");
+                if (returnType.primitiveType == MaPLPrimitiveType_TypeError) {
+                    // If there was an error, the reason why was already logged.
+                    break;
+                }
                 MaPLParser::ObjectExpressionContext *terminalExpression = expression;
                 if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::OBJECT_TO_MEMBER) {
                     // This expression is a compound expression. To find the last item in the chain of expressions, get the second child.
