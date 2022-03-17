@@ -72,6 +72,53 @@ bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPL_Index variableByteIn
     return true;
 }
 
+bool MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
+    switch (literal.type.primitiveType) {
+        case MaPLPrimitiveType_Int8:
+            return appendByte(MAPL_BYTE_LITERAL_INT8) &&
+                   appendBytes(&(literal.int8Value), sizeof(literal.int8Value));
+        case MaPLPrimitiveType_Int16:
+            return appendByte(MAPL_BYTE_LITERAL_INT16) &&
+                   appendBytes(&(literal.int16Value), sizeof(literal.int16Value));
+        case MaPLPrimitiveType_Int32:
+            return appendByte(MAPL_BYTE_LITERAL_INT32) &&
+                   appendBytes(&(literal.int32Value), sizeof(literal.int32Value));
+        case MaPLPrimitiveType_Int64:
+            return appendByte(MAPL_BYTE_LITERAL_INT64) &&
+                   appendBytes(&(literal.int64Value), sizeof(literal.int64Value));
+        case MaPLPrimitiveType_UInt8:
+            return appendByte(MAPL_BYTE_LITERAL_UINT8) &&
+                   appendBytes(&(literal.uInt8Value), sizeof(literal.uInt8Value));
+        case MaPLPrimitiveType_UInt16:
+            return appendByte(MAPL_BYTE_LITERAL_UINT16) &&
+                   appendBytes(&(literal.uInt16Value), sizeof(literal.uInt16Value));
+        case MaPLPrimitiveType_UInt32:
+            return appendByte(MAPL_BYTE_LITERAL_UINT32) &&
+                   appendBytes(&(literal.uInt32Value), sizeof(literal.uInt32Value));
+        case MaPLPrimitiveType_UInt64:
+            return appendByte(MAPL_BYTE_LITERAL_UINT64) &&
+                   appendBytes(&(literal.uInt64Value), sizeof(literal.uInt64Value));
+        case MaPLPrimitiveType_Float32:
+            return appendByte(MAPL_BYTE_LITERAL_FLOAT32) &&
+                   appendBytes(&(literal.float32Value), sizeof(literal.float32Value));
+        case MaPLPrimitiveType_Float64:
+            return appendByte(MAPL_BYTE_LITERAL_FLOAT64) &&
+                   appendBytes(&(literal.float64Value), sizeof(literal.float64Value));
+        case MaPLPrimitiveType_String: {
+            const char* cString = literal.stringValue.c_str();
+            size_t length = strlen(cString);
+            return appendByte(MAPL_BYTE_LITERAL_STRING) &&
+                   appendBytes(cString, length) &&
+                   appendByte(0);
+        }
+        case MaPLPrimitiveType_Boolean:
+            return appendByte(literal.booleanValue ? MAPL_BYTE_LITERAL_BOOLEAN_TRUE : MAPL_BYTE_LITERAL_BOOLEAN_FALSE);
+        case MaPLPrimitiveType_Pointer:
+            return appendByte(MAPL_BYTE_LITERAL_NULL);
+        default: return false;
+    }
+}
+
 u_int8_t *MaPLBuffer::getBytes() {
     return _bytes;
 }

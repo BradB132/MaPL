@@ -433,67 +433,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 if (isAmbiguousNumericType(literal.type.primitiveType)) {
                     literal = castLiteralToType(literal, expectedType);
                 }
-                switch (literal.type.primitiveType) {
-                    case MaPLPrimitiveType_Int8:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_INT8);
-                        currentBuffer->appendBytes(&(literal.int8Value), sizeof(literal.int8Value));
-                        break;
-                    case MaPLPrimitiveType_Int16:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_INT16);
-                        currentBuffer->appendBytes(&(literal.int16Value), sizeof(literal.int16Value));
-                        break;
-                    case MaPLPrimitiveType_Int32:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_INT32);
-                        currentBuffer->appendBytes(&(literal.int32Value), sizeof(literal.int32Value));
-                        break;
-                    case MaPLPrimitiveType_Int64:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_INT64);
-                        currentBuffer->appendBytes(&(literal.int64Value), sizeof(literal.int64Value));
-                        break;
-                    case MaPLPrimitiveType_UInt8:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_UINT8);
-                        currentBuffer->appendBytes(&(literal.uInt8Value), sizeof(literal.uInt8Value));
-                        break;
-                    case MaPLPrimitiveType_UInt16:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_UINT16);
-                        currentBuffer->appendBytes(&(literal.uInt16Value), sizeof(literal.uInt16Value));
-                        break;
-                    case MaPLPrimitiveType_UInt32:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_UINT32);
-                        currentBuffer->appendBytes(&(literal.uInt32Value), sizeof(literal.uInt32Value));
-                        break;
-                    case MaPLPrimitiveType_UInt64:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_UINT64);
-                        currentBuffer->appendBytes(&(literal.uInt64Value), sizeof(literal.uInt64Value));
-                        break;
-                    case MaPLPrimitiveType_Float32:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_FLOAT32);
-                        currentBuffer->appendBytes(&(literal.float32Value), sizeof(literal.float32Value));
-                        break;
-                    case MaPLPrimitiveType_Float64:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_FLOAT64);
-                        currentBuffer->appendBytes(&(literal.float64Value), sizeof(literal.float64Value));
-                        break;
-                    case MaPLPrimitiveType_String: {
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_STRING);
-                        
-                        // Append the string.
-                        const char* cString = literal.stringValue.c_str();
-                        size_t length = strlen(cString);
-                        currentBuffer->appendBytes(cString, length);
-                        
-                        // Append the null char to terminate the string.
-                        currentBuffer->appendByte(0);
-                    }
-                        break;
-                    case MaPLPrimitiveType_Boolean:
-                        currentBuffer->appendByte(literal.booleanValue ? MAPL_BYTE_LITERAL_BOOLEAN_TRUE : MAPL_BYTE_LITERAL_BOOLEAN_FALSE);
-                        break;
-                    case MaPLPrimitiveType_Pointer:
-                        currentBuffer->appendByte(MAPL_BYTE_LITERAL_NULL);
-                        break;
-                    default: break;
-                }
+                currentBuffer->appendLiteral(literal);
                 break;
             }
             

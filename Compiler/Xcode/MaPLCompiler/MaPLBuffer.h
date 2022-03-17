@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "MaPLBytecodeConstants.h"
+#include "MaPLCompilerHelpers.h"
 
 enum MaPLBufferAnnotationType {
     MaPLBufferAnnotationType_Break,
@@ -64,6 +65,15 @@ public:
      * @return Boolean indicates success or failure of the append operation.
      */
     bool appendBuffer(MaPLBuffer *otherBuffer, MaPL_Index variableByteIncrement);
+    
+    /**
+     * Appends the literal value onto the buffer.
+     *
+     * @param literal The literal value that will be appended onto the buffer.
+     *
+     * @return Boolean indicates success or failure of the append operation.
+     */
+    bool appendLiteral(const MaPLLiteral &literal);
     
     /**
      * @return The bytes stored in this buffer.
