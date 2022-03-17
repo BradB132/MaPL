@@ -202,6 +202,21 @@ MaPL_Instruction greaterThanInstructionForPrimitive(MaPLPrimitiveType type);
 MaPL_Instruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
+ * @return The instruction byte that indicates an assignment corresponding to @c type.
+ */
+MaPL_Instruction assignInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates a variable value corresponding to @c type.
+ */
+MaPL_Instruction variableInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates a numeric literal value corresponding to @c type.
+ */
+MaPL_Instruction numericLiteralInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.
  */
 std::vector<std::string> mutualAncestorTypes(MaPLFile *file, const std::string &type1, const std::string &type2);

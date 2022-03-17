@@ -351,14 +351,131 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             break;
         case MaPLParser::RuleAssignStatement: {
             MaPLParser::AssignStatementContext *assignment = (MaPLParser::AssignStatementContext *)node;
-            // TODO: Assigning to object expressions will be relatively complex, revisit this last.
-            // TODO: Check if APIs are 'readonly' before assigning to them.
+            MaPLParser::ObjectExpressionContext *objectExpression = assignment->objectExpression();
+            
+            // Check if the object expression on the left side of this assignment is a variable.
+            MaPLVariable assignedVariable = { { MaPLPrimitiveType_Uninitialized } };
+            if (!objectExpression->keyToken) {
+                assignedVariable = _variableStack->getVariable(objectExpression->identifier()->getText());
+            }
+            if (assignedVariable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
+                // This assignment is for a variable. Append the left side of the assignment.
+                currentBuffer->appendByte(assignInstructionForPrimitive(assignedVariable.type.primitiveType));
+                currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                
+                // Check if this is a combined operator-assign.
+                size_t tokenType = assignment->keyToken->getType();
+                if (tokenType == MaPLParser::ADD_ASSIGN && assignedVariable.type.primitiveType == MaPLPrimitiveType_String) {
+                    // This is a string concat-assign. Append the concat operation, referencing the same variable that's being assigned to.
+                    currentBuffer->appendByte(MAPL_BYTE_STRING_CONCAT);
+                    currentBuffer->appendByte(MAPL_BYTE_VARIABLE_STRING);
+                    currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                } else if (tokenType == MaPLParser::ADD_ASSIGN ||
+                           tokenType == MaPLParser::SUBTRACT_ASSIGN ||
+                           tokenType == MaPLParser::MULTIPLY_ASSIGN ||
+                           tokenType == MaPLParser::DIVIDE_ASSIGN ||
+                           tokenType == MaPLParser::MOD_ASSIGN) {
+                    // This is an arithmetic operator-assign.
+                    if (!isNumeric(assignedVariable.type.primitiveType)) {
+                        logError(this, assignment->keyToken, "This operator can only be used on numeric variables.");
+                        break;
+                    }
+                    // Append the concat operation, referencing the same variable that's being assigned to.
+                    switch (tokenType) {
+                        case MaPLParser::ADD_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_ADD);
+                            break;
+                        case MaPLParser::SUBTRACT_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_SUBTRACT);
+                            break;
+                        case MaPLParser::MULTIPLY_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MULTIPLY);
+                            break;
+                        case MaPLParser::DIVIDE_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_DIVIDE);
+                            break;
+                        case MaPLParser::MOD_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MODULO);
+                            break;
+                        default: break;
+                    }
+                    currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                    currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                } else {
+                    // This is a bitwise operator-assign.
+                    if (!isIntegral(assignedVariable.type.primitiveType)) {
+                        logError(this, assignment->keyToken, "This operator can only be used on integral variables.");
+                        break;
+                    }
+                    // Append the concat operation, referencing the same variable that's being assigned to.
+                    switch (tokenType) {
+                        case MaPLParser::BITWISE_AND_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_AND);
+                            break;
+                        case MaPLParser::BITWISE_OR_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_OR);
+                            break;
+                        case MaPLParser::BITWISE_XOR_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_XOR);
+                            break;
+                        case MaPLParser::BITWISE_SHIFT_LEFT_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_LEFT);
+                            break;
+                        case MaPLParser::BITWISE_SHIFT_RIGHT_ASSIGN:
+                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_RIGHT);
+                            break;
+                        default: break;
+                    }
+                    currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                    currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                }
+                // Append the right side of the assignment.
+                compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
+            } else {
+                // This assignment is for an object expression.
+                // TODO: Check if APIs are 'readonly' before assigning to them.
+                // TODO: Assigning to object expressions will be relatively complex, revisit this last.
+            }
         }
             break;
         case MaPLParser::RuleUnaryStatement: {
             MaPLParser::UnaryStatementContext *statement = (MaPLParser::UnaryStatementContext *)node;
-            // TODO: Assigning to object expressions will be relatively complex, revisit this last.
-            // TODO: Check if APIs are 'readonly' before assigning to them.
+            MaPLParser::ObjectExpressionContext *objectExpression = statement->objectExpression();
+            
+            // Check if the object expression being incremented is a variable.
+            MaPLVariable assignedVariable = { { MaPLPrimitiveType_Uninitialized } };
+            if (!objectExpression->keyToken) {
+                assignedVariable = _variableStack->getVariable(objectExpression->identifier()->getText());
+            }
+            if (assignedVariable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
+                // This increment is for a variable.
+                if (!isNumeric(assignedVariable.type.primitiveType)) {
+                    logError(this, statement->keyToken, "This increment operator can only be used on numeric variables.");
+                    break;
+                }
+                // Append the left side of the assignment.
+                currentBuffer->appendByte(assignInstructionForPrimitive(assignedVariable.type.primitiveType));
+                currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                
+                // Determine if this is an increment or decrement.
+                if (statement->INCREMENT()) {
+                    currentBuffer->appendByte(MAPL_BYTE_NUMERIC_ADD);
+                } else {
+                    currentBuffer->appendByte(MAPL_BYTE_NUMERIC_SUBTRACT);
+                }
+                currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                
+                // Add a literal "1" for whatever the assigned primitive type is.
+                currentBuffer->appendByte(numericLiteralInstructionForPrimitive(assignedVariable.type.primitiveType));
+                MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
+                oneLiteral.uInt64Value = 1;
+                oneLiteral = castLiteralToType(oneLiteral, assignedVariable.type);
+                currentBuffer->appendLiteral(oneLiteral);
+            } else {
+                // This assignment is for an object expression.
+                // TODO: Check if APIs are 'readonly' before assigning to them.
+                // TODO: Assigning to object expressions will be relatively complex, revisit this last.
+            }
         }
             break;
         case MaPLParser::RuleObjectExpression: {
