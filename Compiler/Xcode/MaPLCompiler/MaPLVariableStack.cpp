@@ -35,7 +35,7 @@ bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVar
     }
     
     MaPLVariable existingVariable = getVariable(variableName);
-    if (existingVariable.type.primitiveType != MaPLPrimitiveType_TypeError) {
+    if (existingVariable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
         logError(variable.file, variable.token, "Variable '"+variableName+"' conflicts with a previously-declared variable of the same name.");
         logError(existingVariable.file, existingVariable.token, "Variable '"+variableName+"' later comes into conflict with a variable of the same name.");
         return false;
@@ -69,7 +69,7 @@ MaPLVariable MaPLVariableStack::getVariable(const std::string &variableName) {
             }
         }
     }
-    return { { MaPLPrimitiveType_TypeError } };
+    return { { MaPLPrimitiveType_Uninitialized } };
 }
 
 std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getGlobalVariables() {

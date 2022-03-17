@@ -2080,7 +2080,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
             bool isInvokedOnType = !invokedOnType.empty();
             if (!isInvokedOnType) {
                 MaPLVariable variable = _variableStack->getVariable(propertyOrVariableName);
-                if (variable.type.primitiveType != MaPLPrimitiveType_TypeError) {
+                if (variable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                     return variable.type;
                 }
             }
