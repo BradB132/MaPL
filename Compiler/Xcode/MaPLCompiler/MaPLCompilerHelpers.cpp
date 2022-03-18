@@ -137,7 +137,7 @@ std::string descriptorForType(const MaPLType &type) {
 
 std::string descriptorForFunction(const std::string &name, const std::vector<MaPLType> &parameterTypes, bool hasVariadicArgs) {
     std::string functionDescriptor = name+"(";
-    for (int i = 0; i < parameterTypes.size(); i++) {
+    for (size_t i = 0; i < parameterTypes.size(); i++) {
         functionDescriptor += descriptorForType(parameterTypes[i]);
         if (i < parameterTypes.size()-1) {
             functionDescriptor += ", ";
@@ -1069,7 +1069,7 @@ bool findInheritanceCycle(MaPLFile *file) {
         std::vector<std::string> cycle = findInheritanceCycle(file, apiDeclaration, seenTypes);
         if (cycle.size() > 0) {
             std::string cycleDescriptor;
-            for (int i = 0; i < cycle.size(); i++) {
+            for (size_t i = 0; i < cycle.size(); i++) {
                 cycleDescriptor += cycle[i];
                 if (i < cycle.size()-1) {
                     cycleDescriptor += " -> ";
@@ -1393,7 +1393,7 @@ void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::To
             break;
         default: return;
     }
-    for (int i = 0; i < suggestedTypes.size(); i++) {
+    for (size_t i = 0; i < suggestedTypes.size(); i++) {
         message += descriptorForType({ suggestedTypes[i] });
         if (i == suggestedTypes.size()-1) {
             message += ".";
