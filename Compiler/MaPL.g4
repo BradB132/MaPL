@@ -44,7 +44,7 @@ assignStatement
     ;
 
 unaryStatement
-    :    objectExpression (INCREMENT|DECREMENT)
+    :    objectExpression keyToken=(INCREMENT|DECREMENT)
     ;
 
 // EXPRESSIONS
