@@ -65,6 +65,9 @@ private:
     bool parseRawScript();
     void compileChildNodes(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer);
     void compileNode(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer);
+    MaPLType compileObjectExpression(MaPLParser::ObjectExpressionContext *expression,
+                                     MaPLParser::ObjectExpressionContext *invokedOnExpression,
+                                     MaPLBuffer *currentBuffer);
     virtual void syntaxError(antlr4::Recognizer *recognizer,
                              antlr4::Token * offendingSymbol,
                              size_t line, size_t charPositionInLine,

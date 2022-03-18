@@ -376,6 +376,25 @@ MaPL_Instruction numericLiteralInstructionForPrimitive(MaPLPrimitiveType type) {
     }
 }
 
+MaPL_Instruction parameterTypeInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_PARAMETER;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_PARAMETER;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_PARAMETER;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_PARAMETER;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_PARAMETER;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_PARAMETER;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_PARAMETER;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_PARAMETER;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_PARAMETER;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_PARAMETER;
+        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_PARAMETER;
+        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_PARAMETER;
+        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_PARAMETER;
+        default: return 0;
+    }
+}
+
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     if (typeContext->identifier()) {
         return { MaPLPrimitiveType_Pointer, typeContext->identifier()->getText() };

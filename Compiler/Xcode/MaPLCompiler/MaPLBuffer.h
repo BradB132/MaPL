@@ -18,11 +18,13 @@ enum MaPLBufferAnnotationType {
     MaPLBufferAnnotationType_Break,
     MaPLBufferAnnotationType_Continue,
     MaPLBufferAnnotationType_VariableOffset,
+    MaPLBufferAnnotationType_FunctionSymbol,
 };
 
 struct MaPLBufferAnnotation {
     size_t byteLocation;
     MaPLBufferAnnotationType type;
+    std::string text;
 };
 
 /**

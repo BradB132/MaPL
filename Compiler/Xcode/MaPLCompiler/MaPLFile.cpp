@@ -132,6 +132,8 @@ MaPLBuffer *MaPLFile::getBytecode() {
     // Compile the bytecode from this file.
     compileChildNodes(_program, { MaPLPrimitiveType_Uninitialized }, _bytecode);
     
+    // TODO: Resolve function symbols.
+    
     return _bytecode;
 }
 
@@ -501,24 +503,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     logError(this, terminalExpression->start, "This expression has no effect.");
                 }
             }
-            
-            if (expression->keyToken) {
-                switch (expression->keyToken->getType()) {
-                    case MaPLParser::OBJECT_TO_MEMBER: // Compound object expression.
-                        // TODO: Implement this.
-                        break;
-                    case MaPLParser::SUBSCRIPT_OPEN: // Subscript invocation.
-                        // TODO: Implement this.
-                        break;
-                    case MaPLParser::PAREN_OPEN: // Function invocation.
-                        // TODO: Implement this.
-                        break;
-                    default: break;
-                }
-            } else {
-                // Property invocation.
-                // TODO: Implement this.
-            }
+            compileObjectExpression(expression, NULL, currentBuffer);
         }
             break;
         case MaPLParser::RuleExpression: {
@@ -1002,6 +987,170 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             break;
         default:
             break;
+    }
+}
+
+MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *expression,
+                                           MaPLParser::ObjectExpressionContext *invokedOnExpression,
+                                           MaPLBuffer *currentBuffer) {
+    if (expression->keyToken) {
+        switch (expression->keyToken->getType()) {
+            case MaPLParser::OBJECT_TO_MEMBER:
+                // Compound object expression: For the expression "obj.func()", the first child
+                // is "obj" and second is "func()". This logic only rearranges these child
+                // expressionsso that they are passed back to this function in the correct order.
+                return compileObjectExpression(expression->objectExpression(1),
+                                               expression->objectExpression(0),
+                                               currentBuffer);
+            case MaPLParser::SUBSCRIPT_OPEN: {
+                // Subscript invocation: subscripts are represented in bytecode as follows:
+                //   MAPL_BYTE_SUBSCRIPT_INVOCATION
+                //   ObjectExpressionContext - Resolves to the object on which the subscript is invoked.
+                //   MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
+                //   ExpressionContext - The index of the subscript.
+                currentBuffer->appendByte(MAPL_BYTE_SUBSCRIPT_INVOCATION);
+                MaPLType invokedReturnType = compileObjectExpression(expression->objectExpression(0), NULL, currentBuffer);
+                
+                // Find the API that's being referenced to help infer the type of the parameter.
+                MaPLParser::ExpressionContext *indexExpression = expression->expression(0);
+                MaPLType indexType = dataTypeForExpression(indexExpression);
+                MaPLParser::ApiSubscriptContext *subscriptApi = findSubscript(this, invokedReturnType.pointerType, indexType, NULL);
+                
+                // The type could still be ambiguous, so get the type from the API itself.
+                indexType = typeForTypeContext(subscriptApi->type(1));
+                currentBuffer->appendByte(parameterTypeInstructionForPrimitive(indexType.primitiveType));
+                compileNode(indexExpression, indexType, currentBuffer);
+                
+                return typeForTypeContext(subscriptApi->type(0));
+            }
+            case MaPLParser::PAREN_OPEN: {
+                // Function invocations are represented in bytecode as follows:
+                //   MAPL_BYTE_FUNCTION_INVOCATION - Signals the start of a function invocation.
+                //   ObjectExpressionContext - Resolves to the object on which the function is invoked. Value is MAPL_BYTE_LITERAL_NULL if no expression.
+                //   MaPL_Symbol - The bytecode representation of the name of this property.
+                //   MaPL_Index - The number of parameters to expect.
+                //   Parameters - Byte layout described below.
+                currentBuffer->appendByte(MAPL_BYTE_FUNCTION_INVOCATION);
+                std::string functionName = expression->identifier()->getText();
+                std::string invokedOnType;
+                std::string symbolName;
+                if (invokedOnExpression) {
+                    MaPLType invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
+                    invokedOnType = invokedReturnType.pointerType;
+                    symbolName = invokedReturnType.pointerType + "__";
+                } else {
+                    currentBuffer->appendByte(MAPL_BYTE_LITERAL_NULL);
+                    symbolName = "GLOBAL__";
+                }
+                symbolName += functionName;
+                
+                // The eventual value for this symbol is set after compilation is completed
+                // and symbol values can be calculated. Add a placeholder 0 for now.
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
+                MaPL_Symbol symbol = 0;
+                currentBuffer->appendBytes(&symbol, sizeof(symbol));
+                
+                std::vector<MaPLParser::ExpressionContext *> parameterExpressions = expression->expression();
+                MaPL_Index parameterCount = (MaPL_Index)parameterExpressions.size();
+                currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
+                
+                std::vector<MaPLType> expressionParameterTypes;
+                for (MaPLParser::ExpressionContext *parameterExpression : parameterExpressions) {
+                    expressionParameterTypes.push_back(dataTypeForExpression(parameterExpression));
+                }
+                
+                MaPLParser::ApiFunctionContext *functionApi = findFunction(this,
+                                                                           invokedOnType,
+                                                                           functionName,
+                                                                           expressionParameterTypes,
+                                                                           MaPLParameterStrategy_Flexible,
+                                                                           NULL);
+                std::vector<MaPLType> apiParameterTypes;
+                MaPLParser::ApiFunctionArgsContext *args = functionApi->apiFunctionArgs();
+                if (args) {
+                    for (MaPLParser::TypeContext *typeContext : args->type()) {
+                        apiParameterTypes.push_back(typeForTypeContext(typeContext));
+                    }
+                }
+                
+                // Function parameters are represented in bytecode as follows:
+                //   MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the parameter.
+                //   ExpressionContext - The parameter value.
+                for (size_t i = 0; i < parameterExpressions.size(); i++) {
+                    MaPLType expectedType;
+                    if (i < apiParameterTypes.size()) {
+                        // The API specifies the type of this parameter, use that value.
+                        expectedType = apiParameterTypes[i];
+                    } else {
+                        // The API uses variadic parameters, and doesn't specify any explicit
+                        // type for this parameter. Throw an error if the type is ambiguous.
+                        expectedType = dataTypeForExpression(parameterExpressions[i]);
+                        if (expectedType.primitiveType == MaPLPrimitiveType_TypeError) {
+                            // If there was an error, the reason why was already logged.
+                            continue;
+                        }
+                        if (isAmbiguousNumericType(expectedType.primitiveType)) {
+                            logAmbiguousLiteralError(this, expectedType.primitiveType, parameterExpressions[i]->start);
+                            continue;
+                        }
+                    }
+                    currentBuffer->appendByte(parameterTypeInstructionForPrimitive(expectedType.primitiveType));
+                    compileChildNodes(parameterExpressions[i], expectedType, currentBuffer);
+                }
+                
+                if (functionApi->API_VOID()) {
+                    return { MaPLPrimitiveType_Void };
+                }
+                return typeForTypeContext(functionApi->type());
+            }
+            default: return { MaPLPrimitiveType_TypeError };
+        }
+    } else {
+        // This is either a reference to a variable or a property invocation.
+        MaPLParser::IdentifierContext *identifier = expression->identifier();
+        std::string propertyOrVariableName = identifier->getText();
+        if (!invokedOnExpression) {
+            MaPLVariable variable = _variableStack->getVariable(propertyOrVariableName);
+            if (variable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
+                // This expression is a reference to a variable.
+                currentBuffer->appendByte(variableInstructionForPrimitive(variable.type.primitiveType));
+                currentBuffer->appendBytes(&(variable.byteOffset), sizeof(variable.byteOffset));
+                return variable.type;
+            }
+        }
+        
+        // The name doesn't match a variable, so it must be a property invocation.
+        // Property invocations are represented in bytecode as follows:
+        //   MAPL_BYTE_FUNCTION_INVOCATION - Signals the start of a function invocation.
+        //   ObjectExpressionContext - Resolves to the object on which the property is invoked. Value is MAPL_BYTE_LITERAL_NULL if no expression.
+        //   MaPL_Symbol - The bytecode representation of the name of this property.
+        //   MaPL_Index - The number of parameters to expect. For properties this is always 0.
+        currentBuffer->appendByte(MAPL_BYTE_FUNCTION_INVOCATION);
+        std::string invokedOnType;
+        std::string symbolName;
+        if (invokedOnExpression) {
+            MaPLType invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
+            invokedOnType = invokedReturnType.pointerType;
+            symbolName = invokedReturnType.pointerType + "__";
+        } else {
+            currentBuffer->appendByte(MAPL_BYTE_LITERAL_NULL);
+            symbolName = "GLOBAL__";
+        }
+        symbolName += propertyOrVariableName;
+        
+        // The eventual value for this symbol is set after compilation is completed
+        // and symbol values can be calculated. Add a placeholder 0 for now.
+        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
+        MaPL_Symbol symbol = 0;
+        currentBuffer->appendBytes(&symbol, sizeof(symbol));
+        MaPL_Index parameterCount = 0;
+        currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
+        
+        MaPLParser::ApiPropertyContext *propertyApi = findProperty(this,
+                                                                   invokedOnType,
+                                                                   propertyOrVariableName,
+                                                                   NULL);
+        return typeForTypeContext(propertyApi->type());
     }
 }
 
