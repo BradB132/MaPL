@@ -132,8 +132,6 @@ MaPLBuffer *MaPLFile::getBytecode() {
     // Compile the bytecode from this file.
     compileChildNodes(_program, { MaPLPrimitiveType_Uninitialized }, _bytecode);
     
-    // TODO: Resolve function symbols.
-    
     return _bytecode;
 }
 

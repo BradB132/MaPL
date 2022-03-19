@@ -30,6 +30,7 @@ int main(int argc, const char ** argv) {
             printf("bytecode length: %d\n", (int)bytecode->getByteCount());// TODO: this line just for testing, delete later.
         }
     }
+    // TODO: Resolve function symbols in each bytecode buffer.
     
     return 0;
 }

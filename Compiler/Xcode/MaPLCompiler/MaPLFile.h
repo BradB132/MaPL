@@ -36,7 +36,7 @@ public:
     MaPLFile(std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache);
     
     /**
-     * @return The bytecode representation of the script in this file. This recusrively includes bytecode from dependent files. NULL if error.
+     * @return The bytecode representation of the script in this file. This recusrively includes bytecode from dependent files. Function symbols are not initially filled in. NULL if error.
      */
     MaPLBuffer *getBytecode();
     
