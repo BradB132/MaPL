@@ -262,6 +262,16 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
 MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castType);
 
 /**
+ * @return The object expression that terminates the chain of expressions for which @c rootExpression is the root node.
+ */
+MaPLParser::ObjectExpressionContext *terminalObjectExpression(MaPLParser::ObjectExpressionContext *rootExpression);
+
+/**
+ * @return The beginning of the object expression, excluding only the termal expression, for which @c rootExpression is the root node.
+ */
+MaPLParser::ObjectExpressionContext *prefixObjectExpression(MaPLParser::ObjectExpressionContext *rootExpression);
+
+/**
  * @param file The MaPLFile to use as the root of the search.
  * @param type The string name of the #type.
  * @param excludingType A type node to exclude from the search. This is useful when checking for duplicate symbols. Pass NULL to exclude nothing.

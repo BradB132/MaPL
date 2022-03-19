@@ -985,6 +985,24 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
     return { { MaPLPrimitiveType_TypeError } };
 }
 
+MaPLParser::ObjectExpressionContext *terminalObjectExpression(MaPLParser::ObjectExpressionContext *rootExpression) {
+    if (rootExpression->keyToken && rootExpression->keyToken->getType() == MaPLParser::OBJECT_TO_MEMBER) {
+        // This expression is a compound expression. To find the last item in the chain of expressions, get the second child.
+        return rootExpression->objectExpression(1);
+    }
+    return rootExpression;
+}
+
+MaPLParser::ObjectExpressionContext *prefixObjectExpression(MaPLParser::ObjectExpressionContext *rootExpression) {
+    if (rootExpression->keyToken) {
+        size_t tokenType = rootExpression->keyToken->getType();
+        if (tokenType == MaPLParser::OBJECT_TO_MEMBER || tokenType == MaPLParser::SUBSCRIPT_OPEN) {
+            return rootExpression->objectExpression(0);
+        }
+    }
+    return NULL;
+}
+
 bool isAssignable(MaPLFile *file, const MaPLType &expressionType, const MaPLType &assignToType) {
     // Handle direct matches first.
     if (assignToType.primitiveType == expressionType.primitiveType) {

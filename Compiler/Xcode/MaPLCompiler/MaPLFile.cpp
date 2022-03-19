@@ -489,11 +489,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // If there was an error, the reason why was already logged.
                     break;
                 }
-                MaPLParser::ObjectExpressionContext *terminalExpression = expression;
-                if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::OBJECT_TO_MEMBER) {
-                    // This expression is a compound expression. To find the last item in the chain of expressions, get the second child.
-                    terminalExpression = terminalExpression->objectExpression(1);
-                }
+                MaPLParser::ObjectExpressionContext *terminalExpression = terminalObjectExpression(expression);
                 bool isFunctionInvocation = terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::PAREN_OPEN;
                 if (!isFunctionInvocation) {
                     // All object expressions other than function invocations are accessors. This is
