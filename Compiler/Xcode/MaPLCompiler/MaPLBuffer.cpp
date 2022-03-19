@@ -108,8 +108,7 @@ bool MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
             const char* cString = literal.stringValue.c_str();
             size_t length = strlen(cString);
             return appendByte(MAPL_BYTE_LITERAL_STRING) &&
-                   appendBytes(cString, length) &&
-                   appendByte(0);
+                   appendBytes(cString, length+1);
         }
         case MaPLPrimitiveType_Boolean:
             return appendByte(literal.booleanValue ? MAPL_BYTE_LITERAL_BOOLEAN_TRUE : MAPL_BYTE_LITERAL_BOOLEAN_FALSE);

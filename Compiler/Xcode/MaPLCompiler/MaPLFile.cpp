@@ -278,9 +278,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             break;
         case MaPLParser::RuleStatement: {
             MaPLParser::StatementContext *statement = (MaPLParser::StatementContext *)node;
-            antlr4::tree::TerminalNode *terminalNode = statement->METADATA();
-            if (terminalNode) {
-                std::string rawMetadata = terminalNode->getText();
+            antlr4::tree::TerminalNode *metadata = statement->METADATA();
+            if (metadata) {
+                std::string rawMetadata = metadata->getText();
                 std::string trimmedMetadata = rawMetadata.substr(2, rawMetadata.length()-4);
                 currentBuffer->appendByte(MAPL_BYTE_METADATA);
                 const char *metadataChars = trimmedMetadata.c_str();
