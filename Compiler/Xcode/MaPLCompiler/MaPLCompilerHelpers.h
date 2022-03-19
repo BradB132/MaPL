@@ -157,6 +157,11 @@ std::string descriptorForFunction(const std::string &name, const std::vector<MaP
 std::string descriptorForFunction(MaPLParser::ApiFunctionContext *function);
 
 /**
+ * @return A human-readable string that describes the symbol for a function.
+ */
+std::string descriptorForSymbol(const std::string &typeName, const std::string &symbolName);
+
+/**
  * @return The instruction byte that indicates an assignment for the corresponding primitive type.
  */
 MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);

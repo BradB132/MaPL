@@ -165,6 +165,13 @@ std::string descriptorForFunction(MaPLParser::ApiFunctionContext *function) {
                                  hasVariadicArgs);
 }
 
+std::string descriptorForSymbol(const std::string &typeName, const std::string &symbolName) {
+    if (typeName.empty()) {
+        return "GLOBAL__"+symbolName;
+    }
+    return typeName+"__"+symbolName;
+}
+
 MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
         case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_ASSIGN;

@@ -1033,19 +1033,17 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 currentBuffer->appendByte(MAPL_BYTE_FUNCTION_INVOCATION);
                 std::string functionName = expression->identifier()->getText();
                 std::string invokedOnType;
-                std::string symbolName;
+                MaPLType invokedReturnType = { MaPLPrimitiveType_Uninitialized };
                 if (invokedOnExpression) {
-                    MaPLType invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
+                    invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
                     invokedOnType = invokedReturnType.pointerType;
-                    symbolName = invokedReturnType.pointerType + "__";
                 } else {
                     currentBuffer->appendByte(MAPL_BYTE_LITERAL_NULL);
-                    symbolName = "GLOBAL__";
                 }
-                symbolName += functionName;
                 
                 // The eventual value for this symbol is set after compilation is completed
                 // and symbol values can be calculated. Add a placeholder 0 for now.
+                std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, functionName);
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
                 MaPL_Symbol symbol = 0;
                 currentBuffer->appendBytes(&symbol, sizeof(symbol));
@@ -1127,19 +1125,17 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         //   MaPL_Index - The number of parameters to expect. For properties this is always 0.
         currentBuffer->appendByte(MAPL_BYTE_FUNCTION_INVOCATION);
         std::string invokedOnType;
-        std::string symbolName;
+        MaPLType invokedReturnType = { MaPLPrimitiveType_Uninitialized };
         if (invokedOnExpression) {
-            MaPLType invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
+            invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
             invokedOnType = invokedReturnType.pointerType;
-            symbolName = invokedReturnType.pointerType + "__";
         } else {
             currentBuffer->appendByte(MAPL_BYTE_LITERAL_NULL);
-            symbolName = "GLOBAL__";
         }
-        symbolName += propertyOrVariableName;
         
         // The eventual value for this symbol is set after compilation is completed
         // and symbol values can be calculated. Add a placeholder 0 for now.
+        std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, propertyOrVariableName);
         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
         MaPL_Symbol symbol = 0;
         currentBuffer->appendBytes(&symbol, sizeof(symbol));
