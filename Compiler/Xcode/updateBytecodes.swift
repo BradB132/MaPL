@@ -17,4 +17,4 @@ try! String(contentsOfFile: bytecodePath).components(separatedBy: "\n").forEach 
     byteCode += 1
 }
 
-print(output)
+try! output.write(to: URL(fileURLWithPath: bytecodePath), atomically: true, encoding: String.Encoding.utf8)

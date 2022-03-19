@@ -1024,7 +1024,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
             case MaPLParser::PAREN_OPEN: {
                 // Function invocations are represented in bytecode as follows:
                 //   MAPL_BYTE_FUNCTION_INVOCATION - Signals the start of a function invocation.
-                //   ObjectExpressionContext - Resolves to the object on which the function is invoked. Value is MAPL_BYTE_LITERAL_NULL if no expression.
+                //   ObjectExpressionContext - Resolves to the object on which the function is invoked. Value is MAPL_BYTE_NO_OP if no expression.
                 //   MaPL_Symbol - The bytecode representation of the name of this property.
                 //   MaPL_Index - The number of parameters to expect.
                 //   Parameters - Byte layout described below.
@@ -1036,7 +1036,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                     invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
                     invokedOnType = invokedReturnType.pointerType;
                 } else {
-                    currentBuffer->appendByte(MAPL_BYTE_LITERAL_NULL);
+                    currentBuffer->appendByte(MAPL_BYTE_NO_OP);
                 }
                 
                 // The eventual value for this symbol is set after compilation is completed
@@ -1118,7 +1118,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         // The name doesn't match a variable, so it must be a property invocation.
         // Property invocations are represented in bytecode as follows:
         //   MAPL_BYTE_FUNCTION_INVOCATION - Signals the start of a function invocation.
-        //   ObjectExpressionContext - Resolves to the object on which the property is invoked. Value is MAPL_BYTE_LITERAL_NULL if no expression.
+        //   ObjectExpressionContext - Resolves to the object on which the property is invoked. Value is MAPL_BYTE_NO_OP if no expression.
         //   MaPL_Symbol - The bytecode representation of the name of this property.
         //   MaPL_Index - The number of parameters to expect. For properties this is always 0.
         currentBuffer->appendByte(MAPL_BYTE_FUNCTION_INVOCATION);
@@ -1128,7 +1128,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
             invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
             invokedOnType = invokedReturnType.pointerType;
         } else {
-            currentBuffer->appendByte(MAPL_BYTE_LITERAL_NULL);
+            currentBuffer->appendByte(MAPL_BYTE_NO_OP);
         }
         
         // The eventual value for this symbol is set after compilation is completed
