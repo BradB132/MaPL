@@ -132,6 +132,11 @@ bool isConcreteType(MaPLPrimitiveType type);
 bool isAssignable(MaPLFile *file, const MaPLType &expressionType, const MaPLType &assignToType);
 
 /**
+ * @return @c true if an expression of type @c type can be an operand for an operator of type @c operatorType.
+ */
+bool assignOperatorIsCompatibleWithType(MaPLFile *file, size_t operatorType, MaPLPrimitiveType type, antlr4::Token *token);
+
+/**
  * @return The number of bytes required for each of the primitive types. @c 0 if type is invalid, void, or ambiguous.
  */
 MaPL_Index byteSizeOfType(MaPLPrimitiveType type);
@@ -210,6 +215,21 @@ MaPL_Instruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType typ
  * @return The instruction byte that indicates an assignment corresponding to @c type.
  */
 MaPL_Instruction assignInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates a subscript assignment corresponding to @c type.
+ */
+MaPL_Instruction assignSubscriptInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates a property assignment corresponding to @c type.
+ */
+MaPL_Instruction assignPropertyInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that represents an operator-assign.
+ */
+MaPL_Instruction operatorAssignInstructionForTokenType(size_t tokenType);
 
 /**
  * @return The instruction byte that indicates a variable value corresponding to @c type.
@@ -332,6 +352,11 @@ void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::To
  * Logs an error describing how both operands for an expression must be numeric.
  */
 void logNonNumericOperandsError(MaPLFile *file, antlr4::Token *token);
+
+/**
+ * Logs an error describing an assignment made to a read-only expression.
+ */
+void logNotAssignableError(MaPLFile *file, antlr4::Token *token);
 
 /**
  * Function for logging errors. In order to maintain consistent output, all errors should go through this function.

@@ -348,6 +348,72 @@ MaPL_Instruction assignInstructionForPrimitive(MaPLPrimitiveType type) {
     }
 }
 
+MaPL_Instruction assignSubscriptInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_ASSIGN_SUBSCRIPT;
+        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_ASSIGN_SUBSCRIPT;
+        default: return 0;
+    }
+}
+
+MaPL_Instruction assignPropertyInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_ASSIGN_PROPERTY;
+        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_ASSIGN_PROPERTY;
+        default: return 0;
+    }
+}
+
+MaPL_Instruction operatorAssignInstructionForTokenType(size_t tokenType) {
+    switch (tokenType) {
+        case MaPLParser::ADD_ASSIGN: // Intentional fallthrough.
+        case MaPLParser::INCREMENT:
+            return MAPL_BYTE_NUMERIC_ADD;
+        case MaPLParser::SUBTRACT_ASSIGN: // Intentional fallthrough.
+        case MaPLParser::DECREMENT:
+            return MAPL_BYTE_NUMERIC_SUBTRACT;
+        case MaPLParser::MULTIPLY_ASSIGN:
+            return MAPL_BYTE_NUMERIC_MULTIPLY;
+        case MaPLParser::DIVIDE_ASSIGN:
+            return MAPL_BYTE_NUMERIC_DIVIDE;
+        case MaPLParser::MOD_ASSIGN:
+            return MAPL_BYTE_NUMERIC_MODULO;
+        case MaPLParser::BITWISE_AND_ASSIGN:
+            return MAPL_BYTE_BITWISE_AND;
+        case MaPLParser::BITWISE_OR_ASSIGN:
+            return MAPL_BYTE_BITWISE_OR;
+        case MaPLParser::BITWISE_XOR_ASSIGN:
+            return MAPL_BYTE_BITWISE_XOR;
+        case MaPLParser::BITWISE_SHIFT_LEFT_ASSIGN:
+            return MAPL_BYTE_BITWISE_SHIFT_LEFT;
+        case MaPLParser::BITWISE_SHIFT_RIGHT_ASSIGN:
+            return MAPL_BYTE_BITWISE_SHIFT_RIGHT;
+        default: return MAPL_BYTE_NO_OP;
+    }
+}
+
 MaPL_Instruction variableInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
         case MaPLPrimitiveType_Int8: return MAPL_BYTE_VARIABLE_INT8;
@@ -1036,6 +1102,40 @@ bool isAssignable(MaPLFile *file, const MaPLType &expressionType, const MaPLType
     }
 }
 
+bool assignOperatorIsCompatibleWithType(MaPLFile *file, size_t operatorType, MaPLPrimitiveType type, antlr4::Token *token) {
+    switch (operatorType) {
+        case MaPLParser::ADD_ASSIGN:
+            if (!isNumeric(type) && type != MaPLPrimitiveType_String) {
+                logError(file, token, "This operator can only be used on numeric or string expressions.");
+                return false;
+            }
+            break;
+        case MaPLParser::SUBTRACT_ASSIGN:
+        case MaPLParser::MULTIPLY_ASSIGN:
+        case MaPLParser::DIVIDE_ASSIGN:
+        case MaPLParser::MOD_ASSIGN:
+        case MaPLParser::INCREMENT:
+        case MaPLParser::DECREMENT:
+            if (!isNumeric(type)) {
+                logError(file, token, "This operator can only be used on numeric expressions.");
+                return false;
+            }
+            break;
+        case MaPLParser::BITWISE_AND_ASSIGN:
+        case MaPLParser::BITWISE_OR_ASSIGN:
+        case MaPLParser::BITWISE_XOR_ASSIGN:
+        case MaPLParser::BITWISE_SHIFT_LEFT_ASSIGN:
+        case MaPLParser::BITWISE_SHIFT_RIGHT_ASSIGN:
+            if (!isIntegral(type)) {
+                logError(file, token, "This operator can only be used on integral expressions.");
+                return false;
+            }
+            break;
+        default: break;
+    }
+    return true;
+}
+
 std::set<std::string> findAncestorTypes(MaPLFile *file, std::string type) {
     std::set<std::string> allAncestorTypes;
     MaPLParser::ApiDeclarationContext *typeContext = findType(file, type, NULL);
@@ -1450,6 +1550,10 @@ void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::To
 
 void logNonNumericOperandsError(MaPLFile *file, antlr4::Token *token) {
     logError(file, token, "Both operands must be numeric.");
+}
+
+void logNotAssignableError(MaPLFile *file, antlr4::Token *token) {
+    logError(file, token, "Attempted to assign a value to a read-only expression.");
 }
 
 void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg) {

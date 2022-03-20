@@ -353,6 +353,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::AssignStatementContext *assignment = (MaPLParser::AssignStatementContext *)node;
             MaPLParser::ObjectExpressionContext *objectExpression = assignment->objectExpression();
             
+            // TODO: Do we need "VariableOffset" annotations here? Audit all usage of MaPLVariable.
+            
             // Check if the object expression on the left side of this assignment is a variable.
             MaPLVariable assignedVariable = { { MaPLPrimitiveType_Uninitialized } };
             if (!objectExpression->keyToken) {
@@ -363,78 +365,101 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 currentBuffer->appendByte(assignInstructionForPrimitive(assignedVariable.type.primitiveType));
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
-                // Check if this is a combined operator-assign.
+                // If this is an operator-assign, rewrite it as a regular assign.
+                // For example: "var+=expression" becomes "var=var+expression".
                 size_t tokenType = assignment->keyToken->getType();
-                if (tokenType == MaPLParser::ADD_ASSIGN && assignedVariable.type.primitiveType == MaPLPrimitiveType_String) {
-                    // This is a string concat-assign. Append the concat operation, referencing the same variable that's being assigned to.
-                    currentBuffer->appendByte(MAPL_BYTE_STRING_CONCAT);
-                    currentBuffer->appendByte(MAPL_BYTE_VARIABLE_STRING);
-                    currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
-                } else if (tokenType == MaPLParser::ADD_ASSIGN ||
-                           tokenType == MaPLParser::SUBTRACT_ASSIGN ||
-                           tokenType == MaPLParser::MULTIPLY_ASSIGN ||
-                           tokenType == MaPLParser::DIVIDE_ASSIGN ||
-                           tokenType == MaPLParser::MOD_ASSIGN) {
-                    // This is an arithmetic operator-assign.
-                    if (!isNumeric(assignedVariable.type.primitiveType)) {
-                        logError(this, assignment->keyToken, "This operator can only be used on numeric variables.");
-                        break;
+                if (tokenType != MaPLParser::ASSIGN) {
+                    if (tokenType == MaPLParser::ADD_ASSIGN && assignedVariable.type.primitiveType == MaPLPrimitiveType_String) {
+                        // This is a string concat-assign.
+                        currentBuffer->appendByte(MAPL_BYTE_STRING_CONCAT);
+                        currentBuffer->appendByte(MAPL_BYTE_VARIABLE_STRING);
+                        currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                    } else {
+                        // This is a numeric or bitwise operator assign.
+                        if (!assignOperatorIsCompatibleWithType(this, tokenType, assignedVariable.type.primitiveType, assignment->keyToken)) {
+                            // If there was an error, the reason why was already logged.
+                            break;
+                        }
+                        currentBuffer->appendByte(operatorAssignInstructionForTokenType(tokenType));
+                        currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                        currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     }
-                    // Append the concat operation, referencing the same variable that's being assigned to.
-                    switch (tokenType) {
-                        case MaPLParser::ADD_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_ADD);
-                            break;
-                        case MaPLParser::SUBTRACT_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_SUBTRACT);
-                            break;
-                        case MaPLParser::MULTIPLY_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MULTIPLY);
-                            break;
-                        case MaPLParser::DIVIDE_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_DIVIDE);
-                            break;
-                        case MaPLParser::MOD_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MODULO);
-                            break;
-                        default: break;
-                    }
-                    currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
-                    currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
-                } else {
-                    // This is a bitwise operator-assign.
-                    if (!isIntegral(assignedVariable.type.primitiveType)) {
-                        logError(this, assignment->keyToken, "This operator can only be used on integral variables.");
-                        break;
-                    }
-                    // Append the concat operation, referencing the same variable that's being assigned to.
-                    switch (tokenType) {
-                        case MaPLParser::BITWISE_AND_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_AND);
-                            break;
-                        case MaPLParser::BITWISE_OR_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_OR);
-                            break;
-                        case MaPLParser::BITWISE_XOR_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_XOR);
-                            break;
-                        case MaPLParser::BITWISE_SHIFT_LEFT_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_LEFT);
-                            break;
-                        case MaPLParser::BITWISE_SHIFT_RIGHT_ASSIGN:
-                            currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_RIGHT);
-                            break;
-                        default: break;
-                    }
-                    currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
-                    currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 }
-                // Append the right side of the assignment.
                 compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
             } else {
                 // This assignment is for an object expression.
-                // TODO: Check if APIs are 'readonly' before assigning to them.
-                // TODO: Assigning to object expressions will be relatively complex, revisit this last.
+                MaPLType returnType = objectExpressionReturnType(objectExpression, "");
+                if (returnType.primitiveType == MaPLPrimitiveType_TypeError) {
+                    // If there was an error, the reason why was already logged.
+                    break;
+                }
+                MaPLParser::ObjectExpressionContext *prefixExpression = prefixObjectExpression(objectExpression);
+                MaPLParser::ObjectExpressionContext *terminalExpression = terminalObjectExpression(objectExpression);
+                
+                // Terminal expression is never a compound expression. It is either a function, subscript, or property.
+                if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::PAREN_OPEN) {
+                    logNotAssignableError(this, terminalExpression->start);
+                    break;
+                }
+                MaPLType prefixType = objectExpressionReturnType(prefixExpression, "");
+                if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::SUBSCRIPT_OPEN) {
+                    MaPLParser::ApiSubscriptContext *subscript = findSubscript(this,
+                                                                               prefixType.pointerType,
+                                                                               dataTypeForExpression(terminalExpression->expression(0)),
+                                                                               NULL);
+                    if (subscript->API_READONLY()) {
+                        logNotAssignableError(this, assignment->keyToken);
+                        break;
+                    }
+                    
+                    // Subscript assignments are represented in bytecode as follows:
+                    //   MAPL_BYTE_[TYPE]_ASSIGN_SUBSCRIPT - Type refers to type of assigned expression.
+                    //   ObjectExpressionContext - The object prefix.
+                    //   Operator instruction - Indicates which type of operator-assign to apply.
+                    //   MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
+                    //   ExpressionContext - The index of the subscript.
+                    //   ExpressionContext - The assigned expression.
+                    currentBuffer->appendByte(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
+                    compileObjectExpression(prefixExpression, NULL, currentBuffer);
+                    
+                    size_t assignTokenType = assignment->keyToken->getType();
+                    if (!assignOperatorIsCompatibleWithType(this, assignTokenType, returnType.primitiveType, assignment->keyToken)) {
+                        // If there was an error, the reason why was already logged.
+                        break;
+                    }
+                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(assignTokenType));
+                    
+                    MaPLType indexType = typeForTypeContext(subscript->type(1));
+                    currentBuffer->appendByte(parameterTypeInstructionForPrimitive(indexType.primitiveType));
+                    compileNode(terminalExpression->expression(0), indexType, currentBuffer);
+                    compileNode(assignment->expression(), returnType, currentBuffer);
+                } else {
+                    MaPLParser::ApiPropertyContext *property = findProperty(this,
+                                                                            prefixType.pointerType,
+                                                                            terminalExpression->identifier()->getText(),
+                                                                            NULL);
+                    if (property->API_READONLY()) {
+                        logNotAssignableError(this, assignment->keyToken);
+                        break;
+                    }
+                    
+                    // Property assignments are represented in bytecode as follows:
+                    //   MAPL_BYTE_[TYPE]_ASSIGN_PROPERTY - Type refers to type of assigned expression.
+                    //   ObjectExpressionContext - The object prefix.
+                    //   Operator instruction - Indicates which type of operator-assign to apply.
+                    //   ExpressionContext - The assigned expression.
+                    currentBuffer->appendByte(assignPropertyInstructionForPrimitive(returnType.primitiveType));
+                    compileObjectExpression(prefixExpression, NULL, currentBuffer);
+                    
+                    size_t assignTokenType = assignment->keyToken->getType();
+                    if (!assignOperatorIsCompatibleWithType(this, assignTokenType, returnType.primitiveType, assignment->keyToken)) {
+                        // If there was an error, the reason why was already logged.
+                        break;
+                    }
+                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(assignTokenType));
+                    
+                    compileNode(assignment->expression(), returnType, currentBuffer);
+                }
             }
         }
             break;
@@ -449,20 +474,15 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             }
             if (assignedVariable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                 // This increment is for a variable.
-                if (!isNumeric(assignedVariable.type.primitiveType)) {
-                    logError(this, statement->keyToken, "This increment operator can only be used on numeric variables.");
+                size_t tokenType = statement->keyToken->getType();
+                if (!assignOperatorIsCompatibleWithType(this, tokenType, assignedVariable.type.primitiveType, statement->keyToken)) {
+                    // If there was an error, the reason why was already logged.
                     break;
                 }
-                // Append the left side of the assignment.
+                // Rewrite the increment as a regular assign. For example: "var++" becomes "var=var+1".
                 currentBuffer->appendByte(assignInstructionForPrimitive(assignedVariable.type.primitiveType));
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
-                
-                // Determine if this is an increment or decrement.
-                if (statement->INCREMENT()) {
-                    currentBuffer->appendByte(MAPL_BYTE_NUMERIC_ADD);
-                } else {
-                    currentBuffer->appendByte(MAPL_BYTE_NUMERIC_SUBTRACT);
-                }
+                currentBuffer->appendByte(operatorAssignInstructionForTokenType(tokenType));
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
                 // Add a literal "1" for whatever the assigned primitive type is.
