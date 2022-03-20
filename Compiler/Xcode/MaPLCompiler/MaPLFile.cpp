@@ -401,7 +401,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     logNotAssignableError(this, terminalExpression->start);
                     break;
                 }
-                MaPLType prefixType = objectExpressionReturnType(prefixExpression, "");
+                MaPLType prefixType = { MaPLPrimitiveType_Uninitialized };
+                if (prefixExpression) {
+                    prefixType = objectExpressionReturnType(prefixExpression, "");
+                }
                 if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::SUBSCRIPT_OPEN) {
                     MaPLParser::ApiSubscriptContext *subscript = findSubscript(this,
                                                                                prefixType.pointerType,
@@ -414,13 +417,17 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     
                     // Subscript assignments are represented in bytecode as follows:
                     //   MAPL_BYTE_[TYPE]_ASSIGN_SUBSCRIPT - Type refers to type of assigned expression.
-                    //   ObjectExpressionContext - The object prefix.
+                    //   ObjectExpressionContext - The object prefix. Value is MAPL_BYTE_NO_OP if no expression.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
                     //   ExpressionContext - The index of the subscript.
                     //   ExpressionContext - The assigned expression.
                     currentBuffer->appendByte(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
-                    compileObjectExpression(prefixExpression, NULL, currentBuffer);
+                    if (prefixExpression) {
+                        compileObjectExpression(prefixExpression, NULL, currentBuffer);
+                    } else {
+                        currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+                    }
                     
                     size_t assignTokenType = assignment->keyToken->getType();
                     if (!assignOperatorIsCompatibleWithType(this, assignTokenType, returnType.primitiveType, assignment->keyToken)) {
@@ -434,9 +441,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
                     compileNode(assignment->expression(), returnType, currentBuffer);
                 } else {
+                    std::string propertyName = terminalExpression->identifier()->getText();
                     MaPLParser::ApiPropertyContext *property = findProperty(this,
                                                                             prefixType.pointerType,
-                                                                            terminalExpression->identifier()->getText(),
+                                                                            propertyName,
                                                                             NULL);
                     if (property->API_READONLY()) {
                         logNotAssignableError(this, assignment->keyToken);
@@ -445,11 +453,16 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     
                     // Property assignments are represented in bytecode as follows:
                     //   MAPL_BYTE_[TYPE]_ASSIGN_PROPERTY - Type refers to type of assigned expression.
-                    //   ObjectExpressionContext - The object prefix.
+                    //   ObjectExpressionContext - The object prefix. Value is MAPL_BYTE_NO_OP if no expression.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
+                    //   MaPL_Symbol - The bytecode representation of the name of this property.
                     //   ExpressionContext - The assigned expression.
                     currentBuffer->appendByte(assignPropertyInstructionForPrimitive(returnType.primitiveType));
-                    compileObjectExpression(prefixExpression, NULL, currentBuffer);
+                    if (prefixExpression) {
+                        compileObjectExpression(prefixExpression, NULL, currentBuffer);
+                    } else {
+                        currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+                    }
                     
                     size_t assignTokenType = assignment->keyToken->getType();
                     if (!assignOperatorIsCompatibleWithType(this, assignTokenType, returnType.primitiveType, assignment->keyToken)) {
@@ -457,6 +470,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         break;
                     }
                     currentBuffer->appendByte(operatorAssignInstructionForTokenType(assignTokenType));
+                    
+                    // The eventual value for this symbol is set after compilation is completed
+                    // and symbol values can be calculated. Add a placeholder 0 for now.
+                    std::string symbolName = descriptorForSymbol(prefixType.pointerType, propertyName);
+                    currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
+                    MaPL_Symbol symbol = 0;
+                    currentBuffer->appendBytes(&symbol, sizeof(symbol));
                     
                     compileNode(assignment->expression(), returnType, currentBuffer);
                 }
@@ -485,7 +505,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 currentBuffer->appendByte(operatorAssignInstructionForTokenType(tokenType));
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
-                // Add a literal "1" for whatever the assigned primitive type is.
+                // Add a literal "1" that matches the assigned primitive type is.
                 currentBuffer->appendByte(numericLiteralInstructionForPrimitive(assignedVariable.type.primitiveType));
                 MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                 oneLiteral.uInt64Value = 1;
