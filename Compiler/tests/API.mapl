@@ -1,5 +1,6 @@
 #global GlobalObject global;
 #global void exit(uint32);
+#global void print(string, ...);
 
 #type Hashable {
     readonly int32 hash;

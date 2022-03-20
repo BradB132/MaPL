@@ -1,7 +1,7 @@
 #import "./API.mapl"
 
 for(int8 i = 0; i < 5; i++) {
-    print("Hello World #" + i);
+    print("Hello World #" + (string)i);
 }
 
 global.map["test"] = "ABC";
