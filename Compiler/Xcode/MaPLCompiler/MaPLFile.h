@@ -60,6 +60,16 @@ public:
      */
     std::filesystem::path getNormalizedFilePath();
     
+    /**
+     * Logs an error that is then retrievable via @c getErrors().
+     */
+    void logError(antlr4::Token *token, const std::string &msg);
+    
+    /**
+     * @return A list of all errors logged via @c logError().
+     */
+    std::vector<std::string> getErrors();
+    
 private:
     
     bool parseRawScript();
@@ -68,11 +78,6 @@ private:
     MaPLType compileObjectExpression(MaPLParser::ObjectExpressionContext *expression,
                                      MaPLParser::ObjectExpressionContext *invokedOnExpression,
                                      MaPLBuffer *currentBuffer);
-    virtual void syntaxError(antlr4::Recognizer *recognizer,
-                             antlr4::Token * offendingSymbol,
-                             size_t line, size_t charPositionInLine,
-                             const std::string &msg,
-                             std::exception_ptr e) override;
     MaPLLiteral constantValueForExpression(MaPLParser::ExpressionContext *expression);
     MaPLType dataTypeForExpression(MaPLParser::ExpressionContext *expression);
     MaPLPrimitiveType reconcileTypes(MaPLPrimitiveType left,
@@ -83,16 +88,26 @@ private:
                                       antlr4::Token *errorToken);
     MaPLType objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
                                         const std::string &invokedOnType);
-    MaPLPrimitiveType typeReconciliationError(MaPLPrimitiveType left,
-                                              MaPLPrimitiveType right,
-                                              antlr4::Token *errorToken);
-    void missingTypeError(antlr4::Token *errorToken, const std::string &typeName);
+    
+    virtual void syntaxError(antlr4::Recognizer *recognizer,
+                             antlr4::Token * offendingSymbol,
+                             size_t line, size_t charPositionInLine,
+                             const std::string &msg,
+                             std::exception_ptr e) override;
+    MaPLPrimitiveType logTypeReconciliationError(MaPLPrimitiveType left,
+                                                 MaPLPrimitiveType right,
+                                                 antlr4::Token *errorToken);
+    void logAmbiguousLiteralError(MaPLPrimitiveType type, antlr4::Token *token);
+    void logMissingTypeError(antlr4::Token *errorToken, const std::string &typeName);
+    void logNonNumericOperandsError(antlr4::Token *token);
+    void logNotAssignableError(antlr4::Token *token);
     
     std::filesystem::path _normalizedFilePath;
     MaPLFileCache *_fileCache;
     MaPLBuffer *_bytecode;
     MaPLVariableStack *_variableStack;
     std::vector<MaPLFile *> _dependencies;
+    std::vector<std::string> _errors;
     
     antlr4::ANTLRInputStream *_inputStream;
     MaPLLexer *_lexer;

@@ -36,7 +36,7 @@ bool MaPLFile::parseRawScript() {
     // Read the raw script from the file system.
     std::ifstream inputStream(_normalizedFilePath);
     if (!inputStream) {
-        logError(this, NULL, "Unable to read script file.");
+        logError(NULL, "Unable to read script file.");
         return false;
     }
     std::stringstream stringBuffer;
@@ -73,7 +73,7 @@ bool MaPLFile::parseRawScript() {
         
         MaPLFile *dependencyFile = _fileCache->fileForAbsolutePath(importPath);
         if (!dependencyFile) {
-            logError(this, apiImport->start, "Unable to resolve path for import statement: "+importString);
+            logError(apiImport->start, "Unable to resolve path for import statement: "+importString);
             continue;
         }
         _dependencies.push_back(dependencyFile);
@@ -107,7 +107,7 @@ MaPLBuffer *MaPLFile::getBytecode() {
     // Check the dependency graph for duplicate includes of the same file.
     std::set<std::filesystem::path> duplicates = findDuplicateDependencies(this);
     for (std::filesystem::path normalizedPath : duplicates) {
-        logError(this, NULL, "File at path '"+normalizedPath.string()+"' exists more than once in the dependency graph.");
+        logError(NULL, "File at path '"+normalizedPath.string()+"' exists more than once in the dependency graph.");
     }
     if (duplicates.size() > 0) {
         return NULL;
@@ -147,14 +147,9 @@ std::filesystem::path MaPLFile::getNormalizedFilePath() {
     return _normalizedFilePath;
 }
 
-void MaPLFile::syntaxError(antlr4::Recognizer *recognizer,
-                                    antlr4::Token *offendingSymbol,
-                                    size_t line,
-                                    size_t charPositionInLine,
-                                    const std::string &msg,
-                                    std::exception_ptr e) {
-    // This method is overriding ANTLRErrorListener. Forward this call to the more generally usable function.
-    logError(this, offendingSymbol, msg);
+std::vector<std::string> MaPLFile::getErrors() {
+    getBytecode();
+    return _errors;
 }
 
 void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer) {
@@ -176,7 +171,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 
                 // Check for duplicate symbols.
                 if (findType(this, typeName, apiDeclaration)) {
-                    logError(this, identifier->start, "Type name '"+typeName+"' conflicts with another type of the same name.");
+                    logError(identifier->start, "Type name '"+typeName+"' conflicts with another type of the same name.");
                 }
             }
             compileChildNodes(node, expectedType, currentBuffer);
@@ -188,7 +183,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Check all the types referenced in this API to make sure they exist.
             for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
                 if (!findType(this, identifier->getText(), NULL)) {
-                    missingTypeError(identifier->start, identifier->getText());
+                    logMissingTypeError(identifier->start, identifier->getText());
                 }
             }
         }
@@ -201,7 +196,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLParser::TypeContext *typeContext = function->type();
                 MaPLType returnType = typeForTypeContext(typeContext);
                 if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {
-                    missingTypeError(typeContext->start, returnType.pointerType);
+                    logMissingTypeError(typeContext->start, returnType.pointerType);
                 }
             }
             MaPLParser::ApiFunctionArgsContext *args = function->apiFunctionArgs();
@@ -212,7 +207,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     parameterTypes.push_back(parameterType);
                     // Check all the types referenced in this API to make sure they exist.
                     if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType, NULL)) {
-                        missingTypeError(typeContext->start, parameterType.pointerType);
+                        logMissingTypeError(typeContext->start, parameterType.pointerType);
                     }
                 }
             }
@@ -227,9 +222,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                                                       parameterTypes,
                                                                       strategy == MaPLParameterStrategy_Exact_IncludeVariadicArgs);
                 if (isGlobal) {
-                    logError(this, function->identifier()->start, "Function '"+functionSignature+"' conflicts with another global function with the same name and parameters.");
+                    logError(function->identifier()->start, "Function '"+functionSignature+"' conflicts with another global function with the same name and parameters.");
                 } else {
-                    logError(this, function->identifier()->start, "Function '"+functionSignature+"' conflicts with another function with the same name and parameters in type '"+parentTypeName+"' or one of its parent types.");
+                    logError(function->identifier()->start, "Function '"+functionSignature+"' conflicts with another function with the same name and parameters in type '"+parentTypeName+"' or one of its parent types.");
                 }
             }
         }
@@ -241,7 +236,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::TypeContext *typeContext = property->type();
             MaPLType returnType = typeForTypeContext(typeContext);
             if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {
-                missingTypeError(typeContext->start, returnType.pointerType);
+                logMissingTypeError(typeContext->start, returnType.pointerType);
             }
             
             // Check for duplicate symbols.
@@ -250,9 +245,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
             if (findProperty(this, parentTypeName, property->identifier()->getText(), property)) {
                 if (isGlobal) {
-                    logError(this, property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another global property with the same name.");
+                    logError(property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another global property with the same name.");
                 } else {
-                    logError(this, property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another property with the same name in type '"+parentTypeName+"' or one of its parent types.");
+                    logError(property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another property with the same name in type '"+parentTypeName+"' or one of its parent types.");
                 }
             }
         }
@@ -264,7 +259,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             for (MaPLParser::TypeContext *typeContext : subscript->type()) {
                 MaPLType type = typeForTypeContext(typeContext);
                 if (type.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, type.pointerType, NULL)) {
-                    missingTypeError(typeContext->start, type.pointerType);
+                    logMissingTypeError(typeContext->start, type.pointerType);
                 }
             }
             
@@ -272,7 +267,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(subscript->parent);
             MaPLType indexType = typeForTypeContext(subscript->type(1));
             if (findSubscript(this, parentApi->identifier()->getText(), indexType, subscript)) {
-                logError(this, subscript->type(1)->start, "Subscript indexed by "+descriptorForType(indexType)+" conflicts with another subscript in type '"+parentApi->identifier()->getText()+"' or one of its parent types.");
+                logError(subscript->type(1)->start, "Subscript indexed by "+descriptorForType(indexType)+" conflicts with another subscript in type '"+parentApi->identifier()->getText()+"' or one of its parent types.");
             }
         }
             break;
@@ -296,7 +291,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 switch (statement->keyToken->getType()) {
                     case MaPLParser::BREAK: {
                         if (!isInsideLoopScope(statement)) {
-                            logError(this, statement->keyToken, "Break statements can only be used within loops.");
+                            logError(statement->keyToken, "Break statements can only be used within loops.");
                         }
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Break });
                         currentBuffer->appendByte(0);
@@ -306,7 +301,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         break;
                     case MaPLParser::CONTINUE: {
                         if (!isInsideLoopScope(statement)) {
-                            logError(this, statement->keyToken, "Continue statements can only be used within loops.");
+                            logError(statement->keyToken, "Continue statements can only be used within loops.");
                         }
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Continue });
                         currentBuffer->appendByte(0);
@@ -331,7 +326,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             // Check if this variable name conflicts with any global property.
             if (findProperty(this, "", variableName, NULL)) {
-                logError(this, identifier->start, "Variable with name '"+variableName+"' conflicts with global property of the same name.");
+                logError(identifier->start, "Variable with name '"+variableName+"' conflicts with global property of the same name.");
             }
             
             // Claim a spot in memory for this variable.
@@ -399,7 +394,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 
                 // Terminal expression is never a compound expression. It is either a function, subscript, or property.
                 if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::PAREN_OPEN) {
-                    logNotAssignableError(this, terminalExpression->start);
+                    logNotAssignableError(terminalExpression->start);
                     break;
                 }
                 MaPLType prefixType = { MaPLPrimitiveType_Uninitialized };
@@ -412,7 +407,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                                                                dataTypeForExpression(terminalExpression->expression(0)),
                                                                                NULL);
                     if (subscript->API_READONLY()) {
-                        logNotAssignableError(this, assignment->keyToken);
+                        logNotAssignableError(assignment->keyToken);
                         break;
                     }
                     
@@ -448,7 +443,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                                                             propertyName,
                                                                             NULL);
                     if (property->API_READONLY()) {
-                        logNotAssignableError(this, assignment->keyToken);
+                        logNotAssignableError(assignment->keyToken);
                         break;
                     }
                     
@@ -526,7 +521,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 
                 // Terminal expression is never a compound expression. It is either a function, subscript, or property.
                 if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::PAREN_OPEN) {
-                    logNotAssignableError(this, terminalExpression->start);
+                    logNotAssignableError(terminalExpression->start);
                     break;
                 }
                 MaPLType prefixType = { MaPLPrimitiveType_Uninitialized };
@@ -539,7 +534,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                                                                dataTypeForExpression(terminalExpression->expression(0)),
                                                                                NULL);
                     if (subscript->API_READONLY()) {
-                        logNotAssignableError(this, statement->keyToken);
+                        logNotAssignableError(statement->keyToken);
                         break;
                     }
                     
@@ -583,7 +578,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                                                             propertyName,
                                                                             NULL);
                     if (property->API_READONLY()) {
-                        logNotAssignableError(this, statement->keyToken);
+                        logNotAssignableError(statement->keyToken);
                         break;
                     }
                     
@@ -642,7 +637,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 if (!isFunctionInvocation) {
                     // All object expressions other than function invocations are accessors. This is
                     // supposed to be an imperative statement, so must be a function invocation.
-                    logError(this, terminalExpression->start, "This expression has no effect.");
+                    logError(terminalExpression->start, "This expression has no effect.");
                 }
             }
             compileObjectExpression(expression, NULL, currentBuffer);
@@ -657,7 +652,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 //   As an index for a subscript. -> Type implied by index param.
                 //   As a parameter for a function. -> Type implied by param. Untyped for variadic args, but can "logAmbiguousLiteralError" if needed.
                 //   As the conditional for a control flow statement (if, while, for, doWhile). -> Always bool.
-                logError(this, expression->start, "Internal compiler error. No concrete expected type for expression.");
+                logError(expression->start, "Internal compiler error. No concrete expected type for expression.");
                 break;
             }
             MaPLType expressionType = dataTypeForExpression(expression);
@@ -667,7 +662,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             }
             if(!isAssignable(this, expressionType, expectedType)) {
                 std::string error = "Expression is required to be of type "+descriptorForType(expectedType)+", but was "+descriptorForType(expressionType)+" instead.";
-                logError(this, expression->start, error);
+                logError(expression->start, error);
                 break;
             }
             
@@ -694,14 +689,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 !inheritsFromType(this, castType.pointerType, expressionType.pointerType) &&
                                 !inheritsFromType(this, expressionType.pointerType, castType.pointerType)) {
                                 // Cast is between two pointer types. This only makes sense if the types have some child/ancestor relationship.
-                                logError(this, expression->type()->start, "Cast attempted between incompatible pointers. The types '"+castType.pointerType+"' and '"+expressionType.pointerType+"' have no child/ancestor relationship.");
+                                logError(expression->type()->start, "Cast attempted between incompatible pointers. The types '"+castType.pointerType+"' and '"+expressionType.pointerType+"' have no child/ancestor relationship.");
                             }
                             compileNode(expression->expression(0), expressionType, currentBuffer);
                             break;
                         }
                         // All pointer-to-pointer casts already handled above. No primitive can cast to pointer.
                         if (castType.primitiveType == MaPLPrimitiveType_Pointer) {
-                            logError(this, expression->type()->start, "Cannot cast primitive "+descriptorForType(expressionType)+" type to pointer type "+descriptorForType(castType)+".");
+                            logError(expression->type()->start, "Cannot cast primitive "+descriptorForType(expressionType)+" type to pointer type "+descriptorForType(castType)+".");
                             break;
                         }
                         if (expressionType.primitiveType == MaPLPrimitiveType_Pointer) {
@@ -711,7 +706,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 compileNode(expression->expression(0), expressionType, currentBuffer);
                                 break;
                             } else {
-                                logError(this, expression->type()->start, "Pointer types, like "+descriptorForType(expressionType)+", can only be cast to other pointer types with a child/ancestor relationship or 'string'.");
+                                logError(expression->type()->start, "Pointer types, like "+descriptorForType(expressionType)+", can only be cast to other pointer types with a child/ancestor relationship or 'string'.");
                                 break;
                             }
                         }
@@ -720,14 +715,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 // This cast doesn't change types. Instead it's clarifying what to use as the expected type for an ambiguous literal.
                                 compileNode(expression->expression(0), castType, currentBuffer);
                             } else {
-                                logAmbiguousLiteralError(this, expressionType.primitiveType, expression->expression(0)->start);
+                                logAmbiguousLiteralError(expressionType.primitiveType, expression->expression(0)->start);
                             }
                             break;
                         }
                         MaPL_Instruction castFrom = typecastFromInstructionForPrimitive(expressionType.primitiveType);
                         MaPL_Instruction castTo = typecastToInstructionForPrimitive(castType.primitiveType);
                         if (!castTo || !castFrom) {
-                            logError(this, expression->type()->start, "Unable to cast from type "+descriptorForType(expressionType)+" to "+descriptorForType(castType)+".");
+                            logError(expression->type()->start, "Unable to cast from type "+descriptorForType(expressionType)+" to "+descriptorForType(castType)+".");
                             break;
                         }
                         currentBuffer->appendByte(castFrom);
@@ -785,7 +780,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             break;
                         }
                         if (isAmbiguousNumericType(reconciledType)) {
-                            logAmbiguousLiteralError(this, reconciledType, expression->keyToken);
+                            logAmbiguousLiteralError(reconciledType, expression->keyToken);
                             break;
                         }
                         if (tokenType == MaPLParser::LOGICAL_EQUALITY) {
@@ -817,11 +812,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             break;
                         }
                         if (isAmbiguousNumericType(reconciledType)) {
-                            logAmbiguousLiteralError(this, reconciledType, expression->keyToken);
+                            logAmbiguousLiteralError(reconciledType, expression->keyToken);
                             break;
                         }
                         if (!isNumeric(reconciledType)) {
-                            logNonNumericOperandsError(this, expression->keyToken);
+                            logNonNumericOperandsError(expression->keyToken);
                             break;
                         }
                         switch (tokenType) {
@@ -1230,7 +1225,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                             continue;
                         }
                         if (isAmbiguousNumericType(expectedType.primitiveType)) {
-                            logAmbiguousLiteralError(this, expectedType.primitiveType, parameterExpressions[i]->start);
+                            logAmbiguousLiteralError(expectedType.primitiveType, parameterExpressions[i]->start);
                             continue;
                         }
                     }
@@ -1293,17 +1288,17 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
     }
 }
 
-MaPLPrimitiveType MaPLFile::typeReconciliationError(MaPLPrimitiveType left,
-                                                    MaPLPrimitiveType right,
-                                                    antlr4::Token *errorToken) {
+MaPLPrimitiveType MaPLFile::logTypeReconciliationError(MaPLPrimitiveType left,
+                                                       MaPLPrimitiveType right,
+                                                       antlr4::Token *errorToken) {
     if (errorToken) {
-        logError(this, errorToken, "Type mismatch. Cannot combine "+descriptorForPrimitive(left)+" and "+descriptorForPrimitive(right)+" types in this way.");
+        logError(errorToken, "Type mismatch. Cannot combine "+descriptorForPrimitive(left)+" and "+descriptorForPrimitive(right)+" types in this way.");
     }
     return MaPLPrimitiveType_TypeError;
 }
 
-void MaPLFile::missingTypeError(antlr4::Token *errorToken, const std::string &typeName) {
-    logError(this, errorToken, "Unable to find the type declaration for '"+typeName+"'.");
+void MaPLFile::logMissingTypeError(antlr4::Token *errorToken, const std::string &typeName) {
+    logError(errorToken, "Unable to find the type declaration for '"+typeName+"'.");
 }
 
 MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
@@ -1314,7 +1309,7 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
     }
     // Numeric types are the only ones with ambiguity. Anything else is definitely in error.
     if (!isNumeric(left) || !isNumeric(right)) {
-        return typeReconciliationError(left, right, errorToken);
+        return logTypeReconciliationError(left, right, errorToken);
     }
     // This function takes a pair of types, which potentially contain ambiguity due
     // to the values being specified as literals instead of variable declarations,
@@ -1329,13 +1324,13 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
         // Signed integers can store any ambiguous non-float numbers.
         if (isConcreteSignedInt(left)) {
             if (right == MaPLPrimitiveType_Float_AmbiguousSize) {
-                return typeReconciliationError(left, right, errorToken);
+                return logTypeReconciliationError(left, right, errorToken);
             }
             return left;
         }
         if (isConcreteSignedInt(right)) {
             if (left == MaPLPrimitiveType_Float_AmbiguousSize) {
-                return typeReconciliationError(left, right, errorToken);
+                return logTypeReconciliationError(left, right, errorToken);
             }
             return right;
         }
@@ -1345,13 +1340,13 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
             if (right == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                 return left;
             }
-            return typeReconciliationError(left, right, errorToken);
+            return logTypeReconciliationError(left, right, errorToken);
         }
         if (isConcreteUnsignedInt(right)) {
             if (left == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
                 return right;
             }
-            return typeReconciliationError(left, right, errorToken);
+            return logTypeReconciliationError(left, right, errorToken);
         }
         
         // All pairings containing a specific type have been handled above. All remaining are some combination of ambiguous types.
@@ -1362,7 +1357,7 @@ MaPLPrimitiveType MaPLFile::reconcileTypes(MaPLPrimitiveType left,
         // Only permutation remaining is SignedInt_AmbiguousSize and Int_AmbiguousSizeAndSign.
         return MaPLPrimitiveType_SignedInt_AmbiguousSize;
     }
-    return typeReconciliationError(left, right, errorToken);
+    return logTypeReconciliationError(left, right, errorToken);
 }
 
 MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expression1,
@@ -1394,7 +1389,7 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
                 }
             }
         }
-        logError(this, errorToken, "The return type of this operator is ambiguous and cannot be determined. Expressions in both branches of the conditional must have a matching type. "+errorSuffix);
+        logError(errorToken, "The return type of this operator is ambiguous and cannot be determined. Expressions in both branches of the conditional must have a matching type. "+errorSuffix);
         return { MaPLPrimitiveType_TypeError };
     }
     return { reconciledPrimitive, type1.pointerType };
@@ -2242,7 +2237,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                     // There's only one operand, so this is numeric negation instead of subtraction.
                     MaPLType type = dataTypeForExpression(childExpressions[0]);
                     if (isConcreteUnsignedInt(type.primitiveType)) {
-                        logError(this, expression->keyToken, "Unsigned integers cannot be negated.");
+                        logError(expression->keyToken, "Unsigned integers cannot be negated.");
                         return { MaPLPrimitiveType_TypeError };
                     }
                     if (type.primitiveType == MaPLPrimitiveType_Int_AmbiguousSizeAndSign) {
@@ -2252,7 +2247,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                     if (isNumeric(type.primitiveType)) {
                         return type;
                     }
-                    logError(this, expression->keyToken, "Numeric negation can only be applied to numeric data types.");
+                    logError(expression->keyToken, "Numeric negation can only be applied to numeric data types.");
                     return { MaPLPrimitiveType_TypeError };
                 }
             }
@@ -2266,7 +2261,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 if (isNumeric(type1.primitiveType) && isNumeric(type2.primitiveType)) {
                     return { reconcileTypes(type1.primitiveType, type2.primitiveType, expression->keyToken) };
                 }
-                logNonNumericOperandsError(this, expression->keyToken);
+                logNonNumericOperandsError(expression->keyToken);
                 return { MaPLPrimitiveType_TypeError };
             }
             case MaPLParser::ADD: {
@@ -2280,7 +2275,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 } else if (isNumeric(type1.primitiveType) && isNumeric(type2.primitiveType)) {
                     return { reconcileTypes(type1.primitiveType, type2.primitiveType, expression->keyToken) };
                 }
-                logError(this, expression->keyToken, "Both operands must be either string (concatenation) or numeric (addition).");
+                logError(expression->keyToken, "Both operands must be either string (concatenation) or numeric (addition).");
                 return { MaPLPrimitiveType_TypeError };
             }
             case MaPLParser::BITWISE_AND: // Intentional fallthrough.
@@ -2294,13 +2289,13 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                 if (isIntegral(type1.primitiveType) && isIntegral(type2.primitiveType)) {
                     return { reconcileTypes(type1.primitiveType, type2.primitiveType, expression->keyToken) };
                 }
-                logError(this, expression->keyToken, "Both operands must be integers.");
+                logError(expression->keyToken, "Both operands must be integers.");
                 return { MaPLPrimitiveType_TypeError };
             }
             case MaPLParser::BITWISE_NEGATION: {
                     MaPLType type = dataTypeForExpression(expression->expression(0));
                     if (!isIntegral(type.primitiveType)) {
-                        logError(this, expression->keyToken, "Bitwise negation can only be applied to integer data types.");
+                        logError(expression->keyToken, "Bitwise negation can only be applied to integer data types.");
                         return { MaPLPrimitiveType_TypeError };
                     }
                     return type;
@@ -2316,7 +2311,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
                     return reconciledType;
                 }
                 if (reconciledType.primitiveType != MaPLPrimitiveType_Pointer) {
-                    logError(this, expression->keyToken, "NULL coalescing operator can only be applied to expressions which return a pointer.");
+                    logError(expression->keyToken, "NULL coalescing operator can only be applied to expressions which return a pointer.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 return reconciledType;
@@ -2331,7 +2326,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
     if (objectExpression) {
         return objectExpressionReturnType(objectExpression, "");
     }
-    logError(this, expression->keyToken, "Error determining the type of this expression.");
+    logError(expression->keyToken, "Error determining the type of this expression.");
     return { MaPLPrimitiveType_TypeError };
 }
 
@@ -2347,7 +2342,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 std::vector<MaPLParser::ObjectExpressionContext *> childExpressions = expression->objectExpression();
                 MaPLType prefixType = objectExpressionReturnType(childExpressions[0], invokedOnType);
                 if (prefixType.primitiveType != MaPLPrimitiveType_Pointer) {
-                    logError(this, keyToken, "The '.' operator can only be used on pointers.");
+                    logError(keyToken, "The '.' operator can only be used on pointers.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 return objectExpressionReturnType(childExpressions[1], prefixType.pointerType);
@@ -2356,13 +2351,13 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 // Subscript invocation.
                 MaPLType prefixType = objectExpressionReturnType(expression->objectExpression(0), invokedOnType);
                 if (prefixType.primitiveType != MaPLPrimitiveType_Pointer) {
-                    logError(this, keyToken, "The subscript operator can only be used on pointers.");
+                    logError(keyToken, "The subscript operator can only be used on pointers.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 MaPLType indexType = dataTypeForExpression(expression->expression(0));
                 MaPLParser::ApiSubscriptContext *subscript = findSubscript(this, prefixType.pointerType, indexType, NULL);
                 if (!subscript) {
-                    logError(this, expression->keyToken, "Unable to find a subscript on type '"+prefixType.pointerType+"' with an index parameter of type "+descriptorForType(indexType)+".");
+                    logError(expression->keyToken, "Unable to find a subscript on type '"+prefixType.pointerType+"' with an index parameter of type "+descriptorForType(indexType)+".");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 return typeForTypeContext(subscript->type(0));
@@ -2385,9 +2380,9 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                                                                           parameterTypes,
                                                                           false);
                     if (invokedOnType.empty()) {
-                        logError(this, expression->identifier()->start, "Unable to find a global '"+functionSignature+"' function.");
+                        logError(expression->identifier()->start, "Unable to find a global '"+functionSignature+"' function.");
                     } else {
-                        logError(this, expression->identifier()->start, "Unable to find a '"+functionSignature+"' function on type '"+invokedOnType+"'.");
+                        logError(expression->identifier()->start, "Unable to find a '"+functionSignature+"' function on type '"+invokedOnType+"'.");
                     }
                     return { MaPLPrimitiveType_TypeError };
                 }
@@ -2401,9 +2396,9 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 if (conflictingFunction) {
                     std::string errorSuffix = "This ambiguity might be resolved by renaming these APIs, or by adding a typecast to explicitly describe the type of any literal parameters.";
                     if (invokedOnType.empty()) {
-                        logError(this, expression->identifier()->start, "This function invocation is ambiguous between global functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"'. "+errorSuffix);
+                        logError(expression->identifier()->start, "This function invocation is ambiguous between global functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"'. "+errorSuffix);
                     } else {
-                        logError(this, expression->identifier()->start, "This function invocation is ambiguous between functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"' in type '"+invokedOnType+"'. "+errorSuffix);
+                        logError(expression->identifier()->start, "This function invocation is ambiguous between functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"' in type '"+invokedOnType+"'. "+errorSuffix);
                     }
                     return { MaPLPrimitiveType_TypeError };
                 }
@@ -2437,15 +2432,79 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                                                                     NULL);
             if (!property) {
                 if (isInvokedOnType) {
-                    logError(this, identifier->start, "Unable to find a '"+propertyOrVariableName+"' property on type '"+invokedOnType+"'.");
+                    logError(identifier->start, "Unable to find a '"+propertyOrVariableName+"' property on type '"+invokedOnType+"'.");
                 } else {
-                    logError(this, identifier->start, "Unable to find a variable or global property named '"+propertyOrVariableName+"'.");
+                    logError(identifier->start, "Unable to find a variable or global property named '"+propertyOrVariableName+"'.");
                 }
                 return { MaPLPrimitiveType_TypeError };
             }
             return typeForTypeContext(property->type());
         }
     }
-    logError(this, keyToken, "Error determining the type of this expression.");
+    logError(keyToken, "Error determining the type of this expression.");
     return { MaPLPrimitiveType_TypeError };
+}
+
+void MaPLFile::syntaxError(antlr4::Recognizer *recognizer,
+                                    antlr4::Token *offendingSymbol,
+                                    size_t line,
+                                    size_t charPositionInLine,
+                                    const std::string &msg,
+                                    std::exception_ptr e) {
+    // This method is overriding ANTLRErrorListener. Forward this call to the MaPL error logging function.
+    logError(offendingSymbol, msg);
+}
+
+void MaPLFile::logAmbiguousLiteralError(MaPLPrimitiveType type, antlr4::Token *token) {
+    if (!isAmbiguousNumericType(type)) {
+        return;
+    }
+    std::string message = "This expression contains numeric literals whose type is ambiguous. An explicit cast must be added to distinguish between: ";
+    std::vector<MaPLPrimitiveType> suggestedTypes;
+    switch (type) {
+        case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
+            suggestedTypes.push_back(MaPLPrimitiveType_UInt8);
+            suggestedTypes.push_back(MaPLPrimitiveType_UInt16);
+            suggestedTypes.push_back(MaPLPrimitiveType_UInt32);
+            suggestedTypes.push_back(MaPLPrimitiveType_UInt64);
+            // Intentional fallthrough.
+        case MaPLPrimitiveType_SignedInt_AmbiguousSize:
+            suggestedTypes.push_back(MaPLPrimitiveType_Int8);
+            suggestedTypes.push_back(MaPLPrimitiveType_Int16);
+            suggestedTypes.push_back(MaPLPrimitiveType_Int32);
+            suggestedTypes.push_back(MaPLPrimitiveType_Int64);
+            // Intentional fallthrough.
+        case MaPLPrimitiveType_Float_AmbiguousSize:
+            suggestedTypes.push_back(MaPLPrimitiveType_Float32);
+            suggestedTypes.push_back(MaPLPrimitiveType_Float64);
+            break;
+        default: return;
+    }
+    for (size_t i = 0; i < suggestedTypes.size(); i++) {
+        message += descriptorForType({ suggestedTypes[i] });
+        if (i == suggestedTypes.size()-1) {
+            message += ".";
+        } else {
+            message += ", ";
+        }
+    }
+    logError(token, message);
+}
+
+void MaPLFile::logNonNumericOperandsError(antlr4::Token *token) {
+    logError(token, "Both operands must be numeric.");
+}
+
+void MaPLFile::logNotAssignableError(antlr4::Token *token) {
+    logError(token, "Attempted to assign a value to a read-only expression.");
+}
+
+void MaPLFile::logError(antlr4::Token *token, const std::string &msg) {
+    std::string loggedError;
+    if (token) {
+        loggedError = _normalizedFilePath.string()+":"+std::to_string(token->getLine())+":"+std::to_string(token->getCharPositionInLine())+": error: "+msg;
+    } else {
+        loggedError = _normalizedFilePath.string()+":1:1: error: "+msg;
+    }
+    _errors.push_back(loggedError);
 }

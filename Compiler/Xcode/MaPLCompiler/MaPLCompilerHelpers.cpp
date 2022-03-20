@@ -1110,7 +1110,7 @@ bool assignOperatorIsCompatibleWithType(MaPLFile *file, size_t operatorType, MaP
     switch (operatorType) {
         case MaPLParser::ADD_ASSIGN:
             if (!isNumeric(type) && type != MaPLPrimitiveType_String) {
-                logError(file, token, "This operator can only be used on numeric or string expressions.");
+                file->logError(token, "This operator can only be used on numeric or string expressions.");
                 return false;
             }
             break;
@@ -1121,7 +1121,7 @@ bool assignOperatorIsCompatibleWithType(MaPLFile *file, size_t operatorType, MaP
         case MaPLParser::INCREMENT:
         case MaPLParser::DECREMENT:
             if (!isNumeric(type)) {
-                logError(file, token, "This operator can only be used on numeric expressions.");
+                file->logError(token, "This operator can only be used on numeric expressions.");
                 return false;
             }
             break;
@@ -1131,7 +1131,7 @@ bool assignOperatorIsCompatibleWithType(MaPLFile *file, size_t operatorType, MaP
         case MaPLParser::BITWISE_SHIFT_LEFT_ASSIGN:
         case MaPLParser::BITWISE_SHIFT_RIGHT_ASSIGN:
             if (!isIntegral(type)) {
-                logError(file, token, "This operator can only be used on integral expressions.");
+                file->logError(token, "This operator can only be used on integral expressions.");
                 return false;
             }
             break;
@@ -1224,7 +1224,7 @@ bool findInheritanceCycle(MaPLFile *file) {
                 }
             }
             cycleDescriptor += ".";
-            logError(file, apiDeclaration->identifier()->start, "Type inheritance forms a cycle: "+cycleDescriptor);
+            file->logError(apiDeclaration->identifier()->start, "Type inheritance forms a cycle: "+cycleDescriptor);
             return true;
         }
         seenTypes.clear();
@@ -1514,57 +1514,4 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
     }
     
     return NULL;
-}
-
-void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::Token *token) {
-    if (!isAmbiguousNumericType(type)) {
-        return;
-    }
-    std::string message = "This expression contains numeric literals whose type is ambiguous. An explicit cast must be added to distinguish between: ";
-    std::vector<MaPLPrimitiveType> suggestedTypes;
-    switch (type) {
-        case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
-            suggestedTypes.push_back(MaPLPrimitiveType_UInt8);
-            suggestedTypes.push_back(MaPLPrimitiveType_UInt16);
-            suggestedTypes.push_back(MaPLPrimitiveType_UInt32);
-            suggestedTypes.push_back(MaPLPrimitiveType_UInt64);
-            // Intentional fallthrough.
-        case MaPLPrimitiveType_SignedInt_AmbiguousSize:
-            suggestedTypes.push_back(MaPLPrimitiveType_Int8);
-            suggestedTypes.push_back(MaPLPrimitiveType_Int16);
-            suggestedTypes.push_back(MaPLPrimitiveType_Int32);
-            suggestedTypes.push_back(MaPLPrimitiveType_Int64);
-            // Intentional fallthrough.
-        case MaPLPrimitiveType_Float_AmbiguousSize:
-            suggestedTypes.push_back(MaPLPrimitiveType_Float32);
-            suggestedTypes.push_back(MaPLPrimitiveType_Float64);
-            break;
-        default: return;
-    }
-    for (size_t i = 0; i < suggestedTypes.size(); i++) {
-        message += descriptorForType({ suggestedTypes[i] });
-        if (i == suggestedTypes.size()-1) {
-            message += ".";
-        } else {
-            message += ", ";
-        }
-    }
-    logError(file, token, message);
-}
-
-void logNonNumericOperandsError(MaPLFile *file, antlr4::Token *token) {
-    logError(file, token, "Both operands must be numeric.");
-}
-
-void logNotAssignableError(MaPLFile *file, antlr4::Token *token) {
-    logError(file, token, "Attempted to assign a value to a read-only expression.");
-}
-
-void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg) {
-    // TODO: Errors need to be collected somewhere within MaPLFile so we can query if the entire file compiled successfully or not.
-    if (token) {
-        printf("%s %ld:%ld: %s\n", file->getNormalizedFilePath().c_str(), token->getLine(), token->getCharPositionInLine(), msg.c_str());
-    } else {
-        printf("%s: %s\n", file->getNormalizedFilePath().c_str(), msg.c_str());
-    }
 }

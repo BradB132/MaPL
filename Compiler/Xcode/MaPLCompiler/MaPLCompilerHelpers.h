@@ -343,24 +343,4 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                                              const std::string &name,
                                              MaPLParser::ApiPropertyContext *excludingProperty);
 
-/**
- * Logs an error describing how to clarify an ambiguous literal expression.
- */
-void logAmbiguousLiteralError(MaPLFile *file, MaPLPrimitiveType type, antlr4::Token *token);
-
-/**
- * Logs an error describing how both operands for an expression must be numeric.
- */
-void logNonNumericOperandsError(MaPLFile *file, antlr4::Token *token);
-
-/**
- * Logs an error describing an assignment made to a read-only expression.
- */
-void logNotAssignableError(MaPLFile *file, antlr4::Token *token);
-
-/**
- * Function for logging errors. In order to maintain consistent output, all errors should go through this function.
- */
-void logError(MaPLFile *file, antlr4::Token *token, const std::string &msg);
-
 #endif /* MaPLCompilerHelpers_h */

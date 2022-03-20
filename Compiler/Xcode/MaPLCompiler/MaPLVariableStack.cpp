@@ -6,6 +6,7 @@
 //
 
 #include "MaPLVariableStack.h"
+#include "MaPLFile.h"
 
 MaPLVariableStack::MaPLVariableStack() :
     _maximumMemoryUsed(0)
@@ -30,14 +31,14 @@ MaPL_Index MaPLVariableStack::getMaximumMemoryUsed() {
 bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVariable variable) {
     MaPL_Index variableSize = byteSizeOfType(variable.type.primitiveType);
     if (!variableSize) {
-        logError(variable.file, variable.token, "Failure declaring variable '"+variableName+"' with ambiguous type.");
+        variable.file->logError(variable.token, "Failure declaring variable '"+variableName+"' with ambiguous type.");
         return false;
     }
     
     MaPLVariable existingVariable = getVariable(variableName);
     if (existingVariable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
-        logError(variable.file, variable.token, "Variable '"+variableName+"' conflicts with a previously-declared variable of the same name.");
-        logError(existingVariable.file, existingVariable.token, "Variable '"+variableName+"' later comes into conflict with a variable of the same name.");
+        variable.file->logError(variable.token, "Variable '"+variableName+"' conflicts with a previously-declared variable of the same name.");
+        existingVariable.file->logError(existingVariable.token, "Variable '"+variableName+"' later comes into conflict with a variable of the same name.");
         return false;
     }
     
