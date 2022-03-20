@@ -386,9 +386,13 @@ MaPL_Instruction assignPropertyInstructionForPrimitive(MaPLPrimitiveType type) {
     }
 }
 
-MaPL_Instruction operatorAssignInstructionForTokenType(size_t tokenType) {
+MaPL_Instruction operatorAssignInstructionForTokenType(size_t tokenType, MaPLPrimitiveType primitiveType) {
     switch (tokenType) {
-        case MaPLParser::ADD_ASSIGN: // Intentional fallthrough.
+        case MaPLParser::ADD_ASSIGN:
+            if (primitiveType == MaPLPrimitiveType_String) {
+                return MAPL_BYTE_STRING_CONCAT;
+            }
+            return MAPL_BYTE_NUMERIC_ADD;
         case MaPLParser::INCREMENT:
             return MAPL_BYTE_NUMERIC_ADD;
         case MaPLParser::SUBTRACT_ASSIGN: // Intentional fallthrough.

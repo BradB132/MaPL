@@ -229,7 +229,7 @@ MaPL_Instruction assignPropertyInstructionForPrimitive(MaPLPrimitiveType type);
 /**
  * @return The instruction byte that represents an operator-assign.
  */
-MaPL_Instruction operatorAssignInstructionForTokenType(size_t tokenType);
+MaPL_Instruction operatorAssignInstructionForTokenType(size_t tokenType, MaPLPrimitiveType primitiveType);
 
 /**
  * @return The instruction byte that indicates a variable value corresponding to @c type.

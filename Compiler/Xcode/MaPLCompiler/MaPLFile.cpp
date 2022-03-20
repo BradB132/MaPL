@@ -369,18 +369,18 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // For example: "var+=expression" becomes "var=var+expression".
                 size_t tokenType = assignment->keyToken->getType();
                 if (tokenType != MaPLParser::ASSIGN) {
-                    if (tokenType == MaPLParser::ADD_ASSIGN && assignedVariable.type.primitiveType == MaPLPrimitiveType_String) {
+                    if (!assignOperatorIsCompatibleWithType(this, tokenType, assignedVariable.type.primitiveType, assignment->keyToken)) {
+                        // If there was an error, the reason why was already logged.
+                        break;
+                    }
+                    MaPL_Instruction operatorAssign = operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType);
+                    currentBuffer->appendByte(operatorAssign);
+                    if (operatorAssign == MAPL_BYTE_STRING_CONCAT) {
                         // This is a string concat-assign.
-                        currentBuffer->appendByte(MAPL_BYTE_STRING_CONCAT);
                         currentBuffer->appendByte(MAPL_BYTE_VARIABLE_STRING);
                         currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     } else {
                         // This is a numeric or bitwise operator assign.
-                        if (!assignOperatorIsCompatibleWithType(this, tokenType, assignedVariable.type.primitiveType, assignment->keyToken)) {
-                            // If there was an error, the reason why was already logged.
-                            break;
-                        }
-                        currentBuffer->appendByte(operatorAssignInstructionForTokenType(tokenType));
                         currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
                         currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     }
@@ -434,7 +434,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         // If there was an error, the reason why was already logged.
                         break;
                     }
-                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(assignTokenType));
+                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType));
                     
                     MaPLType indexType = typeForTypeContext(subscript->type(1));
                     currentBuffer->appendByte(parameterTypeInstructionForPrimitive(indexType.primitiveType));
@@ -469,7 +469,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         // If there was an error, the reason why was already logged.
                         break;
                     }
-                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(assignTokenType));
+                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType));
                     
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
@@ -502,10 +502,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // Rewrite the increment as a regular assign. For example: "var++" becomes "var=var+1".
                 currentBuffer->appendByte(assignInstructionForPrimitive(assignedVariable.type.primitiveType));
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
-                currentBuffer->appendByte(operatorAssignInstructionForTokenType(tokenType));
+                currentBuffer->appendByte(operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType));
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
-                // Add a literal "1" that matches the assigned primitive type is.
+                // Add a literal "1" that matches the assigned primitive type.
                 currentBuffer->appendByte(numericLiteralInstructionForPrimitive(assignedVariable.type.primitiveType));
                 MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                 oneLiteral.uInt64Value = 1;
