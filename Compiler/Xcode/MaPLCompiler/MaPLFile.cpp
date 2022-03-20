@@ -420,8 +420,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     //   MAPL_BYTE_[TYPE]_ASSIGN_SUBSCRIPT - Type refers to type of assigned expression.
                     //   ObjectExpressionContext - The object prefix. Value is MAPL_BYTE_NO_OP if no expression.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
-                    //   MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
-                    //   ExpressionContext - The index of the subscript.
+                    // ┌ MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
+                    // └ ExpressionContext - The index of the subscript.
                     //   ExpressionContext - The assigned expression.
                     currentBuffer->appendByte(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
@@ -515,9 +515,114 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 oneLiteral = castLiteralToType(oneLiteral, assignedVariable.type);
                 currentBuffer->appendLiteral(oneLiteral);
             } else {
-                // This assignment is for an object expression.
-                // TODO: Check if APIs are 'readonly' before assigning to them.
-                // TODO: Assigning to object expressions will be relatively complex, revisit this last.
+                // This increment is for an object expression.
+                MaPLType returnType = objectExpressionReturnType(objectExpression, "");
+                if (returnType.primitiveType == MaPLPrimitiveType_TypeError) {
+                    // If there was an error, the reason why was already logged.
+                    break;
+                }
+                MaPLParser::ObjectExpressionContext *prefixExpression = prefixObjectExpression(objectExpression);
+                MaPLParser::ObjectExpressionContext *terminalExpression = terminalObjectExpression(objectExpression);
+                
+                // Terminal expression is never a compound expression. It is either a function, subscript, or property.
+                if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::PAREN_OPEN) {
+                    logNotAssignableError(this, terminalExpression->start);
+                    break;
+                }
+                MaPLType prefixType = { MaPLPrimitiveType_Uninitialized };
+                if (prefixExpression) {
+                    prefixType = objectExpressionReturnType(prefixExpression, "");
+                }
+                if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::SUBSCRIPT_OPEN) {
+                    MaPLParser::ApiSubscriptContext *subscript = findSubscript(this,
+                                                                               prefixType.pointerType,
+                                                                               dataTypeForExpression(terminalExpression->expression(0)),
+                                                                               NULL);
+                    if (subscript->API_READONLY()) {
+                        logNotAssignableError(this, statement->keyToken);
+                        break;
+                    }
+                    
+                    // Subscript assignments are represented in bytecode as follows:
+                    //   MAPL_BYTE_[TYPE]_ASSIGN_SUBSCRIPT - Type refers to type of assigned expression.
+                    //   ObjectExpressionContext - The object prefix. Value is MAPL_BYTE_NO_OP if no expression.
+                    //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
+                    // ┌ MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
+                    // └ ExpressionContext - The index of the subscript.
+                    //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
+                    // This logic takes an increment, and rewrites it into the same format as a normal assignment.
+                    // For example: "object[i]++" becomes "object[i]=object[i]+1".
+                    currentBuffer->appendByte(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
+                    if (prefixExpression) {
+                        compileObjectExpression(prefixExpression, NULL, currentBuffer);
+                    } else {
+                        currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+                    }
+                    
+                    size_t incrementTokenType = statement->keyToken->getType();
+                    if (!assignOperatorIsCompatibleWithType(this, incrementTokenType, returnType.primitiveType, statement->keyToken)) {
+                        // If there was an error, the reason why was already logged.
+                        break;
+                    }
+                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
+                    
+                    MaPLType indexType = typeForTypeContext(subscript->type(1));
+                    currentBuffer->appendByte(parameterTypeInstructionForPrimitive(indexType.primitiveType));
+                    compileNode(terminalExpression->expression(0), indexType, currentBuffer);
+                    
+                    // Add a literal "1" that matches the return type.
+                    currentBuffer->appendByte(numericLiteralInstructionForPrimitive(returnType.primitiveType));
+                    MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
+                    oneLiteral.uInt64Value = 1;
+                    oneLiteral = castLiteralToType(oneLiteral, returnType);
+                    currentBuffer->appendLiteral(oneLiteral);
+                } else {
+                    std::string propertyName = terminalExpression->identifier()->getText();
+                    MaPLParser::ApiPropertyContext *property = findProperty(this,
+                                                                            prefixType.pointerType,
+                                                                            propertyName,
+                                                                            NULL);
+                    if (property->API_READONLY()) {
+                        logNotAssignableError(this, statement->keyToken);
+                        break;
+                    }
+                    
+                    // Property assignments are represented in bytecode as follows:
+                    //   MAPL_BYTE_[TYPE]_ASSIGN_PROPERTY - Type refers to type of assigned expression.
+                    //   ObjectExpressionContext - The object prefix. Value is MAPL_BYTE_NO_OP if no expression.
+                    //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
+                    //   MaPL_Symbol - The bytecode representation of the name of this property.
+                    //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
+                    // This logic takes an increment, and rewrites it into the same format as a normal assignment.
+                    // For example: "property++" becomes "property=property+1".
+                    currentBuffer->appendByte(assignPropertyInstructionForPrimitive(returnType.primitiveType));
+                    if (prefixExpression) {
+                        compileObjectExpression(prefixExpression, NULL, currentBuffer);
+                    } else {
+                        currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+                    }
+                    
+                    size_t incrementTokenType = statement->keyToken->getType();
+                    if (!assignOperatorIsCompatibleWithType(this, incrementTokenType, returnType.primitiveType, statement->keyToken)) {
+                        // If there was an error, the reason why was already logged.
+                        break;
+                    }
+                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
+                    
+                    // The eventual value for this symbol is set after compilation is completed
+                    // and symbol values can be calculated. Add a placeholder 0 for now.
+                    std::string symbolName = descriptorForSymbol(prefixType.pointerType, propertyName);
+                    currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
+                    MaPL_Symbol symbol = 0;
+                    currentBuffer->appendBytes(&symbol, sizeof(symbol));
+                    
+                    // Add a literal "1" that matches the return type.
+                    currentBuffer->appendByte(numericLiteralInstructionForPrimitive(returnType.primitiveType));
+                    MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
+                    oneLiteral.uInt64Value = 1;
+                    oneLiteral = castLiteralToType(oneLiteral, returnType);
+                    currentBuffer->appendLiteral(oneLiteral);
+                }
             }
         }
             break;
