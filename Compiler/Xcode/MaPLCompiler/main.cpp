@@ -22,15 +22,13 @@ int main(int argc, const char ** argv) {
     
     // Parse all script files specified in the args.
     MaPLFileCache fileCache;
+    std::vector<MaPLBuffer *> buffers;
     for(int i = 1; i < argc; i++) {
-        MaPLFile *file = fileCache.fileForAbsolutePath(std::filesystem::absolute(argv[i]));
-        MaPLBuffer *bytecode = file->getBytecode();
         // TODO: Write bytecode to an appropriate output path.
-        if (bytecode) {
-            printf("bytecode length: %d\n", (int)bytecode->getByteCount());// TODO: this line just for testing, delete later.
-        }
+        MaPLFile *file = fileCache.fileForAbsolutePath(std::filesystem::absolute(argv[i]));
+        buffers.push_back(file->getBytecode());
     }
-    // TODO: Resolve function symbols in each bytecode buffer.
+    MaPLBuffer::resolveSymbolsForBuffers(buffers);
     
     return 0;
 }

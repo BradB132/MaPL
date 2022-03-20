@@ -166,3 +166,38 @@ void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bo
 std::vector<MaPLBufferAnnotation> MaPLBuffer::getAnnotations() {
     return _annotations;
 }
+
+std::string MaPLBuffer::resolveSymbolsForBuffers(const std::vector<MaPLBuffer *> &buffers) {
+    std::map<std::string, MaPL_Symbol> symbolTable;
+    
+    // Prepopulate the table with 0 values for each symbol.
+    for (MaPLBuffer *buffer : buffers) {
+        for (MaPLBufferAnnotation annotation : buffer->getAnnotations()) {
+            if (annotation.type == MaPLBufferAnnotationType_FunctionSymbol) {
+                symbolTable[annotation.text] = 0;
+            }
+        }
+    }
+    
+    // The table is now full of a sorted list of symbols. Assign a unique ID to each and format the collated table.
+    MaPL_Symbol UUID = 1;
+    std::string formattedOutput;
+    for (std::pair<std::string, MaPL_Symbol> pair : symbolTable) {
+        symbolTable[pair.first] = UUID;
+        formattedOutput += "#define "+pair.first+" "+std::to_string(UUID)+"\n";
+        UUID++;
+    }
+    
+    // Copy the symbol values into the bytecode.
+    for (MaPLBuffer *buffer : buffers) {
+        u_int8_t *bytes = buffer->getBytes();
+        for (MaPLBufferAnnotation annotation : buffer->getAnnotations()) {
+            if (annotation.type == MaPLBufferAnnotationType_FunctionSymbol) {
+                MaPL_Symbol symbol = symbolTable[annotation.text];
+                memcpy(bytes+annotation.byteLocation, &symbol, sizeof(symbol));
+            }
+        }
+    }
+    
+    return formattedOutput;
+}
