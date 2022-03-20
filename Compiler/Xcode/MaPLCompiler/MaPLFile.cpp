@@ -16,8 +16,9 @@
 #include "MaPLVariableStack.h"
 #include "MaPLBytecodeConstants.h"
 
-MaPLFile::MaPLFile(std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache) :
+MaPLFile::MaPLFile(const std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache) :
     _normalizedFilePath(normalizedFilePath),
+    _normalizedOutputPath(normalizedFilePath.string()+"b"),// Bytecode files have extension "maplb".
     _fileCache(fileCache),
     _inputStream(NULL),
     _lexer(NULL),
@@ -71,7 +72,7 @@ bool MaPLFile::parseRawScript() {
         }
         importPath = importPath.lexically_normal();
         
-        MaPLFile *dependencyFile = _fileCache->fileForAbsolutePath(importPath);
+        MaPLFile *dependencyFile = _fileCache->fileForNormalizedPath(importPath);
         if (!dependencyFile) {
             logError(apiImport->start, "Unable to resolve path for import statement: "+importString);
             continue;
@@ -145,6 +146,14 @@ MaPLVariableStack *MaPLFile::getVariableStack() {
 
 std::filesystem::path MaPLFile::getNormalizedFilePath() {
     return _normalizedFilePath;
+}
+
+std::filesystem::path MaPLFile::getNormalizedOutputPath() {
+    return _normalizedOutputPath;
+}
+
+void MaPLFile::setNormalizedOutputPath(std::filesystem::path outputPath) {
+    _normalizedOutputPath = outputPath;
 }
 
 std::vector<std::string> MaPLFile::getErrors() {

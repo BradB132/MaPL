@@ -8,19 +8,13 @@
 #include "MaPLFileCache.h"
 #include "MaPLFile.h"
 
-MaPLFile *MaPLFileCache::fileForAbsolutePath(const std::filesystem::path &absoluteFilePath) {
-    // Verify that the path is normalized.
-    if (!absoluteFilePath.is_absolute()) {
-        return NULL;
-    }
-    std::filesystem::path normalizedPath = absoluteFilePath.lexically_normal();
-    
+MaPLFile *MaPLFileCache::fileForNormalizedPath(const std::filesystem::path &normalizedFilePath) {
     // Attempt first to fetch the file from cache.
-    MaPLFile *fileAtPath = files[normalizedPath.string()];
+    MaPLFile *fileAtPath = files[normalizedFilePath.string()];
     if (!fileAtPath) {
         // No matching file found in cache, add a new one.
-        fileAtPath = new MaPLFile(normalizedPath, this);
-        files[normalizedPath.string()] = fileAtPath;
+        fileAtPath = new MaPLFile(normalizedFilePath, this);
+        files[normalizedFilePath.string()] = fileAtPath;
     }
     return fileAtPath;
 }

@@ -21,11 +21,11 @@ class  MaPLFileCache {
 public:
     
     /**
-     * @param absoluteFilePath The absolute filesystem path to the MaPL script file.
+     * @param normalizedFilePath The lexically normalized filesystem path to the MaPL script file.
      *
-     * @return The @c MaPLFile for the script at the given @c absoluteFilePath. @c NULL if error.
+     * @return The @c MaPLFile for the script at the given @c normalizedFilePath.
      */
-    MaPLFile *fileForAbsolutePath(const std::filesystem::path &absoluteFilePath);
+    MaPLFile *fileForNormalizedPath(const std::filesystem::path &normalizedFilePath);
     
 private:
     

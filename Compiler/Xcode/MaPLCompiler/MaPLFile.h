@@ -33,7 +33,7 @@ public:
      * @param normalizedFilePath The normalized filesystem path to the MaPL script file. Must be an absolute path.
      * @param fileCache The file cache that this object can use to fetch information about any dependent files.
      */
-    MaPLFile(std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache);
+    MaPLFile(const std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache);
     
     /**
      * @return The bytecode representation of the script in this file. This recusrively includes bytecode from dependent files. Function symbols are not initially filled in. NULL if error.
@@ -59,6 +59,16 @@ public:
      * @return The path in the filesystem that points to this file.
      */
     std::filesystem::path getNormalizedFilePath();
+    
+    /**
+     * @return The path in the filesystem where the bytecode should be saved.
+     */
+    std::filesystem::path getNormalizedOutputPath();
+    
+    /**
+     * Mutator for this file's output path.
+     */
+    void setNormalizedOutputPath(std::filesystem::path outputPath);
     
     /**
      * Logs an error that is then retrievable via @c getErrors().
@@ -103,6 +113,7 @@ private:
     void logNotAssignableError(antlr4::Token *token);
     
     std::filesystem::path _normalizedFilePath;
+    std::filesystem::path _normalizedOutputPath;
     MaPLFileCache *_fileCache;
     MaPLBuffer *_bytecode;
     MaPLVariableStack *_variableStack;
