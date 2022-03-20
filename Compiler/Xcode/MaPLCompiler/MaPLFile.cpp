@@ -353,8 +353,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::AssignStatementContext *assignment = (MaPLParser::AssignStatementContext *)node;
             MaPLParser::ObjectExpressionContext *objectExpression = assignment->objectExpression();
             
-            // TODO: Do we need "VariableOffset" annotations here? Audit all usage of MaPLVariable.
-            
             // Check if the object expression on the left side of this assignment is a variable.
             MaPLVariable assignedVariable = { { MaPLPrimitiveType_Uninitialized } };
             if (!objectExpression->keyToken) {
@@ -363,6 +361,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (assignedVariable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                 // This assignment is for a variable. Append the left side of the assignment.
                 currentBuffer->appendByte(assignInstructionForPrimitive(assignedVariable.type.primitiveType));
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
                 // If this is an operator-assign, rewrite it as a regular assign.
@@ -378,10 +377,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     if (operatorAssign == MAPL_BYTE_STRING_CONCAT) {
                         // This is a string concat-assign.
                         currentBuffer->appendByte(MAPL_BYTE_VARIABLE_STRING);
+                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                         currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     } else {
                         // This is a numeric or bitwise operator assign.
                         currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                         currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     }
                 }
@@ -501,8 +502,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
                 // Rewrite the increment as a regular assign. For example: "var++" becomes "var=var+1".
                 currentBuffer->appendByte(assignInstructionForPrimitive(assignedVariable.type.primitiveType));
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 currentBuffer->appendByte(operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType));
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
                 // Add a literal "1" that matches the assigned primitive type.
@@ -1146,6 +1149,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
             if (variable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                 // This expression is a reference to a variable.
                 currentBuffer->appendByte(variableInstructionForPrimitive(variable.type.primitiveType));
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(variable.byteOffset), sizeof(variable.byteOffset));
                 return variable.type;
             }
