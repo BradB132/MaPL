@@ -734,8 +734,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             logError(expression->type()->start, "Unable to cast from type "+descriptorForType(expressionType)+" to "+descriptorForType(castType)+".");
                             break;
                         }
-                        currentBuffer->appendByte(castFrom);
                         currentBuffer->appendByte(castTo);
+                        currentBuffer->appendByte(castFrom);
                         compileNode(expression->expression(0), expressionType, currentBuffer);
                     }
                         break;
