@@ -152,5 +152,7 @@ int main(int argc, const char ** argv) {
         bytecodeOutputStream.write((char *)bytecode->getBytes(), bytecode->getByteCount());
     }
     
+    printf("All MaPL sources compiled successfully.\n");
+    
     return 0;
 }
