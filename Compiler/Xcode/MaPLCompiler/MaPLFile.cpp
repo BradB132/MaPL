@@ -509,6 +509,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 currentBuffer->appendByte(operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType));
+                currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
