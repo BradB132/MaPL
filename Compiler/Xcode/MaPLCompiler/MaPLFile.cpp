@@ -513,7 +513,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
                 // Add a literal "1" that matches the assigned primitive type.
-                currentBuffer->appendByte(numericLiteralInstructionForPrimitive(assignedVariable.type.primitiveType));
                 MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                 oneLiteral.uInt64Value = 1;
                 oneLiteral = castLiteralToType(oneLiteral, assignedVariable.type);
@@ -575,7 +574,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
                     
                     // Add a literal "1" that matches the return type.
-                    currentBuffer->appendByte(numericLiteralInstructionForPrimitive(returnType.primitiveType));
                     MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                     oneLiteral.uInt64Value = 1;
                     oneLiteral = castLiteralToType(oneLiteral, returnType);
@@ -621,7 +619,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     currentBuffer->appendBytes(&symbol, sizeof(symbol));
                     
                     // Add a literal "1" that matches the return type.
-                    currentBuffer->appendByte(numericLiteralInstructionForPrimitive(returnType.primitiveType));
                     MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                     oneLiteral.uInt64Value = 1;
                     oneLiteral = castLiteralToType(oneLiteral, returnType);
