@@ -9,6 +9,7 @@
 #include "MaPLFileCache.h"
 #include "MaPLFile.h"
 #include "MaPLBuffer.h"
+#include "MaPLVariableStack.h"
 
 enum ArgumentExpectation {
     ArgumentExpectation_InputPath,
@@ -142,8 +143,12 @@ int main(int argc, const char ** argv) {
     
     // Output each script to file.
     for (MaPLFile *file : files) {
-        MaPLBuffer *bytecode = file->getBytecode();
         std::ofstream bytecodeOutputStream(file->getNormalizedOutputPath());
+        
+        MaPL_MemoryAddress stackHeight = file->getVariableStack()->getMaximumMemoryUsed();
+        bytecodeOutputStream.write((char *)(&stackHeight), sizeof(stackHeight));
+        
+        MaPLBuffer *bytecode = file->getBytecode();
         bytecodeOutputStream.write((char *)bytecode->getBytes(), bytecode->getByteCount());
     }
     
