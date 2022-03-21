@@ -139,7 +139,7 @@ bool assignOperatorIsCompatibleWithType(MaPLFile *file, size_t operatorType, MaP
 /**
  * @return The number of bytes required for each of the primitive types. @c 0 if type is invalid, void, or ambiguous.
  */
-MaPL_Index byteSizeOfType(MaPLPrimitiveType type);
+MaPL_MemoryAddress byteSizeOfType(MaPLPrimitiveType type);
 
 /**
  * @return A human-readable string that describes the primitive.

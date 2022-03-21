@@ -79,7 +79,7 @@ bool isConcreteType(MaPLPrimitiveType type) {
            type == MaPLPrimitiveType_Pointer;
 }
 
-MaPL_Index byteSizeOfType(MaPLPrimitiveType type) {
+MaPL_MemoryAddress byteSizeOfType(MaPLPrimitiveType type) {
     switch (type) {
         case MaPLPrimitiveType_Int8: // Intentional fallthrough.
         case MaPLPrimitiveType_UInt8: // Intentional fallthrough.

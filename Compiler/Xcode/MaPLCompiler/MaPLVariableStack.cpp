@@ -24,12 +24,12 @@ void MaPLVariableStack::pop() {
     _stack.pop_back();
 }
 
-MaPL_Index MaPLVariableStack::getMaximumMemoryUsed() {
+MaPL_MemoryAddress MaPLVariableStack::getMaximumMemoryUsed() {
     return _maximumMemoryUsed;
 }
 
 bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVariable variable) {
-    MaPL_Index variableSize = byteSizeOfType(variable.type.primitiveType);
+    MaPL_MemoryAddress variableSize = byteSizeOfType(variable.type.primitiveType);
     if (!variableSize) {
         variable.file->logError(variable.token, "Failure declaring variable '"+variableName+"' with ambiguous type.");
         return false;
@@ -43,7 +43,7 @@ bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVar
     }
     
     // Calculate byte offset for this variable by summing the size of the existing variables.
-    MaPL_Index currentOffset = 0;
+    MaPL_MemoryAddress currentOffset = 0;
     for (std::unordered_map<std::string, MaPLVariable> frame : _stack) {
         for (std::pair<std::string, MaPLVariable> pair : frame) {
             currentOffset += byteSizeOfType(pair.second.type.primitiveType);
@@ -52,7 +52,7 @@ bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVar
     
     // Adjust offsets.
     variable.byteOffset = currentOffset;
-    MaPL_Index insertedOffset = currentOffset+variableSize;
+    MaPL_MemoryAddress insertedOffset = currentOffset+variableSize;
     if (insertedOffset > _maximumMemoryUsed) {
         _maximumMemoryUsed = insertedOffset;
     }

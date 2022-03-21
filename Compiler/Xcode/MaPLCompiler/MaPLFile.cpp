@@ -304,8 +304,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         }
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Break });
                         currentBuffer->appendByte(0);
-                        MaPL_Index placeholderIndex = 0;
-                        currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
+                        MaPL_CursorMove placeholderMove = 0;
+                        currentBuffer->appendBytes(&placeholderMove, sizeof(placeholderMove));
                     }
                         break;
                     case MaPLParser::CONTINUE: {
@@ -314,8 +314,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         }
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Continue });
                         currentBuffer->appendByte(0);
-                        MaPL_Index placeholderIndex = 0;
-                        currentBuffer->appendBytes(&placeholderIndex, sizeof(MaPL_Index));
+                        MaPL_CursorMove placeholderMove = 0;
+                        currentBuffer->appendBytes(&placeholderMove, sizeof(placeholderMove));
                     }
                         break;
                     case MaPLParser::EXIT:
@@ -347,8 +347,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (expression) {
                 currentBuffer->appendByte(assignmentInstructionForPrimitive(variable.type.primitiveType));
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
-                MaPL_Index variableByteOffset = _variableStack->getVariable(variableName).byteOffset;
-                currentBuffer->appendBytes(&variableByteOffset, sizeof(MaPL_Index));
+                MaPL_MemoryAddress variableByteOffset = _variableStack->getVariable(variableName).byteOffset;
+                currentBuffer->appendBytes(&variableByteOffset, sizeof(variableByteOffset));
                 compileNode(expression, variable.type, currentBuffer);
             }
         }
@@ -936,10 +936,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // "While" loops are represented in bytecode as follows:
             // ┌ MAPL_BYTE_CONDITIONAL - Signals the start of the loop.
             // | ExpressionContext - The boolean expression at the top of the loop.
-            // └ MaPL_Index - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
+            // └ MaPL_CursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             //   ScopeContext - The contents of the loop.
             // ┌ MAPL_BYTE_CURSOR_MOVE_BACK - Signals the end of the loop.
-            // └ MaPL_Index - The size of the backward move required to return to the top of the loop.
+            // └ MaPL_CursorMove - The size of the backward move required to return to the top of the loop.
             MaPLBuffer scopeBuffer(10);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
             
@@ -951,12 +951,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 loopBuffer.appendByte(MAPL_BYTE_CONDITIONAL);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
                 // Scope size must also include the MAPL_BYTE_CURSOR_MOVE_BACK.
-                MaPL_Index scopeSize = scopeBuffer.getByteCount() + sizeof(MaPL_Instruction) + sizeof(MaPL_Index);
+                MaPL_CursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPL_Instruction) + sizeof(MaPL_CursorMove);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
             loopBuffer.appendBuffer(&scopeBuffer, 0);
             loopBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
-            MaPL_Index byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPL_Index);
+            MaPL_CursorMove byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPL_CursorMove);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
@@ -976,11 +976,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             //   ImperativeStatementContext - The first imperative statement at the top of the loop (typically variable declaration).
             // ┌ MAPL_BYTE_CONDITIONAL - The conditional at the top of the loop.
             // | ExpressionContext - The boolean expression at the top of the loop.
-            // └ MaPL_Index - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
+            // └ MaPL_CursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             //   ScopeContext - The contents of the loop.
             //   ImperativeStatementContext - The last imperative statement at the top of the loop (typically variable increment).
             // ┌ MAPL_BYTE_CURSOR_MOVE_BACK - Signals the end of the loop.
-            // └ MaPL_Index - The size of the backward move required to return to the top of the loop.
+            // └ MaPL_CursorMove - The size of the backward move required to return to the top of the loop.
             MaPLParser::ForLoopControlStatementsContext *controlStatements = loop->forLoopControlStatements();
             if (controlStatements->firstStatement) {
                 compileNode(controlStatements->firstStatement, { MaPLPrimitiveType_Uninitialized }, currentBuffer);
@@ -1015,12 +1015,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 loopBuffer.appendByte(MAPL_BYTE_CONDITIONAL);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
                 // Scope size must also include the MAPL_BYTE_CURSOR_MOVE_BACK.
-                MaPL_Index scopeSize = scopeBuffer.getByteCount() + sizeof(MaPL_Instruction) + sizeof(MaPL_Index);
+                MaPL_CursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPL_Instruction) + sizeof(MaPL_CursorMove);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
             loopBuffer.appendBuffer(&scopeBuffer, 0);
             loopBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
-            MaPL_Index byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPL_Index);
+            MaPL_CursorMove byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPL_CursorMove);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
@@ -1038,9 +1038,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             //   ScopeContext - The contents of the loop.
             // ┌ MAPL_BYTE_CONDITIONAL - The conditional at the end of the loop.
             // | ExpressionContext - The boolean expression at the end of the loop.
-            // └ MaPL_Index - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
+            // └ MaPL_CursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             // ┌ MAPL_BYTE_CURSOR_MOVE_BACK - Contained within the MAPL_BYTE_CONDITIONAL, loops back to the top.
-            // └ MaPL_Index - The size of the backward move required to return to the top of the loop.
+            // └ MaPL_CursorMove - The size of the backward move required to return to the top of the loop.
             MaPLBuffer loopBuffer(10);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &loopBuffer);
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, true);
@@ -1061,11 +1061,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 loopBuffer.appendByte(MAPL_BYTE_CONDITIONAL);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
                 // This is already at the end of the loop, and just needs to skip the MAPL_BYTE_CURSOR_MOVE_BACK that makes the loop repeat.
-                MaPL_Index cursorMoveSize = sizeof(MaPL_Instruction) + sizeof(MaPL_Index);
+                MaPL_CursorMove cursorMoveSize = sizeof(MaPL_Instruction) + sizeof(MaPL_CursorMove);
                 loopBuffer.appendBytes(&cursorMoveSize, sizeof(cursorMoveSize));
             }
             loopBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
-            MaPL_Index loopSize = loopBuffer.getByteCount();
+            MaPL_CursorMove loopSize = loopBuffer.getByteCount();
             loopBuffer.appendBytes(&loopSize, sizeof(loopSize));
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
@@ -1095,10 +1095,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // Conditionals are represented in bytecode as follows:
                 // ┌ MAPL_BYTE_CONDITIONAL - Signals the start of a conditional.
                 // | ExpressionContext - The boolean expression at the top of the conditional.
-                // └ MaPL_Index - If the conditional is false, this is how many bytes to skip forward to exit the conditional.
+                // └ MaPL_CursorMove - If the conditional is false, this is how many bytes to skip forward to exit the conditional.
                 //   ScopeContext - The contents of the conditional.
                 // ┌ MAPL_BYTE_CURSOR_MOVE_FORWARD - Signals the end of conditional contents (omitted if there's no "else").
-                // └ MaPL_Index - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
+                // └ MaPL_CursorMove - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
                 //   ConditionalElseContext - The "else" portion of the conditional (omitted if there's no "else").
                 currentBuffer->appendByte(MAPL_BYTE_CONDITIONAL);
                 compileNode(conditionalExpression, { MaPLPrimitiveType_Boolean }, currentBuffer);
@@ -1112,13 +1112,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     compileChildNodes(conditionalElse, { MaPLPrimitiveType_Uninitialized }, &elseBuffer);
                 }
                 
-                MaPL_Index elseBufferSize = (MaPL_Index)elseBuffer.getByteCount();
+                MaPL_CursorMove elseBufferSize = (MaPL_CursorMove)elseBuffer.getByteCount();
                 if (elseBufferSize > 0) {
                     scopeBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_FORWARD);
                     scopeBuffer.appendBytes(&elseBufferSize, sizeof(elseBufferSize));
                 }
                 
-                MaPL_Index scopeSize = (MaPL_Index)scopeBuffer.getByteCount();
+                MaPL_CursorMove scopeSize = (MaPL_CursorMove)scopeBuffer.getByteCount();
                 currentBuffer->appendBytes(&scopeSize, sizeof(scopeSize));
                 
                 currentBuffer->appendBuffer(&scopeBuffer, 0);
@@ -1174,7 +1174,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 //   MAPL_BYTE_FUNCTION_INVOCATION - Signals the start of a function invocation.
                 //   ObjectExpressionContext - Resolves to the object on which the function is invoked. Value is MAPL_BYTE_NO_OP if no expression.
                 //   MaPL_Symbol - The bytecode representation of the name of this property.
-                //   MaPL_Index - The number of parameters to expect.
+                //   MaPL_ParemeterCount - The number of parameters to expect.
                 //   Parameters - Byte layout described below.
                 currentBuffer->appendByte(MAPL_BYTE_FUNCTION_INVOCATION);
                 std::string functionName = expression->identifier()->getText();
@@ -1195,7 +1195,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 currentBuffer->appendBytes(&symbol, sizeof(symbol));
                 
                 std::vector<MaPLParser::ExpressionContext *> parameterExpressions = expression->expression();
-                MaPL_Index parameterCount = (MaPL_Index)parameterExpressions.size();
+                MaPL_ParemeterCount parameterCount = (MaPL_ParemeterCount)parameterExpressions.size();
                 currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
                 
                 std::vector<MaPLType> expressionParameterTypes;
@@ -1269,7 +1269,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         //   MAPL_BYTE_FUNCTION_INVOCATION - Signals the start of a function invocation.
         //   ObjectExpressionContext - Resolves to the object on which the property is invoked. Value is MAPL_BYTE_NO_OP if no expression.
         //   MaPL_Symbol - The bytecode representation of the name of this property.
-        //   MaPL_Index - The number of parameters to expect. For properties this is always 0.
+        //   MaPL_ParemeterCount - The number of parameters to expect. For properties this is always 0.
         currentBuffer->appendByte(MAPL_BYTE_FUNCTION_INVOCATION);
         std::string invokedOnType;
         MaPLType invokedReturnType = { MaPLPrimitiveType_Uninitialized };
@@ -1286,7 +1286,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
         MaPL_Symbol symbol = 0;
         currentBuffer->appendBytes(&symbol, sizeof(symbol));
-        MaPL_Index parameterCount = 0;
+        MaPL_ParemeterCount parameterCount = 0;
         currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
         
         MaPLParser::ApiPropertyContext *propertyApi = findProperty(this,

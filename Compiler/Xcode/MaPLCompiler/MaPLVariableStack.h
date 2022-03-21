@@ -26,7 +26,7 @@ struct MaPLVariable {
     // The token which represents this variable declaration.
     antlr4::Token *token;
     // Specifies the location in the memory where this variable is stored.
-    MaPL_Index byteOffset;
+    MaPL_MemoryAddress byteOffset;
 };
 
 /**
@@ -50,7 +50,7 @@ public:
     /**
      * @return The maximum number of bytes that this stack required to store all variables, at any point during the parse tree traversal.
      */
-    MaPL_Index getMaximumMemoryUsed();
+    MaPL_MemoryAddress getMaximumMemoryUsed();
 
     /**
      * Inserts a new variable into the top stack frame. The variable will be assigned a new @c byteOffset based on current contents of the stack.
@@ -72,7 +72,7 @@ public:
 private:
     
     std::vector<std::unordered_map<std::string, MaPLVariable>> _stack;
-    MaPL_Index _maximumMemoryUsed;
+    MaPL_MemoryAddress _maximumMemoryUsed;
 };
 
 #endif /* MaPLVariableStack_h */

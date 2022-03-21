@@ -66,7 +66,7 @@ public:
      *
      * @return Boolean indicates success or failure of the append operation.
      */
-    bool appendBuffer(MaPLBuffer *otherBuffer, MaPL_Index variableByteIncrement);
+    bool appendBuffer(MaPLBuffer *otherBuffer, MaPL_MemoryAddress variableByteIncrement);
     
     /**
      * Appends the literal value onto the buffer.

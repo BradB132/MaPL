@@ -41,7 +41,7 @@ bool MaPLBuffer::appendByte(u_int8_t byte) {
     return appendBytes(&byte, sizeof(u_int8_t));
 }
 
-bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPL_Index variableByteIncrement) {
+bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPL_MemoryAddress variableByteIncrement) {
     size_t previousByteCount = _byteCount;
     size_t otherBufferCount = otherBuffer->getByteCount();
     if (variableByteIncrement) {
@@ -52,9 +52,9 @@ bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPL_Index variableByteIn
         // Increment byte offsets everywhere a variable was referenced.
         for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
             if (annotation.type == MaPLBufferAnnotationType_VariableOffset) {
-                MaPL_Index variableByteOffset = *((MaPL_Index *)(copiedBytes+annotation.byteLocation));
+                MaPL_MemoryAddress variableByteOffset = *((MaPL_MemoryAddress *)(copiedBytes+annotation.byteLocation));
                 variableByteOffset += variableByteIncrement;
-                memcpy(copiedBytes+annotation.byteLocation, &variableByteOffset, sizeof(MaPL_Index));
+                memcpy(copiedBytes+annotation.byteLocation, &variableByteOffset, sizeof(variableByteOffset));
             }
         }
         if (!appendBytes(copiedBytes, otherBufferCount)) {
@@ -134,7 +134,7 @@ void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bo
     if (_annotations.size() == 0) {
         return;
     }
-    // Iterate backwards through the list so we can remove annotations as needed.
+    // Iterate backwards through the list so we can remove annotations without adjusting array index.
     size_t i = _annotations.size()-1;
     while (true) {
         MaPLBufferAnnotation annotation = _annotations[i];
@@ -144,15 +144,15 @@ void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bo
             memcpy(_bytes+annotation.byteLocation, &cursorInstruction, sizeof(cursorInstruction));
             
             // 'byteLocation' describes the beginning of the relevant sequence of bytes.
-            // Add the size of the instruction and index to find the end of that sequence.
-            size_t byteEndLocation = annotation.byteLocation + sizeof(MaPL_Instruction) + sizeof(MaPL_Index);
-            MaPL_Index offset;
+            // Add the size of the Instruction and CursorMove to find the end of that sequence.
+            size_t byteEndLocation = annotation.byteLocation + sizeof(MaPL_Instruction) + sizeof(MaPL_CursorMove);
+            MaPL_CursorMove cursorMove;
             if (jumpToEnd) {
-                offset = _byteCount-byteEndLocation;
+                cursorMove = _byteCount-byteEndLocation;
             } else {// Jump to beginning.
-                offset = byteEndLocation;
+                cursorMove = byteEndLocation;
             }
-            memcpy(_bytes+(annotation.byteLocation+sizeof(MaPL_Instruction)), &offset, sizeof(offset));
+            memcpy(_bytes+(annotation.byteLocation+sizeof(MaPL_Instruction)), &cursorMove, sizeof(cursorMove));
             _annotations.erase(_annotations.begin()+i);
         }
         

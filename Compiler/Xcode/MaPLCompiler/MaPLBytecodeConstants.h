@@ -10,8 +10,10 @@
 
 // Byte sizes for MaPL bytecode.
 typedef u_int8_t MaPL_Instruction;
-typedef u_int16_t MaPL_Index;
-typedef u_int32_t MaPL_Symbol;
+typedef u_int8_t MaPL_ParemeterCount;
+typedef u_int16_t MaPL_MemoryAddress;
+typedef u_int16_t MaPL_CursorMove;
+typedef u_int16_t MaPL_Symbol;
 struct MaPL_String {
     char* stringValue;
     bool isAllocated;
