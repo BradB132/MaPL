@@ -1236,7 +1236,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                         }
                     }
                     currentBuffer->appendByte(parameterTypeInstructionForPrimitive(expectedType.primitiveType));
-                    compileChildNodes(parameterExpressions[i], expectedType, currentBuffer);
+                    compileNode(parameterExpressions[i], expectedType, currentBuffer);
                 }
                 
                 if (functionApi->API_VOID()) {
