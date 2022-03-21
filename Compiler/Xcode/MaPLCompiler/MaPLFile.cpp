@@ -2511,9 +2511,9 @@ void MaPLFile::logNotAssignableError(antlr4::Token *token) {
 void MaPLFile::logError(antlr4::Token *token, const std::string &msg) {
     std::string loggedError;
     if (token) {
-        loggedError = _normalizedFilePath.string()+":"+std::to_string(token->getLine())+":"+std::to_string(token->getCharPositionInLine())+": error: "+msg;
+        loggedError = _normalizedFilePath.string()+":"+std::to_string(token->getLine())+":"+std::to_string(token->getCharPositionInLine())+": error: "+msg+"\n";
     } else {
-        loggedError = _normalizedFilePath.string()+":1:1: error: "+msg;
+        loggedError = _normalizedFilePath.string()+":1:1: error: "+msg+"\n";
     }
     _errors.push_back(loggedError);
 }

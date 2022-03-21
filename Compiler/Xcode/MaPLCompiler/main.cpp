@@ -115,9 +115,37 @@ int main(int argc, const char ** argv) {
         exit(1);
     }
     
-    // TODO: Check for errors and write to console.
-    // TODO: Collect bytecodes and run through MaPLBuffer::resolveSymbolsForBuffers(buffers);
-    // TODO: Output each script to file.
+    bool hadErrors = false;
+    std::vector<MaPLBuffer *> buffers;
+    for (MaPLFile *file : files) {
+        // Check for errors and write to console.
+        std::vector<std::string> errors = file->getErrors();
+        if (errors.size()) {
+            hadErrors = true;
+            for (std::string errorString : errors) {
+                fputs(errorString.c_str(), stderr);
+            }
+            continue;
+        }
+        
+        // Build a list of all the bytecode buffers.
+        buffers.push_back(file->getBytecode());
+    }
+    if (hadErrors) {
+        exit(1);
+    }
+    
+    // Generate the symbol table and write to file.
+    std::string symbolTable = MaPLBuffer::resolveSymbolsForBuffers(buffers);
+    std::ofstream symbolTableOutputStream(symbolOutputPath);
+    symbolTableOutputStream << symbolTable;
+    
+    // Output each script to file.
+    for (MaPLFile *file : files) {
+        MaPLBuffer *bytecode = file->getBytecode();
+        std::ofstream bytecodeOutputStream(file->getNormalizedOutputPath());
+        bytecodeOutputStream.write((char *)bytecode->getBytes(), bytecode->getByteCount());
+    }
     
     return 0;
 }
