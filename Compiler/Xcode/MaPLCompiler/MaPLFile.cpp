@@ -182,6 +182,22 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 if (findType(this, typeName, apiDeclaration)) {
                     logError(identifier->start, "Type name '"+typeName+"' conflicts with another type of the same name.");
                 }
+                
+                // Check to make sure this name doesn't collide with a primitive type.
+                if (typeName == "int8" ||
+                    typeName == "int16" ||
+                    typeName == "int32" ||
+                    typeName == "int64" ||
+                    typeName == "uint8" ||
+                    typeName == "uint16" ||
+                    typeName == "uint32" ||
+                    typeName == "uint64" ||
+                    typeName == "float32" ||
+                    typeName == "float64" ||
+                    typeName == "bool" ||
+                    typeName == "string") {
+                    logError(identifier->start, "Type name conflicts with a primitive type.");
+                }
             }
             compileChildNodes(node, expectedType, currentBuffer);
         }

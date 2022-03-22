@@ -16,7 +16,7 @@
 class MaPLFile;
 
 /**
- * Describes all literal types, and some states where the types are still ambiguous.
+ * Describes all primitive types, and some states where the types are still ambiguous.
  */
 enum MaPLPrimitiveType {
     MaPLPrimitiveType_Uninitialized = 0,
