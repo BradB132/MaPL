@@ -97,7 +97,7 @@ MaPLMemoryAddress byteSizeOfType(MaPLPrimitiveType type) {
         case MaPLPrimitiveType_Float64:
             return 8;
         case MaPLPrimitiveType_String:
-            return sizeof(MaPL_String);
+            return sizeof(MaPLString);
         case MaPLPrimitiveType_Pointer:
             return sizeof(void *);
         default: return 0;

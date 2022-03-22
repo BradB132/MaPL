@@ -13,7 +13,7 @@ typedef u_int8_t MaPLParameterCount;
 typedef u_int16_t MaPLMemoryAddress;
 typedef u_int16_t MaPLCursorMove;
 typedef u_int16_t MaPLSymbol;
-struct MaPL_String {
+struct MaPLString {
     char* stringValue;
     bool isAllocated;
 };
