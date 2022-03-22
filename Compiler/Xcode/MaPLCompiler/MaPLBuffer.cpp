@@ -37,8 +37,8 @@ bool MaPLBuffer::appendBytes(const void *bytes, size_t byteSize) {
     return true;
 }
 
-bool MaPLBuffer::appendByte(u_int8_t byte) {
-    return appendBytes(&byte, sizeof(u_int8_t));
+bool MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
+    return appendBytes(&instruction, sizeof(instruction));
 }
 
 bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPL_MemoryAddress variableByteIncrement) {
@@ -75,42 +75,42 @@ bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPL_MemoryAddress variab
 bool MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
     switch (literal.type.primitiveType) {
         case MaPLPrimitiveType_Int8:
-            return appendByte(MAPL_BYTE_LITERAL_INT8) &&
+            return appendInstruction(MaPLInstruction_literal_int8) &&
                    appendBytes(&(literal.int8Value), sizeof(literal.int8Value));
         case MaPLPrimitiveType_Int16:
-            return appendByte(MAPL_BYTE_LITERAL_INT16) &&
+            return appendInstruction(MaPLInstruction_literal_int16) &&
                    appendBytes(&(literal.int16Value), sizeof(literal.int16Value));
         case MaPLPrimitiveType_Int32:
-            return appendByte(MAPL_BYTE_LITERAL_INT32) &&
+            return appendInstruction(MaPLInstruction_literal_int32) &&
                    appendBytes(&(literal.int32Value), sizeof(literal.int32Value));
         case MaPLPrimitiveType_Int64:
-            return appendByte(MAPL_BYTE_LITERAL_INT64) &&
+            return appendInstruction(MaPLInstruction_literal_int64) &&
                    appendBytes(&(literal.int64Value), sizeof(literal.int64Value));
         case MaPLPrimitiveType_UInt8:
-            return appendByte(MAPL_BYTE_LITERAL_UINT8) &&
+            return appendInstruction(MaPLInstruction_literal_uint8) &&
                    appendBytes(&(literal.uInt8Value), sizeof(literal.uInt8Value));
         case MaPLPrimitiveType_UInt16:
-            return appendByte(MAPL_BYTE_LITERAL_UINT16) &&
+            return appendInstruction(MaPLInstruction_literal_uint16) &&
                    appendBytes(&(literal.uInt16Value), sizeof(literal.uInt16Value));
         case MaPLPrimitiveType_UInt32:
-            return appendByte(MAPL_BYTE_LITERAL_UINT32) &&
+            return appendInstruction(MaPLInstruction_literal_uint32) &&
                    appendBytes(&(literal.uInt32Value), sizeof(literal.uInt32Value));
         case MaPLPrimitiveType_UInt64:
-            return appendByte(MAPL_BYTE_LITERAL_UINT64) &&
+            return appendInstruction(MaPLInstruction_literal_uint64) &&
                    appendBytes(&(literal.uInt64Value), sizeof(literal.uInt64Value));
         case MaPLPrimitiveType_Float32:
-            return appendByte(MAPL_BYTE_LITERAL_FLOAT32) &&
+            return appendInstruction(MaPLInstruction_literal_float32) &&
                    appendBytes(&(literal.float32Value), sizeof(literal.float32Value));
         case MaPLPrimitiveType_Float64:
-            return appendByte(MAPL_BYTE_LITERAL_FLOAT64) &&
+            return appendInstruction(MaPLInstruction_literal_float64) &&
                    appendBytes(&(literal.float64Value), sizeof(literal.float64Value));
         case MaPLPrimitiveType_String:
-            return appendByte(MAPL_BYTE_LITERAL_STRING) &&
+            return appendInstruction(MaPLInstruction_literal_string) &&
                    appendString(literal.stringValue);
         case MaPLPrimitiveType_Boolean:
-            return appendByte(literal.booleanValue ? MAPL_BYTE_LITERAL_BOOLEAN_TRUE : MAPL_BYTE_LITERAL_BOOLEAN_FALSE);
+            return appendInstruction(literal.booleanValue ? MaPLInstruction_literal_boolean_true : MaPLInstruction_literal_boolean_false);
         case MaPLPrimitiveType_Pointer:
-            return appendByte(MAPL_BYTE_LITERAL_NULL);
+            return appendInstruction(MaPLInstruction_literal_null);
         default: return false;
     }
 }
@@ -143,19 +143,19 @@ void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bo
         MaPLBufferAnnotation annotation = _annotations[i];
         if (annotation.type == type) {
             // Set the cursor move using the appropriate instruction.
-            MaPL_Instruction cursorInstruction = jumpToEnd ? MAPL_BYTE_CURSOR_MOVE_FORWARD : MAPL_BYTE_CURSOR_MOVE_BACK;
+            MaPLInstruction cursorInstruction = jumpToEnd ? MaPLInstruction_cursor_move_forward : MaPLInstruction_cursor_move_back;
             memcpy(_bytes+annotation.byteLocation, &cursorInstruction, sizeof(cursorInstruction));
             
             // 'byteLocation' describes the beginning of the relevant sequence of bytes.
             // Add the size of the Instruction and CursorMove to find the end of that sequence.
-            size_t byteEndLocation = annotation.byteLocation + sizeof(MaPL_Instruction) + sizeof(MaPL_CursorMove);
+            size_t byteEndLocation = annotation.byteLocation + sizeof(MaPLInstruction) + sizeof(MaPL_CursorMove);
             MaPL_CursorMove cursorMove;
             if (jumpToEnd) {
                 cursorMove = _byteCount-byteEndLocation;
             } else {// Jump to beginning.
                 cursorMove = byteEndLocation;
             }
-            memcpy(_bytes+(annotation.byteLocation+sizeof(MaPL_Instruction)), &cursorMove, sizeof(cursorMove));
+            memcpy(_bytes+(annotation.byteLocation+sizeof(MaPLInstruction)), &cursorMove, sizeof(cursorMove));
             _annotations.erase(_annotations.begin()+i);
         }
         

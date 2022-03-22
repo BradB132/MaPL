@@ -50,13 +50,13 @@ public:
     bool appendBytes(const void *bytes, size_t byteSize);
     
     /**
-     * Appends a single new byte onto the buffer.
+     * Appends a single instruction onto the buffer.
      *
-     * @param byte The new byte that will be appended onto the buffer.
+     * @param instruction The new instruction that will be appended onto the buffer.
      *
      * @return Boolean indicates success or failure of the append operation.
      */
-    bool appendByte(u_int8_t byte);
+    bool appendInstruction(MaPLInstruction instruction);
     
     /**
      * Appends the contents of another MaPLBuffer, including annotations, onto the buffer.

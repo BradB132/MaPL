@@ -181,303 +181,284 @@ std::string descriptorForSymbol(const std::string &typeName,
     return formattedName;
 }
 
-MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction typecastFromInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_ASSIGN;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_ASSIGN;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_ASSIGN;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_ASSIGN;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_ASSIGN;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_ASSIGN;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_ASSIGN;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_ASSIGN;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_ASSIGN;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_ASSIGN;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_ASSIGN;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_ASSIGN;
-        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_ASSIGN;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_typecast_from_int8;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_typecast_from_int16;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_typecast_from_int32;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_typecast_from_int64;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_typecast_from_uint8;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_typecast_from_uint16;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_typecast_from_uint32;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_typecast_from_uint64;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_typecast_from_float32;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_typecast_from_float64;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_typecast_from_boolean;
+        case MaPLPrimitiveType_String: return MaPLInstruction_typecast_from_string;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction typecastFromInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction typecastToInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_TYPECAST_FROM_INT8;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_TYPECAST_FROM_INT16;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_TYPECAST_FROM_INT32;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_TYPECAST_FROM_INT64;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_TYPECAST_FROM_UINT8;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_TYPECAST_FROM_UINT16;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_TYPECAST_FROM_UINT32;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_TYPECAST_FROM_UINT64;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_TYPECAST_FROM_FLOAT32;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_TYPECAST_FROM_FLOAT64;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_TYPECAST_FROM_BOOLEAN;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_TYPECAST_FROM_STRING;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_typecast_to_int8;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_typecast_to_int16;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_typecast_to_int32;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_typecast_to_int64;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_typecast_to_uint8;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_typecast_to_uint16;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_typecast_to_uint32;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_typecast_to_uint64;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_typecast_to_float32;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_typecast_to_float64;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_typecast_to_boolean;
+        case MaPLPrimitiveType_String: return MaPLInstruction_typecast_to_string;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction typecastToInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction equalityInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_TYPECAST_TO_INT8;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_TYPECAST_TO_INT16;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_TYPECAST_TO_INT32;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_TYPECAST_TO_INT64;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_TYPECAST_TO_UINT8;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_TYPECAST_TO_UINT16;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_TYPECAST_TO_UINT32;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_TYPECAST_TO_UINT64;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_TYPECAST_TO_FLOAT32;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_TYPECAST_TO_FLOAT64;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_TYPECAST_TO_BOOLEAN;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_TYPECAST_TO_STRING;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_logical_equality;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_logical_equality;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_logical_equality;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_logical_equality;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_logical_equality;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_logical_equality;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_logical_equality;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_logical_equality;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_logical_equality;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_logical_equality;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_logical_equality;
+        case MaPLPrimitiveType_String: return MaPLInstruction_string_logical_equality;
+        case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_logical_equality;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction equalityInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction inequalityInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_LOGICAL_EQUALITY;
-        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_LOGICAL_EQUALITY;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_logical_inequality;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_logical_inequality;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_logical_inequality;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_logical_inequality;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_logical_inequality;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_logical_inequality;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_logical_inequality;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_logical_inequality;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_logical_inequality;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_logical_inequality;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_logical_inequality;
+        case MaPLPrimitiveType_String: return MaPLInstruction_string_logical_inequality;
+        case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_logical_inequality;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction inequalityInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction lessThanInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_LOGICAL_INEQUALITY;
-        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_LOGICAL_INEQUALITY;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_logical_less_than;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_logical_less_than;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_logical_less_than;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_logical_less_than;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_logical_less_than;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_logical_less_than;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_logical_less_than;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_logical_less_than;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_logical_less_than;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_logical_less_than;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction lessThanInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction lessThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_LESS_THAN;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_LESS_THAN;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_LESS_THAN;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_LESS_THAN;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_LESS_THAN;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_LESS_THAN;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_LESS_THAN;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_LESS_THAN;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_LESS_THAN;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_LESS_THAN;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_logical_less_than_equal;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_logical_less_than_equal;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_logical_less_than_equal;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_logical_less_than_equal;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_logical_less_than_equal;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_logical_less_than_equal;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_logical_less_than_equal;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_logical_less_than_equal;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_logical_less_than_equal;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_logical_less_than_equal;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction lessThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction greaterThanInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_LESS_THAN_EQUAL;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_LESS_THAN_EQUAL;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_LESS_THAN_EQUAL;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_LESS_THAN_EQUAL;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_LESS_THAN_EQUAL;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_LESS_THAN_EQUAL;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_LESS_THAN_EQUAL;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_LESS_THAN_EQUAL;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_LESS_THAN_EQUAL;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_LESS_THAN_EQUAL;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_logical_greater_than;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_logical_greater_than;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_logical_greater_than;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_logical_greater_than;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_logical_greater_than;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_logical_greater_than;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_logical_greater_than;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_logical_greater_than;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_logical_greater_than;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_logical_greater_than;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction greaterThanInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_GREATER_THAN;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_GREATER_THAN;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_GREATER_THAN;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_GREATER_THAN;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_GREATER_THAN;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_GREATER_THAN;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_GREATER_THAN;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_GREATER_THAN;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_GREATER_THAN;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_GREATER_THAN;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_logical_greater_than_equal;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_logical_greater_than_equal;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_logical_greater_than_equal;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_logical_greater_than_equal;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_logical_greater_than_equal;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_logical_greater_than_equal;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_logical_greater_than_equal;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_logical_greater_than_equal;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_logical_greater_than_equal;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_logical_greater_than_equal;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction assignmentInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_LOGICAL_GREATER_THAN_EQUAL;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_LOGICAL_GREATER_THAN_EQUAL;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_LOGICAL_GREATER_THAN_EQUAL;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_LOGICAL_GREATER_THAN_EQUAL;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_LOGICAL_GREATER_THAN_EQUAL;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_LOGICAL_GREATER_THAN_EQUAL;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_LOGICAL_GREATER_THAN_EQUAL;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_LOGICAL_GREATER_THAN_EQUAL;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_LOGICAL_GREATER_THAN_EQUAL;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_LOGICAL_GREATER_THAN_EQUAL;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_assign;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_assign;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_assign;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_assign;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_assign;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_assign;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_assign;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_assign;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_assign;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_assign;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_assign;
+        case MaPLPrimitiveType_String: return MaPLInstruction_string_assign;
+        case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_assign;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction assignInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction assignSubscriptInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_ASSIGN;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_ASSIGN;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_ASSIGN;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_ASSIGN;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_ASSIGN;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_ASSIGN;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_ASSIGN;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_ASSIGN;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_ASSIGN;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_ASSIGN;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_ASSIGN;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_ASSIGN;
-        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_ASSIGN;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_assign_subscript;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_assign_subscript;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_assign_subscript;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_assign_subscript;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_assign_subscript;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_assign_subscript;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_assign_subscript;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_assign_subscript;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_assign_subscript;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_assign_subscript;
+        case MaPLPrimitiveType_String: return MaPLInstruction_string_assign_subscript;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_assign_subscript;
+        case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_assign_subscript;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction assignSubscriptInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction assignPropertyInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_ASSIGN_SUBSCRIPT;
-        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_ASSIGN_SUBSCRIPT;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_assign_property;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_assign_property;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_assign_property;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_assign_property;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_assign_property;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_assign_property;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_assign_property;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_assign_property;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_assign_property;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_assign_property;
+        case MaPLPrimitiveType_String: return MaPLInstruction_string_assign_property;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_assign_property;
+        case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_assign_property;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction assignPropertyInstructionForPrimitive(MaPLPrimitiveType type) {
-    switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_ASSIGN_PROPERTY;
-        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_ASSIGN_PROPERTY;
-        default: return 0;
-    }
-}
-
-MaPL_Instruction operatorAssignInstructionForTokenType(size_t tokenType, MaPLPrimitiveType primitiveType) {
+MaPLInstruction operatorAssignInstructionForTokenType(size_t tokenType, MaPLPrimitiveType primitiveType) {
     switch (tokenType) {
         case MaPLParser::ADD_ASSIGN:
             if (primitiveType == MaPLPrimitiveType_String) {
-                return MAPL_BYTE_STRING_CONCAT;
+                return MaPLInstruction_string_concat;
             }
-            return MAPL_BYTE_NUMERIC_ADD;
+            return MaPLInstruction_numeric_add;
         case MaPLParser::INCREMENT:
-            return MAPL_BYTE_NUMERIC_ADD;
+            return MaPLInstruction_numeric_add;
         case MaPLParser::SUBTRACT_ASSIGN: // Intentional fallthrough.
         case MaPLParser::DECREMENT:
-            return MAPL_BYTE_NUMERIC_SUBTRACT;
+            return MaPLInstruction_numeric_subtract;
         case MaPLParser::MULTIPLY_ASSIGN:
-            return MAPL_BYTE_NUMERIC_MULTIPLY;
+            return MaPLInstruction_numeric_multiply;
         case MaPLParser::DIVIDE_ASSIGN:
-            return MAPL_BYTE_NUMERIC_DIVIDE;
+            return MaPLInstruction_numeric_divide;
         case MaPLParser::MOD_ASSIGN:
-            return MAPL_BYTE_NUMERIC_MODULO;
+            return MaPLInstruction_numeric_modulo;
         case MaPLParser::BITWISE_AND_ASSIGN:
-            return MAPL_BYTE_BITWISE_AND;
+            return MaPLInstruction_bitwise_and;
         case MaPLParser::BITWISE_OR_ASSIGN:
-            return MAPL_BYTE_BITWISE_OR;
+            return MaPLInstruction_bitwise_or;
         case MaPLParser::BITWISE_XOR_ASSIGN:
-            return MAPL_BYTE_BITWISE_XOR;
+            return MaPLInstruction_bitwise_xor;
         case MaPLParser::BITWISE_SHIFT_LEFT_ASSIGN:
-            return MAPL_BYTE_BITWISE_SHIFT_LEFT;
+            return MaPLInstruction_bitwise_shift_left;
         case MaPLParser::BITWISE_SHIFT_RIGHT_ASSIGN:
-            return MAPL_BYTE_BITWISE_SHIFT_RIGHT;
-        default: return MAPL_BYTE_NO_OP;
+            return MaPLInstruction_bitwise_shift_right;
+        default: return MaPLInstruction_no_op;
     }
 }
 
-MaPL_Instruction variableInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction variableInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_VARIABLE_INT8;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_VARIABLE_INT16;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_VARIABLE_INT32;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_VARIABLE_INT64;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_VARIABLE_UINT8;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_VARIABLE_UINT16;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_VARIABLE_UINT32;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_VARIABLE_UINT64;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_VARIABLE_FLOAT32;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_VARIABLE_FLOAT64;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_VARIABLE_STRING;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_VARIABLE_BOOLEAN;
-        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_VARIABLE_POINTER;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_variable_int8;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_variable_int16;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_variable_int32;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_variable_int64;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_variable_uint8;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_variable_uint16;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_variable_uint32;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_variable_uint64;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_variable_float32;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_variable_float64;
+        case MaPLPrimitiveType_String: return MaPLInstruction_variable_string;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_variable_boolean;
+        case MaPLPrimitiveType_Pointer: return MaPLInstruction_variable_pointer;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction numericLiteralInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction numericLiteralInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_LITERAL_INT8;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_LITERAL_INT16;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_LITERAL_INT32;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_LITERAL_INT64;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_LITERAL_UINT8;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_LITERAL_UINT16;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_LITERAL_UINT32;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_LITERAL_UINT64;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_LITERAL_FLOAT32;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_LITERAL_FLOAT64;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_literal_int8;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_literal_int16;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_literal_int32;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_literal_int64;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_literal_uint8;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_literal_uint16;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_literal_uint32;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_literal_uint64;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_literal_float32;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_literal_float64;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 
-MaPL_Instruction parameterTypeInstructionForPrimitive(MaPLPrimitiveType type) {
+MaPLInstruction parameterTypeInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
-        case MaPLPrimitiveType_Int8: return MAPL_BYTE_INT8_PARAMETER;
-        case MaPLPrimitiveType_Int16: return MAPL_BYTE_INT16_PARAMETER;
-        case MaPLPrimitiveType_Int32: return MAPL_BYTE_INT32_PARAMETER;
-        case MaPLPrimitiveType_Int64: return MAPL_BYTE_INT64_PARAMETER;
-        case MaPLPrimitiveType_UInt8: return MAPL_BYTE_UINT8_PARAMETER;
-        case MaPLPrimitiveType_UInt16: return MAPL_BYTE_UINT16_PARAMETER;
-        case MaPLPrimitiveType_UInt32: return MAPL_BYTE_UINT32_PARAMETER;
-        case MaPLPrimitiveType_UInt64: return MAPL_BYTE_UINT64_PARAMETER;
-        case MaPLPrimitiveType_Float32: return MAPL_BYTE_FLOAT32_PARAMETER;
-        case MaPLPrimitiveType_Float64: return MAPL_BYTE_FLOAT64_PARAMETER;
-        case MaPLPrimitiveType_String: return MAPL_BYTE_STRING_PARAMETER;
-        case MaPLPrimitiveType_Boolean: return MAPL_BYTE_BOOLEAN_PARAMETER;
-        case MaPLPrimitiveType_Pointer: return MAPL_BYTE_POINTER_PARAMETER;
-        default: return 0;
+        case MaPLPrimitiveType_Int8: return MaPLInstruction_int8_parameter;
+        case MaPLPrimitiveType_Int16: return MaPLInstruction_int16_parameter;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_parameter;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_parameter;
+        case MaPLPrimitiveType_UInt8: return MaPLInstruction_uint8_parameter;
+        case MaPLPrimitiveType_UInt16: return MaPLInstruction_uint16_parameter;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_parameter;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_parameter;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_parameter;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_parameter;
+        case MaPLPrimitiveType_String: return MaPLInstruction_string_parameter;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_parameter;
+        case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_parameter;
+        default: return MaPLInstruction_placeholder_or_error;
     }
 }
 

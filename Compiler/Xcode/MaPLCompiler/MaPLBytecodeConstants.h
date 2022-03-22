@@ -9,7 +9,6 @@
 #define MaPLBytecodeConstants_h
 
 // Byte sizes for MaPL bytecode.
-typedef u_int8_t MaPL_Instruction;
 typedef u_int8_t MaPL_ParemeterCount;
 typedef u_int16_t MaPL_MemoryAddress;
 typedef u_int16_t MaPL_CursorMove;
@@ -19,235 +18,238 @@ struct MaPL_String {
     bool isAllocated;
 };
 
-//PRIMITIVE LITERALS
-#define MAPL_BYTE_LITERAL_INT8 1
-#define MAPL_BYTE_LITERAL_INT16 2
-#define MAPL_BYTE_LITERAL_INT32 3
-#define MAPL_BYTE_LITERAL_INT64 4
-#define MAPL_BYTE_LITERAL_UINT8 5
-#define MAPL_BYTE_LITERAL_UINT16 6
-#define MAPL_BYTE_LITERAL_UINT32 7
-#define MAPL_BYTE_LITERAL_UINT64 8
-#define MAPL_BYTE_LITERAL_FLOAT32 9
-#define MAPL_BYTE_LITERAL_FLOAT64 10
-#define MAPL_BYTE_LITERAL_BOOLEAN_TRUE 11
-#define MAPL_BYTE_LITERAL_BOOLEAN_FALSE 12
-#define MAPL_BYTE_LITERAL_STRING 13
-#define MAPL_BYTE_LITERAL_NULL 14
+enum MaPLInstruction : u_int8_t {
+    MaPLInstruction_placeholder_or_error = 0,
+    
+    //PRIMITIVE LITERALS
+    MaPLInstruction_literal_int8 = 1,
+    MaPLInstruction_literal_int16 = 2,
+    MaPLInstruction_literal_int32 = 3,
+    MaPLInstruction_literal_int64 = 4,
+    MaPLInstruction_literal_uint8 = 5,
+    MaPLInstruction_literal_uint16 = 6,
+    MaPLInstruction_literal_uint32 = 7,
+    MaPLInstruction_literal_uint64 = 8,
+    MaPLInstruction_literal_float32 = 9,
+    MaPLInstruction_literal_float64 = 10,
+    MaPLInstruction_literal_boolean_true = 11,
+    MaPLInstruction_literal_boolean_false = 12,
+    MaPLInstruction_literal_string = 13,
+    MaPLInstruction_literal_null = 14,
 
-//VARIABLE RETRIEVAL
-#define MAPL_BYTE_VARIABLE_INT8 15
-#define MAPL_BYTE_VARIABLE_INT16 16
-#define MAPL_BYTE_VARIABLE_INT32 17
-#define MAPL_BYTE_VARIABLE_INT64 18
-#define MAPL_BYTE_VARIABLE_UINT8 19
-#define MAPL_BYTE_VARIABLE_UINT16 20
-#define MAPL_BYTE_VARIABLE_UINT32 21
-#define MAPL_BYTE_VARIABLE_UINT64 22
-#define MAPL_BYTE_VARIABLE_FLOAT32 23
-#define MAPL_BYTE_VARIABLE_FLOAT64 24
-#define MAPL_BYTE_VARIABLE_BOOLEAN 25
-#define MAPL_BYTE_VARIABLE_STRING 26
-#define MAPL_BYTE_VARIABLE_POINTER 27
+    //VARIABLE RETRIEVAL
+    MaPLInstruction_variable_int8 = 15,
+    MaPLInstruction_variable_int16 = 16,
+    MaPLInstruction_variable_int32 = 17,
+    MaPLInstruction_variable_int64 = 18,
+    MaPLInstruction_variable_uint8 = 19,
+    MaPLInstruction_variable_uint16 = 20,
+    MaPLInstruction_variable_uint32 = 21,
+    MaPLInstruction_variable_uint64 = 22,
+    MaPLInstruction_variable_float32 = 23,
+    MaPLInstruction_variable_float64 = 24,
+    MaPLInstruction_variable_boolean = 25,
+    MaPLInstruction_variable_string = 26,
+    MaPLInstruction_variable_pointer = 27,
 
-//NUMERIC LOGIC
-#define MAPL_BYTE_INT8_LOGICAL_EQUALITY 28
-#define MAPL_BYTE_INT16_LOGICAL_EQUALITY 29
-#define MAPL_BYTE_INT32_LOGICAL_EQUALITY 30
-#define MAPL_BYTE_INT64_LOGICAL_EQUALITY 31
-#define MAPL_BYTE_UINT8_LOGICAL_EQUALITY 32
-#define MAPL_BYTE_UINT16_LOGICAL_EQUALITY 33
-#define MAPL_BYTE_UINT32_LOGICAL_EQUALITY 34
-#define MAPL_BYTE_UINT64_LOGICAL_EQUALITY 35
-#define MAPL_BYTE_FLOAT32_LOGICAL_EQUALITY 36
-#define MAPL_BYTE_FLOAT64_LOGICAL_EQUALITY 37
-#define MAPL_BYTE_INT8_LOGICAL_INEQUALITY 38
-#define MAPL_BYTE_INT16_LOGICAL_INEQUALITY 39
-#define MAPL_BYTE_INT32_LOGICAL_INEQUALITY 40
-#define MAPL_BYTE_INT64_LOGICAL_INEQUALITY 41
-#define MAPL_BYTE_UINT8_LOGICAL_INEQUALITY 42
-#define MAPL_BYTE_UINT16_LOGICAL_INEQUALITY 43
-#define MAPL_BYTE_UINT32_LOGICAL_INEQUALITY 44
-#define MAPL_BYTE_UINT64_LOGICAL_INEQUALITY 45
-#define MAPL_BYTE_FLOAT32_LOGICAL_INEQUALITY 46
-#define MAPL_BYTE_FLOAT64_LOGICAL_INEQUALITY 47
-#define MAPL_BYTE_INT8_LOGICAL_LESS_THAN 48
-#define MAPL_BYTE_INT16_LOGICAL_LESS_THAN 49
-#define MAPL_BYTE_INT32_LOGICAL_LESS_THAN 50
-#define MAPL_BYTE_INT64_LOGICAL_LESS_THAN 51
-#define MAPL_BYTE_UINT8_LOGICAL_LESS_THAN 52
-#define MAPL_BYTE_UINT16_LOGICAL_LESS_THAN 53
-#define MAPL_BYTE_UINT32_LOGICAL_LESS_THAN 54
-#define MAPL_BYTE_UINT64_LOGICAL_LESS_THAN 55
-#define MAPL_BYTE_FLOAT32_LOGICAL_LESS_THAN 56
-#define MAPL_BYTE_FLOAT64_LOGICAL_LESS_THAN 57
-#define MAPL_BYTE_INT8_LOGICAL_LESS_THAN_EQUAL 58
-#define MAPL_BYTE_INT16_LOGICAL_LESS_THAN_EQUAL 59
-#define MAPL_BYTE_INT32_LOGICAL_LESS_THAN_EQUAL 60
-#define MAPL_BYTE_INT64_LOGICAL_LESS_THAN_EQUAL 61
-#define MAPL_BYTE_UINT8_LOGICAL_LESS_THAN_EQUAL 62
-#define MAPL_BYTE_UINT16_LOGICAL_LESS_THAN_EQUAL 63
-#define MAPL_BYTE_UINT32_LOGICAL_LESS_THAN_EQUAL 64
-#define MAPL_BYTE_UINT64_LOGICAL_LESS_THAN_EQUAL 65
-#define MAPL_BYTE_FLOAT32_LOGICAL_LESS_THAN_EQUAL 66
-#define MAPL_BYTE_FLOAT64_LOGICAL_LESS_THAN_EQUAL 67
-#define MAPL_BYTE_INT8_LOGICAL_GREATER_THAN 68
-#define MAPL_BYTE_INT16_LOGICAL_GREATER_THAN 69
-#define MAPL_BYTE_INT32_LOGICAL_GREATER_THAN 70
-#define MAPL_BYTE_INT64_LOGICAL_GREATER_THAN 71
-#define MAPL_BYTE_UINT8_LOGICAL_GREATER_THAN 72
-#define MAPL_BYTE_UINT16_LOGICAL_GREATER_THAN 73
-#define MAPL_BYTE_UINT32_LOGICAL_GREATER_THAN 74
-#define MAPL_BYTE_UINT64_LOGICAL_GREATER_THAN 75
-#define MAPL_BYTE_FLOAT32_LOGICAL_GREATER_THAN 76
-#define MAPL_BYTE_FLOAT64_LOGICAL_GREATER_THAN 77
-#define MAPL_BYTE_INT8_LOGICAL_GREATER_THAN_EQUAL 78
-#define MAPL_BYTE_INT16_LOGICAL_GREATER_THAN_EQUAL 79
-#define MAPL_BYTE_INT32_LOGICAL_GREATER_THAN_EQUAL 80
-#define MAPL_BYTE_INT64_LOGICAL_GREATER_THAN_EQUAL 81
-#define MAPL_BYTE_UINT8_LOGICAL_GREATER_THAN_EQUAL 82
-#define MAPL_BYTE_UINT16_LOGICAL_GREATER_THAN_EQUAL 83
-#define MAPL_BYTE_UINT32_LOGICAL_GREATER_THAN_EQUAL 84
-#define MAPL_BYTE_UINT64_LOGICAL_GREATER_THAN_EQUAL 85
-#define MAPL_BYTE_FLOAT32_LOGICAL_GREATER_THAN_EQUAL 86
-#define MAPL_BYTE_FLOAT64_LOGICAL_GREATER_THAN_EQUAL 87
+    //NUMERIC LOGIC
+    MaPLInstruction_int8_logical_equality = 28,
+    MaPLInstruction_int16_logical_equality = 29,
+    MaPLInstruction_int32_logical_equality = 30,
+    MaPLInstruction_int64_logical_equality = 31,
+    MaPLInstruction_uint8_logical_equality = 32,
+    MaPLInstruction_uint16_logical_equality = 33,
+    MaPLInstruction_uint32_logical_equality = 34,
+    MaPLInstruction_uint64_logical_equality = 35,
+    MaPLInstruction_float32_logical_equality = 36,
+    MaPLInstruction_float64_logical_equality = 37,
+    MaPLInstruction_int8_logical_inequality = 38,
+    MaPLInstruction_int16_logical_inequality = 39,
+    MaPLInstruction_int32_logical_inequality = 40,
+    MaPLInstruction_int64_logical_inequality = 41,
+    MaPLInstruction_uint8_logical_inequality = 42,
+    MaPLInstruction_uint16_logical_inequality = 43,
+    MaPLInstruction_uint32_logical_inequality = 44,
+    MaPLInstruction_uint64_logical_inequality = 45,
+    MaPLInstruction_float32_logical_inequality = 46,
+    MaPLInstruction_float64_logical_inequality = 47,
+    MaPLInstruction_int8_logical_less_than = 48,
+    MaPLInstruction_int16_logical_less_than = 49,
+    MaPLInstruction_int32_logical_less_than = 50,
+    MaPLInstruction_int64_logical_less_than = 51,
+    MaPLInstruction_uint8_logical_less_than = 52,
+    MaPLInstruction_uint16_logical_less_than = 53,
+    MaPLInstruction_uint32_logical_less_than = 54,
+    MaPLInstruction_uint64_logical_less_than = 55,
+    MaPLInstruction_float32_logical_less_than = 56,
+    MaPLInstruction_float64_logical_less_than = 57,
+    MaPLInstruction_int8_logical_less_than_equal = 58,
+    MaPLInstruction_int16_logical_less_than_equal = 59,
+    MaPLInstruction_int32_logical_less_than_equal = 60,
+    MaPLInstruction_int64_logical_less_than_equal = 61,
+    MaPLInstruction_uint8_logical_less_than_equal = 62,
+    MaPLInstruction_uint16_logical_less_than_equal = 63,
+    MaPLInstruction_uint32_logical_less_than_equal = 64,
+    MaPLInstruction_uint64_logical_less_than_equal = 65,
+    MaPLInstruction_float32_logical_less_than_equal = 66,
+    MaPLInstruction_float64_logical_less_than_equal = 67,
+    MaPLInstruction_int8_logical_greater_than = 68,
+    MaPLInstruction_int16_logical_greater_than = 69,
+    MaPLInstruction_int32_logical_greater_than = 70,
+    MaPLInstruction_int64_logical_greater_than = 71,
+    MaPLInstruction_uint8_logical_greater_than = 72,
+    MaPLInstruction_uint16_logical_greater_than = 73,
+    MaPLInstruction_uint32_logical_greater_than = 74,
+    MaPLInstruction_uint64_logical_greater_than = 75,
+    MaPLInstruction_float32_logical_greater_than = 76,
+    MaPLInstruction_float64_logical_greater_than = 77,
+    MaPLInstruction_int8_logical_greater_than_equal = 78,
+    MaPLInstruction_int16_logical_greater_than_equal = 79,
+    MaPLInstruction_int32_logical_greater_than_equal = 80,
+    MaPLInstruction_int64_logical_greater_than_equal = 81,
+    MaPLInstruction_uint8_logical_greater_than_equal = 82,
+    MaPLInstruction_uint16_logical_greater_than_equal = 83,
+    MaPLInstruction_uint32_logical_greater_than_equal = 84,
+    MaPLInstruction_uint64_logical_greater_than_equal = 85,
+    MaPLInstruction_float32_logical_greater_than_equal = 86,
+    MaPLInstruction_float64_logical_greater_than_equal = 87,
 
-//NUMERIC OPERATORS
-#define MAPL_BYTE_NUMERIC_ADD 88
-#define MAPL_BYTE_NUMERIC_SUBTRACT 89
-#define MAPL_BYTE_NUMERIC_DIVIDE 90
-#define MAPL_BYTE_NUMERIC_MULTIPLY 91
-#define MAPL_BYTE_NUMERIC_MODULO 92
-#define MAPL_BYTE_NUMERIC_NEGATION 93
+    //NUMERIC OPERATORS
+    MaPLInstruction_numeric_add = 88,
+    MaPLInstruction_numeric_subtract = 89,
+    MaPLInstruction_numeric_divide = 90,
+    MaPLInstruction_numeric_multiply = 91,
+    MaPLInstruction_numeric_modulo = 92,
+    MaPLInstruction_numeric_negation = 93,
 
-//BITWISE OPERATORS
-#define MAPL_BYTE_BITWISE_AND 94
-#define MAPL_BYTE_BITWISE_OR 95
-#define MAPL_BYTE_BITWISE_XOR 96
-#define MAPL_BYTE_BITWISE_NEGATION 97
-#define MAPL_BYTE_BITWISE_SHIFT_LEFT 98
-#define MAPL_BYTE_BITWISE_SHIFT_RIGHT 99
+    //BITWISE OPERATORS
+    MaPLInstruction_bitwise_and = 94,
+    MaPLInstruction_bitwise_or = 95,
+    MaPLInstruction_bitwise_xor = 96,
+    MaPLInstruction_bitwise_negation = 97,
+    MaPLInstruction_bitwise_shift_left = 98,
+    MaPLInstruction_bitwise_shift_right = 99,
 
-//BOOLEAN OPERATORS
-#define MAPL_BYTE_BOOLEAN_LOGICAL_EQUALITY 100
-#define MAPL_BYTE_BOOLEAN_LOGICAL_INEQUALITY 101
+    //BOOLEAN OPERATORS
+    MaPLInstruction_boolean_logical_equality = 100,
+    MaPLInstruction_boolean_logical_inequality = 101,
 
-//LOGICAL OPERATORS
-#define MAPL_BYTE_LOGICAL_AND 102
-#define MAPL_BYTE_LOGICAL_OR 103
-#define MAPL_BYTE_LOGICAL_NEGATION 104
+    //LOGICAL OPERATORS
+    MaPLInstruction_logical_and = 102,
+    MaPLInstruction_logical_or = 103,
+    MaPLInstruction_logical_negation = 104,
 
-//STRING OPERATORS
-#define MAPL_BYTE_STRING_LOGICAL_EQUALITY 105
-#define MAPL_BYTE_STRING_LOGICAL_INEQUALITY 106
-#define MAPL_BYTE_STRING_CONCAT 107
+    //STRING OPERATORS
+    MaPLInstruction_string_logical_equality = 105,
+    MaPLInstruction_string_logical_inequality = 106,
+    MaPLInstruction_string_concat = 107,
 
-//POINTER OPERATORS
-#define MAPL_BYTE_POINTER_LOGICAL_EQUALITY 108
-#define MAPL_BYTE_POINTER_LOGICAL_INEQUALITY 109
+    //POINTER OPERATORS
+    MaPLInstruction_pointer_logical_equality = 108,
+    MaPLInstruction_pointer_logical_inequality = 109,
 
-//ASSIGN
-#define MAPL_BYTE_INT8_ASSIGN 110
-#define MAPL_BYTE_INT16_ASSIGN 111
-#define MAPL_BYTE_INT32_ASSIGN 112
-#define MAPL_BYTE_INT64_ASSIGN 113
-#define MAPL_BYTE_UINT8_ASSIGN 114
-#define MAPL_BYTE_UINT16_ASSIGN 115
-#define MAPL_BYTE_UINT32_ASSIGN 116
-#define MAPL_BYTE_UINT64_ASSIGN 117
-#define MAPL_BYTE_FLOAT32_ASSIGN 118
-#define MAPL_BYTE_FLOAT64_ASSIGN 119
-#define MAPL_BYTE_BOOLEAN_ASSIGN 120
-#define MAPL_BYTE_STRING_ASSIGN 121
-#define MAPL_BYTE_POINTER_ASSIGN 122
-#define MAPL_BYTE_INT8_ASSIGN_SUBSCRIPT 123
-#define MAPL_BYTE_INT16_ASSIGN_SUBSCRIPT 124
-#define MAPL_BYTE_INT32_ASSIGN_SUBSCRIPT 125
-#define MAPL_BYTE_INT64_ASSIGN_SUBSCRIPT 126
-#define MAPL_BYTE_UINT8_ASSIGN_SUBSCRIPT 127
-#define MAPL_BYTE_UINT16_ASSIGN_SUBSCRIPT 128
-#define MAPL_BYTE_UINT32_ASSIGN_SUBSCRIPT 129
-#define MAPL_BYTE_UINT64_ASSIGN_SUBSCRIPT 130
-#define MAPL_BYTE_FLOAT32_ASSIGN_SUBSCRIPT 131
-#define MAPL_BYTE_FLOAT64_ASSIGN_SUBSCRIPT 132
-#define MAPL_BYTE_BOOLEAN_ASSIGN_SUBSCRIPT 133
-#define MAPL_BYTE_STRING_ASSIGN_SUBSCRIPT 134
-#define MAPL_BYTE_POINTER_ASSIGN_SUBSCRIPT 135
-#define MAPL_BYTE_INT8_ASSIGN_PROPERTY 136
-#define MAPL_BYTE_INT16_ASSIGN_PROPERTY 137
-#define MAPL_BYTE_INT32_ASSIGN_PROPERTY 138
-#define MAPL_BYTE_INT64_ASSIGN_PROPERTY 139
-#define MAPL_BYTE_UINT8_ASSIGN_PROPERTY 140
-#define MAPL_BYTE_UINT16_ASSIGN_PROPERTY 141
-#define MAPL_BYTE_UINT32_ASSIGN_PROPERTY 142
-#define MAPL_BYTE_UINT64_ASSIGN_PROPERTY 143
-#define MAPL_BYTE_FLOAT32_ASSIGN_PROPERTY 144
-#define MAPL_BYTE_FLOAT64_ASSIGN_PROPERTY 145
-#define MAPL_BYTE_BOOLEAN_ASSIGN_PROPERTY 146
-#define MAPL_BYTE_STRING_ASSIGN_PROPERTY 147
-#define MAPL_BYTE_POINTER_ASSIGN_PROPERTY 148
+    //ASSIGN
+    MaPLInstruction_int8_assign = 110,
+    MaPLInstruction_int16_assign = 111,
+    MaPLInstruction_int32_assign = 112,
+    MaPLInstruction_int64_assign = 113,
+    MaPLInstruction_uint8_assign = 114,
+    MaPLInstruction_uint16_assign = 115,
+    MaPLInstruction_uint32_assign = 116,
+    MaPLInstruction_uint64_assign = 117,
+    MaPLInstruction_float32_assign = 118,
+    MaPLInstruction_float64_assign = 119,
+    MaPLInstruction_boolean_assign = 120,
+    MaPLInstruction_string_assign = 121,
+    MaPLInstruction_pointer_assign = 122,
+    MaPLInstruction_int8_assign_subscript = 123,
+    MaPLInstruction_int16_assign_subscript = 124,
+    MaPLInstruction_int32_assign_subscript = 125,
+    MaPLInstruction_int64_assign_subscript = 126,
+    MaPLInstruction_uint8_assign_subscript = 127,
+    MaPLInstruction_uint16_assign_subscript = 128,
+    MaPLInstruction_uint32_assign_subscript = 129,
+    MaPLInstruction_uint64_assign_subscript = 130,
+    MaPLInstruction_float32_assign_subscript = 131,
+    MaPLInstruction_float64_assign_subscript = 132,
+    MaPLInstruction_boolean_assign_subscript = 133,
+    MaPLInstruction_string_assign_subscript = 134,
+    MaPLInstruction_pointer_assign_subscript = 135,
+    MaPLInstruction_int8_assign_property = 136,
+    MaPLInstruction_int16_assign_property = 137,
+    MaPLInstruction_int32_assign_property = 138,
+    MaPLInstruction_int64_assign_property = 139,
+    MaPLInstruction_uint8_assign_property = 140,
+    MaPLInstruction_uint16_assign_property = 141,
+    MaPLInstruction_uint32_assign_property = 142,
+    MaPLInstruction_uint64_assign_property = 143,
+    MaPLInstruction_float32_assign_property = 144,
+    MaPLInstruction_float64_assign_property = 145,
+    MaPLInstruction_boolean_assign_property = 146,
+    MaPLInstruction_string_assign_property = 147,
+    MaPLInstruction_pointer_assign_property = 148,
 
-//FUNCTION CALLS
-#define MAPL_BYTE_FUNCTION_INVOCATION 149
-#define MAPL_BYTE_SUBSCRIPT_INVOCATION 150
-#define MAPL_BYTE_INT8_PARAMETER 151
-#define MAPL_BYTE_INT16_PARAMETER 152
-#define MAPL_BYTE_INT32_PARAMETER 153
-#define MAPL_BYTE_INT64_PARAMETER 154
-#define MAPL_BYTE_UINT8_PARAMETER 155
-#define MAPL_BYTE_UINT16_PARAMETER 156
-#define MAPL_BYTE_UINT32_PARAMETER 157
-#define MAPL_BYTE_UINT64_PARAMETER 158
-#define MAPL_BYTE_FLOAT32_PARAMETER 159
-#define MAPL_BYTE_FLOAT64_PARAMETER 160
-#define MAPL_BYTE_STRING_PARAMETER 161
-#define MAPL_BYTE_BOOLEAN_PARAMETER 162
-#define MAPL_BYTE_POINTER_PARAMETER 163
+    //FUNCTION CALLS
+    MaPLInstruction_function_invocation = 149,
+    MaPLInstruction_subscript_invocation = 150,
+    MaPLInstruction_int8_parameter = 151,
+    MaPLInstruction_int16_parameter = 152,
+    MaPLInstruction_int32_parameter = 153,
+    MaPLInstruction_int64_parameter = 154,
+    MaPLInstruction_uint8_parameter = 155,
+    MaPLInstruction_uint16_parameter = 156,
+    MaPLInstruction_uint32_parameter = 157,
+    MaPLInstruction_uint64_parameter = 158,
+    MaPLInstruction_float32_parameter = 159,
+    MaPLInstruction_float64_parameter = 160,
+    MaPLInstruction_string_parameter = 161,
+    MaPLInstruction_boolean_parameter = 162,
+    MaPLInstruction_pointer_parameter = 163,
 
-//CONTROL FLOW
-#define MAPL_BYTE_CONDITIONAL 164
-#define MAPL_BYTE_TERNARY_CONDITIONAL 165
-#define MAPL_BYTE_NULL_COALESCING 166
-#define MAPL_BYTE_CURSOR_MOVE_FORWARD 167
-#define MAPL_BYTE_CURSOR_MOVE_BACK 168
-#define MAPL_BYTE_NO_OP 169
-#define MAPL_BYTE_PROGRAM_EXIT 170
+    //CONTROL FLOW
+    MaPLInstruction_conditional = 164,
+    MaPLInstruction_ternary_conditional = 165,
+    MaPLInstruction_null_coalescing = 166,
+    MaPLInstruction_cursor_move_forward = 167,
+    MaPLInstruction_cursor_move_back = 168,
+    MaPLInstruction_no_op = 169,
+    MaPLInstruction_program_exit = 170,
 
-//CAST (All casts are a combination of a 'to' and 'from' value)
-#define MAPL_BYTE_TYPECAST_TO_INT8 171
-#define MAPL_BYTE_TYPECAST_TO_INT16 172
-#define MAPL_BYTE_TYPECAST_TO_INT32 173
-#define MAPL_BYTE_TYPECAST_TO_INT64 174
-#define MAPL_BYTE_TYPECAST_TO_UINT8 175
-#define MAPL_BYTE_TYPECAST_TO_UINT16 176
-#define MAPL_BYTE_TYPECAST_TO_UINT32 177
-#define MAPL_BYTE_TYPECAST_TO_UINT64 178
-#define MAPL_BYTE_TYPECAST_TO_FLOAT32 179
-#define MAPL_BYTE_TYPECAST_TO_FLOAT64 180
-#define MAPL_BYTE_TYPECAST_TO_BOOLEAN 181
-#define MAPL_BYTE_TYPECAST_TO_STRING 182
-#define MAPL_BYTE_TYPECAST_FROM_INT8 183
-#define MAPL_BYTE_TYPECAST_FROM_INT16 184
-#define MAPL_BYTE_TYPECAST_FROM_INT32 185
-#define MAPL_BYTE_TYPECAST_FROM_INT64 186
-#define MAPL_BYTE_TYPECAST_FROM_UINT8 187
-#define MAPL_BYTE_TYPECAST_FROM_UINT16 188
-#define MAPL_BYTE_TYPECAST_FROM_UINT32 189
-#define MAPL_BYTE_TYPECAST_FROM_UINT64 190
-#define MAPL_BYTE_TYPECAST_FROM_FLOAT32 191
-#define MAPL_BYTE_TYPECAST_FROM_FLOAT64 192
-#define MAPL_BYTE_TYPECAST_FROM_BOOLEAN 193
-#define MAPL_BYTE_TYPECAST_FROM_STRING 194
-#define MAPL_BYTE_TYPECAST_FROM_POINTER_TO_STRING 195
+    //CAST (All casts are a combination of a 'to' and 'from' value)
+    MaPLInstruction_typecast_to_int8 = 171,
+    MaPLInstruction_typecast_to_int16 = 172,
+    MaPLInstruction_typecast_to_int32 = 173,
+    MaPLInstruction_typecast_to_int64 = 174,
+    MaPLInstruction_typecast_to_uint8 = 175,
+    MaPLInstruction_typecast_to_uint16 = 176,
+    MaPLInstruction_typecast_to_uint32 = 177,
+    MaPLInstruction_typecast_to_uint64 = 178,
+    MaPLInstruction_typecast_to_float32 = 179,
+    MaPLInstruction_typecast_to_float64 = 180,
+    MaPLInstruction_typecast_to_boolean = 181,
+    MaPLInstruction_typecast_to_string = 182,
+    MaPLInstruction_typecast_from_int8 = 183,
+    MaPLInstruction_typecast_from_int16 = 184,
+    MaPLInstruction_typecast_from_int32 = 185,
+    MaPLInstruction_typecast_from_int64 = 186,
+    MaPLInstruction_typecast_from_uint8 = 187,
+    MaPLInstruction_typecast_from_uint16 = 188,
+    MaPLInstruction_typecast_from_uint32 = 189,
+    MaPLInstruction_typecast_from_uint64 = 190,
+    MaPLInstruction_typecast_from_float32 = 191,
+    MaPLInstruction_typecast_from_float64 = 192,
+    MaPLInstruction_typecast_from_boolean = 193,
+    MaPLInstruction_typecast_from_string = 194,
+    MaPLInstruction_typecast_from_pointer_to_string = 195,
 
-//METADATA
-#define MAPL_BYTE_METADATA 196
+    //METADATA
+    MaPLInstruction_metadata = 196,
 
-//DEBUGGING
-// TODO: Add debug instructions based on command line flag.
-#define MAPL_BYTE_DEBUG_LINE 197
-#define MAPL_BYTE_DEBUG_UPDATE_VARIABLE 198
-#define MAPL_BYTE_DEBUG_DELETE_VARIABLE 199
+    //DEBUGGING
+    // TODO: Add debug instructions based on command line flag.
+    MaPLInstruction_debug_line = 197,
+    MaPLInstruction_debug_update_variable = 198,
+    MaPLInstruction_debug_delete_variable = 199,
+};
 
 #endif /* MaPLBytecodeConstants_h */
-

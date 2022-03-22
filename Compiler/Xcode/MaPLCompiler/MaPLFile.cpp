@@ -300,7 +300,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::StatementContext *statement = (MaPLParser::StatementContext *)node;
             antlr4::tree::TerminalNode *metadata = statement->METADATA();
             if (metadata) {
-                currentBuffer->appendByte(MAPL_BYTE_METADATA);
+                currentBuffer->appendInstruction(MaPLInstruction_metadata);
                 std::string metadataString = metadata->getText();
                 currentBuffer->appendString(metadataString.substr(2, metadataString.length()-4));
             } else {
@@ -317,7 +317,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             logError(statement->keyToken, "Break statements can only be used within loops.");
                         }
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Break });
-                        currentBuffer->appendByte(0);
+                        currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
                         MaPL_CursorMove placeholderMove = 0;
                         currentBuffer->appendBytes(&placeholderMove, sizeof(placeholderMove));
                     }
@@ -327,13 +327,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             logError(statement->keyToken, "Continue statements can only be used within loops.");
                         }
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_Continue });
-                        currentBuffer->appendByte(0);
+                        currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
                         MaPL_CursorMove placeholderMove = 0;
                         currentBuffer->appendBytes(&placeholderMove, sizeof(placeholderMove));
                     }
                         break;
                     case MaPLParser::EXIT:
-                        currentBuffer->appendByte(MAPL_BYTE_PROGRAM_EXIT);
+                        currentBuffer->appendInstruction(MaPLInstruction_program_exit);
                         break;
                     default: break;
                 }
@@ -359,7 +359,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Assign the value to this variable if needed.
             MaPLParser::ExpressionContext *expression = declaration->expression();
             if (expression) {
-                currentBuffer->appendByte(assignmentInstructionForPrimitive(variable.type.primitiveType));
+                currentBuffer->appendInstruction(assignmentInstructionForPrimitive(variable.type.primitiveType));
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 MaPL_MemoryAddress variableByteOffset = _variableStack->getVariable(variableName).byteOffset;
                 currentBuffer->appendBytes(&variableByteOffset, sizeof(variableByteOffset));
@@ -378,7 +378,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             }
             if (assignedVariable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                 // This assignment is for a variable. Append the left side of the assignment.
-                currentBuffer->appendByte(assignInstructionForPrimitive(assignedVariable.type.primitiveType));
+                currentBuffer->appendInstruction(assignmentInstructionForPrimitive(assignedVariable.type.primitiveType));
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
@@ -390,16 +390,16 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         // If there was an error, the reason why was already logged.
                         break;
                     }
-                    MaPL_Instruction operatorAssign = operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType);
-                    currentBuffer->appendByte(operatorAssign);
-                    if (operatorAssign == MAPL_BYTE_STRING_CONCAT) {
+                    MaPLInstruction operatorAssign = operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType);
+                    currentBuffer->appendInstruction(operatorAssign);
+                    if (operatorAssign == MaPLInstruction_string_concat) {
                         // This is a string concat-assign.
-                        currentBuffer->appendByte(MAPL_BYTE_VARIABLE_STRING);
+                        currentBuffer->appendInstruction(MaPLInstruction_variable_string);
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                         currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     } else {
                         // This is a numeric or bitwise operator assign.
-                        currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                        currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
                         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                         currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     }
@@ -441,11 +441,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // ┌ MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
                     // └ ExpressionContext - The index of the subscript.
                     //   ExpressionContext - The assigned expression.
-                    currentBuffer->appendByte(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
-                        currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+                        currentBuffer->appendInstruction(MaPLInstruction_no_op);
                     }
                     
                     size_t assignTokenType = assignment->keyToken->getType();
@@ -453,10 +453,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         // If there was an error, the reason why was already logged.
                         break;
                     }
-                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType));
+                    currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType));
                     
                     MaPLType indexType = typeForTypeContext(subscript->type(1));
-                    currentBuffer->appendByte(parameterTypeInstructionForPrimitive(indexType.primitiveType));
+                    currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(indexType.primitiveType));
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
                     compileNode(assignment->expression(), returnType, currentBuffer);
                 } else {
@@ -476,11 +476,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   MaPL_Symbol - The bytecode representation of the name of this property.
                     //   ExpressionContext - The assigned expression.
-                    currentBuffer->appendByte(assignPropertyInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(assignPropertyInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
-                        currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+                        currentBuffer->appendInstruction(MaPLInstruction_no_op);
                     }
                     
                     size_t assignTokenType = assignment->keyToken->getType();
@@ -488,7 +488,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         // If there was an error, the reason why was already logged.
                         break;
                     }
-                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType));
+                    currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType));
                     
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
@@ -520,11 +520,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     break;
                 }
                 // Rewrite the increment as a regular assign. For example: "var++" becomes "var=var+1".
-                currentBuffer->appendByte(assignInstructionForPrimitive(assignedVariable.type.primitiveType));
+                currentBuffer->appendInstruction(assignmentInstructionForPrimitive(assignedVariable.type.primitiveType));
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
-                currentBuffer->appendByte(operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType));
-                currentBuffer->appendByte(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType));
+                currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
@@ -571,11 +571,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
                     // This logic takes an increment, and rewrites it into the same format as a normal assignment.
                     // For example: "object[i]++" becomes "object[i]=object[i]+1".
-                    currentBuffer->appendByte(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
-                        currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+                        currentBuffer->appendInstruction(MaPLInstruction_no_op);
                     }
                     
                     size_t incrementTokenType = statement->keyToken->getType();
@@ -583,10 +583,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         // If there was an error, the reason why was already logged.
                         break;
                     }
-                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
+                    currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
                     
                     MaPLType indexType = typeForTypeContext(subscript->type(1));
-                    currentBuffer->appendByte(parameterTypeInstructionForPrimitive(indexType.primitiveType));
+                    currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(indexType.primitiveType));
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
                     
                     // Add a literal "1" that matches the return type.
@@ -613,11 +613,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
                     // This logic takes an increment, and rewrites it into the same format as a normal assignment.
                     // For example: "property++" becomes "property=property+1".
-                    currentBuffer->appendByte(assignPropertyInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(assignPropertyInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
-                        currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+                        currentBuffer->appendInstruction(MaPLInstruction_no_op);
                     }
                     
                     size_t incrementTokenType = statement->keyToken->getType();
@@ -625,7 +625,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         // If there was an error, the reason why was already logged.
                         break;
                     }
-                    currentBuffer->appendByte(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
+                    currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
                     
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
@@ -725,7 +725,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         if (expressionType.primitiveType == MaPLPrimitiveType_Pointer) {
                             // Strings are the only primitive that can cast from pointer (to print the memory address of pointers).
                             if (castType.primitiveType == MaPLPrimitiveType_String) {
-                                currentBuffer->appendByte(MAPL_BYTE_TYPECAST_FROM_POINTER_TO_STRING);
+                                currentBuffer->appendInstruction(MaPLInstruction_typecast_from_pointer_to_string);
                                 compileNode(expression->expression(0), expressionType, currentBuffer);
                                 break;
                             } else {
@@ -742,23 +742,23 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             }
                             break;
                         }
-                        MaPL_Instruction castFrom = typecastFromInstructionForPrimitive(expressionType.primitiveType);
-                        MaPL_Instruction castTo = typecastToInstructionForPrimitive(castType.primitiveType);
+                        MaPLInstruction castFrom = typecastFromInstructionForPrimitive(expressionType.primitiveType);
+                        MaPLInstruction castTo = typecastToInstructionForPrimitive(castType.primitiveType);
                         if (!castTo || !castFrom) {
                             logError(expression->type()->start, "Unable to cast from type "+descriptorForType(expressionType)+" to "+descriptorForType(castType)+".");
                             break;
                         }
-                        currentBuffer->appendByte(castTo);
-                        currentBuffer->appendByte(castFrom);
+                        currentBuffer->appendInstruction(castTo);
+                        currentBuffer->appendInstruction(castFrom);
                         compileNode(expression->expression(0), expressionType, currentBuffer);
                     }
                         break;
                     case MaPLParser::LOGICAL_AND: // Intentional fallthrough.
                     case MaPLParser::LOGICAL_OR:
                         if (tokenType == MaPLParser::LOGICAL_AND) {
-                            currentBuffer->appendByte(MAPL_BYTE_LOGICAL_AND);
+                            currentBuffer->appendInstruction(MaPLInstruction_logical_and);
                         } else {
-                            currentBuffer->appendByte(MAPL_BYTE_LOGICAL_OR);
+                            currentBuffer->appendInstruction(MaPLInstruction_logical_or);
                         }
                         compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
                         compileNode(expression->expression(1), { MaPLPrimitiveType_Boolean }, currentBuffer);
@@ -770,19 +770,19 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     case MaPLParser::BITWISE_SHIFT_RIGHT:
                         switch (tokenType) {
                             case MaPLParser::BITWISE_AND:
-                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_AND);
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_and);
                                 break;
                             case MaPLParser::BITWISE_XOR:
-                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_XOR);
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_xor);
                                 break;
                             case MaPLParser::BITWISE_OR:
-                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_OR);
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_or);
                                 break;
                             case MaPLParser::BITWISE_SHIFT_LEFT:
-                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_LEFT);
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
                                 break;
                             case MaPLParser::BITWISE_SHIFT_RIGHT:
-                                currentBuffer->appendByte(MAPL_BYTE_BITWISE_SHIFT_RIGHT);
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
                                 break;
                             default: break;
                         }
@@ -807,9 +807,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             break;
                         }
                         if (tokenType == MaPLParser::LOGICAL_EQUALITY) {
-                            currentBuffer->appendByte(equalityInstructionForPrimitive(reconciledType));
+                            currentBuffer->appendInstruction(equalityInstructionForPrimitive(reconciledType));
                         } else {
-                            currentBuffer->appendByte(inequalityInstructionForPrimitive(reconciledType));
+                            currentBuffer->appendInstruction(inequalityInstructionForPrimitive(reconciledType));
                         }
                         // Pointers can compare memory addresses without need for equal #type.
                         if (reconciledType == MaPLPrimitiveType_Pointer) {
@@ -844,16 +844,16 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         }
                         switch (tokenType) {
                             case MaPLParser::LESS_THAN:
-                                currentBuffer->appendByte(lessThanInstructionForPrimitive(reconciledType));
+                                currentBuffer->appendInstruction(lessThanInstructionForPrimitive(reconciledType));
                                 break;
                             case MaPLParser::LESS_THAN_EQUAL:
-                                currentBuffer->appendByte(lessThanOrEqualInstructionForPrimitive(reconciledType));
+                                currentBuffer->appendInstruction(lessThanOrEqualInstructionForPrimitive(reconciledType));
                                 break;
                             case MaPLParser::GREATER_THAN:
-                                currentBuffer->appendByte(greaterThanInstructionForPrimitive(reconciledType));
+                                currentBuffer->appendInstruction(greaterThanInstructionForPrimitive(reconciledType));
                                 break;
                             case MaPLParser::GREATER_THAN_EQUAL:
-                                currentBuffer->appendByte(greaterThanOrEqualInstructionForPrimitive(reconciledType));
+                                currentBuffer->appendInstruction(greaterThanOrEqualInstructionForPrimitive(reconciledType));
                                 break;
                             default: break;
                         }
@@ -862,18 +862,18 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                         break;
                     case MaPLParser::LOGICAL_NEGATION:
-                        currentBuffer->appendByte(MAPL_BYTE_LOGICAL_NEGATION);
+                        currentBuffer->appendInstruction(MaPLInstruction_logical_negation);
                         compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
                         break;
                     case MaPLParser::BITWISE_NEGATION:
-                        currentBuffer->appendByte(MAPL_BYTE_BITWISE_NEGATION);
+                        currentBuffer->appendInstruction(MaPLInstruction_bitwise_negation);
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         break;
                     case MaPLParser::SUBTRACT: {
                         std::vector<MaPLParser::ExpressionContext *> expressions = expression->expression();
                         if (expressions.size() == 1) {
                             // This is numeric negation (instead of subtraction).
-                            currentBuffer->appendByte(MAPL_BYTE_NUMERIC_NEGATION);
+                            currentBuffer->appendInstruction(MaPLInstruction_numeric_negation);
                             compileNode(expressions[0], expectedType, currentBuffer);
                             break;
                         }
@@ -886,22 +886,22 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         switch (tokenType) {
                             case MaPLParser::ADD:
                                 if (expectedType.primitiveType == MaPLPrimitiveType_String) {
-                                    currentBuffer->appendByte(MAPL_BYTE_STRING_CONCAT);
+                                    currentBuffer->appendInstruction(MaPLInstruction_string_concat);
                                 } else {
-                                    currentBuffer->appendByte(MAPL_BYTE_NUMERIC_ADD);
+                                    currentBuffer->appendInstruction(MaPLInstruction_numeric_add);
                                 }
                                 break;
                             case MaPLParser::SUBTRACT:
-                                currentBuffer->appendByte(MAPL_BYTE_NUMERIC_SUBTRACT);
+                                currentBuffer->appendInstruction(MaPLInstruction_numeric_subtract);
                                 break;
                             case MaPLParser::MOD:
-                                currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MODULO);
+                                currentBuffer->appendInstruction(MaPLInstruction_numeric_modulo);
                                 break;
                             case MaPLParser::MULTIPLY:
-                                currentBuffer->appendByte(MAPL_BYTE_NUMERIC_MULTIPLY);
+                                currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
                                 break;
                             case MaPLParser::DIVIDE:
-                                currentBuffer->appendByte(MAPL_BYTE_NUMERIC_DIVIDE);
+                                currentBuffer->appendInstruction(MaPLInstruction_numeric_divide);
                                 break;
                             default: break;
                         }
@@ -910,7 +910,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         break;
                     case MaPLParser::TERNARY_CONDITIONAL: {
                         std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-                        currentBuffer->appendByte(MAPL_BYTE_TERNARY_CONDITIONAL);
+                        currentBuffer->appendInstruction(MaPLInstruction_ternary_conditional);
                         compileNode(childExpressions[0], { MaPLPrimitiveType_Boolean }, currentBuffer);
                         compileNode(childExpressions[1], expectedType, currentBuffer);
                         compileNode(childExpressions[2], expectedType, currentBuffer);
@@ -918,7 +918,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         break;
                     case MaPLParser::NULL_COALESCING: {
                         std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-                        currentBuffer->appendByte(MAPL_BYTE_NULL_COALESCING);
+                        currentBuffer->appendInstruction(MaPLInstruction_null_coalescing);
                         compileNode(childExpressions[0], expectedType, currentBuffer);
                         compileNode(childExpressions[1], expectedType, currentBuffer);
                     }
@@ -962,14 +962,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLBuffer loopBuffer(10);
             if (!infiniteLoop) {
                 // This is not an infinite loop, so the conditional must be checked on each iteration.
-                loopBuffer.appendByte(MAPL_BYTE_CONDITIONAL);
+                loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
                 // Scope size must also include the MAPL_BYTE_CURSOR_MOVE_BACK.
-                MaPL_CursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPL_Instruction) + sizeof(MaPL_CursorMove);
+                MaPL_CursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPL_CursorMove);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
             loopBuffer.appendBuffer(&scopeBuffer, 0);
-            loopBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
+            loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
             MaPL_CursorMove byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPL_CursorMove);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
@@ -1026,14 +1026,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             bool infiniteLoop = expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean && expressionLiteral.booleanValue;
             MaPLBuffer loopBuffer(10);
             if (!infiniteLoop) {
-                loopBuffer.appendByte(MAPL_BYTE_CONDITIONAL);
+                loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
                 // Scope size must also include the MAPL_BYTE_CURSOR_MOVE_BACK.
-                MaPL_CursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPL_Instruction) + sizeof(MaPL_CursorMove);
+                MaPL_CursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPL_CursorMove);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
             loopBuffer.appendBuffer(&scopeBuffer, 0);
-            loopBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
+            loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
             MaPL_CursorMove byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPL_CursorMove);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
@@ -1072,13 +1072,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // If the conditional is always true, this is an infinite "do while" loop.
             bool infiniteLoop = expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean && expressionLiteral.booleanValue;
             if (!infiniteLoop) {
-                loopBuffer.appendByte(MAPL_BYTE_CONDITIONAL);
+                loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
                 // This is already at the end of the loop, and just needs to skip the MAPL_BYTE_CURSOR_MOVE_BACK that makes the loop repeat.
-                MaPL_CursorMove cursorMoveSize = sizeof(MaPL_Instruction) + sizeof(MaPL_CursorMove);
+                MaPL_CursorMove cursorMoveSize = sizeof(MaPLInstruction) + sizeof(MaPL_CursorMove);
                 loopBuffer.appendBytes(&cursorMoveSize, sizeof(cursorMoveSize));
             }
-            loopBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_BACK);
+            loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
             MaPL_CursorMove loopSize = loopBuffer.getByteCount();
             loopBuffer.appendBytes(&loopSize, sizeof(loopSize));
             
@@ -1114,7 +1114,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // ┌ MAPL_BYTE_CURSOR_MOVE_FORWARD - Signals the end of conditional contents (omitted if there's no "else").
                 // └ MaPL_CursorMove - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
                 //   ConditionalElseContext - The "else" portion of the conditional (omitted if there's no "else").
-                currentBuffer->appendByte(MAPL_BYTE_CONDITIONAL);
+                currentBuffer->appendInstruction(MaPLInstruction_conditional);
                 compileNode(conditionalExpression, { MaPLPrimitiveType_Boolean }, currentBuffer);
                 
                 MaPLBuffer scopeBuffer(10);
@@ -1128,7 +1128,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 
                 MaPL_CursorMove elseBufferSize = (MaPL_CursorMove)elseBuffer.getByteCount();
                 if (elseBufferSize > 0) {
-                    scopeBuffer.appendByte(MAPL_BYTE_CURSOR_MOVE_FORWARD);
+                    scopeBuffer.appendInstruction(MaPLInstruction_cursor_move_forward);
                     scopeBuffer.appendBytes(&elseBufferSize, sizeof(elseBufferSize));
                 }
                 
@@ -1168,7 +1168,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 //   ObjectExpressionContext - Resolves to the object on which the subscript is invoked.
                 //   MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
                 //   ExpressionContext - The index of the subscript.
-                currentBuffer->appendByte(MAPL_BYTE_SUBSCRIPT_INVOCATION);
+                currentBuffer->appendInstruction(MaPLInstruction_subscript_invocation);
                 MaPLType invokedReturnType = compileObjectExpression(expression->objectExpression(0), NULL, currentBuffer);
                 
                 // Find the API that's being referenced to help infer the type of the parameter.
@@ -1178,7 +1178,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 
                 // The type could still be ambiguous, so get the type from the API itself.
                 indexType = typeForTypeContext(subscriptApi->type(1));
-                currentBuffer->appendByte(parameterTypeInstructionForPrimitive(indexType.primitiveType));
+                currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(indexType.primitiveType));
                 compileNode(indexExpression, indexType, currentBuffer);
                 
                 return typeForTypeContext(subscriptApi->type(0));
@@ -1190,7 +1190,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 //   MaPL_Symbol - The bytecode representation of the name of this property.
                 //   MaPL_ParemeterCount - The number of parameters to expect.
                 //   Parameters - Byte layout described below.
-                currentBuffer->appendByte(MAPL_BYTE_FUNCTION_INVOCATION);
+                currentBuffer->appendInstruction(MaPLInstruction_function_invocation);
                 std::string functionName = expression->identifier()->getText();
                 std::string invokedOnType;
                 MaPLType invokedReturnType = { MaPLPrimitiveType_Uninitialized };
@@ -1198,7 +1198,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                     invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
                     invokedOnType = invokedReturnType.pointerType;
                 } else {
-                    currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+                    currentBuffer->appendInstruction(MaPLInstruction_no_op);
                 }
                 
                 std::vector<MaPLParser::ExpressionContext *> parameterExpressions = expression->expression();
@@ -1254,7 +1254,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                             continue;
                         }
                     }
-                    currentBuffer->appendByte(parameterTypeInstructionForPrimitive(expectedType.primitiveType));
+                    currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(expectedType.primitiveType));
                     compileNode(parameterExpressions[i], expectedType, currentBuffer);
                 }
                 
@@ -1273,7 +1273,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
             MaPLVariable variable = _variableStack->getVariable(propertyOrVariableName);
             if (variable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                 // This expression is a reference to a variable.
-                currentBuffer->appendByte(variableInstructionForPrimitive(variable.type.primitiveType));
+                currentBuffer->appendInstruction(variableInstructionForPrimitive(variable.type.primitiveType));
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(variable.byteOffset), sizeof(variable.byteOffset));
                 return variable.type;
@@ -1286,14 +1286,14 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         //   ObjectExpressionContext - Resolves to the object on which the property is invoked. Value is MAPL_BYTE_NO_OP if no expression.
         //   MaPL_Symbol - The bytecode representation of the name of this property.
         //   MaPL_ParemeterCount - The number of parameters to expect. For properties this is always 0.
-        currentBuffer->appendByte(MAPL_BYTE_FUNCTION_INVOCATION);
+        currentBuffer->appendInstruction(MaPLInstruction_function_invocation);
         std::string invokedOnType;
         MaPLType invokedReturnType = { MaPLPrimitiveType_Uninitialized };
         if (invokedOnExpression) {
             invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
             invokedOnType = invokedReturnType.pointerType;
         } else {
-            currentBuffer->appendByte(MAPL_BYTE_NO_OP);
+            currentBuffer->appendInstruction(MaPLInstruction_no_op);
         }
         
         // The eventual value for this symbol is set after compilation is completed

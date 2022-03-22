@@ -170,84 +170,79 @@ std::string descriptorForSymbol(const std::string &typeName,
                                 bool hasVariadicParams);
 
 /**
- * @return The instruction byte that indicates an assignment for the corresponding primitive type.
- */
-MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);
-
-/**
  * @return The instruction byte that indicates a typecast from the corresponding primitive type.
  */
-MaPL_Instruction typecastFromInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction typecastFromInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a typecast to the corresponding primitive type.
  */
-MaPL_Instruction typecastToInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction typecastToInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates an equality comparison corresponding to @c type.
  */
-MaPL_Instruction equalityInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction equalityInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates an inequality comparison corresponding to @c type.
  */
-MaPL_Instruction inequalityInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction inequalityInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a less than comparison corresponding to @c type.
  */
-MaPL_Instruction lessThanInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction lessThanInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a less than or equal comparison corresponding to @c type.
  */
-MaPL_Instruction lessThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction lessThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a greater than comparison corresponding to @c type.
  */
-MaPL_Instruction greaterThanInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction greaterThanInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a greater than or equal comparison corresponding to @c type.
  */
-MaPL_Instruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
- * @return The instruction byte that indicates an assignment corresponding to @c type.
+ * @return The instruction byte that indicates an assignment for the corresponding primitive type.
  */
-MaPL_Instruction assignInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a subscript assignment corresponding to @c type.
  */
-MaPL_Instruction assignSubscriptInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction assignSubscriptInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a property assignment corresponding to @c type.
  */
-MaPL_Instruction assignPropertyInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction assignPropertyInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that represents an operator-assign.
  */
-MaPL_Instruction operatorAssignInstructionForTokenType(size_t tokenType, MaPLPrimitiveType primitiveType);
+MaPLInstruction operatorAssignInstructionForTokenType(size_t tokenType, MaPLPrimitiveType primitiveType);
 
 /**
  * @return The instruction byte that indicates a variable value corresponding to @c type.
  */
-MaPL_Instruction variableInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction variableInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a numeric literal value corresponding to @c type.
  */
-MaPL_Instruction numericLiteralInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction numericLiteralInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a parameter type corresponding to @c type.
  */
-MaPL_Instruction parameterTypeInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction parameterTypeInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.
