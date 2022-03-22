@@ -78,6 +78,15 @@ public:
     bool appendLiteral(const MaPLLiteral &literal);
     
     /**
+     * Appends the bytes from a string onto the buffer.
+     *
+     * @param string The string value that will be appended onto the buffer.
+     *
+     * @return Boolean indicates success or failure of the append operation.
+     */
+    bool appendString(const std::string &string);
+    
+    /**
      * @return The bytes stored in this buffer.
      */
     u_int8_t *getBytes();

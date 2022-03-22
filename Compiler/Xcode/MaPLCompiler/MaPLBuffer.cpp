@@ -104,18 +104,21 @@ bool MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
         case MaPLPrimitiveType_Float64:
             return appendByte(MAPL_BYTE_LITERAL_FLOAT64) &&
                    appendBytes(&(literal.float64Value), sizeof(literal.float64Value));
-        case MaPLPrimitiveType_String: {
-            const char* cString = literal.stringValue.c_str();
-            size_t length = strlen(cString);
+        case MaPLPrimitiveType_String:
             return appendByte(MAPL_BYTE_LITERAL_STRING) &&
-                   appendBytes(cString, length+1);
-        }
+                   appendString(literal.stringValue);
         case MaPLPrimitiveType_Boolean:
             return appendByte(literal.booleanValue ? MAPL_BYTE_LITERAL_BOOLEAN_TRUE : MAPL_BYTE_LITERAL_BOOLEAN_FALSE);
         case MaPLPrimitiveType_Pointer:
             return appendByte(MAPL_BYTE_LITERAL_NULL);
         default: return false;
     }
+}
+
+bool MaPLBuffer::appendString(const std::string &string) {
+    const char* cString = string.c_str();
+    size_t length = strlen(cString);
+    return appendBytes(cString, length+1);
 }
 
 u_int8_t *MaPLBuffer::getBytes() {

@@ -300,11 +300,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::StatementContext *statement = (MaPLParser::StatementContext *)node;
             antlr4::tree::TerminalNode *metadata = statement->METADATA();
             if (metadata) {
-                std::string rawMetadata = metadata->getText();
-                std::string trimmedMetadata = rawMetadata.substr(2, rawMetadata.length()-4);
                 currentBuffer->appendByte(MAPL_BYTE_METADATA);
-                const char *metadataChars = trimmedMetadata.c_str();
-                currentBuffer->appendBytes(metadataChars, strlen(metadataChars)+1);
+                std::string metadataString = metadata->getText();
+                currentBuffer->appendString(metadataString.substr(2, metadataString.length()-4));
             } else {
                 compileChildNodes(node, expectedType, currentBuffer);
             }
