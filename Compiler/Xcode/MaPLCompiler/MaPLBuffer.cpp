@@ -41,7 +41,7 @@ bool MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
     return appendBytes(&instruction, sizeof(instruction));
 }
 
-bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPL_MemoryAddress variableByteIncrement) {
+bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPLMemoryAddress variableByteIncrement) {
     size_t previousByteCount = _byteCount;
     size_t otherBufferCount = otherBuffer->getByteCount();
     if (variableByteIncrement) {
@@ -52,7 +52,7 @@ bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPL_MemoryAddress variab
         // Increment byte offsets everywhere a variable was referenced.
         for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
             if (annotation.type == MaPLBufferAnnotationType_VariableOffset) {
-                MaPL_MemoryAddress variableByteOffset = *((MaPL_MemoryAddress *)(copiedBytes+annotation.byteLocation));
+                MaPLMemoryAddress variableByteOffset = *((MaPLMemoryAddress *)(copiedBytes+annotation.byteLocation));
                 variableByteOffset += variableByteIncrement;
                 memcpy(copiedBytes+annotation.byteLocation, &variableByteOffset, sizeof(variableByteOffset));
             }
@@ -148,8 +148,8 @@ void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bo
             
             // 'byteLocation' describes the beginning of the relevant sequence of bytes.
             // Add the size of the Instruction and CursorMove to find the end of that sequence.
-            size_t byteEndLocation = annotation.byteLocation + sizeof(MaPLInstruction) + sizeof(MaPL_CursorMove);
-            MaPL_CursorMove cursorMove;
+            size_t byteEndLocation = annotation.byteLocation + sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
+            MaPLCursorMove cursorMove;
             if (jumpToEnd) {
                 cursorMove = _byteCount-byteEndLocation;
             } else {// Jump to beginning.
@@ -171,7 +171,7 @@ std::vector<MaPLBufferAnnotation> MaPLBuffer::getAnnotations() {
 }
 
 std::string MaPLBuffer::resolveSymbolsForBuffers(const std::vector<MaPLBuffer *> &buffers) {
-    std::map<std::string, MaPL_Symbol> symbolTable;
+    std::map<std::string, MaPLSymbol> symbolTable;
     
     // Prepopulate the table with 0 values for each symbol.
     for (MaPLBuffer *buffer : buffers) {
@@ -183,9 +183,9 @@ std::string MaPLBuffer::resolveSymbolsForBuffers(const std::vector<MaPLBuffer *>
     }
     
     // The table is now full of a sorted list of symbols. Assign a unique ID to each and format the collated table.
-    MaPL_Symbol UUID = 1;
+    MaPLSymbol UUID = 1;
     std::string formattedOutput;
-    for (std::pair<std::string, MaPL_Symbol> pair : symbolTable) {
+    for (std::pair<std::string, MaPLSymbol> pair : symbolTable) {
         symbolTable[pair.first] = UUID;
         formattedOutput += "#define "+pair.first+" "+std::to_string(UUID)+"\n";
         UUID++;
@@ -196,7 +196,7 @@ std::string MaPLBuffer::resolveSymbolsForBuffers(const std::vector<MaPLBuffer *>
         u_int8_t *bytes = buffer->getBytes();
         for (MaPLBufferAnnotation annotation : buffer->getAnnotations()) {
             if (annotation.type == MaPLBufferAnnotationType_FunctionSymbol) {
-                MaPL_Symbol symbol = symbolTable[annotation.text];
+                MaPLSymbol symbol = symbolTable[annotation.text];
                 memcpy(bytes+annotation.byteLocation, &symbol, sizeof(symbol));
             }
         }

@@ -145,7 +145,7 @@ int main(int argc, const char ** argv) {
     for (MaPLFile *file : files) {
         std::ofstream bytecodeOutputStream(file->getNormalizedOutputPath());
         
-        MaPL_MemoryAddress stackHeight = file->getVariableStack()->getMaximumMemoryUsed();
+        MaPLMemoryAddress stackHeight = file->getVariableStack()->getMaximumMemoryUsed();
         bytecodeOutputStream.write((char *)(&stackHeight), sizeof(stackHeight));
         
         MaPLBuffer *bytecode = file->getBytecode();

@@ -9,10 +9,10 @@
 #define MaPLBytecodeConstants_h
 
 // Byte sizes for MaPL bytecode.
-typedef u_int8_t MaPL_ParemeterCount;
-typedef u_int16_t MaPL_MemoryAddress;
-typedef u_int16_t MaPL_CursorMove;
-typedef u_int16_t MaPL_Symbol;
+typedef u_int8_t MaPLParameterCount;
+typedef u_int16_t MaPLMemoryAddress;
+typedef u_int16_t MaPLCursorMove;
+typedef u_int16_t MaPLSymbol;
 struct MaPL_String {
     char* stringValue;
     bool isAllocated;
