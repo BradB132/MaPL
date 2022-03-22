@@ -135,7 +135,7 @@ std::string descriptorForType(const MaPLType &type) {
     return descriptorForPrimitive(type.primitiveType);
 }
 
-std::string descriptorForFunction(const std::string &name, const std::vector<MaPLType> &parameterTypes, bool hasVariadicArgs) {
+std::string descriptorForFunction(const std::string &name, const std::vector<MaPLType> &parameterTypes, bool hasVariadicParams) {
     std::string functionDescriptor = name+"(";
     for (size_t i = 0; i < parameterTypes.size(); i++) {
         functionDescriptor += descriptorForType(parameterTypes[i]);
@@ -143,7 +143,7 @@ std::string descriptorForFunction(const std::string &name, const std::vector<MaP
             functionDescriptor += ", ";
         }
     }
-    if (hasVariadicArgs) {
+    if (hasVariadicParams) {
         functionDescriptor += ", ...";
     }
     functionDescriptor += ")";
@@ -152,31 +152,31 @@ std::string descriptorForFunction(const std::string &name, const std::vector<MaP
 
 std::string descriptorForFunction(MaPLParser::ApiFunctionContext *function) {
     std::vector<MaPLType> parameterTypes;
-    bool hasVariadicArgs = false;
-    MaPLParser::ApiFunctionArgsContext *functionArgs = function->apiFunctionArgs();
-    if (functionArgs) {
-        hasVariadicArgs = functionArgs->API_VARIADIC_ARGUMENTS() != NULL;
-        for (MaPLParser::TypeContext *typeContext : functionArgs->type()) {
+    bool hasVariadicParams = false;
+    MaPLParser::ApiFunctionParamsContext *functionParams = function->apiFunctionParams();
+    if (functionParams) {
+        hasVariadicParams = functionParams->API_VARIADIC_PARAMETERS() != NULL;
+        for (MaPLParser::TypeContext *typeContext : functionParams->type()) {
             parameterTypes.push_back(typeForTypeContext(typeContext));
         }
     }
     return descriptorForFunction(function->identifier()->getText(),
                                  parameterTypes,
-                                 hasVariadicArgs);
+                                 hasVariadicParams);
 }
 
 std::string descriptorForSymbol(const std::string &typeName,
                                 const std::string &symbolName,
                                 const std::vector<MaPLType> &parameterTypes,
-                                bool hasVariadicArgs) {
+                                bool hasVariadicParams) {
     std::string formattedName = typeName.empty() ? "GLOBAL" : typeName;
     formattedName += "_";
     formattedName += symbolName;
     for (MaPLType parameterType : parameterTypes) {
         formattedName += "_"+descriptorForType(parameterType);
     }
-    if (hasVariadicArgs) {
-        formattedName += "_VA_ARGS";
+    if (hasVariadicParams) {
+        formattedName += "_VARIADIC";
     }
     return formattedName;
 }
@@ -1311,37 +1311,37 @@ bool functionIsCompatible(MaPLFile *file,
         return false;
     }
     
-    // Confirm matching number of arguments.
-    MaPLParser::ApiFunctionArgsContext *args = function->apiFunctionArgs();
-    if (!args) {
+    // Confirm matching number of parameters.
+    MaPLParser::ApiFunctionParamsContext *params = function->apiFunctionParams();
+    if (!params) {
         return parameterTypes.size() == 0;
     }
-    bool hasVariadicArgs = args->API_VARIADIC_ARGUMENTS() != NULL;
-    std::vector<MaPLParser::TypeContext *> typeContexts = args->type();
+    bool hasVariadicParams = params->API_VARIADIC_PARAMETERS() != NULL;
+    std::vector<MaPLParser::TypeContext *> typeContexts = params->type();
     if (parameterStrategy == MaPLParameterStrategy_Flexible) {
-        // It's possible to match longer parameter lists, but only if this function has variadic args.
-        if ((!hasVariadicArgs && typeContexts.size() != parameterTypes.size()) ||
-            (hasVariadicArgs && typeContexts.size() > parameterTypes.size())) {
+        // It's possible to match longer parameter lists, but only if this function has variadic params.
+        if ((!hasVariadicParams && typeContexts.size() != parameterTypes.size()) ||
+            (hasVariadicParams && typeContexts.size() > parameterTypes.size())) {
             return false;
         }
         
-        // Confirm assignable types for all arguments.
+        // Confirm assignable types for all params.
         for (int32_t i = 0; i < typeContexts.size(); i++) {
             if (!isAssignable(file, parameterTypes[i], typeForTypeContext(typeContexts[i]))) {
                 return false;
             }
         }
     } else {
-        // This strategy requires an exact match in number of args.
+        // This strategy requires an exact match in number of params.
         if (typeContexts.size() != parameterTypes.size()) {
             return false;
         }
-        bool expectingVariadicArgs = parameterStrategy == MaPLParameterStrategy_Exact_IncludeVariadicArgs;
-        if (expectingVariadicArgs != hasVariadicArgs) {
+        bool expectingVariadicParams = parameterStrategy == MaPLParameterStrategy_Exact_IncludeVariadicParams;
+        if (expectingVariadicParams != hasVariadicParams) {
             return false;
         }
         
-        // Confirm exact matching types for all arguments.
+        // Confirm exact matching types for all parameters.
         for (int32_t i = 0; i < typeContexts.size(); i++) {
             MaPLType searchedParamType = parameterTypes[i];
             MaPLType declaredParamType = typeForTypeContext(typeContexts[i]);

@@ -80,15 +80,15 @@ struct MaPLLiteral {
 };
 
 /**
- * Describes how variadic arguments should be interpreted when searching for functions.
+ * Describes how variadic parameters should be interpreted when searching for functions.
  */
 enum MaPLParameterStrategy {
-    // Candidate functions with variadic args can successfully match longer parameter lists. Parameters can be ambiguous types.
+    // Candidate functions with variadic params can successfully match longer parameter lists. Parameters can be ambiguous types.
     MaPLParameterStrategy_Flexible,
-    // Only matches functions that use variadic arguments. List of params must exactly match function params.
-    MaPLParameterStrategy_Exact_IncludeVariadicArgs,
-    // Only matches functions that don't use variadic arguments. List of params must exactly match function params.
-    MaPLParameterStrategy_Exact_NoVariadicArgs,
+    // Only matches functions that use variadic params. List of params must exactly match function params.
+    MaPLParameterStrategy_Exact_IncludeVariadicParams,
+    // Only matches functions that don't use variadic params. List of params must exactly match function params.
+    MaPLParameterStrategy_Exact_NoVariadicParams,
 };
 
 /**
@@ -154,7 +154,7 @@ std::string descriptorForType(const MaPLType &type);
 /**
  * @return A human-readable string that describes the signature of a function.
  */
-std::string descriptorForFunction(const std::string &name, const std::vector<MaPLType> &parameterTypes, bool hasVariadicArgs);
+std::string descriptorForFunction(const std::string &name, const std::vector<MaPLType> &parameterTypes, bool hasVariadicParams);
 
 /**
  * @return A human-readable string that describes the signature of a function.
@@ -167,7 +167,7 @@ std::string descriptorForFunction(MaPLParser::ApiFunctionContext *function);
 std::string descriptorForSymbol(const std::string &typeName,
                                 const std::string &symbolName,
                                 const std::vector<MaPLType> &parameterTypes,
-                                bool hasVariadicArgs);
+                                bool hasVariadicParams);
 
 /**
  * @return The instruction byte that indicates an assignment for the corresponding primitive type.

@@ -224,10 +224,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     logMissingTypeError(typeContext->start, returnType.pointerType);
                 }
             }
-            MaPLParser::ApiFunctionArgsContext *args = function->apiFunctionArgs();
+            MaPLParser::ApiFunctionParamsContext *params = function->apiFunctionParams();
             std::vector<MaPLType> parameterTypes;
-            if (args) {
-                for (MaPLParser::TypeContext *typeContext : args->type()) {
+            if (params) {
+                for (MaPLParser::TypeContext *typeContext : params->type()) {
                     MaPLType parameterType = typeForTypeContext(typeContext);
                     parameterTypes.push_back(parameterType);
                     // Check all the types referenced in this API to make sure they exist.
@@ -241,11 +241,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(function->parent);
             bool isGlobal = parentApi->keyToken->getType() == MaPLParser::API_GLOBAL;
             std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
-            MaPLParameterStrategy strategy = args && args->API_VARIADIC_ARGUMENTS() != NULL ? MaPLParameterStrategy_Exact_IncludeVariadicArgs : MaPLParameterStrategy_Exact_NoVariadicArgs;
+            MaPLParameterStrategy strategy = params && params->API_VARIADIC_PARAMETERS() != NULL ? MaPLParameterStrategy_Exact_IncludeVariadicParams : MaPLParameterStrategy_Exact_NoVariadicParams;
             if (findFunction(this, parentTypeName, function->identifier()->getText(), parameterTypes, strategy, function)) {
                 std::string functionSignature = descriptorForFunction(function->identifier()->getText(),
                                                                       parameterTypes,
-                                                                      strategy == MaPLParameterStrategy_Exact_IncludeVariadicArgs);
+                                                                      strategy == MaPLParameterStrategy_Exact_IncludeVariadicParams);
                 if (isGlobal) {
                     logError(function->identifier()->start, "Function '"+functionSignature+"' conflicts with another global function with the same name and parameters.");
                 } else {
@@ -675,7 +675,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 //   On the right side of an assignment. -> Implied by the type being assigned to.
                 //   Nested within other expressions. -> Inherited from parent expression.
                 //   As an index for a subscript. -> Type implied by index param.
-                //   As a parameter for a function. -> Type implied by param. Untyped for variadic args, but can "logAmbiguousLiteralError" if needed.
+                //   As a parameter for a function. -> Type implied by param. Untyped for variadic params, but can "logAmbiguousLiteralError" if needed.
                 //   As the conditional for a control flow statement (if, while, for, doWhile). -> Always bool.
                 logError(expression->start, "Internal compiler error. No concrete expected type for expression.");
                 break;
@@ -1216,18 +1216,18 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                                                                            MaPLParameterStrategy_Flexible,
                                                                            NULL);
                 std::vector<MaPLType> apiParameterTypes;
-                MaPLParser::ApiFunctionArgsContext *args = functionApi->apiFunctionArgs();
-                bool hasVariadicArgs = false;
-                if (args) {
-                    for (MaPLParser::TypeContext *typeContext : args->type()) {
+                MaPLParser::ApiFunctionParamsContext *params = functionApi->apiFunctionParams();
+                bool hasVariadicParams = false;
+                if (params) {
+                    for (MaPLParser::TypeContext *typeContext : params->type()) {
                         apiParameterTypes.push_back(typeForTypeContext(typeContext));
                     }
-                    hasVariadicArgs = args->API_VARIADIC_ARGUMENTS() != NULL;
+                    hasVariadicParams = params->API_VARIADIC_PARAMETERS() != NULL;
                 }
                 
                 // The eventual value for this symbol is set after compilation is completed
                 // and symbol values can be calculated. Add a placeholder 0 for now.
-                std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, functionName, apiParameterTypes, hasVariadicArgs);
+                std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, functionName, apiParameterTypes, hasVariadicParams);
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
                 MaPL_Symbol symbol = 0;
                 currentBuffer->appendBytes(&symbol, sizeof(symbol));

@@ -81,7 +81,7 @@ expression
 objectExpression
     :    objectExpression keyToken=OBJECT_TO_MEMBER objectExpression
     |    objectExpression keyToken=SUBSCRIPT_OPEN expression SUBSCRIPT_CLOSE
-    |    identifier (keyToken=PAREN_OPEN (expression (ARG_DELIMITER expression)*)? PAREN_CLOSE)?
+    |    identifier (keyToken=PAREN_OPEN (expression (PARAM_DELIMITER expression)*)? PAREN_CLOSE)?
     ;
 
 // VARIABLES
@@ -136,9 +136,9 @@ apiDeclaration
          )* SCOPE_CLOSE
     ;
 
-apiInheritance : COLON identifier (ARG_DELIMITER identifier)* ;
-apiFunction : ( API_VOID | type ) identifier PAREN_OPEN apiFunctionArgs? PAREN_CLOSE ;
-apiFunctionArgs : API_VARIADIC_ARGUMENTS | type (ARG_DELIMITER type)* (ARG_DELIMITER API_VARIADIC_ARGUMENTS)? ;
+apiInheritance : COLON identifier (PARAM_DELIMITER identifier)* ;
+apiFunction : ( API_VOID | type ) identifier PAREN_OPEN apiFunctionParams? PAREN_CLOSE ;
+apiFunctionParams : API_VARIADIC_PARAMETERS | type (PARAM_DELIMITER type)* (PARAM_DELIMITER API_VARIADIC_PARAMETERS)? ;
 apiProperty : API_READONLY? type identifier ;
 apiSubscript : API_READONLY? type SUBSCRIPT_OPEN type SUBSCRIPT_CLOSE ;
 apiImport : API_IMPORT LITERAL_STRING ;
@@ -242,7 +242,7 @@ SCOPE_CLOSE: '}' ;
 SUBSCRIPT_OPEN: '[' ;
 SUBSCRIPT_CLOSE: ']' ;
 OBJECT_TO_MEMBER: '.' ;
-ARG_DELIMITER: ',' ;
+PARAM_DELIMITER: ',' ;
 COLON: ':' ;
 TERNARY_CONDITIONAL: '?' ;
 NULL_COALESCING: '??' ;
@@ -254,7 +254,7 @@ API_TYPE: '#type' ;
 API_IMPORT: '#import' ;
 API_READONLY: 'readonly' ;
 API_VOID: 'void' ;
-API_VARIADIC_ARGUMENTS: '...' ;
+API_VARIADIC_PARAMETERS: '...' ;
 
 // LITERALS
 IDENTIFIER : [_a-zA-Z][_a-zA-Z0-9]* ;
