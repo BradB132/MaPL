@@ -165,11 +165,20 @@ std::string descriptorForFunction(MaPLParser::ApiFunctionContext *function) {
                                  hasVariadicArgs);
 }
 
-std::string descriptorForSymbol(const std::string &typeName, const std::string &symbolName) {
-    if (typeName.empty()) {
-        return "GLOBAL__"+symbolName;
+std::string descriptorForSymbol(const std::string &typeName,
+                                const std::string &symbolName,
+                                const std::vector<MaPLType> &parameterTypes,
+                                bool hasVariadicArgs) {
+    std::string formattedName = typeName.empty() ? "GLOBAL" : typeName;
+    formattedName += "_";
+    formattedName += symbolName;
+    for (MaPLType parameterType : parameterTypes) {
+        formattedName += "_"+descriptorForType(parameterType);
     }
-    return typeName+"__"+symbolName;
+    if (hasVariadicArgs) {
+        formattedName += "_VA_ARGS";
+    }
+    return formattedName;
 }
 
 MaPL_Instruction assignmentInstructionForPrimitive(MaPLPrimitiveType type) {

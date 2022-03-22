@@ -478,7 +478,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
-                    std::string symbolName = descriptorForSymbol(prefixType.pointerType, propertyName);
+                    std::vector<MaPLType> emptyParameterList;
+                    std::string symbolName = descriptorForSymbol(prefixType.pointerType, propertyName, emptyParameterList, false);
                     currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
                     MaPL_Symbol symbol = 0;
                     currentBuffer->appendBytes(&symbol, sizeof(symbol));
@@ -614,7 +615,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
-                    std::string symbolName = descriptorForSymbol(prefixType.pointerType, propertyName);
+                    std::vector<MaPLType> emptyParameterList;
+                    std::string symbolName = descriptorForSymbol(prefixType.pointerType, propertyName, emptyParameterList, false);
                     currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
                     MaPL_Symbol symbol = 0;
                     currentBuffer->appendBytes(&symbol, sizeof(symbol));
@@ -1185,17 +1187,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                     currentBuffer->appendByte(MAPL_BYTE_NO_OP);
                 }
                 
-                // The eventual value for this symbol is set after compilation is completed
-                // and symbol values can be calculated. Add a placeholder 0 for now.
-                std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, functionName);
-                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
-                MaPL_Symbol symbol = 0;
-                currentBuffer->appendBytes(&symbol, sizeof(symbol));
-                
                 std::vector<MaPLParser::ExpressionContext *> parameterExpressions = expression->expression();
-                MaPL_ParemeterCount parameterCount = (MaPL_ParemeterCount)parameterExpressions.size();
-                currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
-                
                 std::vector<MaPLType> expressionParameterTypes;
                 for (MaPLParser::ExpressionContext *parameterExpression : parameterExpressions) {
                     expressionParameterTypes.push_back(dataTypeForExpression(parameterExpression));
@@ -1209,11 +1201,23 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                                                                            NULL);
                 std::vector<MaPLType> apiParameterTypes;
                 MaPLParser::ApiFunctionArgsContext *args = functionApi->apiFunctionArgs();
+                bool hasVariadicArgs = false;
                 if (args) {
                     for (MaPLParser::TypeContext *typeContext : args->type()) {
                         apiParameterTypes.push_back(typeForTypeContext(typeContext));
                     }
+                    hasVariadicArgs = args->API_VARIADIC_ARGUMENTS() != NULL;
                 }
+                
+                // The eventual value for this symbol is set after compilation is completed
+                // and symbol values can be calculated. Add a placeholder 0 for now.
+                std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, functionName, apiParameterTypes, hasVariadicArgs);
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
+                MaPL_Symbol symbol = 0;
+                currentBuffer->appendBytes(&symbol, sizeof(symbol));
+                
+                MaPL_ParemeterCount parameterCount = (MaPL_ParemeterCount)parameterExpressions.size();
+                currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
                 
                 // Function parameters are represented in bytecode as follows:
                 //   MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the parameter.
@@ -1280,7 +1284,8 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         
         // The eventual value for this symbol is set after compilation is completed
         // and symbol values can be calculated. Add a placeholder 0 for now.
-        std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, propertyOrVariableName);
+        std::vector<MaPLType> emptyParameterList;
+        std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, propertyOrVariableName, emptyParameterList, false);
         currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
         MaPL_Symbol symbol = 0;
         currentBuffer->appendBytes(&symbol, sizeof(symbol));
