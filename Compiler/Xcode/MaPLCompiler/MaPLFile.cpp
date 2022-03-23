@@ -531,7 +531,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // Add a literal "1" that matches the assigned primitive type.
                 MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                 oneLiteral.uInt64Value = 1;
-                oneLiteral = castLiteralToType(oneLiteral, assignedVariable.type);
+                oneLiteral = castLiteralToType(oneLiteral, assignedVariable.type, this, statement->keyToken);
                 currentBuffer->appendLiteral(oneLiteral);
             } else {
                 // This increment is for an object expression.
@@ -592,7 +592,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // Add a literal "1" that matches the return type.
                     MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                     oneLiteral.uInt64Value = 1;
-                    oneLiteral = castLiteralToType(oneLiteral, returnType);
+                    oneLiteral = castLiteralToType(oneLiteral, returnType, this, statement->keyToken);
                     currentBuffer->appendLiteral(oneLiteral);
                 } else {
                     std::string propertyName = terminalExpression->identifier()->getText();
@@ -638,7 +638,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // Add a literal "1" that matches the return type.
                     MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                     oneLiteral.uInt64Value = 1;
-                    oneLiteral = castLiteralToType(oneLiteral, returnType);
+                    oneLiteral = castLiteralToType(oneLiteral, returnType, this, statement->keyToken);
                     currentBuffer->appendLiteral(oneLiteral);
                 }
             }
@@ -693,7 +693,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                 // This expression can be boiled down to a single compile-time constant.
                 if (isAmbiguousNumericType(literal.type.primitiveType)) {
-                    literal = castLiteralToType(literal, expectedType);
+                    literal = castLiteralToType(literal, expectedType, this, expression->start);
                 }
                 currentBuffer->appendLiteral(literal);
                 break;
@@ -1427,7 +1427,9 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
         switch (tokenType) {
             case MaPLParser::PAREN_OPEN: { // Typecast.
                 MaPLLiteral literal = castLiteralToType(constantValueForExpression(expression->expression(0)),
-                                                        typeForTypeContext(expression->type()));
+                                                        typeForTypeContext(expression->type()),
+                                                        this,
+                                                        expression->start);
                 if (literal.type.primitiveType != MaPLPrimitiveType_TypeError) {
                     return literal;
                 }
@@ -1497,8 +1499,8 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 // Because literals can be ambiguous, types must be reconciled and typecast.
                 MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
                 if (!isNumeric(reconciledType.primitiveType)) { break; }
-                left = castLiteralToType(left, reconciledType);
-                right = castLiteralToType(right, reconciledType);
+                left = castLiteralToType(left, reconciledType, this, expression->start);
+                right = castLiteralToType(right, reconciledType, this, expression->start);
                 
                 MaPLLiteral returnVal = { { MaPLPrimitiveType_Boolean } };
                 switch (reconciledType.primitiveType) {
@@ -1718,7 +1720,7 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                             literal.float64Value = -literal.float64Value;
                             return literal;
                         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
-                            literal = castLiteralToType(literal, { MaPLPrimitiveType_SignedInt_AmbiguousSize });
+                            literal = castLiteralToType(literal, { MaPLPrimitiveType_SignedInt_AmbiguousSize }, this, expression->start);
                             literal.int64Value = -literal.int64Value;
                             return literal;
                         default: break;
@@ -1738,8 +1740,8 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 // Because literals can be ambiguous, types must be reconciled and typecast.
                 MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
                 if (!isNumeric(reconciledType.primitiveType)) { break; }
-                left = castLiteralToType(left, reconciledType);
-                right = castLiteralToType(right, reconciledType);
+                left = castLiteralToType(left, reconciledType, this, expression->start);
+                right = castLiteralToType(right, reconciledType, this, expression->start);
                 
                 MaPLLiteral returnVal = { reconciledType };
                 switch (reconciledType.primitiveType) {
@@ -1929,8 +1931,8 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 // Because literals can be ambiguous, types must be reconciled and typecast.
                 MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
                 if (!isNumeric(reconciledType.primitiveType) && reconciledType.primitiveType != MaPLPrimitiveType_String) { break; }
-                left = castLiteralToType(left, reconciledType);
-                right = castLiteralToType(right, reconciledType);
+                left = castLiteralToType(left, reconciledType, this, expression->start);
+                right = castLiteralToType(right, reconciledType, this, expression->start);
                 
                 MaPLLiteral returnVal = { reconciledType };
                 switch (reconciledType.primitiveType) {
@@ -1987,8 +1989,8 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 // Because literals can be ambiguous, types must be reconciled and typecast.
                 MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
                 if (!isIntegral(reconciledType.primitiveType)) { break; }
-                left = castLiteralToType(left, reconciledType);
-                right = castLiteralToType(right, reconciledType);
+                left = castLiteralToType(left, reconciledType, this, expression->start);
+                right = castLiteralToType(right, reconciledType, this, expression->start);
                 
                 MaPLLiteral returnVal = { reconciledType };
                 switch (reconciledType.primitiveType) {

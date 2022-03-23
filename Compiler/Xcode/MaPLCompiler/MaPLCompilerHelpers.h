@@ -282,7 +282,7 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
 /**
  * @return The value of @c literal after being cast to @c castType.
  */
-MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castType);
+MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castType, MaPLFile *file, antlr4::Token *token);
 
 /**
  * @return The object expression that terminates the chain of expressions for which @c rootExpression is the root node.

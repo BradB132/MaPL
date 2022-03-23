@@ -26,7 +26,6 @@ bool pathHasExtension(const std::filesystem::path &path, const std::string &exte
 }
 
 int main(int argc, const char ** argv) {
-    // Make sure that script paths were specified.
     if (argc < 2) {
         printf("No arguments specified. Specify one or more file paths along with an output path for the symbol table.\n");
         printf("Example usage: MaPLCompiler /absolute/path/to/file.mapl -o /absolute/path/to/output.maplb -s /absolute/path/to/symbol/table.h\n");
