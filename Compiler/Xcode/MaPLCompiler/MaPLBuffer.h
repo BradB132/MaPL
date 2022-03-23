@@ -115,13 +115,9 @@ public:
     std::vector<MaPLBufferAnnotation> getAnnotations();
     
     /**
-     * Uses the annotations in each buffer to generate a collated symbol table. Fills the symbol values in for each buffer.
-     *
-     * @param buffers A list of all buffers who share the resulting symbol table.
-     *
-     * @return A code file that defines the names and values for all contents of the collated symbol table.
+     * Uses a mapping of symbol descriptors and symbol values to update this buffer anywhere there's a symbol annotation.
      */
-    static std::string resolveSymbolsForBuffers(const std::vector<MaPLBuffer *> &buffers);
+    void resolveSymbolsWithTable(const std::map<std::string, MaPLSymbol> &symbolTable);
     
 private:
     

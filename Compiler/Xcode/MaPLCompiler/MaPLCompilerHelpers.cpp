@@ -1243,6 +1243,60 @@ std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file) {
     return findDuplicateDependencies(file, pathSet);
 }
 
+void collateSymbolsInFile(MaPLFile *file, std::map<std::string, MaPLSymbol> &symbolTable) {
+    MaPLParser::ProgramContext *program = file->getParseTree();
+    if (!program) { return; }
+    
+    // Collate all symbol descriptors in this file. Assign a placeholder value of 0.
+    for (MaPLParser::StatementContext *statement : program->statement()) {
+        MaPLParser::ApiDeclarationContext *apiDeclaration = statement->apiDeclaration();
+        if (!apiDeclaration) { continue; }
+        
+        std::string typeName = apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE ? apiDeclaration->identifier()->getText() : "";
+        for (MaPLParser::ApiFunctionContext *function : apiDeclaration->apiFunction()) {
+            std::vector<MaPLType> parameterTypes;
+            MaPLParser::ApiFunctionParamsContext *params = function->apiFunctionParams();
+            bool hasVariadicParams = false;
+            if (params) {
+                for (MaPLParser::TypeContext *typeContext : params->type()) {
+                    parameterTypes.push_back(typeForTypeContext(typeContext));
+                }
+                hasVariadicParams = params->API_VARIADIC_PARAMETERS() != NULL;
+            }
+            std::string functionName = function->identifier()->getText();
+            std::string symbolName = descriptorForSymbol(typeName, functionName, parameterTypes, hasVariadicParams);
+            symbolTable[symbolName] = 0;
+        }
+        for (MaPLParser::ApiPropertyContext *property : apiDeclaration->apiProperty()) {
+            std::string propertyName = property->identifier()->getText();
+            std::vector<MaPLType> emptyVector;
+            std::string symbolName = descriptorForSymbol(typeName, propertyName, emptyVector, false);
+            symbolTable[symbolName] = 0;
+        }
+    }
+    
+    // Also traverse all dependent files.
+    for (MaPLFile *dependency : file->getDependencies()) {
+        collateSymbolsInFile(dependency, symbolTable);
+    }
+}
+
+std::map<std::string, MaPLSymbol> symbolTableForFiles(const std::vector<MaPLFile *> files) {
+    // Populate the symbol table.
+    std::map<std::string, MaPLSymbol> symbolTable;
+    for (MaPLFile *file : files) {
+        collateSymbolsInFile(file, symbolTable);
+    }
+    
+    // The table is now full of a sorted list of descriptors. Assign a unique ID to each.
+    MaPLSymbol UUID = 1;
+    for (std::pair<std::string, MaPLSymbol> pair : symbolTable) {
+        symbolTable[pair.first] = UUID;
+        UUID++;
+    }
+    return symbolTable;
+}
+
 bool isInsideLoopScope(antlr4::tree::ParseTree *node) {
     while (node) {
         if (dynamic_cast<MaPLParser::ScopeContext *>(node)) {

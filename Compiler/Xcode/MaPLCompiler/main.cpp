@@ -116,30 +116,32 @@ int main(int argc, const char ** argv) {
         exit(1);
     }
     
+    // Check for errors and write to console.
     bool hadErrors = false;
-    std::vector<MaPLBuffer *> buffers;
     for (MaPLFile *file : files) {
-        // Check for errors and write to console.
         std::vector<std::string> errors = file->getErrors();
         if (errors.size()) {
             hadErrors = true;
             for (std::string errorString : errors) {
                 fputs(errorString.c_str(), stderr);
             }
-            continue;
         }
-        
-        // Build a list of all the bytecode buffers.
-        buffers.push_back(file->getBytecode());
     }
     if (hadErrors) {
         exit(1);
     }
     
     // Generate the symbol table and write to file.
-    std::string symbolTable = MaPLBuffer::resolveSymbolsForBuffers(buffers);
+    std::map<std::string, MaPLSymbol> symbolTable = symbolTableForFiles(files);
+    std::string enumName = symbolOutputPath.filename();
+    enumName = enumName.substr(0, enumName.length()-2);
+    std::string formattedSymbolTable = "enum "+enumName+" {\n";
+    for (std::pair<std::string, MaPLSymbol> pair : symbolTable) {
+        formattedSymbolTable += "    "+enumName+"_"+pair.first+" = "+std::to_string(pair.second)+",\n";
+    }
+    formattedSymbolTable += "};\n";
     std::ofstream symbolTableOutputStream(symbolOutputPath);
-    symbolTableOutputStream << symbolTable;
+    symbolTableOutputStream << formattedSymbolTable;
     
     // Output each script to file.
     for (MaPLFile *file : files) {
@@ -149,6 +151,7 @@ int main(int argc, const char ** argv) {
         bytecodeOutputStream.write((char *)(&stackHeight), sizeof(stackHeight));
         
         MaPLBuffer *bytecode = file->getBytecode();
+        bytecode->resolveSymbolsWithTable(symbolTable);
         bytecodeOutputStream.write((char *)bytecode->getBytes(), bytecode->getByteCount());
     }
     

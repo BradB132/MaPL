@@ -265,6 +265,11 @@ bool findInheritanceCycle(MaPLFile *file);
 std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file);
 
 /**
+ * @return A mapping of all symbols names to symbol values for APIs declared within @c files.
+ */
+std::map<std::string, MaPLSymbol> symbolTableForFiles(const std::vector<MaPLFile *> files);
+
+/**
  * @return @c true if @c node is within the scope of a "for", "while", or "do while" loop.
  */
 bool isInsideLoopScope(antlr4::tree::ParseTree *node);

@@ -68,7 +68,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;${SRCROOT}/../c++/table.h&quot;"
+            argument = "&quot;${SRCROOT}/../c++/MaPLFunction.h&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
