@@ -172,7 +172,7 @@ std::string descriptorForSymbol(const std::string &typeName,
     std::string formattedName = typeName.empty() ? "GLOBAL" : typeName;
     formattedName += "_";
     formattedName += symbolName;
-    for (MaPLType parameterType : parameterTypes) {
+    for (const MaPLType &parameterType : parameterTypes) {
         formattedName += "_"+descriptorForType(parameterType);
     }
     if (hasVariadicParams) {
@@ -1237,7 +1237,7 @@ std::vector<std::string> mutualAncestorTypes(MaPLFile *file, const std::string &
     std::set<std::string> ancestors1 = findAncestorTypes(file, type1);
     std::set<std::string> ancestors2 = findAncestorTypes(file, type2);
     std::vector<std::string> mutuals;
-    for (std::string ancestorType : ancestors1) {
+    for (const std::string &ancestorType : ancestors1) {
         if (ancestors2.count(ancestorType)) {
             mutuals.push_back(ancestorType);
         }
@@ -1315,7 +1315,7 @@ std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file, std::s
         pathSet.insert(file->getNormalizedFilePath());
     }
     for (MaPLFile *dependentFile : file->getDependencies()) {
-        for (std::filesystem::path duplicatePath : findDuplicateDependencies(dependentFile, pathSet)) {
+        for (const std::filesystem::path &duplicatePath : findDuplicateDependencies(dependentFile, pathSet)) {
             returnPaths.insert(duplicatePath);
         }
     }
@@ -1374,8 +1374,8 @@ std::map<std::string, MaPLSymbol> symbolTableForFiles(const std::vector<MaPLFile
     
     // The table is now full of a sorted list of descriptors. Assign a unique ID to each.
     MaPLSymbol UUID = 1;
-    for (std::pair<std::string, MaPLSymbol> pair : symbolTable) {
-        symbolTable[pair.first] = UUID;
+    for (const auto&[descriptor, symbol] : symbolTable) {
+        symbolTable[descriptor] = UUID;
         UUID++;
     }
     return symbolTable;

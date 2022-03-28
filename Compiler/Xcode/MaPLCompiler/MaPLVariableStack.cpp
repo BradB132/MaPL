@@ -44,9 +44,9 @@ bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVar
     
     // Calculate byte offset for this variable by summing the size of the existing variables.
     MaPLMemoryAddress currentOffset = 0;
-    for (std::unordered_map<std::string, MaPLVariable> frame : _stack) {
-        for (std::pair<std::string, MaPLVariable> pair : frame) {
-            currentOffset += byteSizeOfType(pair.second.type.primitiveType);
+    for (const std::unordered_map<std::string, MaPLVariable> &frame : _stack) {
+        for (const auto&[name, variable] : frame) {
+            currentOffset += byteSizeOfType(variable.type.primitiveType);
         }
     }
     
@@ -63,10 +63,10 @@ bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVar
 }
 
 MaPLVariable MaPLVariableStack::getVariable(const std::string &variableName) {
-    for (std::unordered_map<std::string, MaPLVariable> frame : _stack) {
-        for (std::pair<std::string, MaPLVariable> pair : frame) {
-            if (pair.first == variableName) {
-                return pair.second;
+    for (const std::unordered_map<std::string, MaPLVariable> &frame : _stack) {
+        for (const auto&[name, variable] : frame) {
+            if (name == variableName) {
+                return variable;
             }
         }
     }

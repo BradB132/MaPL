@@ -107,7 +107,7 @@ MaPLBuffer *MaPLFile::getBytecode() {
     
     // Check the dependency graph for duplicate includes of the same file.
     std::set<std::filesystem::path> duplicates = findDuplicateDependencies(this);
-    for (std::filesystem::path normalizedPath : duplicates) {
+    for (const std::filesystem::path &normalizedPath : duplicates) {
         logError(NULL, "File at path '"+normalizedPath.string()+"' exists more than once in the dependency graph.");
     }
     if (duplicates.size() > 0) {
@@ -124,8 +124,8 @@ MaPLBuffer *MaPLFile::getBytecode() {
         }
         MaPLVariableStack *dependencyStack = file->getVariableStack();
         if (dependencyStack) {
-            for (std::pair<std::string, MaPLVariable> pair : dependencyStack->getGlobalVariables()) {
-                _variableStack->declareVariable(pair.first, pair.second);
+            for (const auto&[name, variable] : dependencyStack->getGlobalVariables()) {
+                _variableStack->declareVariable(name, variable);
             }
         }
     }

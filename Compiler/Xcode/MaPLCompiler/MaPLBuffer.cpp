@@ -50,7 +50,7 @@ bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPLMemoryAddress variabl
         memcpy(copiedBytes, otherBuffer->getBytes(), otherBufferCount);
         
         // Increment byte offsets everywhere a variable was referenced.
-        for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
+        for (const MaPLBufferAnnotation &annotation : otherBuffer->getAnnotations()) {
             if (annotation.type == MaPLBufferAnnotationType_VariableOffset) {
                 MaPLMemoryAddress variableByteOffset = *((MaPLMemoryAddress *)(copiedBytes+annotation.byteLocation));
                 variableByteOffset += variableByteIncrement;
@@ -171,7 +171,7 @@ std::vector<MaPLBufferAnnotation> MaPLBuffer::getAnnotations() {
 }
 
 void MaPLBuffer::resolveSymbolsWithTable(const std::map<std::string, MaPLSymbol> &symbolTable) {
-    for (MaPLBufferAnnotation annotation : _annotations) {
+    for (const MaPLBufferAnnotation &annotation : _annotations) {
         if (annotation.type == MaPLBufferAnnotationType_FunctionSymbol) {
             MaPLSymbol symbol = symbolTable.at(annotation.text);
             memcpy(_bytes+annotation.byteLocation, &symbol, sizeof(symbol));

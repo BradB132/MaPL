@@ -121,7 +121,7 @@ int main(int argc, const char ** argv) {
         std::vector<std::string> errors = file->getErrors();
         if (errors.size()) {
             hadErrors = true;
-            for (std::string errorString : errors) {
+            for (const std::string &errorString : errors) {
                 fputs(errorString.c_str(), stderr);
             }
         }
@@ -135,8 +135,8 @@ int main(int argc, const char ** argv) {
     std::string enumName = symbolOutputPath.filename();
     enumName = enumName.substr(0, enumName.length()-2);
     std::string formattedSymbolTable = "enum "+enumName+" {\n";
-    for (std::pair<std::string, MaPLSymbol> pair : symbolTable) {
-        formattedSymbolTable += "    "+enumName+"_"+pair.first+" = "+std::to_string(pair.second)+",\n";
+    for (const auto&[descriptor, symbol] : symbolTable) {
+        formattedSymbolTable += "    "+enumName+"_"+descriptor+" = "+std::to_string(symbol)+",\n";
     }
     formattedSymbolTable += "};\n";
     std::ofstream symbolTableOutputStream(symbolOutputPath);
