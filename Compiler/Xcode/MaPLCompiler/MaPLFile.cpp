@@ -902,29 +902,31 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         MaPLParser::ExpressionContext *leftOperand = expression->expression(0);
                         MaPLParser::ExpressionContext *rightOperand = expression->expression(1);
                         
-                        // Attempt a strength reduction: If an operand is an integral constant and power of 2,
-                        // convert this to a left bit shift. For example, "x * 8" becomes "x << 3".
-                        MaPLLiteral constantLeftOperand = constantValueForExpression(leftOperand);
-                        u_int8_t leftOperandShift = bitShiftForLiteral(constantLeftOperand);
-                        if (leftOperandShift) {
-                            currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
-                            compileNode(rightOperand, expectedType, currentBuffer);
-                            MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
-                            shiftLiteral.uInt8Value = leftOperandShift;
-                            shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
-                            currentBuffer->appendLiteral(shiftLiteral);
-                            break;
-                        }
-                        MaPLLiteral constantRightOperand = constantValueForExpression(rightOperand);
-                        u_int8_t rightOperandShift = bitShiftForLiteral(constantRightOperand);
-                        if (rightOperandShift) {
-                            currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
-                            compileNode(leftOperand, expectedType, currentBuffer);
-                            MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
-                            shiftLiteral.uInt8Value = rightOperandShift;
-                            shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
-                            currentBuffer->appendLiteral(shiftLiteral);
-                            break;
+                        if (isIntegral(expectedType.primitiveType)) {
+                            // Attempt a strength reduction: If an operand is an integral constant and power of 2,
+                            // convert this to a left bit shift. For example, "x * 8" becomes "x << 3".
+                            MaPLLiteral constantLeftOperand = constantValueForExpression(leftOperand);
+                            u_int8_t leftOperandShift = bitShiftForLiteral(constantLeftOperand);
+                            if (leftOperandShift) {
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                                compileNode(rightOperand, expectedType, currentBuffer);
+                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                shiftLiteral.uInt8Value = leftOperandShift;
+                                shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
+                                currentBuffer->appendLiteral(shiftLiteral);
+                                break;
+                            }
+                            MaPLLiteral constantRightOperand = constantValueForExpression(rightOperand);
+                            u_int8_t rightOperandShift = bitShiftForLiteral(constantRightOperand);
+                            if (rightOperandShift) {
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                                compileNode(leftOperand, expectedType, currentBuffer);
+                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                shiftLiteral.uInt8Value = rightOperandShift;
+                                shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
+                                currentBuffer->appendLiteral(shiftLiteral);
+                                break;
+                            }
                         }
                         
                         currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
@@ -934,19 +936,23 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         break;
                     case MaPLParser::DIVIDE: {
                         MaPLParser::ExpressionContext *denominator = expression->expression(1);
-                        MaPLLiteral constantDenominator = constantValueForExpression(denominator);
-                        if (isFloatingPoint(constantDenominator.type.primitiveType)) {
-                            // Strength reduction: This division involves a constant floating point denominator.
-                            // Rewrite this as a multiply of the reciprocal. For example, "x/2.0" becomes "x*0.5".
-                            if (constantDenominator.type.primitiveType == MaPLPrimitiveType_Float32) {
-                                constantDenominator.float32Value = 1.0f / constantDenominator.float32Value;
-                            } else {
-                                constantDenominator.float64Value = 1.0 / constantDenominator.float64Value;
+                        if (isConcreteFloat(expectedType.primitiveType)) {
+                            MaPLLiteral constantDenominator = constantValueForExpression(denominator);
+                            if (constantDenominator.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
+                                constantDenominator = castLiteralToType(constantDenominator, expectedType, this, expression->keyToken);
+                                
+                                // Strength reduction: This division involves a constant floating point denominator.
+                                // Rewrite this as a multiply of the reciprocal. For example, "x/2.0" becomes "x*0.5".
+                                if (constantDenominator.type.primitiveType == MaPLPrimitiveType_Float32) {
+                                    constantDenominator.float32Value = 1.0f / constantDenominator.float32Value;
+                                } else {
+                                    constantDenominator.float64Value = 1.0 / constantDenominator.float64Value;
+                                }
+                                currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
+                                compileNode(expression->expression(0), expectedType, currentBuffer);
+                                currentBuffer->appendLiteral(constantDenominator);
+                                break;
                             }
-                            currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
-                            compileNode(expression->expression(0), expectedType, currentBuffer);
-                            currentBuffer->appendLiteral(constantDenominator);
-                            break;
                         }
                         currentBuffer->appendInstruction(MaPLInstruction_numeric_divide);
                         compileNode(expression->expression(0), expectedType, currentBuffer);

@@ -117,11 +117,6 @@ bool isConcreteUnsignedInt(MaPLPrimitiveType type);
 bool isIntegral(MaPLPrimitiveType type);
 
 /**
- * @return @c true if the primitive type is floating point. Includes ambiguous floats.
- */
-bool isFloatingPoint(MaPLPrimitiveType type);
-
-/**
  * @return @c true if the primitive type is numeric, including ambiguous types.
  */
 bool isNumeric(MaPLPrimitiveType type);

@@ -63,11 +63,6 @@ bool isIntegral(MaPLPrimitiveType type) {
            type == MaPLPrimitiveType_SignedInt_AmbiguousSize;
 }
 
-bool isFloatingPoint(MaPLPrimitiveType type) {
-    return isConcreteFloat(type) ||
-           type == MaPLPrimitiveType_Float_AmbiguousSize;
-}
-
 bool isNumeric(MaPLPrimitiveType type) {
     return isConcreteFloat(type) ||
            isConcreteSignedInt(type) ||
