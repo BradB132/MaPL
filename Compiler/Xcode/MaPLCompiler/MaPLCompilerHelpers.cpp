@@ -1171,7 +1171,7 @@ u_int8_t bitShiftForLiteral(const MaPLLiteral &literal) {
         default: return 0;
     }
     for (u_int8_t i = 0; i < 64; i++) {
-        if (unsignedValue == 1 << i) {
+        if (unsignedValue == (u_int64_t)1 << i) {
             return i;
         }
     }
