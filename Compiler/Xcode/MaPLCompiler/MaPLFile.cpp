@@ -689,6 +689,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 break;
             }
             
+            // Constant folding: If this expression is determinable at compile time, evaluate it now.
             MaPLLiteral literal = constantValueForExpression(expression);
             if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                 // This expression can be boiled down to a single compile-time constant.
@@ -875,38 +876,82 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             // This is numeric negation (instead of subtraction).
                             currentBuffer->appendInstruction(MaPLInstruction_numeric_negation);
                             compileNode(expressions[0], expectedType, currentBuffer);
-                            break;
+                        } else {
+                            // This is numeric subtraction.
+                            currentBuffer->appendInstruction(MaPLInstruction_numeric_subtract);
+                            compileNode(expressions[0], expectedType, currentBuffer);
+                            compileNode(expressions[1], expectedType, currentBuffer);
                         }
                     }
-                        // Intentional fallthrough handles the binary subtraction operator.
-                    case MaPLParser::ADD: // Intentional fallthrough.
-                    case MaPLParser::MOD: // Intentional fallthrough.
-                    case MaPLParser::MULTIPLY: // Intentional fallthrough.
-                    case MaPLParser::DIVIDE:
-                        switch (tokenType) {
-                            case MaPLParser::ADD:
-                                if (expectedType.primitiveType == MaPLPrimitiveType_String) {
-                                    currentBuffer->appendInstruction(MaPLInstruction_string_concat);
-                                } else {
-                                    currentBuffer->appendInstruction(MaPLInstruction_numeric_add);
-                                }
-                                break;
-                            case MaPLParser::SUBTRACT:
-                                currentBuffer->appendInstruction(MaPLInstruction_numeric_subtract);
-                                break;
-                            case MaPLParser::MOD:
-                                currentBuffer->appendInstruction(MaPLInstruction_numeric_modulo);
-                                break;
-                            case MaPLParser::MULTIPLY:
-                                currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
-                                break;
-                            case MaPLParser::DIVIDE:
-                                currentBuffer->appendInstruction(MaPLInstruction_numeric_divide);
-                                break;
-                            default: break;
+                        break;
+                    case MaPLParser::ADD:
+                        if (expectedType.primitiveType == MaPLPrimitiveType_String) {
+                            currentBuffer->appendInstruction(MaPLInstruction_string_concat);
+                        } else {
+                            currentBuffer->appendInstruction(MaPLInstruction_numeric_add);
                         }
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         compileNode(expression->expression(1), expectedType, currentBuffer);
+                        break;
+                    case MaPLParser::MOD:
+                        currentBuffer->appendInstruction(MaPLInstruction_numeric_modulo);
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
+                        compileNode(expression->expression(1), expectedType, currentBuffer);
+                        break;
+                    case MaPLParser::MULTIPLY: {
+                        MaPLParser::ExpressionContext *leftOperand = expression->expression(0);
+                        MaPLParser::ExpressionContext *rightOperand = expression->expression(1);
+                        
+                        // Attempt a strength reduction: If an operand is an integral constant and power of 2,
+                        // convert this to a left bit shift. For example, "x * 8" becomes "x << 3".
+                        MaPLLiteral constantLeftOperand = constantValueForExpression(leftOperand);
+                        u_int8_t leftOperandShift = bitShiftForLiteral(constantLeftOperand);
+                        if (leftOperandShift) {
+                            currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                            compileNode(rightOperand, expectedType, currentBuffer);
+                            MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                            shiftLiteral.uInt8Value = leftOperandShift;
+                            shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
+                            currentBuffer->appendLiteral(shiftLiteral);
+                            break;
+                        }
+                        MaPLLiteral constantRightOperand = constantValueForExpression(rightOperand);
+                        u_int8_t rightOperandShift = bitShiftForLiteral(constantRightOperand);
+                        if (rightOperandShift) {
+                            currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                            compileNode(leftOperand, expectedType, currentBuffer);
+                            MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                            shiftLiteral.uInt8Value = rightOperandShift;
+                            shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
+                            currentBuffer->appendLiteral(shiftLiteral);
+                            break;
+                        }
+                        
+                        currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
+                        compileNode(leftOperand, expectedType, currentBuffer);
+                        compileNode(rightOperand, expectedType, currentBuffer);
+                    }
+                        break;
+                    case MaPLParser::DIVIDE: {
+                        MaPLParser::ExpressionContext *denominator = expression->expression(1);
+                        MaPLLiteral constantDenominator = constantValueForExpression(denominator);
+                        if (isFloatingPoint(constantDenominator.type.primitiveType)) {
+                            // Strength reduction: This division involves a constant floating point denominator.
+                            // Rewrite this as a multiply of the reciprocal. For example, "x/2.0" becomes "x*0.5".
+                            if (constantDenominator.type.primitiveType == MaPLPrimitiveType_Float32) {
+                                constantDenominator.float32Value = 1.0f / constantDenominator.float32Value;
+                            } else {
+                                constantDenominator.float64Value = 1.0 / constantDenominator.float64Value;
+                            }
+                            currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
+                            compileNode(expression->expression(0), expectedType, currentBuffer);
+                            currentBuffer->appendLiteral(constantDenominator);
+                            break;
+                        }
+                        currentBuffer->appendInstruction(MaPLInstruction_numeric_divide);
+                        compileNode(expression->expression(0), expectedType, currentBuffer);
+                        compileNode(denominator, expectedType, currentBuffer);
+                    }
                         break;
                     case MaPLParser::TERNARY_CONDITIONAL: {
                         std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();

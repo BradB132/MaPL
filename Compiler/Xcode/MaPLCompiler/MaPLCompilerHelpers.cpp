@@ -63,6 +63,11 @@ bool isIntegral(MaPLPrimitiveType type) {
            type == MaPLPrimitiveType_SignedInt_AmbiguousSize;
 }
 
+bool isFloatingPoint(MaPLPrimitiveType type) {
+    return isConcreteFloat(type) ||
+           type == MaPLPrimitiveType_Float_AmbiguousSize;
+}
+
 bool isNumeric(MaPLPrimitiveType type) {
     return isConcreteFloat(type) ||
            isConcreteSignedInt(type) ||
@@ -1127,6 +1132,50 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
         default: break;
     }
     return { { MaPLPrimitiveType_TypeError } };
+}
+
+u_int8_t bitShiftForLiteral(const MaPLLiteral &literal) {
+    // Convert this literal to an unsigned int.
+    u_int64_t unsignedValue;
+    switch (literal.type.primitiveType) {
+        case MaPLPrimitiveType_Int8:
+            if (literal.int8Value <= 0) { return 0; }
+            unsignedValue = (u_int64_t)literal.int8Value;
+            break;
+        case MaPLPrimitiveType_Int16:
+            if (literal.int16Value <= 0) { return 0; }
+            unsignedValue = (u_int64_t)literal.int16Value;
+            break;
+        case MaPLPrimitiveType_Int32:
+            if (literal.int32Value <= 0) { return 0; }
+            unsignedValue = (u_int64_t)literal.int32Value;
+            break;
+        case MaPLPrimitiveType_SignedInt_AmbiguousSize: // Intentional fallthrough.
+        case MaPLPrimitiveType_Int64:
+            if (literal.int64Value <= 0) { return 0; }
+            unsignedValue = (u_int64_t)literal.int64Value;
+            break;
+        case MaPLPrimitiveType_UInt8:
+            unsignedValue = (u_int64_t)literal.uInt8Value;
+            break;
+        case MaPLPrimitiveType_UInt16:
+            unsignedValue = (u_int64_t)literal.uInt16Value;
+            break;
+        case MaPLPrimitiveType_UInt32:
+            unsignedValue = (u_int64_t)literal.uInt32Value;
+            break;
+        case MaPLPrimitiveType_Int_AmbiguousSizeAndSign: // Intentional fallthrough.
+        case MaPLPrimitiveType_UInt64:
+            unsignedValue = literal.uInt64Value;
+            break;
+        default: return 0;
+    }
+    for (u_int8_t i = 0; i < 64; i++) {
+        if (unsignedValue == 1 << i) {
+            return i;
+        }
+    }
+    return 0;
 }
 
 MaPLParser::ObjectExpressionContext *terminalObjectExpression(MaPLParser::ObjectExpressionContext *rootExpression) {

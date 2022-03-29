@@ -117,6 +117,11 @@ bool isConcreteUnsignedInt(MaPLPrimitiveType type);
 bool isIntegral(MaPLPrimitiveType type);
 
 /**
+ * @return @c true if the primitive type is floating point. Includes ambiguous floats.
+ */
+bool isFloatingPoint(MaPLPrimitiveType type);
+
+/**
  * @return @c true if the primitive type is numeric, including ambiguous types.
  */
 bool isNumeric(MaPLPrimitiveType type);
@@ -283,6 +288,11 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
  * @return The value of @c literal after being cast to @c castType.
  */
 MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castType, MaPLFile *file, antlr4::Token *token);
+
+/**
+ * @return An integer representing x, where literal.[type]Value == 1 << x. Returns @c 0 if the literal value is not a power of 2.
+ */
+u_int8_t bitShiftForLiteral(const MaPLLiteral &literal);
 
 /**
  * @return The object expression that terminates the chain of expressions for which @c rootExpression is the root node.
