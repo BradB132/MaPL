@@ -953,6 +953,21 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 currentBuffer->appendLiteral(constantDenominator);
                                 break;
                             }
+                        } else if (isConcreteUnsignedInt(expectedType.primitiveType)) {
+                            MaPLLiteral constantDenominator = constantValueForExpression(denominator);
+                            u_int8_t denominatorShift = bitShiftForLiteral(constantDenominator);
+                            if (denominatorShift) {
+                                // Strength reduction: If this expression is unsigned, and the denominator
+                                // is a constant and power of 2, convert this to a right bit shift.
+                                // For example, "x / 8" becomes "x >> 3".
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
+                                compileNode(expression->expression(0), expectedType, currentBuffer);
+                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                shiftLiteral.uInt8Value = denominatorShift;
+                                shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
+                                currentBuffer->appendLiteral(shiftLiteral);
+                                break;
+                            }
                         }
                         currentBuffer->appendInstruction(MaPLInstruction_numeric_divide);
                         compileNode(expression->expression(0), expectedType, currentBuffer);
