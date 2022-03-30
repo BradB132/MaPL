@@ -510,7 +510,7 @@ void confirmUnsignedValueFitsInUnsignedBits(u_int64_t value, int8_t bits, MaPLFi
 }
 
 MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castType, MaPLFile *file, antlr4::Token *token) {
-    MaPLLiteral returnVal = { { castType.primitiveType } };
+    MaPLLiteral returnVal{ { castType.primitiveType } };
     switch (castType.primitiveType) {
         case MaPLPrimitiveType_Int8:
             switch (literal.type.primitiveType) {

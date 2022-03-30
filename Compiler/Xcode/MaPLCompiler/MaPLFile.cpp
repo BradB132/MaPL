@@ -353,7 +353,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             }
             
             // Claim a spot in memory for this variable.
-            MaPLVariable variable = { typeForTypeContext(declaration->type()), this, identifier->start };
+            MaPLVariable variable{ typeForTypeContext(declaration->type()), this, identifier->start };
             _variableStack->declareVariable(variableName, variable);
             
             // Assign the value to this variable if needed.
@@ -372,7 +372,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::ObjectExpressionContext *objectExpression = assignment->objectExpression();
             
             // Check if the object expression on the left side of this assignment is a variable.
-            MaPLVariable assignedVariable = { { MaPLPrimitiveType_Uninitialized } };
+            MaPLVariable assignedVariable{ { MaPLPrimitiveType_Uninitialized } };
             if (!objectExpression->keyToken) {
                 assignedVariable = _variableStack->getVariable(objectExpression->identifier()->getText());
             }
@@ -436,7 +436,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                                 
-                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
                                 shiftLiteral.uInt8Value = shift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
                                 currentBuffer->appendLiteral(shiftLiteral);
@@ -455,7 +455,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                             currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                             
-                            MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                            MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
                             shiftLiteral.uInt8Value = shift;
                             shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
                             currentBuffer->appendLiteral(shiftLiteral);
@@ -485,7 +485,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     logNotAssignableError(terminalExpression->start);
                     break;
                 }
-                MaPLType prefixType = { MaPLPrimitiveType_Uninitialized };
+                MaPLType prefixType{ MaPLPrimitiveType_Uninitialized };
                 if (prefixExpression) {
                     prefixType = objectExpressionReturnType(prefixExpression, "");
                 }
@@ -582,7 +582,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
                                 currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
                                 
-                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
                                 shiftLiteral.uInt8Value = shift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, returnType, this, assignment->expression()->start);
                                 currentBuffer->appendLiteral(shiftLiteral);
@@ -598,7 +598,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
                             currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
                             
-                            MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                            MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
                             shiftLiteral.uInt8Value = shift;
                             shiftLiteral = castLiteralToType(shiftLiteral, returnType, this, assignment->expression()->start);
                             currentBuffer->appendLiteral(shiftLiteral);
@@ -618,7 +618,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::ObjectExpressionContext *objectExpression = statement->objectExpression();
             
             // Check if the object expression being incremented is a variable.
-            MaPLVariable assignedVariable = { { MaPLPrimitiveType_Uninitialized } };
+            MaPLVariable assignedVariable{ { MaPLPrimitiveType_Uninitialized } };
             if (!objectExpression->keyToken) {
                 assignedVariable = _variableStack->getVariable(objectExpression->identifier()->getText());
             }
@@ -639,7 +639,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
                 // Add a literal "1" that matches the assigned primitive type.
-                MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
+                MaPLLiteral oneLiteral{ { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                 oneLiteral.uInt64Value = 1;
                 oneLiteral = castLiteralToType(oneLiteral, assignedVariable.type, this, statement->keyToken);
                 currentBuffer->appendLiteral(oneLiteral);
@@ -658,7 +658,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     logNotAssignableError(terminalExpression->start);
                     break;
                 }
-                MaPLType prefixType = { MaPLPrimitiveType_Uninitialized };
+                MaPLType prefixType{ MaPLPrimitiveType_Uninitialized };
                 if (prefixExpression) {
                     prefixType = objectExpressionReturnType(prefixExpression, "");
                 }
@@ -734,7 +734,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
                 
                 // Add a literal "1" that matches the return type.
-                MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
+                MaPLLiteral oneLiteral{ { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                 oneLiteral.uInt64Value = 1;
                 oneLiteral = castLiteralToType(oneLiteral, returnType, this, statement->keyToken);
                 currentBuffer->appendLiteral(oneLiteral);
@@ -1007,7 +1007,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             if (leftOperandShift) {
                                 currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
                                 compileNode(rightOperand, expectedType, currentBuffer);
-                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
                                 shiftLiteral.uInt8Value = leftOperandShift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
                                 currentBuffer->appendLiteral(shiftLiteral);
@@ -1018,7 +1018,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             if (rightOperandShift) {
                                 currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
                                 compileNode(leftOperand, expectedType, currentBuffer);
-                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
                                 shiftLiteral.uInt8Value = rightOperandShift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
                                 currentBuffer->appendLiteral(shiftLiteral);
@@ -1059,7 +1059,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 // For example, "x / 8" becomes "x >> 3".
                                 currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
                                 compileNode(expression->expression(0), expectedType, currentBuffer);
-                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
                                 shiftLiteral.uInt8Value = denominatorShift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
                                 currentBuffer->appendLiteral(shiftLiteral);
@@ -1356,7 +1356,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 currentBuffer->appendInstruction(MaPLInstruction_function_invocation);
                 std::string functionName = expression->identifier()->getText();
                 std::string invokedOnType;
-                MaPLType invokedReturnType = { MaPLPrimitiveType_Uninitialized };
+                MaPLType invokedReturnType{ MaPLPrimitiveType_Uninitialized };
                 if (invokedOnExpression) {
                     invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
                     invokedOnType = invokedReturnType.pointerType;
@@ -1451,7 +1451,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         //   MaPLParameterCount - The number of parameters to expect. For properties this is always 0.
         currentBuffer->appendInstruction(MaPLInstruction_function_invocation);
         std::string invokedOnType;
-        MaPLType invokedReturnType = { MaPLPrimitiveType_Uninitialized };
+        MaPLType invokedReturnType{ MaPLPrimitiveType_Uninitialized };
         if (invokedOnExpression) {
             invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
             invokedOnType = invokedReturnType.pointerType;
@@ -1610,7 +1610,7 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 }
                 if (left.type.primitiveType == MaPLPrimitiveType_Boolean &&
                     right.type.primitiveType == MaPLPrimitiveType_Boolean) {
-                    MaPLLiteral literal = { { MaPLPrimitiveType_Boolean } };
+                    MaPLLiteral literal{ { MaPLPrimitiveType_Boolean } };
                     literal.booleanValue = left.booleanValue && right.booleanValue;
                     return literal;
                 }
@@ -1627,7 +1627,7 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 }
                 if (left.type.primitiveType == MaPLPrimitiveType_Boolean &&
                     right.type.primitiveType == MaPLPrimitiveType_Boolean) {
-                    MaPLLiteral literal = { { MaPLPrimitiveType_Boolean } };
+                    MaPLLiteral literal{ { MaPLPrimitiveType_Boolean } };
                     literal.booleanValue = left.booleanValue || right.booleanValue;
                     return literal;
                 }
@@ -1639,7 +1639,7 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 if (left.type.primitiveType != MaPLPrimitiveType_Boolean) { break; }
                 MaPLLiteral right = constantValueForExpression(expression->expression(1));
                 if (right.type.primitiveType != MaPLPrimitiveType_Boolean) { break; }
-                MaPLLiteral literal = { { MaPLPrimitiveType_Boolean } };
+                MaPLLiteral literal{ { MaPLPrimitiveType_Boolean } };
                 switch (tokenType) {
                     case MaPLParser::LOGICAL_EQUALITY:
                         literal.booleanValue = left.booleanValue == right.booleanValue;
@@ -1660,12 +1660,12 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 if (!isNumeric(right.type.primitiveType)) { break; }
                 
                 // Because literals can be ambiguous, types must be reconciled and typecast.
-                MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
+                MaPLType reconciledType{ reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
                 if (!isNumeric(reconciledType.primitiveType)) { break; }
                 left = castLiteralToType(left, reconciledType, this, expression->start);
                 right = castLiteralToType(right, reconciledType, this, expression->start);
                 
-                MaPLLiteral returnVal = { { MaPLPrimitiveType_Boolean } };
+                MaPLLiteral returnVal{ { MaPLPrimitiveType_Boolean } };
                 switch (reconciledType.primitiveType) {
                     case MaPLPrimitiveType_Int8:
                         switch (tokenType) {
@@ -1852,7 +1852,7 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
             }
             case MaPLParser::LITERAL_TRUE: // Intentional fallthrough.
             case MaPLParser::LITERAL_FALSE: {
-                MaPLLiteral literal = { { MaPLPrimitiveType_Boolean } };
+                MaPLLiteral literal{ { MaPLPrimitiveType_Boolean } };
                 literal.booleanValue = tokenType == MaPLParser::LITERAL_TRUE;
                 return  literal;
             }
@@ -1901,12 +1901,12 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 if (!isNumeric(right.type.primitiveType)) { break; }
                 
                 // Because literals can be ambiguous, types must be reconciled and typecast.
-                MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
+                MaPLType reconciledType{ reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
                 if (!isNumeric(reconciledType.primitiveType)) { break; }
                 left = castLiteralToType(left, reconciledType, this, expression->start);
                 right = castLiteralToType(right, reconciledType, this, expression->start);
                 
-                MaPLLiteral returnVal = { reconciledType };
+                MaPLLiteral returnVal{ reconciledType };
                 switch (reconciledType.primitiveType) {
                     case MaPLPrimitiveType_Int8:
                         switch (tokenType) {
@@ -2092,12 +2092,12 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 if (!isNumeric(right.type.primitiveType) && right.type.primitiveType != MaPLPrimitiveType_String) { break; }
                 
                 // Because literals can be ambiguous, types must be reconciled and typecast.
-                MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
+                MaPLType reconciledType{ reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
                 if (!isNumeric(reconciledType.primitiveType) && reconciledType.primitiveType != MaPLPrimitiveType_String) { break; }
                 left = castLiteralToType(left, reconciledType, this, expression->start);
                 right = castLiteralToType(right, reconciledType, this, expression->start);
                 
-                MaPLLiteral returnVal = { reconciledType };
+                MaPLLiteral returnVal{ reconciledType };
                 switch (reconciledType.primitiveType) {
                     case MaPLPrimitiveType_Int8:
                         returnVal.int8Value = left.int8Value + right.int8Value;
@@ -2150,12 +2150,12 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 if (!isIntegral(right.type.primitiveType)) { break; }
                 
                 // Because literals can be ambiguous, types must be reconciled and typecast.
-                MaPLType reconciledType = { reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
+                MaPLType reconciledType{ reconcileTypes(left.type.primitiveType, right.type.primitiveType, NULL) };
                 if (!isIntegral(reconciledType.primitiveType)) { break; }
                 left = castLiteralToType(left, reconciledType, this, expression->start);
                 right = castLiteralToType(right, reconciledType, this, expression->start);
                 
-                MaPLLiteral returnVal = { reconciledType };
+                MaPLLiteral returnVal{ reconciledType };
                 switch (reconciledType.primitiveType) {
                     case MaPLPrimitiveType_Int8:
                         switch (tokenType) {
@@ -2370,13 +2370,13 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
             }
             case MaPLParser::LITERAL_INT: {
                 std::string intAsString = expression->LITERAL_INT()->getText();
-                MaPLLiteral literal = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
+                MaPLLiteral literal{ { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                 literal.uInt64Value = (u_int64_t)std::stoull(intAsString);
                 return literal;
             }
             case MaPLParser::LITERAL_FLOAT: {
                 std::string floatAsString = expression->LITERAL_FLOAT()->getText();
-                MaPLLiteral literal = { { MaPLPrimitiveType_Float_AmbiguousSize } };
+                MaPLLiteral literal{ { MaPLPrimitiveType_Float_AmbiguousSize } };
                 literal.float64Value = (double_t)std::stod(floatAsString);
                 return literal;
             }
@@ -2384,7 +2384,7 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 std::string literalString = expression->LITERAL_STRING()->getText();
                 // The literal text will always contain the string quotes, substring call removes them.
                 std::filesystem::path stringValue = literalString.substr(1, literalString.length()-2);
-                MaPLLiteral literal = { { MaPLPrimitiveType_String } };
+                MaPLLiteral literal{ { MaPLPrimitiveType_String } };
                 literal.stringValue = stringValue;
                 return literal;
             }
