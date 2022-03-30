@@ -29,6 +29,7 @@ int main(int argc, const char ** argv) {
     if (argc < 2) {
         printf("No arguments specified. Specify one or more file paths along with an output path for the symbol table.\n");
         printf("Example usage: MaPLCompiler /absolute/path/to/file.mapl -o /absolute/path/to/output.maplb -s /absolute/path/to/symbol/table.h\n");
+        printf("Specify the --debug flag to include debug info in the bytecode. This option increases bloat for bytecode size and runtime speed.\n");
         return 1;
     }
     
@@ -36,11 +37,13 @@ int main(int argc, const char ** argv) {
     MaPLFileCache fileCache;
     std::vector<MaPLFile *> files;
     MaPLFile *currentFile = NULL;
+    MaPLFileOptions fileOptions{ false };
     std::filesystem::path symbolOutputPath;
     ArgumentExpectation expectation = ArgumentExpectation_InputPath;
     for(int i = 1; i < argc; i++) {
-        // Check if this is a flag signalling the expecation of a subsequent path.
         std::string arg = argv[i];
+        
+        // Check if this is a flag (which might signal the expecation of a subsequent path).
         bool isFlag = false;
         ArgumentExpectation previousExpectation = expectation;
         if (arg == "-o") {
@@ -49,6 +52,9 @@ int main(int argc, const char ** argv) {
             isFlag = true;
         } else if (arg == "-s") {
             expectation = ArgumentExpectation_SymbolTablePath;
+            isFlag = true;
+        } else if (arg == "--debug") {
+            fileOptions.includeDebugBytes = true;
             isFlag = true;
         }
         if (isFlag) {
@@ -115,6 +121,12 @@ int main(int argc, const char ** argv) {
         exit(1);
     }
     
+    // Propagate options to all files. This will apply to all files
+    // explicitly mentioned in the args, but not dependent files.
+    for (MaPLFile *file : files) {
+        file->setOptions(fileOptions);
+    }
+    
     // Check for errors and write to console.
     bool hadErrors = false;
     for (MaPLFile *file : files) {
@@ -142,7 +154,7 @@ int main(int argc, const char ** argv) {
     std::ofstream symbolTableOutputStream(symbolOutputPath);
     symbolTableOutputStream << formattedSymbolTable;
     
-    // Output each script to file.
+    // Output each compiled script to file.
     for (MaPLFile *file : files) {
         std::ofstream bytecodeOutputStream(file->getNormalizedOutputPath());
         

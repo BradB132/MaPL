@@ -23,6 +23,10 @@ class MaPLFileCache;
 class MaPLBuffer;
 class MaPLVariableStack;
 
+struct MaPLFileOptions {
+    bool includeDebugBytes;
+};
+
 /**
  * Represents a single MaPL file in from the filesystem.
  */
@@ -80,6 +84,12 @@ public:
      */
     std::vector<std::string> getErrors();
     
+    /**
+     * Mutator for this file's options. Options can change the way that the bytecode is compiled, but this
+     * must be assigned before compilation is triggered by accessing the bytecode buffer or error list.
+     */
+    void setOptions(const MaPLFileOptions &options);
+    
 private:
     
     bool parseRawScript();
@@ -114,6 +124,7 @@ private:
     
     std::filesystem::path _normalizedFilePath;
     std::filesystem::path _normalizedOutputPath;
+    MaPLFileOptions _options;
     MaPLFileCache *_fileCache;
     MaPLBuffer *_bytecode;
     MaPLVariableStack *_variableStack;

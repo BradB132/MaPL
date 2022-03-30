@@ -161,6 +161,10 @@ std::vector<std::string> MaPLFile::getErrors() {
     return _errors;
 }
 
+void MaPLFile::setOptions(const MaPLFileOptions &options) {
+    _options = options;
+}
+
 void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer) {
     for (antlr4::tree::ParseTree *child : node->children) {
         antlr4::ParserRuleContext *ruleContext = dynamic_cast<antlr4::ParserRuleContext *>(child);
