@@ -385,25 +385,85 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // If this is an operator-assign, rewrite it as a regular assign.
                 // For example: "var+=expression" becomes "var=var+expression".
                 size_t tokenType = assignment->keyToken->getType();
-                if (tokenType != MaPLParser::ASSIGN) {
-                    if (!assignOperatorIsCompatibleWithType(this, tokenType, assignedVariable.type.primitiveType, assignment->keyToken)) {
-                        // If there was an error, the reason why was already logged.
-                        break;
-                    }
-                    MaPLInstruction operatorAssign = operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType);
+                if (tokenType == MaPLParser::ASSIGN) {
+                    // This is a normal assign, not an operator-assign.
+                    compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
+                    break;
+                }
+                if (!assignOperatorIsCompatibleWithType(this, tokenType, assignedVariable.type.primitiveType, assignment->keyToken)) {
+                    // If there was an error, the reason why was already logged.
+                    break;
+                }
+                MaPLInstruction operatorAssign = operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType);
+                if (operatorAssign == MaPLInstruction_string_concat) {
+                    // This is a string concat-assign.
                     currentBuffer->appendInstruction(operatorAssign);
-                    if (operatorAssign == MaPLInstruction_string_concat) {
-                        // This is a string concat-assign.
-                        currentBuffer->appendInstruction(MaPLInstruction_variable_string);
-                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
-                        currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
-                    } else {
-                        // This is a numeric or bitwise operator assign.
-                        currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
-                        currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
-                        currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                    currentBuffer->appendInstruction(MaPLInstruction_variable_string);
+                    currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                    currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                    compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
+                    break;
+                }
+                
+                // This is a numeric or bitwise operator assign. Check if there's any possible strength reductions.
+                MaPLLiteral literal = constantValueForExpression(assignment->expression());
+                if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
+                    if (operatorAssign == MaPLInstruction_numeric_divide) {
+                        if (isConcreteFloat(assignedVariable.type.primitiveType)) {
+                            // Rewrite this as a multiply. For example, "x /= 5.0" becomes "x = x * 0.2".
+                            currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
+                            currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                            currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                            currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                            
+                            literal = castLiteralToType(literal, assignedVariable.type, this, assignment->expression()->start);
+                            if (literal.type.primitiveType == MaPLPrimitiveType_Float32) {
+                                literal.float32Value = 1.0f / literal.float32Value;
+                            } else {
+                                literal.float64Value = 1.0 / literal.float64Value;
+                            }
+                            currentBuffer->appendLiteral(literal);
+                            break;
+                        }
+                        if (isConcreteUnsignedInt(assignedVariable.type.primitiveType)) {
+                            u_int8_t shift = bitShiftForLiteral(literal);
+                            if (shift) {
+                                // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
+                                currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                                currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                                
+                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                shiftLiteral.uInt8Value = shift;
+                                shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
+                                currentBuffer->appendLiteral(shiftLiteral);
+                                break;
+                            }
+                        }
+                    } else if (operatorAssign == MaPLInstruction_numeric_multiply && isIntegral(assignedVariable.type.primitiveType)) {
+                        u_int8_t shift = bitShiftForLiteral(literal);
+                        if (shift) {
+                            // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
+                            currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                            currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                            currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                            currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
+                            
+                            MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                            shiftLiteral.uInt8Value = shift;
+                            shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
+                            currentBuffer->appendLiteral(shiftLiteral);
+                            break;
+                        }
                     }
                 }
+                
+                // Append the operator-assignment normally.
+                currentBuffer->appendInstruction(operatorAssign);
+                currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
             } else {
                 // This assignment is for an object expression.
