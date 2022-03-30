@@ -17,11 +17,11 @@
 #include "MaPLParser.h"
 #include "BaseErrorListener.h"
 #include "MaPLCompilerHelpers.h"
+#include "MaPLVariableStack.h"
 
 class MaPLLexer;
 class MaPLFileCache;
 class MaPLBuffer;
-class MaPLVariableStack;
 
 struct MaPLFileOptions {
     bool includeDebugBytes;
@@ -98,6 +98,9 @@ private:
     MaPLType compileObjectExpression(MaPLParser::ObjectExpressionContext *expression,
                                      MaPLParser::ObjectExpressionContext *invokedOnExpression,
                                      MaPLBuffer *currentBuffer);
+    void compileDebugVariableUpdate(const std::string &variableName,
+                                    const MaPLVariable &variable,
+                                    MaPLBuffer *currentBuffer);
     MaPLLiteral constantValueForExpression(MaPLParser::ExpressionContext *expression);
     MaPLType dataTypeForExpression(MaPLParser::ExpressionContext *expression);
     MaPLPrimitiveType reconcileTypes(MaPLPrimitiveType left,

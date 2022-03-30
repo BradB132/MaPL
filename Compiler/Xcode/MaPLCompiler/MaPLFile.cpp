@@ -375,6 +375,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLMemoryAddress variableByteOffset = _variableStack->getVariable(variableName).byteOffset;
                 currentBuffer->appendBytes(&variableByteOffset, sizeof(variableByteOffset));
                 compileNode(expression, variable.type, currentBuffer);
+                
+                if (_options.includeDebugBytes) {
+                    compileDebugVariableUpdate(variableName, variable, currentBuffer);
+                }
             }
         }
             break;
@@ -399,6 +403,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 if (tokenType == MaPLParser::ASSIGN) {
                     // This is a normal assign, not an operator-assign.
                     compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
+                    
+                    if (_options.includeDebugBytes) {
+                        compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
+                    }
                     break;
                 }
                 if (!assignOperatorIsCompatibleWithType(this, tokenType, assignedVariable.type.primitiveType, assignment->keyToken)) {
@@ -413,6 +421,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                     currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
+                    
+                    if (_options.includeDebugBytes) {
+                        compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
+                    }
                     break;
                 }
                 
@@ -434,6 +446,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 literal.float64Value = 1.0 / literal.float64Value;
                             }
                             currentBuffer->appendLiteral(literal);
+                            
+                            if (_options.includeDebugBytes) {
+                                compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
+                            }
                             break;
                         };
                     } else if (isConcreteUnsignedInt(assignedVariable.type.primitiveType)) {
@@ -451,6 +467,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 shiftLiteral.uInt8Value = shift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
                                 currentBuffer->appendLiteral(shiftLiteral);
+                                
+                                if (_options.includeDebugBytes) {
+                                    compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
+                                }
                                 break;
                             }
                         }
@@ -470,6 +490,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             shiftLiteral.uInt8Value = shift;
                             shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
                             currentBuffer->appendLiteral(shiftLiteral);
+                            
+                            if (_options.includeDebugBytes) {
+                                compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
+                            }
                             break;
                         }
                     }
@@ -481,6 +505,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
+                
+                if (_options.includeDebugBytes) {
+                    compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
+                }
             } else {
                 // This assignment is for an object expression.
                 MaPLType returnType = objectExpressionReturnType(objectExpression, "");
@@ -654,6 +682,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 oneLiteral.uInt64Value = 1;
                 oneLiteral = castLiteralToType(oneLiteral, assignedVariable.type, this, statement->keyToken);
                 currentBuffer->appendLiteral(oneLiteral);
+                
+                if (_options.includeDebugBytes) {
+                    compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
+                }
             } else {
                 // This increment is for an object expression.
                 MaPLType returnType = objectExpressionReturnType(objectExpression, "");
@@ -1486,6 +1518,15 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                                                                    NULL);
         return typeForTypeContext(propertyApi->type());
     }
+}
+
+void MaPLFile::compileDebugVariableUpdate(const std::string &variableName,
+                                          const MaPLVariable &variable,
+                                          MaPLBuffer *currentBuffer) {
+    currentBuffer->appendInstruction(MaPLInstruction_debug_update_variable);
+    currentBuffer->appendString(variableName);
+    currentBuffer->appendInstruction(variableInstructionForPrimitive(variable.type.primitiveType));
+    currentBuffer->appendBytes(&(variable.byteOffset), sizeof(variable.byteOffset));
 }
 
 MaPLPrimitiveType MaPLFile::logTypeReconciliationError(MaPLPrimitiveType left,
