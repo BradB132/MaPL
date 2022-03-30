@@ -555,11 +555,60 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // If there was an error, the reason why was already logged.
                     break;
                 }
-                MaPLInstruction operatorAssignInstruction = operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType);
+                MaPLInstruction operatorAssign = operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType);
                 
-                currentBuffer->appendInstruction(operatorAssignInstruction);
+                // Check if there's any possible strength reductions.
+                if (operatorAssign == MaPLInstruction_numeric_divide) {
+                    if (isConcreteFloat(returnType.primitiveType)) {
+                        MaPLLiteral literal = constantValueForExpression(assignment->expression());
+                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, returnType)) {
+                            // Rewrite this as a multiply. For example, "x /= 5.0" becomes "x = x * 0.2".
+                            currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
+                            
+                            literal = castLiteralToType(literal, returnType, this, assignment->expression()->start);
+                            if (literal.type.primitiveType == MaPLPrimitiveType_Float32) {
+                                literal.float32Value = 1.0f / literal.float32Value;
+                            } else {
+                                literal.float64Value = 1.0 / literal.float64Value;
+                            }
+                            currentBuffer->appendLiteral(literal);
+                            break;
+                        };
+                    } else if (isConcreteUnsignedInt(returnType.primitiveType)) {
+                        MaPLLiteral literal = constantValueForExpression(assignment->expression());
+                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, returnType)) {
+                            u_int8_t shift = bitShiftForLiteral(literal);
+                            if (shift) {
+                                // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
+                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
+                                
+                                MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                                shiftLiteral.uInt8Value = shift;
+                                shiftLiteral = castLiteralToType(shiftLiteral, returnType, this, assignment->expression()->start);
+                                currentBuffer->appendLiteral(shiftLiteral);
+                                break;
+                            }
+                        }
+                    }
+                } else if (operatorAssign == MaPLInstruction_numeric_multiply && isIntegral(returnType.primitiveType)) {
+                    MaPLLiteral literal = constantValueForExpression(assignment->expression());
+                    if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, returnType)) {
+                        u_int8_t shift = bitShiftForLiteral(literal);
+                        if (shift) {
+                            // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
+                            currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                            
+                            MaPLLiteral shiftLiteral = { { MaPLPrimitiveType_UInt8 } };
+                            shiftLiteral.uInt8Value = shift;
+                            shiftLiteral = castLiteralToType(shiftLiteral, returnType, this, assignment->expression()->start);
+                            currentBuffer->appendLiteral(shiftLiteral);
+                            break;
+                        }
+                    }
+                }
                 
-                // Compile the assigned expression.
+                // Compile the assigned expression normally.
+                currentBuffer->appendInstruction(operatorAssign);
                 compileNode(assignment->expression(), returnType, currentBuffer);
             }
         }
