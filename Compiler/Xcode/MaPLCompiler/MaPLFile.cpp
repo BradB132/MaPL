@@ -503,9 +503,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // Subscript assignments are represented in bytecode as follows:
                     //   MaPLInstruction_[type]_assign_subscript - Type refers to type of assigned expression.
                     //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
-                    //   Operator instruction - Indicates which type of operator-assign to apply.
                     // ┌ MaPLInstruction_[type]_parameter - Describes the type of the subscript index.
                     // └ ExpressionContext - The index of the subscript.
+                    //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   ExpressionContext - The assigned expression.
                     currentBuffer->appendInstruction(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
@@ -514,17 +514,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         currentBuffer->appendInstruction(MaPLInstruction_no_op);
                     }
                     
-                    size_t assignTokenType = assignment->keyToken->getType();
-                    if (!assignOperatorIsCompatibleWithType(this, assignTokenType, returnType.primitiveType, assignment->keyToken)) {
-                        // If there was an error, the reason why was already logged.
-                        break;
-                    }
-                    currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType));
-                    
                     MaPLType indexType = typeForTypeContext(subscript->type(1));
                     currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(indexType.primitiveType));
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
-                    compileNode(assignment->expression(), returnType, currentBuffer);
                 } else {
                     std::string propertyName = terminalExpression->identifier()->getText();
                     MaPLParser::ApiPropertyContext *property = findProperty(this,
@@ -539,8 +531,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // Property assignments are represented in bytecode as follows:
                     //   MaPLInstruction_[type]_assign_property - Type refers to type of assigned expression.
                     //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
-                    //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   MaPLSymbol - The bytecode representation of the name of this property.
+                    //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   ExpressionContext - The assigned expression.
                     currentBuffer->appendInstruction(assignPropertyInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
@@ -549,13 +541,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         currentBuffer->appendInstruction(MaPLInstruction_no_op);
                     }
                     
-                    size_t assignTokenType = assignment->keyToken->getType();
-                    if (!assignOperatorIsCompatibleWithType(this, assignTokenType, returnType.primitiveType, assignment->keyToken)) {
-                        // If there was an error, the reason why was already logged.
-                        break;
-                    }
-                    currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType));
-                    
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
                     std::vector<MaPLType> emptyParameterList;
@@ -563,9 +548,20 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
                     MaPLSymbol symbol = 0;
                     currentBuffer->appendBytes(&symbol, sizeof(symbol));
-                    
-                    compileNode(assignment->expression(), returnType, currentBuffer);
                 }
+                
+                // Append the operator-assign instruction.
+                size_t assignTokenType = assignment->keyToken->getType();
+                if (!assignOperatorIsCompatibleWithType(this, assignTokenType, returnType.primitiveType, assignment->keyToken)) {
+                    // If there was an error, the reason why was already logged.
+                    break;
+                }
+                MaPLInstruction operatorAssignInstruction = operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType);
+                
+                currentBuffer->appendInstruction(operatorAssignInstruction);
+                
+                // Compile the assigned expression.
+                compileNode(assignment->expression(), returnType, currentBuffer);
             }
         }
             break;
@@ -631,9 +627,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // Subscript assignments are represented in bytecode as follows:
                     //   MaPLInstruction_[type]_assign_subscript - Type refers to type of assigned expression.
                     //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
-                    //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
                     // ┌ MaPLInstruction_[type]_parameter - Describes the type of the subscript index.
                     // └ ExpressionContext - The index of the subscript.
+                    //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
                     // This logic takes an increment, and rewrites it into the same format as a normal assignment.
                     // For example: "object[i]++" becomes "object[i]=object[i]+1".
@@ -644,22 +640,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         currentBuffer->appendInstruction(MaPLInstruction_no_op);
                     }
                     
-                    size_t incrementTokenType = statement->keyToken->getType();
-                    if (!assignOperatorIsCompatibleWithType(this, incrementTokenType, returnType.primitiveType, statement->keyToken)) {
-                        // If there was an error, the reason why was already logged.
-                        break;
-                    }
-                    currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
-                    
                     MaPLType indexType = typeForTypeContext(subscript->type(1));
                     currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(indexType.primitiveType));
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
-                    
-                    // Add a literal "1" that matches the return type.
-                    MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
-                    oneLiteral.uInt64Value = 1;
-                    oneLiteral = castLiteralToType(oneLiteral, returnType, this, statement->keyToken);
-                    currentBuffer->appendLiteral(oneLiteral);
                 } else {
                     std::string propertyName = terminalExpression->identifier()->getText();
                     MaPLParser::ApiPropertyContext *property = findProperty(this,
@@ -674,8 +657,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // Property assignments are represented in bytecode as follows:
                     //   MaPLInstruction_[type]_assign_property - Type refers to type of assigned expression.
                     //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
-                    //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
                     //   MaPLSymbol - The bytecode representation of the name of this property.
+                    //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
                     // This logic takes an increment, and rewrites it into the same format as a normal assignment.
                     // For example: "property++" becomes "property=property+1".
@@ -686,13 +669,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         currentBuffer->appendInstruction(MaPLInstruction_no_op);
                     }
                     
-                    size_t incrementTokenType = statement->keyToken->getType();
-                    if (!assignOperatorIsCompatibleWithType(this, incrementTokenType, returnType.primitiveType, statement->keyToken)) {
-                        // If there was an error, the reason why was already logged.
-                        break;
-                    }
-                    currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
-                    
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
                     std::vector<MaPLType> emptyParameterList;
@@ -700,13 +676,20 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_FunctionSymbol, symbolName });
                     MaPLSymbol symbol = 0;
                     currentBuffer->appendBytes(&symbol, sizeof(symbol));
-                    
-                    // Add a literal "1" that matches the return type.
-                    MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
-                    oneLiteral.uInt64Value = 1;
-                    oneLiteral = castLiteralToType(oneLiteral, returnType, this, statement->keyToken);
-                    currentBuffer->appendLiteral(oneLiteral);
                 }
+                
+                size_t incrementTokenType = statement->keyToken->getType();
+                if (!assignOperatorIsCompatibleWithType(this, incrementTokenType, returnType.primitiveType, statement->keyToken)) {
+                    // If there was an error, the reason why was already logged.
+                    break;
+                }
+                currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(incrementTokenType, returnType.primitiveType));
+                
+                // Add a literal "1" that matches the return type.
+                MaPLLiteral oneLiteral = { { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
+                oneLiteral.uInt64Value = 1;
+                oneLiteral = castLiteralToType(oneLiteral, returnType, this, statement->keyToken);
+                currentBuffer->appendLiteral(oneLiteral);
             }
         }
             break;
