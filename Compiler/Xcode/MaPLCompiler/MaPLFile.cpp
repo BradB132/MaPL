@@ -1218,6 +1218,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean &&
                 !expressionLiteral.booleanValue) {
                 // The conditional at the top of the loop is always false. Don't append anything after the first imperative statement.
+                if (_options.includeDebugBytes) {
+                    compileDebugPopFromTopStackFrame(currentBuffer);
+                }
                 _variableStack->pop();
                 break;
             }
@@ -1248,6 +1251,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             currentBuffer->appendBuffer(&loopBuffer, 0);
             
+            if (_options.includeDebugBytes) {
+                compileDebugPopFromTopStackFrame(currentBuffer);
+            }
             _variableStack->pop();
         }
             break;
@@ -1349,6 +1355,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
         case MaPLParser::RuleScope:
             _variableStack->push();
             compileChildNodes(node, { MaPLPrimitiveType_Uninitialized }, currentBuffer);
+            if (_options.includeDebugBytes) {
+                compileDebugPopFromTopStackFrame(currentBuffer);
+            }
             _variableStack->pop();
             break;
         default:
@@ -1527,6 +1536,14 @@ void MaPLFile::compileDebugVariableUpdate(const std::string &variableName,
     currentBuffer->appendString(variableName);
     currentBuffer->appendInstruction(variableInstructionForPrimitive(variable.type.primitiveType));
     currentBuffer->appendBytes(&(variable.byteOffset), sizeof(variable.byteOffset));
+}
+
+void MaPLFile::compileDebugPopFromTopStackFrame(MaPLBuffer *currentBuffer) {
+    for (const auto&[variableName, variable] : _variableStack->getTopStackFrame()) {
+        currentBuffer->appendInstruction(MaPLInstruction_debug_delete_variable);
+        currentBuffer->appendString(variableName);
+        currentBuffer->appendInstruction(variableInstructionForPrimitive(variable.type.primitiveType));
+    }
 }
 
 MaPLPrimitiveType MaPLFile::logTypeReconciliationError(MaPLPrimitiveType left,

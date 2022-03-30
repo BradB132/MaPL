@@ -101,6 +101,7 @@ private:
     void compileDebugVariableUpdate(const std::string &variableName,
                                     const MaPLVariable &variable,
                                     MaPLBuffer *currentBuffer);
+    void compileDebugPopFromTopStackFrame(MaPLBuffer *currentBuffer);
     MaPLLiteral constantValueForExpression(MaPLParser::ExpressionContext *expression);
     MaPLType dataTypeForExpression(MaPLParser::ExpressionContext *expression);
     MaPLPrimitiveType reconcileTypes(MaPLPrimitiveType left,

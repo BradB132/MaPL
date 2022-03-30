@@ -69,6 +69,11 @@ public:
      */
     std::unordered_map<std::string, MaPLVariable> getGlobalVariables();
     
+    /**
+     * @return A mapping of all variables that are in the top stack frame.
+     */
+    std::unordered_map<std::string, MaPLVariable> getTopStackFrame();
+    
 private:
     
     std::vector<std::unordered_map<std::string, MaPLVariable>> _stack;

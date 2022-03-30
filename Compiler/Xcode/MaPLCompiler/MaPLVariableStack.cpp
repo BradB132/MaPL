@@ -76,3 +76,7 @@ MaPLVariable MaPLVariableStack::getVariable(const std::string &variableName) {
 std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getGlobalVariables() {
     return _stack[0];
 }
+
+std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getTopStackFrame() {
+    return _stack[_stack.size()-1];
+}
