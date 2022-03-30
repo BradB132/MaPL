@@ -409,7 +409,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 if (operatorAssign == MaPLInstruction_numeric_divide) {
                     if (isConcreteFloat(assignedVariable.type.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
-                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
+                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, assignedVariable.type)) {
                             // Rewrite this as a multiply. For example, "x /= 5.0" becomes "x = x * 0.2".
                             currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
                             currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
@@ -425,10 +425,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             currentBuffer->appendLiteral(literal);
                             break;
                         };
-                    }
-                    if (isConcreteUnsignedInt(assignedVariable.type.primitiveType)) {
+                    } else if (isConcreteUnsignedInt(assignedVariable.type.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
-                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
+                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, assignedVariable.type)) {
                             u_int8_t shift = bitShiftForLiteral(literal);
                             if (shift) {
                                 // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
@@ -447,7 +446,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                 } else if (operatorAssign == MaPLInstruction_numeric_multiply && isIntegral(assignedVariable.type.primitiveType)) {
                     MaPLLiteral literal = constantValueForExpression(assignment->expression());
-                    if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
+                    if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, assignedVariable.type)) {
                         u_int8_t shift = bitShiftForLiteral(literal);
                         if (shift) {
                             // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
