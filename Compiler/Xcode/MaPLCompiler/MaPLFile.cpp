@@ -495,10 +495,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     // Subscript assignments are represented in bytecode as follows:
-                    //   MAPL_BYTE_[TYPE]_ASSIGN_SUBSCRIPT - Type refers to type of assigned expression.
-                    //   ObjectExpressionContext - The object prefix. Value is MAPL_BYTE_NO_OP if no expression.
+                    //   MaPLInstruction_[type]_assign_subscript - Type refers to type of assigned expression.
+                    //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
-                    // ┌ MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
+                    // ┌ MaPLInstruction_[type]_parameter - Describes the type of the subscript index.
                     // └ ExpressionContext - The index of the subscript.
                     //   ExpressionContext - The assigned expression.
                     currentBuffer->appendInstruction(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
@@ -531,8 +531,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     // Property assignments are represented in bytecode as follows:
-                    //   MAPL_BYTE_[TYPE]_ASSIGN_PROPERTY - Type refers to type of assigned expression.
-                    //   ObjectExpressionContext - The object prefix. Value is MAPL_BYTE_NO_OP if no expression.
+                    //   MaPLInstruction_[type]_assign_property - Type refers to type of assigned expression.
+                    //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   MaPLSymbol - The bytecode representation of the name of this property.
                     //   ExpressionContext - The assigned expression.
@@ -623,10 +623,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     // Subscript assignments are represented in bytecode as follows:
-                    //   MAPL_BYTE_[TYPE]_ASSIGN_SUBSCRIPT - Type refers to type of assigned expression.
-                    //   ObjectExpressionContext - The object prefix. Value is MAPL_BYTE_NO_OP if no expression.
+                    //   MaPLInstruction_[type]_assign_subscript - Type refers to type of assigned expression.
+                    //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
                     //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
-                    // ┌ MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
+                    // ┌ MaPLInstruction_[type]_parameter - Describes the type of the subscript index.
                     // └ ExpressionContext - The index of the subscript.
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
                     // This logic takes an increment, and rewrites it into the same format as a normal assignment.
@@ -666,8 +666,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     // Property assignments are represented in bytecode as follows:
-                    //   MAPL_BYTE_[TYPE]_ASSIGN_PROPERTY - Type refers to type of assigned expression.
-                    //   ObjectExpressionContext - The object prefix. Value is MAPL_BYTE_NO_OP if no expression.
+                    //   MaPLInstruction_[type]_assign_property - Type refers to type of assigned expression.
+                    //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
                     //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
                     //   MaPLSymbol - The bytecode representation of the name of this property.
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
@@ -1074,11 +1074,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             }
             
             // "While" loops are represented in bytecode as follows:
-            // ┌ MAPL_BYTE_CONDITIONAL - Signals the start of the loop.
+            // ┌ MaPLInstruction_conditional - Signals the start of the loop.
             // | ExpressionContext - The boolean expression at the top of the loop.
             // └ MaPLCursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             //   ScopeContext - The contents of the loop.
-            // ┌ MAPL_BYTE_CURSOR_MOVE_BACK - Signals the end of the loop.
+            // ┌ MaPLInstruction_cursor_move_back - Signals the end of the loop.
             // └ MaPLCursorMove - The size of the backward move required to return to the top of the loop.
             MaPLBuffer scopeBuffer(10);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
@@ -1090,7 +1090,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // This is not an infinite loop, so the conditional must be checked on each iteration.
                 loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
-                // Scope size must also include the MAPL_BYTE_CURSOR_MOVE_BACK.
+                // Scope size must also include the MaPLInstruction_cursor_move_back.
                 MaPLCursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
@@ -1114,12 +1114,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             // "For" loops are represented in bytecode as follows:
             //   ImperativeStatementContext - The first imperative statement at the top of the loop (typically variable declaration).
-            // ┌ MAPL_BYTE_CONDITIONAL - The conditional at the top of the loop.
+            // ┌ MaPLInstruction_conditional - The conditional at the top of the loop.
             // | ExpressionContext - The boolean expression at the top of the loop.
             // └ MaPLCursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             //   ScopeContext - The contents of the loop.
             //   ImperativeStatementContext - The last imperative statement at the top of the loop (typically variable increment).
-            // ┌ MAPL_BYTE_CURSOR_MOVE_BACK - Signals the end of the loop.
+            // ┌ MaPLInstruction_cursor_move_back - Signals the end of the loop.
             // └ MaPLCursorMove - The size of the backward move required to return to the top of the loop.
             MaPLParser::ForLoopControlStatementsContext *controlStatements = loop->forLoopControlStatements();
             if (controlStatements->firstStatement) {
@@ -1154,7 +1154,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (!infiniteLoop) {
                 loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
-                // Scope size must also include the MAPL_BYTE_CURSOR_MOVE_BACK.
+                // Scope size must also include the MaPLInstruction_cursor_move_back.
                 MaPLCursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
@@ -1176,10 +1176,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             // "Do while" loops are represented in bytecode as follows:
             //   ScopeContext - The contents of the loop.
-            // ┌ MAPL_BYTE_CONDITIONAL - The conditional at the end of the loop.
+            // ┌ MaPLInstruction_conditional - The conditional at the end of the loop.
             // | ExpressionContext - The boolean expression at the end of the loop.
             // └ MaPLCursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
-            // ┌ MAPL_BYTE_CURSOR_MOVE_BACK - Contained within the MAPL_BYTE_CONDITIONAL, loops back to the top.
+            // ┌ MaPLInstruction_cursor_move_back - Contained within the MaPLInstruction_conditional, loops back to the top.
             // └ MaPLCursorMove - The size of the backward move required to return to the top of the loop.
             MaPLBuffer loopBuffer(10);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &loopBuffer);
@@ -1200,7 +1200,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (!infiniteLoop) {
                 loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
-                // This is already at the end of the loop, and just needs to skip the MAPL_BYTE_CURSOR_MOVE_BACK that makes the loop repeat.
+                // This is already at the end of the loop, and just needs to skip the MaPLInstruction_cursor_move_back that makes the loop repeat.
                 MaPLCursorMove cursorMoveSize = sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
                 loopBuffer.appendBytes(&cursorMoveSize, sizeof(cursorMoveSize));
             }
@@ -1233,11 +1233,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             } else {
                 // The expression evaluated by this conditional is not compile-time constant. Compile it normally.
                 // Conditionals are represented in bytecode as follows:
-                // ┌ MAPL_BYTE_CONDITIONAL - Signals the start of a conditional.
+                // ┌ MaPLInstruction_conditional - Signals the start of a conditional.
                 // | ExpressionContext - The boolean expression at the top of the conditional.
                 // └ MaPLCursorMove - If the conditional is false, this is how many bytes to skip forward to exit the conditional.
                 //   ScopeContext - The contents of the conditional.
-                // ┌ MAPL_BYTE_CURSOR_MOVE_FORWARD - Signals the end of conditional contents (omitted if there's no "else").
+                // ┌ MaPLInstruction_cursor_move_back - Signals the end of conditional contents (omitted if there's no "else").
                 // └ MaPLCursorMove - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
                 //   ConditionalElseContext - The "else" portion of the conditional (omitted if there's no "else").
                 currentBuffer->appendInstruction(MaPLInstruction_conditional);
@@ -1290,9 +1290,9 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                                                currentBuffer);
             case MaPLParser::SUBSCRIPT_OPEN: {
                 // Subscript invocation: subscripts are represented in bytecode as follows:
-                //   MAPL_BYTE_SUBSCRIPT_INVOCATION
+                //   MaPLInstruction_subscript_invocation
                 //   ObjectExpressionContext - Resolves to the object on which the subscript is invoked.
-                //   MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the subscript index.
+                //   MaPLInstruction_[type]_parameter - Describes the type of the subscript index.
                 //   ExpressionContext - The index of the subscript.
                 currentBuffer->appendInstruction(MaPLInstruction_subscript_invocation);
                 MaPLType invokedReturnType = compileObjectExpression(expression->objectExpression(0), NULL, currentBuffer);
@@ -1311,8 +1311,8 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
             }
             case MaPLParser::PAREN_OPEN: {
                 // Function invocations are represented in bytecode as follows:
-                //   MAPL_BYTE_FUNCTION_INVOCATION - Signals the start of a function invocation.
-                //   ObjectExpressionContext - Resolves to the object on which the function is invoked. Value is MAPL_BYTE_NO_OP if no expression.
+                //   MaPLInstruction_function_invocation - Signals the start of a function invocation.
+                //   ObjectExpressionContext - Resolves to the object on which the function is invoked. Value is MaPLInstruction_no_op if no expression.
                 //   MaPLSymbol - The bytecode representation of the name of this property.
                 //   MaPLParameterCount - The number of parameters to expect.
                 //   Parameters - Byte layout described below.
@@ -1360,7 +1360,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
                 
                 // Function parameters are represented in bytecode as follows:
-                //   MAPL_BYTE_[TYPE]_PARAMETER - Describes the type of the parameter.
+                //   MaPLInstruction_[type]_parameter - Describes the type of the parameter.
                 //   ExpressionContext - The parameter value.
                 for (size_t i = 0; i < parameterExpressions.size(); i++) {
                     MaPLType expectedType;
@@ -1408,8 +1408,8 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         
         // The name doesn't match a variable, so it must be a property invocation.
         // Property invocations are represented in bytecode as follows:
-        //   MAPL_BYTE_FUNCTION_INVOCATION - Signals the start of a function invocation.
-        //   ObjectExpressionContext - Resolves to the object on which the property is invoked. Value is MAPL_BYTE_NO_OP if no expression.
+        //   MaPLInstruction_function_invocation - Signals the start of a function invocation.
+        //   ObjectExpressionContext - Resolves to the object on which the property is invoked. Value is MaPLInstruction_no_op if no expression.
         //   MaPLSymbol - The bytecode representation of the name of this property.
         //   MaPLParameterCount - The number of parameters to expect. For properties this is always 0.
         currentBuffer->appendInstruction(MaPLInstruction_function_invocation);
