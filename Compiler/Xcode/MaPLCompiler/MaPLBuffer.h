@@ -19,6 +19,7 @@ enum MaPLBufferAnnotationType {
     MaPLBufferAnnotationType_Continue,
     MaPLBufferAnnotationType_VariableOffset,
     MaPLBufferAnnotationType_FunctionSymbol,
+    MaPLBufferAnnotationType_DebugLine,
 };
 
 struct MaPLBufferAnnotation {
@@ -118,6 +119,12 @@ public:
      * Uses a mapping of symbol descriptors and symbol values to update this buffer anywhere there's a symbol annotation.
      */
     void resolveSymbolsWithTable(const std::map<std::string, MaPLSymbol> &symbolTable);
+    
+    /**
+     * Assigns a value of 0 to all debug lines. This is useful in the case where bytecode from multiple files are concatenated,
+     * and the line numbers from the previous file are no longer meaningful.
+     */
+    void zeroDebugLines();
     
 private:
     

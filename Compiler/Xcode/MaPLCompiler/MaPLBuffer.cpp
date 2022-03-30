@@ -178,3 +178,23 @@ void MaPLBuffer::resolveSymbolsWithTable(const std::map<std::string, MaPLSymbol>
         }
     }
 }
+
+void MaPLBuffer::zeroDebugLines() {
+    if (_annotations.size() == 0) {
+        return;
+    }
+    // Iterate backwards through the list so we can remove annotations without adjusting array index.
+    size_t i = _annotations.size()-1;
+    while (true) {
+        MaPLBufferAnnotation annotation = _annotations[i];
+        if (annotation.type == MaPLBufferAnnotationType_DebugLine) {
+            MaPLLineNumber zeroLine = 0;
+            memcpy(_bytes+annotation.byteLocation, &zeroLine, sizeof(zeroLine));
+            _annotations.erase(_annotations.begin()+i);
+        }
+        if (i == 0) {
+            break;
+        }
+        i--;
+    }
+}

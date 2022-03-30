@@ -13,6 +13,7 @@ typedef u_int8_t MaPLParameterCount;
 typedef u_int16_t MaPLMemoryAddress;
 typedef u_int16_t MaPLCursorMove;
 typedef u_int16_t MaPLSymbol;
+typedef u_int16_t MaPLLineNumber;
 struct MaPLString {
     char* stringValue;
     bool isAllocated;
@@ -246,7 +247,6 @@ enum MaPLInstruction : u_int8_t {
     MaPLInstruction_metadata = 196,
 
     //DEBUGGING
-    // TODO: Add debug instructions based on command line flag.
     MaPLInstruction_debug_line = 197,
     MaPLInstruction_debug_update_variable = 198,
     MaPLInstruction_debug_delete_variable = 199,

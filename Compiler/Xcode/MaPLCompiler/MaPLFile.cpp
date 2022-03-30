@@ -129,6 +129,7 @@ MaPLBuffer *MaPLFile::getBytecode() {
             }
         }
     }
+    _bytecode->zeroDebugLines();
     
     // Compile the bytecode from this file.
     compileChildNodes(_program, { MaPLPrimitiveType_Uninitialized }, _bytecode);
@@ -314,6 +315,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             break;
         case MaPLParser::RuleImperativeStatement: {
             MaPLParser::ImperativeStatementContext *statement = (MaPLParser::ImperativeStatementContext *)node;
+            if (_options.includeDebugBytes) {
+                MaPLLineNumber tokenLine = (MaPLLineNumber)statement->start->getLine();
+                currentBuffer->appendInstruction(MaPLInstruction_debug_line);
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_DebugLine });
+                currentBuffer->appendBytes(&tokenLine, sizeof(tokenLine));
+            }
             if (statement->keyToken) {
                 switch (statement->keyToken->getType()) {
                     case MaPLParser::BREAK: {
