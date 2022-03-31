@@ -189,12 +189,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
                 
                 // Check to make sure this name doesn't collide with a primitive type.
-                if (typeName == "int8" ||
-                    typeName == "int16" ||
+                if (typeName == "char" ||
                     typeName == "int32" ||
                     typeName == "int64" ||
-                    typeName == "uint8" ||
-                    typeName == "uint16" ||
                     typeName == "uint32" ||
                     typeName == "uint64" ||
                     typeName == "float32" ||
@@ -417,7 +414,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 if (operatorAssign == MaPLInstruction_string_concat) {
                     // This is a string concat-assign.
                     currentBuffer->appendInstruction(operatorAssign);
-                    currentBuffer->appendInstruction(MaPLInstruction_variable_string);
+                    currentBuffer->appendInstruction(MaPLInstruction_string_variable);
                     currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                     currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
@@ -429,12 +426,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
                 
                 // This is a numeric or bitwise operator assign. Check if there's any possible strength reductions.
-                if (operatorAssign == MaPLInstruction_numeric_divide) {
+                if (tokenType == MaPLParser::DIVIDE_ASSIGN) {
                     if (isConcreteFloat(assignedVariable.type.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
                         if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, assignedVariable.type)) {
                             // Rewrite this as a multiply. For example, "x /= 5.0" becomes "x = x * 0.2".
-                            currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
+                            currentBuffer->appendInstruction(multiplicationInstructionForPrimitive(assignedVariable.type.primitiveType));
                             currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
                             currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                             currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
@@ -458,13 +455,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             u_int8_t shift = bitShiftForLiteral(literal);
                             if (shift) {
                                 // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
+                                currentBuffer->appendInstruction(bitwiseShiftRightInstructionForPrimitive(assignedVariable.type.primitiveType));
                                 currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
                                 currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                                 
-                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
-                                shiftLiteral.uInt8Value = shift;
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
+                                shiftLiteral.charValue = shift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
                                 currentBuffer->appendLiteral(shiftLiteral);
                                 
@@ -475,19 +472,19 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             }
                         }
                     }
-                } else if (operatorAssign == MaPLInstruction_numeric_multiply && isIntegral(assignedVariable.type.primitiveType)) {
+                } else if (tokenType == MaPLParser::MULTIPLY_ASSIGN && isIntegral(assignedVariable.type.primitiveType)) {
                     MaPLLiteral literal = constantValueForExpression(assignment->expression());
                     if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, assignedVariable.type)) {
                         u_int8_t shift = bitShiftForLiteral(literal);
                         if (shift) {
                             // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
-                            currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                            currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(assignedVariable.type.primitiveType));
                             currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
                             currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
                             currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                             
-                            MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
-                            shiftLiteral.uInt8Value = shift;
+                            MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
+                            shiftLiteral.charValue = shift;
                             shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
                             currentBuffer->appendLiteral(shiftLiteral);
                             
@@ -541,11 +538,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // Subscript assignments are represented in bytecode as follows:
                     //   MaPLInstruction_[type]_assign_subscript - Type refers to type of assigned expression.
                     //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
-                    // ┌ MaPLInstruction_[type]_parameter - Describes the type of the subscript index.
-                    // └ ExpressionContext - The index of the subscript.
+                    //   ExpressionContext - The index of the subscript.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   ExpressionContext - The assigned expression.
-                    currentBuffer->appendInstruction(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(subscriptAssignmentInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
@@ -553,7 +549,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     MaPLType indexType = typeForTypeContext(subscript->type(1));
-                    currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(indexType.primitiveType));
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
                 } else {
                     std::string propertyName = terminalExpression->identifier()->getText();
@@ -572,7 +567,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     //   MaPLSymbol - The bytecode representation of the name of this property.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   ExpressionContext - The assigned expression.
-                    currentBuffer->appendInstruction(assignPropertyInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(propertyAssignmentInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
@@ -594,15 +589,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // If there was an error, the reason why was already logged.
                     break;
                 }
-                MaPLInstruction operatorAssign = operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType);
                 
                 // Check if there's any possible strength reductions.
-                if (operatorAssign == MaPLInstruction_numeric_divide) {
+                if (assignTokenType == MaPLParser::DIVIDE_ASSIGN) {
                     if (isConcreteFloat(returnType.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
                         if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, returnType)) {
                             // Rewrite this as a multiply. For example, "x /= 5.0" becomes "x = x * 0.2".
-                            currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
+                            currentBuffer->appendInstruction(multiplicationInstructionForPrimitive(returnType.primitiveType));
                             
                             literal = castLiteralToType(literal, returnType, this, assignment->expression()->start);
                             if (literal.type.primitiveType == MaPLPrimitiveType_Float32) {
@@ -619,26 +613,26 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             u_int8_t shift = bitShiftForLiteral(literal);
                             if (shift) {
                                 // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
+                                currentBuffer->appendInstruction(bitwiseShiftRightInstructionForPrimitive(returnType.primitiveType));
                                 
-                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
-                                shiftLiteral.uInt8Value = shift;
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
+                                shiftLiteral.charValue = shift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, returnType, this, assignment->expression()->start);
                                 currentBuffer->appendLiteral(shiftLiteral);
                                 break;
                             }
                         }
                     }
-                } else if (operatorAssign == MaPLInstruction_numeric_multiply && isIntegral(returnType.primitiveType)) {
+                } else if (assignTokenType == MaPLParser::MULTIPLY_ASSIGN && isIntegral(returnType.primitiveType)) {
                     MaPLLiteral literal = constantValueForExpression(assignment->expression());
                     if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, returnType)) {
                         u_int8_t shift = bitShiftForLiteral(literal);
                         if (shift) {
                             // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
-                            currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                            currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(returnType.primitiveType));
                             
-                            MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
-                            shiftLiteral.uInt8Value = shift;
+                            MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
+                            shiftLiteral.charValue = shift;
                             shiftLiteral = castLiteralToType(shiftLiteral, returnType, this, assignment->expression()->start);
                             currentBuffer->appendLiteral(shiftLiteral);
                             break;
@@ -647,7 +641,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
                 
                 // Compile the assigned expression normally.
-                currentBuffer->appendInstruction(operatorAssign);
+                currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(assignTokenType, returnType.primitiveType));
                 compileNode(assignment->expression(), returnType, currentBuffer);
             }
         }
@@ -718,13 +712,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // Subscript assignments are represented in bytecode as follows:
                     //   MaPLInstruction_[type]_assign_subscript - Type refers to type of assigned expression.
                     //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
-                    // ┌ MaPLInstruction_[type]_parameter - Describes the type of the subscript index.
-                    // └ ExpressionContext - The index of the subscript.
+                    //   ExpressionContext - The index of the subscript.
                     //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
                     // This logic takes an increment, and rewrites it into the same format as a normal assignment.
                     // For example: "object[i]++" becomes "object[i]=object[i]+1".
-                    currentBuffer->appendInstruction(assignSubscriptInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(subscriptAssignmentInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
@@ -732,7 +725,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     MaPLType indexType = typeForTypeContext(subscript->type(1));
-                    currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(indexType.primitiveType));
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
                 } else {
                     std::string propertyName = terminalExpression->identifier()->getText();
@@ -753,7 +745,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
                     // This logic takes an increment, and rewrites it into the same format as a normal assignment.
                     // For example: "property++" becomes "property=property+1".
-                    currentBuffer->appendInstruction(assignPropertyInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(propertyAssignmentInstructionForPrimitive(returnType.primitiveType));
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
@@ -866,7 +858,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         if (expressionType.primitiveType == MaPLPrimitiveType_Pointer) {
                             // Strings are the only primitive that can cast from pointer (to print the memory address of pointers).
                             if (castType.primitiveType == MaPLPrimitiveType_String) {
-                                currentBuffer->appendInstruction(MaPLInstruction_typecast_from_pointer_to_string);
+                                currentBuffer->appendInstruction(MaPLInstruction_string_typecast_from_pointer);
                                 compileNode(expression->expression(0), expressionType, currentBuffer);
                                 break;
                             } else {
@@ -911,19 +903,19 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     case MaPLParser::BITWISE_SHIFT_RIGHT:
                         switch (tokenType) {
                             case MaPLParser::BITWISE_AND:
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_and);
+                                currentBuffer->appendInstruction(bitwiseAndInstructionForPrimitive(expectedType.primitiveType));
                                 break;
                             case MaPLParser::BITWISE_XOR:
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_xor);
+                                currentBuffer->appendInstruction(bitwiseXorInstructionForPrimitive(expectedType.primitiveType));
                                 break;
                             case MaPLParser::BITWISE_OR:
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_or);
+                                currentBuffer->appendInstruction(bitwiseOrInstructionForPrimitive(expectedType.primitiveType));
                                 break;
                             case MaPLParser::BITWISE_SHIFT_LEFT:
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                                currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(expectedType.primitiveType));
                                 break;
                             case MaPLParser::BITWISE_SHIFT_RIGHT:
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
+                                currentBuffer->appendInstruction(bitwiseShiftRightInstructionForPrimitive(expectedType.primitiveType));
                                 break;
                             default: break;
                         }
@@ -1007,18 +999,18 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         compileNode(expression->expression(0), { MaPLPrimitiveType_Boolean }, currentBuffer);
                         break;
                     case MaPLParser::BITWISE_NEGATION:
-                        currentBuffer->appendInstruction(MaPLInstruction_bitwise_negation);
+                        currentBuffer->appendInstruction(bitwiseNegationInstructionForPrimitive(expectedType.primitiveType));
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         break;
                     case MaPLParser::SUBTRACT: {
                         std::vector<MaPLParser::ExpressionContext *> expressions = expression->expression();
                         if (expressions.size() == 1) {
                             // This is numeric negation (instead of subtraction).
-                            currentBuffer->appendInstruction(MaPLInstruction_numeric_negation);
+                            currentBuffer->appendInstruction(numericNegationInstructionForPrimitive(expectedType.primitiveType));
                             compileNode(expressions[0], expectedType, currentBuffer);
                         } else {
                             // This is numeric subtraction.
-                            currentBuffer->appendInstruction(MaPLInstruction_numeric_subtract);
+                            currentBuffer->appendInstruction(subtractionInstructionForPrimitive(expectedType.primitiveType));
                             compileNode(expressions[0], expectedType, currentBuffer);
                             compileNode(expressions[1], expectedType, currentBuffer);
                         }
@@ -1028,13 +1020,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         if (expectedType.primitiveType == MaPLPrimitiveType_String) {
                             currentBuffer->appendInstruction(MaPLInstruction_string_concat);
                         } else {
-                            currentBuffer->appendInstruction(MaPLInstruction_numeric_add);
+                            currentBuffer->appendInstruction(additionInstructionForPrimitive(expectedType.primitiveType));
                         }
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
                     case MaPLParser::MOD:
-                        currentBuffer->appendInstruction(MaPLInstruction_numeric_modulo);
+                        currentBuffer->appendInstruction(moduloInstructionForPrimitive(expectedType.primitiveType));
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         compileNode(expression->expression(1), expectedType, currentBuffer);
                         break;
@@ -1048,10 +1040,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             MaPLLiteral constantLeftOperand = constantValueForExpression(leftOperand);
                             u_int8_t leftOperandShift = bitShiftForLiteral(constantLeftOperand);
                             if (leftOperandShift) {
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                                currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(expectedType.primitiveType));
                                 compileNode(rightOperand, expectedType, currentBuffer);
-                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
-                                shiftLiteral.uInt8Value = leftOperandShift;
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
+                                shiftLiteral.charValue = leftOperandShift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
                                 currentBuffer->appendLiteral(shiftLiteral);
                                 break;
@@ -1059,17 +1051,17 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             MaPLLiteral constantRightOperand = constantValueForExpression(rightOperand);
                             u_int8_t rightOperandShift = bitShiftForLiteral(constantRightOperand);
                             if (rightOperandShift) {
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_left);
+                                currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(expectedType.primitiveType));
                                 compileNode(leftOperand, expectedType, currentBuffer);
-                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
-                                shiftLiteral.uInt8Value = rightOperandShift;
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
+                                shiftLiteral.charValue = rightOperandShift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
                                 currentBuffer->appendLiteral(shiftLiteral);
                                 break;
                             }
                         }
                         
-                        currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
+                        currentBuffer->appendInstruction(multiplicationInstructionForPrimitive(expectedType.primitiveType));
                         compileNode(leftOperand, expectedType, currentBuffer);
                         compileNode(rightOperand, expectedType, currentBuffer);
                     }
@@ -1088,7 +1080,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 } else {
                                     constantDenominator.float64Value = 1.0 / constantDenominator.float64Value;
                                 }
-                                currentBuffer->appendInstruction(MaPLInstruction_numeric_multiply);
+                                currentBuffer->appendInstruction(multiplicationInstructionForPrimitive(expectedType.primitiveType));
                                 compileNode(expression->expression(0), expectedType, currentBuffer);
                                 currentBuffer->appendLiteral(constantDenominator);
                                 break;
@@ -1100,16 +1092,16 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 // Strength reduction: If this expression is unsigned, and the denominator
                                 // is a constant and power of 2, convert this to a right bit shift.
                                 // For example, "x / 8" becomes "x >> 3".
-                                currentBuffer->appendInstruction(MaPLInstruction_bitwise_shift_right);
+                                currentBuffer->appendInstruction(bitwiseShiftRightInstructionForPrimitive(expectedType.primitiveType));
                                 compileNode(expression->expression(0), expectedType, currentBuffer);
-                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_UInt8 } };
-                                shiftLiteral.uInt8Value = denominatorShift;
+                                MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
+                                shiftLiteral.charValue = denominatorShift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
                                 currentBuffer->appendLiteral(shiftLiteral);
                                 break;
                             }
                         }
-                        currentBuffer->appendInstruction(MaPLInstruction_numeric_divide);
+                        currentBuffer->appendInstruction(divisionInstructionForPrimitive(expectedType.primitiveType));
                         compileNode(expression->expression(0), expectedType, currentBuffer);
                         compileNode(denominator, expectedType, currentBuffer);
                     }
@@ -1379,11 +1371,14 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                                                currentBuffer);
             case MaPLParser::SUBSCRIPT_OPEN: {
                 // Subscript invocation: subscripts are represented in bytecode as follows:
-                //   MaPLInstruction_subscript_invocation
+                //   MaPLInstruction_[type]_subscript_invocation
                 //   ObjectExpressionContext - Resolves to the object on which the subscript is invoked.
-                //   MaPLInstruction_[type]_parameter - Describes the type of the subscript index.
                 //   ExpressionContext - The index of the subscript.
-                currentBuffer->appendInstruction(MaPLInstruction_subscript_invocation);
+                
+                // Set a placeholder until the API's return type can be examined.
+                size_t instructionPosition = currentBuffer->getByteCount();
+                currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
+                
                 MaPLType invokedReturnType = compileObjectExpression(expression->objectExpression(0), NULL, currentBuffer);
                 
                 // Find the API that's being referenced to help infer the type of the parameter.
@@ -1393,19 +1388,27 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 
                 // The type could still be ambiguous, so get the type from the API itself.
                 indexType = typeForTypeContext(subscriptApi->type(1));
-                currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(indexType.primitiveType));
                 compileNode(indexExpression, indexType, currentBuffer);
                 
-                return typeForTypeContext(subscriptApi->type(0));
+                // Overwrite the placeholder with the instruction that matches the return value.
+                MaPLType returnType = typeForTypeContext(subscriptApi->type(0));
+                MaPLInstruction subscriptInvocationInstruction = subscriptInvocationInstructionForPrimitive(returnType.primitiveType);
+                memcpy(currentBuffer->getBytes()+instructionPosition, &subscriptInvocationInstruction, sizeof(subscriptInvocationInstruction));
+                
+                return returnType;
             }
             case MaPLParser::PAREN_OPEN: {
                 // Function invocations are represented in bytecode as follows:
-                //   MaPLInstruction_function_invocation - Signals the start of a function invocation.
+                //   MaPLInstruction_[type]_function_invocation - Signals the start of a function invocation.
                 //   ObjectExpressionContext - Resolves to the object on which the function is invoked. Value is MaPLInstruction_no_op if no expression.
                 //   MaPLSymbol - The bytecode representation of the name of this property.
                 //   MaPLParameterCount - The number of parameters to expect.
                 //   Parameters - Byte layout described below.
-                currentBuffer->appendInstruction(MaPLInstruction_function_invocation);
+                
+                // Set a placeholder until the API's return type can be examined.
+                size_t instructionPosition = currentBuffer->getByteCount();
+                currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
+                
                 std::string functionName = expression->identifier()->getText();
                 std::string invokedOnType;
                 MaPLType invokedReturnType{ MaPLPrimitiveType_Uninitialized };
@@ -1448,9 +1451,6 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 MaPLParameterCount parameterCount = (MaPLParameterCount)parameterExpressions.size();
                 currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
                 
-                // Function parameters are represented in bytecode as follows:
-                //   MaPLInstruction_[type]_parameter - Describes the type of the parameter.
-                //   ExpressionContext - The parameter value.
                 for (size_t i = 0; i < parameterExpressions.size(); i++) {
                     MaPLType expectedType;
                     if (i < apiParameterTypes.size()) {
@@ -1469,14 +1469,21 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                             continue;
                         }
                     }
-                    currentBuffer->appendInstruction(parameterTypeInstructionForPrimitive(expectedType.primitiveType));
                     compileNode(parameterExpressions[i], expectedType, currentBuffer);
                 }
                 
+                MaPLType returnType;
                 if (functionApi->API_VOID()) {
-                    return { MaPLPrimitiveType_Void };
+                    returnType = { MaPLPrimitiveType_Void };
+                } else {
+                    returnType = typeForTypeContext(functionApi->type());
                 }
-                return typeForTypeContext(functionApi->type());
+                
+                // Overwrite the placeholder with the instruction that matches the return value.
+                MaPLInstruction functionInvocationInstruction = functionInvocationInstructionForPrimitive(returnType.primitiveType);
+                memcpy(currentBuffer->getBytes()+instructionPosition, &functionInvocationInstruction, sizeof(functionInvocationInstruction));
+                
+                return returnType;
             }
             default: return { MaPLPrimitiveType_TypeError };
         }
@@ -1497,11 +1504,15 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         
         // The name doesn't match a variable, so it must be a property invocation.
         // Property invocations are represented in bytecode as follows:
-        //   MaPLInstruction_function_invocation - Signals the start of a function invocation.
+        //   MaPLInstruction_[type]_function_invocation - Signals the start of a function invocation.
         //   ObjectExpressionContext - Resolves to the object on which the property is invoked. Value is MaPLInstruction_no_op if no expression.
         //   MaPLSymbol - The bytecode representation of the name of this property.
         //   MaPLParameterCount - The number of parameters to expect. For properties this is always 0.
-        currentBuffer->appendInstruction(MaPLInstruction_function_invocation);
+        
+        // Set a placeholder until the API's return type can be examined.
+        size_t instructionPosition = currentBuffer->getByteCount();
+        currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
+        
         std::string invokedOnType;
         MaPLType invokedReturnType{ MaPLPrimitiveType_Uninitialized };
         if (invokedOnExpression) {
@@ -1525,7 +1536,13 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                                                                    invokedOnType,
                                                                    propertyOrVariableName,
                                                                    NULL);
-        return typeForTypeContext(propertyApi->type());
+        
+        // Overwrite the placeholder with the instruction that matches the return value.
+        MaPLType returnType = typeForTypeContext(propertyApi->type());
+        MaPLInstruction functionInvocationInstruction = functionInvocationInstructionForPrimitive(returnType.primitiveType);
+        memcpy(currentBuffer->getBytes()+instructionPosition, &functionInvocationInstruction, sizeof(functionInvocationInstruction));
+        
+        return returnType;
     }
 }
 
@@ -1736,36 +1753,19 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 
                 MaPLLiteral returnVal{ { MaPLPrimitiveType_Boolean } };
                 switch (reconciledType.primitiveType) {
-                    case MaPLPrimitiveType_Int8:
+                    case MaPLPrimitiveType_Char:
                         switch (tokenType) {
                             case MaPLParser::LESS_THAN:
-                                returnVal.booleanValue = left.int8Value < right.int8Value;
+                                returnVal.booleanValue = left.charValue < right.charValue;
                                 return returnVal;
                             case MaPLParser::LESS_THAN_EQUAL:
-                                returnVal.booleanValue = left.int8Value <= right.int8Value;
+                                returnVal.booleanValue = left.charValue <= right.charValue;
                                 return returnVal;
                             case MaPLParser::GREATER_THAN:
-                                returnVal.booleanValue = left.int8Value > right.int8Value;
+                                returnVal.booleanValue = left.charValue > right.charValue;
                                 return returnVal;
                             case MaPLParser::GREATER_THAN_EQUAL:
-                                returnVal.booleanValue = left.int8Value >= right.int8Value;
-                                return returnVal;
-                            default: break;
-                        }
-                        break;
-                    case MaPLPrimitiveType_Int16:
-                        switch (tokenType) {
-                            case MaPLParser::LESS_THAN:
-                                returnVal.booleanValue = left.int16Value < right.int16Value;
-                                return returnVal;
-                            case MaPLParser::LESS_THAN_EQUAL:
-                                returnVal.booleanValue = left.int16Value <= right.int16Value;
-                                return returnVal;
-                            case MaPLParser::GREATER_THAN:
-                                returnVal.booleanValue = left.int16Value > right.int16Value;
-                                return returnVal;
-                            case MaPLParser::GREATER_THAN_EQUAL:
-                                returnVal.booleanValue = left.int16Value >= right.int16Value;
+                                returnVal.booleanValue = left.charValue >= right.charValue;
                                 return returnVal;
                             default: break;
                         }
@@ -1801,40 +1801,6 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                                 return returnVal;
                             case MaPLParser::GREATER_THAN_EQUAL:
                                 returnVal.booleanValue = left.int64Value >= right.int64Value;
-                                return returnVal;
-                            default: break;
-                        }
-                        break;
-                    case MaPLPrimitiveType_UInt8:
-                        switch (tokenType) {
-                            case MaPLParser::LESS_THAN:
-                                returnVal.booleanValue = left.uInt8Value < right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::LESS_THAN_EQUAL:
-                                returnVal.booleanValue = left.uInt8Value <= right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::GREATER_THAN:
-                                returnVal.booleanValue = left.uInt8Value > right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::GREATER_THAN_EQUAL:
-                                returnVal.booleanValue = left.uInt8Value >= right.uInt8Value;
-                                return returnVal;
-                            default: break;
-                        }
-                        break;
-                    case MaPLPrimitiveType_UInt16:
-                        switch (tokenType) {
-                            case MaPLParser::LESS_THAN:
-                                returnVal.booleanValue = left.uInt16Value < right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::LESS_THAN_EQUAL:
-                                returnVal.booleanValue = left.uInt16Value <= right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::GREATER_THAN:
-                                returnVal.booleanValue = left.uInt16Value > right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::GREATER_THAN_EQUAL:
-                                returnVal.booleanValue = left.uInt16Value >= right.uInt16Value;
                                 return returnVal;
                             default: break;
                         }
@@ -1931,12 +1897,6 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                     // There's only one operand, so this is numeric negation instead of subtraction.
                     MaPLLiteral literal = constantValueForExpression(childExpressions[0]);
                     switch (literal.type.primitiveType) {
-                        case MaPLPrimitiveType_Int8:
-                            literal.int8Value = -literal.int8Value;
-                            return literal;
-                        case MaPLPrimitiveType_Int16:
-                            literal.int16Value = -literal.int16Value;
-                            return literal;
                         case MaPLPrimitiveType_Int32:
                             literal.int32Value = -literal.int32Value;
                             return literal;
@@ -1977,36 +1937,19 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 
                 MaPLLiteral returnVal{ reconciledType };
                 switch (reconciledType.primitiveType) {
-                    case MaPLPrimitiveType_Int8:
+                    case MaPLPrimitiveType_Char:
                         switch (tokenType) {
                             case MaPLParser::SUBTRACT:
-                                returnVal.int8Value = left.int8Value - right.int8Value;
+                                returnVal.charValue = left.charValue - right.charValue;
                                 return returnVal;
                             case MaPLParser::MOD:
-                                returnVal.int8Value = left.int8Value % right.int8Value;
+                                returnVal.charValue = left.charValue % right.charValue;
                                 return returnVal;
                             case MaPLParser::MULTIPLY:
-                                returnVal.int8Value = left.int8Value * right.int8Value;
+                                returnVal.charValue = left.charValue * right.charValue;
                                 return returnVal;
                             case MaPLParser::DIVIDE:
-                                returnVal.int8Value = left.int8Value / right.int8Value;
-                                return returnVal;
-                            default: break;
-                        }
-                        break;
-                    case MaPLPrimitiveType_Int16:
-                        switch (tokenType) {
-                            case MaPLParser::SUBTRACT:
-                                returnVal.int16Value = left.int16Value - right.int16Value;
-                                return returnVal;
-                            case MaPLParser::MOD:
-                                returnVal.int16Value = left.int16Value % right.int16Value;
-                                return returnVal;
-                            case MaPLParser::MULTIPLY:
-                                returnVal.int16Value = left.int16Value * right.int16Value;
-                                return returnVal;
-                            case MaPLParser::DIVIDE:
-                                returnVal.int16Value = left.int16Value / right.int16Value;
+                                returnVal.charValue = left.charValue / right.charValue;
                                 return returnVal;
                             default: break;
                         }
@@ -2042,40 +1985,6 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                                 return returnVal;
                             case MaPLParser::DIVIDE:
                                 returnVal.int64Value = left.int64Value / right.int64Value;
-                                return returnVal;
-                            default: break;
-                        }
-                        break;
-                    case MaPLPrimitiveType_UInt8:
-                        switch (tokenType) {
-                            case MaPLParser::SUBTRACT:
-                                returnVal.uInt8Value = left.uInt8Value - right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::MOD:
-                                returnVal.uInt8Value = left.uInt8Value % right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::MULTIPLY:
-                                returnVal.uInt8Value = left.uInt8Value * right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::DIVIDE:
-                                returnVal.uInt8Value = left.uInt8Value / right.uInt8Value;
-                                return returnVal;
-                            default: break;
-                        }
-                        break;
-                    case MaPLPrimitiveType_UInt16:
-                        switch (tokenType) {
-                            case MaPLParser::SUBTRACT:
-                                returnVal.uInt16Value = left.uInt16Value - right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::MOD:
-                                returnVal.uInt16Value = left.uInt16Value % right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::MULTIPLY:
-                                returnVal.uInt16Value = left.uInt16Value * right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::DIVIDE:
-                                returnVal.uInt16Value = left.uInt16Value / right.uInt16Value;
                                 return returnVal;
                             default: break;
                         }
@@ -2168,11 +2077,8 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 
                 MaPLLiteral returnVal{ reconciledType };
                 switch (reconciledType.primitiveType) {
-                    case MaPLPrimitiveType_Int8:
-                        returnVal.int8Value = left.int8Value + right.int8Value;
-                        return returnVal;
-                    case MaPLPrimitiveType_Int16:
-                        returnVal.int16Value = left.int16Value + right.int16Value;
+                    case MaPLPrimitiveType_Char:
+                        returnVal.charValue = left.charValue + right.charValue;
                         return returnVal;
                     case MaPLPrimitiveType_Int32:
                         returnVal.int32Value = left.int32Value + right.int32Value;
@@ -2180,12 +2086,6 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                     case MaPLPrimitiveType_Int64:
                     case MaPLPrimitiveType_SignedInt_AmbiguousSize:
                         returnVal.int64Value = left.int64Value + right.int64Value;
-                        return returnVal;
-                    case MaPLPrimitiveType_UInt8:
-                        returnVal.uInt8Value = left.uInt8Value + right.uInt8Value;
-                        return returnVal;
-                    case MaPLPrimitiveType_UInt16:
-                        returnVal.uInt16Value = left.uInt16Value + right.uInt16Value;
                         return returnVal;
                     case MaPLPrimitiveType_UInt32:
                         returnVal.uInt32Value = left.uInt32Value + right.uInt32Value;
@@ -2226,42 +2126,22 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 
                 MaPLLiteral returnVal{ reconciledType };
                 switch (reconciledType.primitiveType) {
-                    case MaPLPrimitiveType_Int8:
+                    case MaPLPrimitiveType_Char:
                         switch (tokenType) {
                             case MaPLParser::BITWISE_AND:
-                                returnVal.int8Value = left.int8Value & right.int8Value;
+                                returnVal.charValue = left.charValue & right.charValue;
                                 return returnVal;
                             case MaPLParser::BITWISE_XOR:
-                                returnVal.int8Value = left.int8Value ^ right.int8Value;
+                                returnVal.charValue = left.charValue ^ right.charValue;
                                 return returnVal;
                             case MaPLParser::BITWISE_OR:
-                                returnVal.int8Value = left.int8Value | right.int8Value;
+                                returnVal.charValue = left.charValue | right.charValue;
                                 return returnVal;
                             case MaPLParser::BITWISE_SHIFT_LEFT:
-                                returnVal.int8Value = left.int8Value << right.int8Value;
+                                returnVal.charValue = left.charValue << right.charValue;
                                 return returnVal;
                             case MaPLParser::BITWISE_SHIFT_RIGHT:
-                                returnVal.int8Value = left.int8Value >> right.int8Value;
-                                return returnVal;
-                            default: break;
-                        }
-                        break;
-                    case MaPLPrimitiveType_Int16:
-                        switch (tokenType) {
-                            case MaPLParser::BITWISE_AND:
-                                returnVal.int16Value = left.int16Value & right.int16Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_XOR:
-                                returnVal.int16Value = left.int16Value ^ right.int16Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_OR:
-                                returnVal.int16Value = left.int16Value | right.int16Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_SHIFT_LEFT:
-                                returnVal.int16Value = left.int16Value << right.int16Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_SHIFT_RIGHT:
-                                returnVal.int16Value = left.int16Value >> right.int16Value;
+                                returnVal.charValue = left.charValue >> right.charValue;
                                 return returnVal;
                             default: break;
                         }
@@ -2303,46 +2183,6 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                                 return returnVal;
                             case MaPLParser::BITWISE_SHIFT_RIGHT:
                                 returnVal.int64Value = left.int64Value >> right.int64Value;
-                                return returnVal;
-                            default: break;
-                        }
-                        break;
-                    case MaPLPrimitiveType_UInt8:
-                        switch (tokenType) {
-                            case MaPLParser::BITWISE_AND:
-                                returnVal.uInt8Value = left.uInt8Value & right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_XOR:
-                                returnVal.uInt8Value = left.uInt8Value ^ right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_OR:
-                                returnVal.uInt8Value = left.uInt8Value | right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_SHIFT_LEFT:
-                                returnVal.uInt8Value = left.uInt8Value << right.uInt8Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_SHIFT_RIGHT:
-                                returnVal.uInt8Value = left.uInt8Value >> right.uInt8Value;
-                                return returnVal;
-                            default: break;
-                        }
-                        break;
-                    case MaPLPrimitiveType_UInt16:
-                        switch (tokenType) {
-                            case MaPLParser::BITWISE_AND:
-                                returnVal.uInt16Value = left.uInt16Value & right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_XOR:
-                                returnVal.uInt16Value = left.uInt16Value ^ right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_OR:
-                                returnVal.uInt16Value = left.uInt16Value | right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_SHIFT_LEFT:
-                                returnVal.uInt16Value = left.uInt16Value << right.uInt16Value;
-                                return returnVal;
-                            case MaPLParser::BITWISE_SHIFT_RIGHT:
-                                returnVal.uInt16Value = left.uInt16Value >> right.uInt16Value;
                                 return returnVal;
                             default: break;
                         }
@@ -2394,11 +2234,8 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
             case MaPLParser::BITWISE_NEGATION: {
                 MaPLLiteral literal = constantValueForExpression(expression->expression(0));
                 switch (literal.type.primitiveType) {
-                    case MaPLPrimitiveType_Int8:
-                        literal.int8Value = ~literal.int8Value;
-                        return literal;
-                    case MaPLPrimitiveType_Int16:
-                        literal.int16Value = ~literal.int16Value;
+                    case MaPLPrimitiveType_Char:
+                        literal.charValue = ~literal.charValue;
                         return literal;
                     case MaPLPrimitiveType_Int32:
                         literal.int32Value = ~literal.int32Value;
@@ -2406,12 +2243,6 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                     case MaPLPrimitiveType_Int64: // Intentional fallthrough.
                     case MaPLPrimitiveType_SignedInt_AmbiguousSize:
                         literal.int64Value = ~literal.int64Value;
-                        return literal;
-                    case MaPLPrimitiveType_UInt8:
-                        literal.uInt8Value = ~literal.uInt8Value;
-                        return literal;
-                    case MaPLPrimitiveType_UInt16:
-                        literal.uInt16Value = ~literal.uInt16Value;
                         return literal;
                     case MaPLPrimitiveType_UInt32:
                         literal.uInt32Value = ~literal.uInt32Value;
@@ -2723,14 +2554,11 @@ void MaPLFile::logAmbiguousLiteralError(MaPLPrimitiveType type, antlr4::Token *t
     std::vector<MaPLPrimitiveType> suggestedTypes;
     switch (type) {
         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
-            suggestedTypes.push_back(MaPLPrimitiveType_UInt8);
-            suggestedTypes.push_back(MaPLPrimitiveType_UInt16);
+            suggestedTypes.push_back(MaPLPrimitiveType_Char);
             suggestedTypes.push_back(MaPLPrimitiveType_UInt32);
             suggestedTypes.push_back(MaPLPrimitiveType_UInt64);
             // Intentional fallthrough.
         case MaPLPrimitiveType_SignedInt_AmbiguousSize:
-            suggestedTypes.push_back(MaPLPrimitiveType_Int8);
-            suggestedTypes.push_back(MaPLPrimitiveType_Int16);
             suggestedTypes.push_back(MaPLPrimitiveType_Int32);
             suggestedTypes.push_back(MaPLPrimitiveType_Int64);
             // Intentional fallthrough.

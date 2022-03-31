@@ -90,12 +90,9 @@ variableDeclaration
     ;
 
 type
-    :    DECL_INT8
-    |    DECL_INT16
+    :    DECL_CHAR
     |    DECL_INT32
     |    DECL_INT64
-    |    DECL_UINT8
-    |    DECL_UINT16
     |    DECL_UINT32
     |    DECL_UINT64
     |    DECL_FLOAT32
@@ -157,12 +154,9 @@ identifier
     |    LITERAL_NULL
     |    API_READONLY
     |    API_VOID
-    |    DECL_INT8
-    |    DECL_INT16
+    |    DECL_CHAR
     |    DECL_INT32
     |    DECL_INT64
-    |    DECL_UINT8
-    |    DECL_UINT16
     |    DECL_UINT32
     |    DECL_UINT64
     |    DECL_FLOAT32
@@ -219,12 +213,9 @@ BREAK: 'break' ;
 CONTINUE: 'continue' ;
 EXIT: 'exit' ;
 LITERAL_NULL: 'NULL' ;
-DECL_INT8: 'int8' ;
-DECL_INT16: 'int16' ;
+DECL_CHAR: 'char' ;
 DECL_INT32: 'int32' ;
 DECL_INT64: 'int64' ;
-DECL_UINT8: 'uint8' ;
-DECL_UINT16: 'uint16' ;
 DECL_UINT32: 'uint32' ;
 DECL_UINT64: 'uint64' ;
 DECL_FLOAT32: 'float32' ;

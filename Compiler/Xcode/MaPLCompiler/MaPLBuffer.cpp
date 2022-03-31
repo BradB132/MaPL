@@ -74,41 +74,32 @@ bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPLMemoryAddress variabl
 
 bool MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
     switch (literal.type.primitiveType) {
-        case MaPLPrimitiveType_Int8:
-            return appendInstruction(MaPLInstruction_literal_int8) &&
-                   appendBytes(&(literal.int8Value), sizeof(literal.int8Value));
-        case MaPLPrimitiveType_Int16:
-            return appendInstruction(MaPLInstruction_literal_int16) &&
-                   appendBytes(&(literal.int16Value), sizeof(literal.int16Value));
+        case MaPLPrimitiveType_Char:
+            return appendInstruction(MaPLInstruction_char_literal) &&
+                   appendBytes(&(literal.charValue), sizeof(literal.charValue));
         case MaPLPrimitiveType_Int32:
-            return appendInstruction(MaPLInstruction_literal_int32) &&
+            return appendInstruction(MaPLInstruction_int32_literal) &&
                    appendBytes(&(literal.int32Value), sizeof(literal.int32Value));
         case MaPLPrimitiveType_Int64:
-            return appendInstruction(MaPLInstruction_literal_int64) &&
+            return appendInstruction(MaPLInstruction_int64_literal) &&
                    appendBytes(&(literal.int64Value), sizeof(literal.int64Value));
-        case MaPLPrimitiveType_UInt8:
-            return appendInstruction(MaPLInstruction_literal_uint8) &&
-                   appendBytes(&(literal.uInt8Value), sizeof(literal.uInt8Value));
-        case MaPLPrimitiveType_UInt16:
-            return appendInstruction(MaPLInstruction_literal_uint16) &&
-                   appendBytes(&(literal.uInt16Value), sizeof(literal.uInt16Value));
         case MaPLPrimitiveType_UInt32:
-            return appendInstruction(MaPLInstruction_literal_uint32) &&
+            return appendInstruction(MaPLInstruction_uint32_literal) &&
                    appendBytes(&(literal.uInt32Value), sizeof(literal.uInt32Value));
         case MaPLPrimitiveType_UInt64:
-            return appendInstruction(MaPLInstruction_literal_uint64) &&
+            return appendInstruction(MaPLInstruction_uint64_literal) &&
                    appendBytes(&(literal.uInt64Value), sizeof(literal.uInt64Value));
         case MaPLPrimitiveType_Float32:
-            return appendInstruction(MaPLInstruction_literal_float32) &&
+            return appendInstruction(MaPLInstruction_float32_literal) &&
                    appendBytes(&(literal.float32Value), sizeof(literal.float32Value));
         case MaPLPrimitiveType_Float64:
-            return appendInstruction(MaPLInstruction_literal_float64) &&
+            return appendInstruction(MaPLInstruction_float64_literal) &&
                    appendBytes(&(literal.float64Value), sizeof(literal.float64Value));
         case MaPLPrimitiveType_String:
-            return appendInstruction(MaPLInstruction_literal_string) &&
+            return appendInstruction(MaPLInstruction_string_literal) &&
                    appendString(literal.stringValue);
         case MaPLPrimitiveType_Boolean:
-            return appendInstruction(literal.booleanValue ? MaPLInstruction_literal_boolean_true : MaPLInstruction_literal_boolean_false);
+            return appendInstruction(literal.booleanValue ? MaPLInstruction_literal_true : MaPLInstruction_literal_false);
         case MaPLPrimitiveType_Pointer:
             return appendInstruction(MaPLInstruction_literal_null);
         default: return false;

@@ -21,12 +21,9 @@ class MaPLFile;
 enum MaPLPrimitiveType {
     MaPLPrimitiveType_Uninitialized = 0,
     
-    MaPLPrimitiveType_Int8,
-    MaPLPrimitiveType_Int16,
+    MaPLPrimitiveType_Char,
     MaPLPrimitiveType_Int32,
     MaPLPrimitiveType_Int64,
-    MaPLPrimitiveType_UInt8,
-    MaPLPrimitiveType_UInt16,
     MaPLPrimitiveType_UInt32,
     MaPLPrimitiveType_UInt64,
     MaPLPrimitiveType_Float32,
@@ -63,12 +60,9 @@ struct MaPLLiteral {
     MaPLType type;
     // The value of the expression.
     union {
-        int8_t int8Value;
-        int16_t int16Value;
+        u_int8_t charValue;
         int32_t int32Value;
         int64_t int64Value;
-        u_int8_t uInt8Value;
-        u_int16_t uInt16Value;
         u_int32_t uInt32Value;
         u_int64_t uInt64Value;
         float_t float32Value;
@@ -215,14 +209,24 @@ MaPLInstruction greaterThanOrEqualInstructionForPrimitive(MaPLPrimitiveType type
 MaPLInstruction assignmentInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
+ * @return The instruction byte that indicates a function invocation for the corresponding primitive type.
+ */
+MaPLInstruction functionInvocationInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates a subscript invocation for the corresponding primitive type.
+ */
+MaPLInstruction subscriptInvocationInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
  * @return The instruction byte that indicates a subscript assignment corresponding to @c type.
  */
-MaPLInstruction assignSubscriptInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction subscriptAssignmentInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that indicates a property assignment corresponding to @c type.
  */
-MaPLInstruction assignPropertyInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction propertyAssignmentInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return The instruction byte that represents an operator-assign.
@@ -240,9 +244,64 @@ MaPLInstruction variableInstructionForPrimitive(MaPLPrimitiveType type);
 MaPLInstruction numericLiteralInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
- * @return The instruction byte that indicates a parameter type corresponding to @c type.
+ * @return The instruction byte that indicates numeric addition corresponding to @c type.
  */
-MaPLInstruction parameterTypeInstructionForPrimitive(MaPLPrimitiveType type);
+MaPLInstruction additionInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates numeric subtraction corresponding to @c type.
+ */
+MaPLInstruction subtractionInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates numeric multiplication corresponding to @c type.
+ */
+MaPLInstruction multiplicationInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates numeric division corresponding to @c type.
+ */
+MaPLInstruction divisionInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates modulo corresponding to @c type.
+ */
+MaPLInstruction moduloInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates numeric negation corresponding to @c type.
+ */
+MaPLInstruction numericNegationInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates bitwise negation corresponding to @c type.
+ */
+MaPLInstruction bitwiseNegationInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates bitwise "and" corresponding to @c type.
+ */
+MaPLInstruction bitwiseAndInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates bitwise "or" corresponding to @c type.
+ */
+MaPLInstruction bitwiseOrInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates bitwise "xor" corresponding to @c type.
+ */
+MaPLInstruction bitwiseXorInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates bitwise shift left corresponding to @c type.
+ */
+MaPLInstruction bitwiseShiftLeftInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
+ * @return The instruction byte that indicates bitwise shift right corresponding to @c type.
+ */
+MaPLInstruction bitwiseShiftRightInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.
