@@ -14,10 +14,6 @@ typedef u_int16_t MaPLMemoryAddress;
 typedef u_int16_t MaPLCursorMove;
 typedef u_int16_t MaPLSymbol;
 typedef u_int16_t MaPLLineNumber;
-struct MaPLString {
-    char* stringValue;
-    bool isAllocated;
-};
 
 // Bytecodes are sorted by return type.
 enum MaPLInstruction : u_int8_t {

@@ -87,12 +87,10 @@ MaPLMemoryAddress byteSizeOfType(MaPLPrimitiveType type) {
             return 4;
         case MaPLPrimitiveType_Int64: // Intentional fallthrough.
         case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
-        case MaPLPrimitiveType_Float64:
-            return 8;
-        case MaPLPrimitiveType_String:
-            return sizeof(MaPLString);
+        case MaPLPrimitiveType_Float64: // Intentional fallthrough.
+        case MaPLPrimitiveType_String: // Intentional fallthrough.
         case MaPLPrimitiveType_Pointer:
-            return sizeof(void *);
+            return 8;
         default: return 0;
     }
 }
