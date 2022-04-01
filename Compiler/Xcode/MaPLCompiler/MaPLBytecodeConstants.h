@@ -258,19 +258,19 @@ enum MaPLInstruction : u_int8_t {
     MaPLInstruction_no_op = 210,
     MaPLInstruction_program_exit = 211,
 
-    // CAST
-    MaPLInstruction_typecast_from_char = 212,
-    MaPLInstruction_typecast_from_int32 = 213,
-    MaPLInstruction_typecast_from_int64 = 214,
-    MaPLInstruction_typecast_from_uint32 = 215,
-    MaPLInstruction_typecast_from_uint64 = 216,
-    MaPLInstruction_typecast_from_float32 = 217,
-    MaPLInstruction_typecast_from_float64 = 218,
-    MaPLInstruction_typecast_from_boolean = 219,
-    MaPLInstruction_typecast_from_string = 220,
-
     // METADATA
-    MaPLInstruction_metadata = 221,
+    MaPLInstruction_metadata = 212,
+    
+    // CAST
+    MaPLInstruction_typecast_from_char = 213,
+    MaPLInstruction_typecast_from_int32 = 214,
+    MaPLInstruction_typecast_from_int64 = 215,
+    MaPLInstruction_typecast_from_uint32 = 216,
+    MaPLInstruction_typecast_from_uint64 = 217,
+    MaPLInstruction_typecast_from_float32 = 218,
+    MaPLInstruction_typecast_from_float64 = 219,
+    MaPLInstruction_typecast_from_boolean = 220,
+    MaPLInstruction_typecast_from_string = 221,
 
     // DEBUGGING
     MaPLInstruction_debug_line = 222,
