@@ -843,15 +843,20 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 switch (tokenType) {
                     case MaPLParser::PAREN_OPEN: { // Typecast.
                         MaPLType castType = typeForTypeContext(expression->type());
+                        
+                        // If this is a pointer, check to make sure the type exists.
+                        if (castType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, castType.pointerType, NULL)) {
+                            logMissingTypeError(expression->type()->start, castType.pointerType);
+                        }
+
                         MaPLType expressionType = dataTypeForExpression(expression->expression(0));
                         if (castType.primitiveType == expressionType.primitiveType) {
                             // The cast doesn't involve any casting between primitive types, and so is a no-op in terms of bytecode.
                             if (castType.primitiveType == MaPLPrimitiveType_Pointer &&
-                                castType.pointerType != expressionType.pointerType &&
-                                !inheritsFromType(this, castType.pointerType, expressionType.pointerType) &&
-                                !inheritsFromType(this, expressionType.pointerType, castType.pointerType)) {
+                                !isAssignable(this, expressionType, castType) &&
+                                !inheritsFromType(this, castType.pointerType, expressionType.pointerType)) {
                                 // Cast is between two pointer types. This only makes sense if the types have some child/ancestor relationship.
-                                logError(expression->type()->start, "Cast attempted between incompatible pointers. The types '"+castType.pointerType+"' and '"+expressionType.pointerType+"' have no child/ancestor relationship.");
+                                logError(expression->type()->start, "Cast attempted between incompatible pointers. The types '"+descriptorForType(castType)+"' and '"+descriptorForType(expressionType)+"' have no child/ancestor relationship.");
                             }
                             compileNode(expression->expression(0), expressionType, currentBuffer);
                             break;
@@ -1681,12 +1686,17 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
         size_t tokenType = expression->keyToken->getType();
         switch (tokenType) {
             case MaPLParser::PAREN_OPEN: { // Typecast.
-                MaPLLiteral literal = castLiteralToType(constantValueForExpression(expression->expression(0)),
-                                                        typeForTypeContext(expression->type()),
-                                                        this,
-                                                        expression->start);
-                if (literal.type.primitiveType != MaPLPrimitiveType_TypeError) {
-                    return literal;
+                MaPLLiteral expressionLiteral = constantValueForExpression(expression->expression(0));
+                if (expressionLiteral.type.primitiveType == MaPLPrimitiveType_Pointer) {
+                    // Pointer casts require some extra type checking. Don't try to do this as a constant.
+                    return { { MaPLPrimitiveType_Uninitialized } };
+                }
+                MaPLLiteral returnLiteral = castLiteralToType(expressionLiteral,
+                                                              typeForTypeContext(expression->type()),
+                                                              this,
+                                                              expression->start);
+                if (returnLiteral.type.primitiveType != MaPLPrimitiveType_TypeError) {
+                    return returnLiteral;
                 }
             }
             case MaPLParser::PAREN_CLOSE: // Nested expression.
