@@ -360,8 +360,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 logError(identifier->start, "Variable with name '"+variableName+"' conflicts with global property of the same name.");
             }
             
+            // If this is a pointer, check to make sure the type exists.
+            MaPLType variableType = typeForTypeContext(declaration->type());
+            if (variableType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, variableType.pointerType, NULL)) {
+                logMissingTypeError(declaration->type()->start, variableType.pointerType);
+            }
+            
             // Claim a spot in memory for this variable.
-            MaPLVariable variable{ typeForTypeContext(declaration->type()), this, identifier->start };
+            MaPLVariable variable{ variableType, this, identifier->start };
             _variableStack->declareVariable(variableName, variable);
             
             // Assign the value to this variable if needed.
