@@ -60,7 +60,7 @@ int main(int argc, const char ** argv) {
         if (isFlag) {
             if (previousExpectation != ArgumentExpectation_InputPath) {
                 printf("The flag '%s' was specified, but not followed by any path.\n", argv[i-1]);
-                exit(1);
+                return 1;
             }
             continue;
         }
@@ -69,7 +69,7 @@ int main(int argc, const char ** argv) {
         std::filesystem::path argPath = arg;
         if (!argPath.is_absolute()) {
             printf("Path '%s' must be specified as an absolute path.\n", argv[i]);
-            exit(1);
+            return 1;
         }
         argPath = argPath.lexically_normal();
         
@@ -78,7 +78,7 @@ int main(int argc, const char ** argv) {
             case ArgumentExpectation_InputPath:
                 if (!pathHasExtension(argPath, ".mapl")) {
                     printf("The script file path '%s' must have a '.mapl' file extension.\n", argv[i]);
-                    exit(1);
+                    return 1;
                 }
                 currentFile = fileCache.fileForNormalizedPath(argPath);
                 files.push_back(currentFile);
@@ -86,19 +86,19 @@ int main(int argc, const char ** argv) {
             case ArgumentExpectation_OutputPath:
                 if (!pathHasExtension(argPath, ".maplb")) {
                     printf("The output path '%s' must have a '.maplb' file extension.\n", argv[i]);
-                    exit(1);
+                    return 1;
                 }
                 if (currentFile) {
                     currentFile->setNormalizedOutputPath(argPath);
                 } else {
                     printf("Output file '%s' is specified before any file.\n", argv[i]);
-                    exit(1);
+                    return 1;
                 }
                 break;
             case ArgumentExpectation_SymbolTablePath:
                 if (!pathHasExtension(argPath, ".h")) {
                     printf("The symbol table path '%s' must have a '.h' file extension.\n", argv[i]);
-                    exit(1);
+                    return 1;
                 }
                 symbolOutputPath = argPath;
                 break;
@@ -110,15 +110,15 @@ int main(int argc, const char ** argv) {
     }
     if (expectation != ArgumentExpectation_InputPath) {
         printf("The flag '%s' was specified, but not followed by any path.\n", argv[argc-1]);
-        exit(1);
+        return 1;
     }
     if (files.size() == 0) {
         printf("No script file paths were specified.\n");
-        exit(1);
+        return 1;
     }
     if (symbolOutputPath.empty()) {
         printf("No symbol table path was specified.\n");
-        exit(1);
+        return 1;
     }
     
     // Propagate options to all files. This will apply to all files
@@ -139,7 +139,7 @@ int main(int argc, const char ** argv) {
         }
     }
     if (hadErrors) {
-        exit(1);
+        return 1;
     }
     
     // Generate the symbol table and write to file.
