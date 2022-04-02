@@ -1119,7 +1119,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         break;
                     case MaPLParser::TERNARY_CONDITIONAL: {
                         std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-                        currentBuffer->appendInstruction(MaPLInstruction_ternary_conditional);
+                        currentBuffer->appendInstruction(ternaryConditionalInstructionForPrimitive(expectedType.primitiveType));
                         compileNode(childExpressions[0], { MaPLPrimitiveType_Boolean }, currentBuffer);
                         compileNode(childExpressions[1], expectedType, currentBuffer);
                         compileNode(childExpressions[2], expectedType, currentBuffer);
@@ -1127,7 +1127,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         break;
                     case MaPLParser::NULL_COALESCING: {
                         std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
-                        currentBuffer->appendInstruction(MaPLInstruction_null_coalescing);
+                        currentBuffer->appendInstruction(MaPLInstruction_pointer_null_coalescing);
                         compileNode(childExpressions[0], expectedType, currentBuffer);
                         compileNode(childExpressions[1], expectedType, currentBuffer);
                     }

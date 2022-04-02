@@ -567,6 +567,22 @@ MaPLInstruction bitwiseShiftRightInstructionForPrimitive(MaPLPrimitiveType type)
     }
 }
 
+MaPLInstruction ternaryConditionalInstructionForPrimitive(MaPLPrimitiveType type) {
+    switch (type) {
+        case MaPLPrimitiveType_Char: return MaPLInstruction_char_ternary_conditional;
+        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_ternary_conditional;
+        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_ternary_conditional;
+        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_ternary_conditional;
+        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_ternary_conditional;
+        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_ternary_conditional;
+        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_ternary_conditional;
+        case MaPLPrimitiveType_String: return MaPLInstruction_string_ternary_conditional;
+        case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_ternary_conditional;
+        case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_ternary_conditional;
+        default: return MaPLInstruction_placeholder_or_error;
+    }
+}
+
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     if (typeContext->identifier()) {
         return { MaPLPrimitiveType_Pointer, typeContext->identifier()->getText() };

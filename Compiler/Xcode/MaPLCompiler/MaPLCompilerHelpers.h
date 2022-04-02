@@ -304,6 +304,11 @@ MaPLInstruction bitwiseShiftLeftInstructionForPrimitive(MaPLPrimitiveType type);
 MaPLInstruction bitwiseShiftRightInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
+ * @return The instruction byte that indicates a ternary conditional corresponding to @c type.
+ */
+MaPLInstruction ternaryConditionalInstructionForPrimitive(MaPLPrimitiveType type);
+
+/**
  * @return A list of type names that both @c type1 and @c type2 inherit from. Empty if the types share no common ancestor.
  */
 std::vector<std::string> mutualAncestorTypes(MaPLFile *file, const std::string &type1, const std::string &type2);
