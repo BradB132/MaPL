@@ -158,8 +158,11 @@ int main(int argc, const char ** argv) {
     for (MaPLFile *file : files) {
         std::ofstream bytecodeOutputStream(file->getNormalizedOutputPath());
         
-        MaPLMemoryAddress stackHeight = file->getVariableStack()->getMaximumMemoryUsed();
-        bytecodeOutputStream.write((char *)(&stackHeight), sizeof(stackHeight));
+        // Prepend the amount of memory that the script requires.
+        MaPLMemoryAddress primitiveStackHeight = file->getVariableStack()->getMaximumPrimitiveMemoryUsed();
+        bytecodeOutputStream.write((char *)(&primitiveStackHeight), sizeof(primitiveStackHeight));
+        MaPLMemoryAddress allocatedStackHeight = file->getVariableStack()->getMaximumAllocatedMemoryUsed();
+        bytecodeOutputStream.write((char *)(&allocatedStackHeight), sizeof(allocatedStackHeight));
         
         MaPLBuffer *bytecode = file->getBytecode();
         bytecode->resolveSymbolsWithTable(symbolTable);

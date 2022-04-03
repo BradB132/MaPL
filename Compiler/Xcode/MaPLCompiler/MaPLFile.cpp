@@ -120,7 +120,9 @@ MaPLBuffer *MaPLFile::getBytecode() {
     for(MaPLFile *file : _dependencies) {
         MaPLBuffer *dependencyBytecode = file->getBytecode();
         if (dependencyBytecode) {
-            _bytecode->appendBuffer(dependencyBytecode, _variableStack->getMaximumMemoryUsed());
+            _bytecode->appendBuffer(dependencyBytecode,
+                                    _variableStack->getMaximumPrimitiveMemoryUsed(),
+                                    _variableStack->getMaximumAllocatedMemoryUsed());
         }
         MaPLVariableStack *dependencyStack = file->getVariableStack();
         if (dependencyStack) {
@@ -374,7 +376,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::ExpressionContext *expression = declaration->expression();
             if (expression) {
                 currentBuffer->appendInstruction(assignmentInstructionForPrimitive(variable.type.primitiveType));
-                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                MaPLBufferAnnotationType annotationType = variableType.primitiveType == MaPLPrimitiveType_String ? MaPLBufferAnnotationType_AllocatedVariableOffset : MaPLBufferAnnotationType_PrimitiveVariableOffset;
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), annotationType });
                 MaPLMemoryAddress variableByteOffset = _variableStack->getVariable(variableName).byteOffset;
                 currentBuffer->appendBytes(&variableByteOffset, sizeof(variableByteOffset));
                 compileNode(expression, variable.type, currentBuffer);
@@ -397,7 +400,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (assignedVariable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                 // This assignment is for a variable. Append the left side of the assignment.
                 currentBuffer->appendInstruction(assignmentInstructionForPrimitive(assignedVariable.type.primitiveType));
-                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                MaPLBufferAnnotationType annotationType = assignedVariable.type.primitiveType == MaPLPrimitiveType_String ? MaPLBufferAnnotationType_AllocatedVariableOffset : MaPLBufferAnnotationType_PrimitiveVariableOffset;
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), annotationType });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
                 // If this is an operator-assign, rewrite it as a regular assign.
@@ -421,7 +425,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // This is a string concat-assign.
                     currentBuffer->appendInstruction(operatorAssign);
                     currentBuffer->appendInstruction(MaPLInstruction_string_variable);
-                    currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                    currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_AllocatedVariableOffset });
                     currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                     compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
                     
@@ -439,7 +443,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             // Rewrite this as a multiply. For example, "x /= 5.0" becomes "x = x * 0.2".
                             currentBuffer->appendInstruction(multiplicationInstructionForPrimitive(assignedVariable.type.primitiveType));
                             currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
-                            currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                            currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_PrimitiveVariableOffset });
                             currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                             
                             literal = castLiteralToType(literal, assignedVariable.type, this, assignment->expression()->start);
@@ -463,7 +467,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
                                 currentBuffer->appendInstruction(bitwiseShiftRightInstructionForPrimitive(assignedVariable.type.primitiveType));
                                 currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
-                                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_PrimitiveVariableOffset });
                                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                                 
                                 MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
@@ -486,7 +490,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
                             currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(assignedVariable.type.primitiveType));
                             currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
-                            currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                            currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_PrimitiveVariableOffset });
                             currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                             
                             MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
@@ -505,7 +509,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // Append the operator-assignment normally.
                 currentBuffer->appendInstruction(operatorAssign);
                 currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
-                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), annotationType });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 compileNode(assignment->expression(), assignedVariable.type, currentBuffer);
                 
@@ -670,11 +674,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
                 // Rewrite the increment as a regular assign. For example: "var++" becomes "var=var+1".
                 currentBuffer->appendInstruction(assignmentInstructionForPrimitive(assignedVariable.type.primitiveType));
-                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_PrimitiveVariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 currentBuffer->appendInstruction(operatorAssignInstructionForTokenType(tokenType, assignedVariable.type.primitiveType));
                 currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
-                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_PrimitiveVariableOffset });
                 currentBuffer->appendBytes(&(assignedVariable.byteOffset), sizeof(assignedVariable.byteOffset));
                 
                 // Add a literal "1" that matches the assigned primitive type.
@@ -1177,7 +1181,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLCursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
-            loopBuffer.appendBuffer(&scopeBuffer, 0);
+            loopBuffer.appendBuffer(&scopeBuffer, 0, 0);
             loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
             MaPLCursorMove byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPLCursorMove);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
@@ -1185,7 +1189,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, false);
             
-            currentBuffer->appendBuffer(&loopBuffer, 0);
+            currentBuffer->appendBuffer(&loopBuffer, 0, 0);
         }
             break;
         case MaPLParser::RuleForLoop: {
@@ -1244,7 +1248,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLCursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
-            loopBuffer.appendBuffer(&scopeBuffer, 0);
+            loopBuffer.appendBuffer(&scopeBuffer, 0, 0);
             loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
             MaPLCursorMove byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPLCursorMove);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
@@ -1252,7 +1256,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, false);
             
-            currentBuffer->appendBuffer(&loopBuffer, 0);
+            currentBuffer->appendBuffer(&loopBuffer, 0, 0);
             
             if (_options.includeDebugBytes) {
                 compileDebugPopFromTopStackFrame(currentBuffer);
@@ -1280,7 +1284,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 !expressionLiteral.booleanValue) {
                 // The conditional at the end of the loop is always false. No need to ever repeat.
                 loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
-                currentBuffer->appendBuffer(&loopBuffer, 0);
+                currentBuffer->appendBuffer(&loopBuffer, 0, 0);
                 break;
             }
             
@@ -1299,7 +1303,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
             
-            currentBuffer->appendBuffer(&loopBuffer, 0);
+            currentBuffer->appendBuffer(&loopBuffer, 0, 0);
         }
             break;
         case MaPLParser::RuleConditional: {
@@ -1350,8 +1354,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLCursorMove scopeSize = (MaPLCursorMove)scopeBuffer.getByteCount();
                 currentBuffer->appendBytes(&scopeSize, sizeof(scopeSize));
                 
-                currentBuffer->appendBuffer(&scopeBuffer, 0);
-                currentBuffer->appendBuffer(&elseBuffer, 0);
+                currentBuffer->appendBuffer(&scopeBuffer, 0, 0);
+                currentBuffer->appendBuffer(&elseBuffer, 0, 0);
             }
         }
             break;
@@ -1507,7 +1511,8 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
             if (variable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
                 // This expression is a reference to a variable.
                 currentBuffer->appendInstruction(variableInstructionForPrimitive(variable.type.primitiveType));
-                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), MaPLBufferAnnotationType_VariableOffset });
+                MaPLBufferAnnotationType annotationType = variable.type.primitiveType == MaPLPrimitiveType_String ? MaPLBufferAnnotationType_AllocatedVariableOffset : MaPLBufferAnnotationType_PrimitiveVariableOffset;
+                currentBuffer->addAnnotation({ currentBuffer->getByteCount(), annotationType });
                 currentBuffer->appendBytes(&(variable.byteOffset), sizeof(variable.byteOffset));
                 return variable.type;
             }

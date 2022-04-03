@@ -48,9 +48,14 @@ public:
     void pop();
     
     /**
-     * @return The maximum number of bytes that this stack required to store all variables, at any point during the parse tree traversal.
+     * @return The maximum number of bytes that this stack required to store all primitive variables, at any point during the parse tree traversal.
      */
-    MaPLMemoryAddress getMaximumMemoryUsed();
+    MaPLMemoryAddress getMaximumPrimitiveMemoryUsed();
+    
+    /**
+     * @return The maximum number of bytes that this stack required to store all allocated variables (strings), at any point during the parse tree traversal.
+     */
+    MaPLMemoryAddress getMaximumAllocatedMemoryUsed();
 
     /**
      * Inserts a new variable into the top stack frame. The variable will be assigned a new @c byteOffset based on current contents of the stack.
@@ -77,7 +82,8 @@ public:
 private:
     
     std::vector<std::unordered_map<std::string, MaPLVariable>> _stack;
-    MaPLMemoryAddress _maximumMemoryUsed;
+    MaPLMemoryAddress _maximumPrimitiveMemoryUsed;
+    MaPLMemoryAddress _maximumAllocatedMemoryUsed;
 };
 
 #endif /* MaPLVariableStack_h */

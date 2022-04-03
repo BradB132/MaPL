@@ -41,19 +41,25 @@ bool MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
     return appendBytes(&instruction, sizeof(instruction));
 }
 
-bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer, MaPLMemoryAddress variableByteIncrement) {
+bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer,
+                              MaPLMemoryAddress primitiveVariableByteOffset,
+                              MaPLMemoryAddress allocatedVariableByteOffset) {
     size_t previousByteCount = _byteCount;
     size_t otherBufferCount = otherBuffer->getByteCount();
-    if (variableByteIncrement) {
+    if (primitiveVariableByteOffset || allocatedVariableByteOffset) {
         // If this append operation requires variable byte offsets, make a copy of the data so it can be edited.
         u_int8_t copiedBytes[otherBufferCount];
         memcpy(copiedBytes, otherBuffer->getBytes(), otherBufferCount);
         
         // Increment byte offsets everywhere a variable was referenced.
         for (const MaPLBufferAnnotation &annotation : otherBuffer->getAnnotations()) {
-            if (annotation.type == MaPLBufferAnnotationType_VariableOffset) {
+            if (annotation.type == MaPLBufferAnnotationType_PrimitiveVariableOffset) {
                 MaPLMemoryAddress variableByteOffset = *((MaPLMemoryAddress *)(copiedBytes+annotation.byteLocation));
-                variableByteOffset += variableByteIncrement;
+                variableByteOffset += primitiveVariableByteOffset;
+                memcpy(copiedBytes+annotation.byteLocation, &variableByteOffset, sizeof(variableByteOffset));
+            } else if (annotation.type == MaPLBufferAnnotationType_AllocatedVariableOffset) {
+                MaPLMemoryAddress variableByteOffset = *((MaPLMemoryAddress *)(copiedBytes+annotation.byteLocation));
+                variableByteOffset += allocatedVariableByteOffset;
                 memcpy(copiedBytes+annotation.byteLocation, &variableByteOffset, sizeof(variableByteOffset));
             }
         }

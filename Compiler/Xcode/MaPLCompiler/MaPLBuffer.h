@@ -17,7 +17,8 @@
 enum MaPLBufferAnnotationType {
     MaPLBufferAnnotationType_Break,
     MaPLBufferAnnotationType_Continue,
-    MaPLBufferAnnotationType_VariableOffset,
+    MaPLBufferAnnotationType_PrimitiveVariableOffset,
+    MaPLBufferAnnotationType_AllocatedVariableOffset,
     MaPLBufferAnnotationType_FunctionSymbol,
     MaPLBufferAnnotationType_DebugLine,
 };
@@ -63,11 +64,14 @@ public:
      * Appends the contents of another MaPLBuffer, including annotations, onto the buffer.
      *
      * @param otherBuffer The other buffer that will have all contents copied into this buffer.
-     * @param variableByteIncrement How much increment should be applied to the @c byteOffset for all variable declarations.
+     * @param primitiveVariableByteOffset How much increment should be applied to the @c byteOffset for all primitive variable declarations.
+     * @param allocatedVariableByteOffset How much increment should be applied to the @c byteOffset for all allocated variable declarations.
      *
      * @return Boolean indicates success or failure of the append operation.
      */
-    bool appendBuffer(MaPLBuffer *otherBuffer, MaPLMemoryAddress variableByteIncrement);
+    bool appendBuffer(MaPLBuffer *otherBuffer,
+                      MaPLMemoryAddress primitiveVariableByteOffset,
+                      MaPLMemoryAddress allocatedVariableByteOffset);
     
     /**
      * Appends the literal value onto the buffer.
