@@ -30,12 +30,12 @@ MaPLFile::MaPLFile(const std::filesystem::path &normalizedFilePath, MaPLFileCach
 }
 
 MaPLFile::~MaPLFile() {
-    if (_bytecode) { delete _bytecode; }
-    if (_variableStack) { delete _variableStack; }
-    if (_inputStream) { delete _inputStream; }
-    if (_lexer) { delete _lexer; }
-    if (_tokenStream) { delete _tokenStream; }
-    if (_parser) { delete _parser; }
+    delete _bytecode;
+    delete _variableStack;
+    delete _inputStream;
+    delete _lexer;;
+    delete _tokenStream;
+    delete _parser;
     // _program doesn't need to be deleted because it's managed by _parser's ParseTreeTracker.
 }
 
