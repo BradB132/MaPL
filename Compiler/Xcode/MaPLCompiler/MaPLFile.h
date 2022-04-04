@@ -35,6 +35,7 @@ public:
      * @param fileCache The file cache that this object can use to fetch information about any dependent files.
      */
     MaPLFile(const std::filesystem::path &normalizedFilePath, MaPLFileCache *fileCache);
+    ~MaPLFile();
     
     /**
      * @return The bytecode representation of the script in this file. This recusrively includes bytecode from dependent files. Function symbols are not initially filled in. NULL if error.

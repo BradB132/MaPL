@@ -29,6 +29,16 @@ MaPLFile::MaPLFile(const std::filesystem::path &normalizedFilePath, MaPLFileCach
 {
 }
 
+MaPLFile::~MaPLFile() {
+    if (_bytecode) { delete _bytecode; }
+    if (_variableStack) { delete _variableStack; }
+    if (_inputStream) { delete _inputStream; }
+    if (_lexer) { delete _lexer; }
+    if (_tokenStream) { delete _tokenStream; }
+    if (_parser) { delete _parser; }
+    // _program doesn't need to be deleted because it's managed by _parser's ParseTreeTracker.
+}
+
 bool MaPLFile::parseRawScript() {
     if (_program) {
         return true;
@@ -113,7 +123,7 @@ MaPLBuffer *MaPLFile::getBytecode() {
         return NULL;
     }
     
-    _bytecode = new MaPLBuffer;
+    _bytecode = new MaPLBuffer();
     
     // Concatenate all preceding bytecode and variables from dependencies.
     for(MaPLFile *file : _dependencies) {

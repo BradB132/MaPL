@@ -27,6 +27,8 @@ public:
      */
     MaPLFile *fileForNormalizedPath(const std::filesystem::path &normalizedFilePath);
     
+    ~MaPLFileCache();
+    
 private:
     
     std::unordered_map<std::string, MaPLFile *> files;

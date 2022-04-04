@@ -18,3 +18,9 @@ MaPLFile *MaPLFileCache::fileForNormalizedPath(const std::filesystem::path &norm
     }
     return fileAtPath;
 }
+
+MaPLFileCache::~MaPLFileCache() {
+    for(const auto&[path, file] : files) {
+        delete file;
+    }
+}
