@@ -6,10 +6,8 @@
 //
 
 #include <stdio.h>
-#include "MaPLFileCache.h"
-#include "MaPLFile.h"
-#include "MaPLBuffer.h"
-#include "MaPLVariableStack.h"
+#include <fstream>
+#include "MaPLCompiler.h"
 
 enum ArgumentExpectation {
     ArgumentExpectation_InputPath,
@@ -34,11 +32,11 @@ int main(int argc, const char ** argv) {
     }
     
     // Interpret the command line args.
-    MaPLFileCache fileCache;
-    std::vector<MaPLFile *> files;
-    MaPLFile *currentFile = NULL;
-    MaPLFileOptions fileOptions{ false };
+    std::vector<std::filesystem::path> scriptPaths;
+    std::map<std::filesystem::path, std::filesystem::path> outputFileMap;
     std::filesystem::path symbolOutputPath;
+    bool canTakeOutputFile = false;
+    MaPLCompileOptions options{ false };
     ArgumentExpectation expectation = ArgumentExpectation_InputPath;
     for(int i = 1; i < argc; i++) {
         std::string arg = argv[i];
@@ -54,7 +52,7 @@ int main(int argc, const char ** argv) {
             expectation = ArgumentExpectation_SymbolTablePath;
             isFlag = true;
         } else if (arg == "--debug") {
-            fileOptions.includeDebugBytes = true;
+            options.includeDebugBytes = true;
             isFlag = true;
         }
         if (isFlag) {
@@ -80,16 +78,17 @@ int main(int argc, const char ** argv) {
                     printf("The script file path '%s' must have a '.mapl' file extension.\n", argv[i]);
                     return 1;
                 }
-                currentFile = fileCache.fileForNormalizedPath(argPath);
-                files.push_back(currentFile);
+                scriptPaths.push_back(argPath);
+                canTakeOutputFile = true;
                 break;
             case ArgumentExpectation_OutputPath:
                 if (!pathHasExtension(argPath, ".maplb")) {
                     printf("The output path '%s' must have a '.maplb' file extension.\n", argv[i]);
                     return 1;
                 }
-                if (currentFile) {
-                    currentFile->setNormalizedOutputPath(argPath);
+                if (canTakeOutputFile) {
+                    // Associate this output path with the most recent script path.
+                    outputFileMap[scriptPaths[scriptPaths.size()-1]] = argPath;
                 } else {
                     printf("Output file '%s' is specified before any file.\n", argv[i]);
                     return 1;
@@ -104,7 +103,7 @@ int main(int argc, const char ** argv) {
                 break;
         }
         if (expectation != ArgumentExpectation_InputPath) {
-            currentFile = NULL;
+            canTakeOutputFile = false;
         }
         expectation = ArgumentExpectation_InputPath;
     }
@@ -112,7 +111,7 @@ int main(int argc, const char ** argv) {
         printf("The flag '%s' was specified, but not followed by any path.\n", argv[argc-1]);
         return 1;
     }
-    if (files.size() == 0) {
+    if (scriptPaths.size() == 0) {
         printf("No script file paths were specified.\n");
         return 1;
     }
@@ -121,52 +120,28 @@ int main(int argc, const char ** argv) {
         return 1;
     }
     
-    // Propagate options to all files. This will apply to all files
-    // explicitly mentioned in the args, but not dependent files.
-    for (MaPLFile *file : files) {
-        file->setOptions(fileOptions);
-    }
+    // Assign the filename of the symbol output path as the prefix.
+    options.symbolsPrefix = symbolOutputPath.filename();
+    options.symbolsPrefix = options.symbolsPrefix.substr(0, options.symbolsPrefix.length()-2);
+    
+    MaPLCompileResult result = compileMaPL(scriptPaths, options);
     
     // Check for errors and write to console.
-    bool hadErrors = false;
-    for (MaPLFile *file : files) {
-        std::vector<std::string> errors = file->getErrors();
-        if (errors.size()) {
-            hadErrors = true;
-            for (const std::string &errorString : errors) {
-                fputs(errorString.c_str(), stderr);
-            }
+    if (result.errorMessages.size()) {
+        for (const std::string &errorString : result.errorMessages) {
+            fputs(errorString.c_str(), stderr);
         }
-    }
-    if (hadErrors) {
         return 1;
     }
     
-    // Generate the symbol table and write to file.
-    std::map<std::string, MaPLSymbol> symbolTable = symbolTableForFiles(files);
-    std::string enumName = symbolOutputPath.filename();
-    enumName = enumName.substr(0, enumName.length()-2);
-    std::string formattedSymbolTable = "enum "+enumName+" {\n";
-    for (const auto&[descriptor, symbol] : symbolTable) {
-        formattedSymbolTable += "    "+enumName+"_"+descriptor+" = "+std::to_string(symbol)+",\n";
-    }
-    formattedSymbolTable += "};\n";
+    // Write symbol table to file.
     std::ofstream symbolTableOutputStream(symbolOutputPath);
-    symbolTableOutputStream << formattedSymbolTable;
+    symbolTableOutputStream << result.symbolTable;
     
     // Output each compiled script to file.
-    for (MaPLFile *file : files) {
-        std::ofstream bytecodeOutputStream(file->getNormalizedOutputPath());
-        
-        // Prepend the amount of memory that the script requires.
-        MaPLMemoryAddress primitiveStackHeight = file->getVariableStack()->getMaximumPrimitiveMemoryUsed();
-        bytecodeOutputStream.write((char *)(&primitiveStackHeight), sizeof(primitiveStackHeight));
-        MaPLMemoryAddress allocatedStackHeight = file->getVariableStack()->getMaximumAllocatedMemoryUsed();
-        bytecodeOutputStream.write((char *)(&allocatedStackHeight), sizeof(allocatedStackHeight));
-        
-        MaPLBuffer *bytecode = file->getBytecode();
-        bytecode->resolveSymbolsWithTable(symbolTable);
-        bytecodeOutputStream.write((char *)bytecode->getBytes(), bytecode->getByteCount());
+    for (const auto&[scriptPath, bytecode] : result.compiledFiles) {
+        std::ofstream bytecodeOutputStream(outputFileMap[scriptPath]);
+        bytecodeOutputStream.write((char *)&(bytecode[0]), bytecode.size());
     }
     
     printf("All MaPL sources compiled successfully.\n");

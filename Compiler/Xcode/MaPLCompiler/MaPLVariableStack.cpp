@@ -57,7 +57,7 @@ bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVar
         }
         
         // Calculate the highest memory usage for allocated variables.
-        variable.byteOffset = currentOffset;
+        variable.memoryAddress = currentOffset;
         MaPLMemoryAddress currentMemoryUsed = currentOffset+1;
         if (currentMemoryUsed > _maximumAllocatedMemoryUsed) {
             _maximumAllocatedMemoryUsed = currentMemoryUsed;
@@ -81,7 +81,7 @@ bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVar
         }
         
         // Calculate the highest memory usage for primitives.
-        variable.byteOffset = currentOffset;
+        variable.memoryAddress = currentOffset;
         MaPLMemoryAddress currentMemoryUsed = currentOffset+variableSize;
         if (currentMemoryUsed > _maximumPrimitiveMemoryUsed) {
             _maximumPrimitiveMemoryUsed = currentMemoryUsed;

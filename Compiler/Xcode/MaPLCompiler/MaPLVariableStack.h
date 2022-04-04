@@ -26,7 +26,7 @@ struct MaPLVariable {
     // The token which represents this variable declaration.
     antlr4::Token *token;
     // Specifies the location in the memory where this variable is stored.
-    MaPLMemoryAddress byteOffset;
+    MaPLMemoryAddress memoryAddress;
 };
 
 /**
@@ -58,7 +58,7 @@ public:
     MaPLMemoryAddress getMaximumAllocatedMemoryUsed();
 
     /**
-     * Inserts a new variable into the top stack frame. The variable will be assigned a new @c byteOffset based on current contents of the stack.
+     * Inserts a new variable into the top stack frame. The variable will be assigned a new @c memoryAddress based on current contents of the stack.
      *
      * @return @c true if declaration is successful.
      */

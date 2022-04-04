@@ -9,125 +9,108 @@
 #include <stdlib.h>
 #include <string.h>
 
-MaPLBuffer::MaPLBuffer(size_t bufferCapacity) :
-    _bufferCapacity(bufferCapacity),
-    _byteCount(0)
-{
-    _bytes = (u_int8_t *)malloc(bufferCapacity);
-}
-
-MaPLBuffer::~MaPLBuffer() {
-    if (_bytes) {
-        free(_bytes);
+void MaPLBuffer::appendBytes(const void *bytes, size_t byteSize) {
+    const uint8_t *copyPointer = (const uint8_t *)bytes;
+    for (size_t i = 0; i < byteSize; i++) {
+        _bytes.push_back(*(copyPointer+i));
     }
 }
 
-bool MaPLBuffer::appendBytes(const void *bytes, size_t byteSize) {
-    size_t appendedSize = _byteCount + byteSize;
-    if (appendedSize > _bufferCapacity) {
-        u_int8_t *reallocBytes = (u_int8_t *)realloc(_bytes, appendedSize*2);
-        if (!reallocBytes) {
-            return false;
-        }
-        _bytes = reallocBytes;
-        _bufferCapacity = appendedSize*2;
-    }
-    memcpy((u_int8_t *)_bytes+_byteCount, bytes, byteSize);
-    _byteCount += byteSize;
-    return true;
+void MaPLBuffer::prependBytes(const void *bytes, size_t byteSize) {
+    _bytes.insert(_bytes.begin(), byteSize, 0);
+    overwriteBytes(bytes, byteSize, 0);
 }
 
-bool MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
-    return appendBytes(&instruction, sizeof(instruction));
+void MaPLBuffer::overwriteBytes(const void *bytes, size_t byteSize, size_t overwriteLocation) {
+    const uint8_t *copyPointer = (const uint8_t *)bytes;
+    for (size_t i = 0; i < byteSize; i++) {
+        _bytes[overwriteLocation+i] = *(copyPointer+i);
+    }
 }
 
-bool MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer,
-                              MaPLMemoryAddress primitiveVariableByteOffset,
-                              MaPLMemoryAddress allocatedVariableByteOffset) {
-    size_t previousByteCount = _byteCount;
-    size_t otherBufferCount = otherBuffer->getByteCount();
-    if (primitiveVariableByteOffset || allocatedVariableByteOffset) {
-        // If this append operation requires variable byte offsets, make a copy of the data so it can be edited.
-        u_int8_t copiedBytes[otherBufferCount];
-        memcpy(copiedBytes, otherBuffer->getBytes(), otherBufferCount);
-        
-        // Increment byte offsets everywhere a variable was referenced.
-        for (const MaPLBufferAnnotation &annotation : otherBuffer->getAnnotations()) {
-            if (annotation.type == MaPLBufferAnnotationType_PrimitiveVariableOffset) {
-                MaPLMemoryAddress variableByteOffset = *((MaPLMemoryAddress *)(copiedBytes+annotation.byteLocation));
-                variableByteOffset += primitiveVariableByteOffset;
-                memcpy(copiedBytes+annotation.byteLocation, &variableByteOffset, sizeof(variableByteOffset));
-            } else if (annotation.type == MaPLBufferAnnotationType_AllocatedVariableOffset) {
-                MaPLMemoryAddress variableByteOffset = *((MaPLMemoryAddress *)(copiedBytes+annotation.byteLocation));
-                variableByteOffset += allocatedVariableByteOffset;
-                memcpy(copiedBytes+annotation.byteLocation, &variableByteOffset, sizeof(variableByteOffset));
-            }
-        }
-        if (!appendBytes(copiedBytes, otherBufferCount)) {
-            return false;
-        }
-    } else {
-        if (!appendBytes(otherBuffer->getBytes(), otherBufferCount)) {
-            return false;
-        }
-    }
+void MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
+    appendBytes(&instruction, sizeof(instruction));
+}
+
+void MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer,
+                              MaPLMemoryAddress primitiveMemoryAddressOffset,
+                              MaPLMemoryAddress allocatedMemoryIndexOffset) {
+    // Append all bytes from the other buffer.
+    size_t previousSize = _bytes.size();
+    std::vector<u_int8_t> otherBytes = otherBuffer->getBytes();
+    _bytes.insert(_bytes.end(), otherBytes.begin(), otherBytes.end());
+    
     for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
-        annotation.byteLocation += previousByteCount;
-        addAnnotation(annotation);
+        annotation.byteLocation += previousSize;
+        if (annotation.type == MaPLBufferAnnotationType_PrimitiveVariableAddress) {
+            _bytes[annotation.byteLocation] += primitiveMemoryAddressOffset;
+        } else if (annotation.type == MaPLBufferAnnotationType_AllocatedVariableIndex) {
+            _bytes[annotation.byteLocation] += allocatedMemoryIndexOffset;
+        }
+        _annotations.push_back(annotation);
     }
-    return true;
 }
 
-bool MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
+void MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
     switch (literal.type.primitiveType) {
         case MaPLPrimitiveType_Char:
-            return appendInstruction(MaPLInstruction_char_literal) &&
-                   appendBytes(&(literal.charValue), sizeof(literal.charValue));
+            appendInstruction(MaPLInstruction_char_literal);
+            appendBytes(&(literal.charValue), sizeof(literal.charValue));
+            break;
         case MaPLPrimitiveType_Int32:
-            return appendInstruction(MaPLInstruction_int32_literal) &&
-                   appendBytes(&(literal.int32Value), sizeof(literal.int32Value));
+            appendInstruction(MaPLInstruction_int32_literal);
+            appendBytes(&(literal.int32Value), sizeof(literal.int32Value));
+            break;
         case MaPLPrimitiveType_Int64:
-            return appendInstruction(MaPLInstruction_int64_literal) &&
-                   appendBytes(&(literal.int64Value), sizeof(literal.int64Value));
+            appendInstruction(MaPLInstruction_int64_literal);
+            appendBytes(&(literal.int64Value), sizeof(literal.int64Value));
+            break;
         case MaPLPrimitiveType_UInt32:
-            return appendInstruction(MaPLInstruction_uint32_literal) &&
-                   appendBytes(&(literal.uInt32Value), sizeof(literal.uInt32Value));
+            appendInstruction(MaPLInstruction_uint32_literal);
+            appendBytes(&(literal.uInt32Value), sizeof(literal.uInt32Value));
+            break;
         case MaPLPrimitiveType_UInt64:
-            return appendInstruction(MaPLInstruction_uint64_literal) &&
-                   appendBytes(&(literal.uInt64Value), sizeof(literal.uInt64Value));
+            appendInstruction(MaPLInstruction_uint64_literal);
+            appendBytes(&(literal.uInt64Value), sizeof(literal.uInt64Value));
+            break;
         case MaPLPrimitiveType_Float32:
-            return appendInstruction(MaPLInstruction_float32_literal) &&
-                   appendBytes(&(literal.float32Value), sizeof(literal.float32Value));
+            appendInstruction(MaPLInstruction_float32_literal);
+            appendBytes(&(literal.float32Value), sizeof(literal.float32Value));
+            break;
         case MaPLPrimitiveType_Float64:
-            return appendInstruction(MaPLInstruction_float64_literal) &&
-                   appendBytes(&(literal.float64Value), sizeof(literal.float64Value));
+            appendInstruction(MaPLInstruction_float64_literal);
+            appendBytes(&(literal.float64Value), sizeof(literal.float64Value));
+            break;
         case MaPLPrimitiveType_String:
-            return appendInstruction(MaPLInstruction_string_literal) &&
-                   appendString(literal.stringValue);
+            appendInstruction(MaPLInstruction_string_literal);
+            appendString(literal.stringValue);
+            break;
         case MaPLPrimitiveType_Boolean:
-            return appendInstruction(literal.booleanValue ? MaPLInstruction_literal_true : MaPLInstruction_literal_false);
+            appendInstruction(literal.booleanValue ? MaPLInstruction_literal_true : MaPLInstruction_literal_false);
+            break;
         case MaPLPrimitiveType_Pointer:
-            return appendInstruction(MaPLInstruction_literal_null);
-        default: return false;
+            appendInstruction(MaPLInstruction_literal_null);
+            break;
+        default: break;
     }
 }
 
-bool MaPLBuffer::appendString(const std::string &string) {
+void MaPLBuffer::appendString(const std::string &string) {
     const char* cString = string.c_str();
     size_t length = strlen(cString);
     return appendBytes(cString, length+1);
 }
 
-u_int8_t *MaPLBuffer::getBytes() {
+std::vector<u_int8_t> MaPLBuffer::getBytes() {
     return _bytes;
 }
 
 size_t MaPLBuffer::getByteCount() {
-    return _byteCount;
+    return _bytes.size();
 }
 
-void MaPLBuffer::addAnnotation(const MaPLBufferAnnotation &annotation) {
-    _annotations.push_back(annotation);
+void MaPLBuffer::addAnnotation(MaPLBufferAnnotationType annotationType, const std::string &text) {
+    _annotations.push_back({ _bytes.size(), annotationType, text });
 }
 
 void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bool jumpToEnd) {
@@ -141,18 +124,18 @@ void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bo
         if (annotation.type == type) {
             // Set the cursor move using the appropriate instruction.
             MaPLInstruction cursorInstruction = jumpToEnd ? MaPLInstruction_cursor_move_forward : MaPLInstruction_cursor_move_back;
-            memcpy(_bytes+annotation.byteLocation, &cursorInstruction, sizeof(cursorInstruction));
+            overwriteBytes(&cursorInstruction, sizeof(cursorInstruction), annotation.byteLocation);
             
             // 'byteLocation' describes the beginning of the relevant sequence of bytes.
             // Add the size of the Instruction and CursorMove to find the end of that sequence.
             size_t byteEndLocation = annotation.byteLocation + sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
             MaPLCursorMove cursorMove;
             if (jumpToEnd) {
-                cursorMove = _byteCount-byteEndLocation;
+                cursorMove = _bytes.size()-byteEndLocation;
             } else {// Jump to beginning.
                 cursorMove = byteEndLocation;
             }
-            memcpy(_bytes+(annotation.byteLocation+sizeof(MaPLInstruction)), &cursorMove, sizeof(cursorMove));
+            overwriteBytes(&cursorMove, sizeof(cursorMove), annotation.byteLocation+sizeof(MaPLInstruction));
             _annotations.erase(_annotations.begin()+i);
         }
         
@@ -171,7 +154,7 @@ void MaPLBuffer::resolveSymbolsWithTable(const std::map<std::string, MaPLSymbol>
     for (const MaPLBufferAnnotation &annotation : _annotations) {
         if (annotation.type == MaPLBufferAnnotationType_FunctionSymbol) {
             MaPLSymbol symbol = symbolTable.at(annotation.text);
-            memcpy(_bytes+annotation.byteLocation, &symbol, sizeof(symbol));
+            overwriteBytes(&symbol, sizeof(symbol), annotation.byteLocation);
         }
     }
 }
@@ -186,7 +169,7 @@ void MaPLBuffer::zeroDebugLines() {
         MaPLBufferAnnotation annotation = _annotations[i];
         if (annotation.type == MaPLBufferAnnotationType_DebugLine) {
             MaPLLineNumber zeroLine = 0;
-            memcpy(_bytes+annotation.byteLocation, &zeroLine, sizeof(zeroLine));
+            overwriteBytes(&zeroLine, sizeof(zeroLine), annotation.byteLocation);
             _annotations.erase(_annotations.begin()+i);
         }
         if (i == 0) {

@@ -3,22 +3,38 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9B0ED97E27BAA81400BE2857 /* MaPLCompilerHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */; };
-		9B76DBF927D1B4CF00362D4F /* MaPLVariableStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B76DBF727D1B4CF00362D4F /* MaPLVariableStack.cpp */; };
+		9B7AC54927FA12E200F70849 /* MaPLCompiler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B7AC54827FA12E200F70849 /* MaPLCompiler.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9B7AC54B27FA186F00F70849 /* libantlr4-runtime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8839F2260FEDCC00CFE16B /* libantlr4-runtime.a */; };
+		9B7AC54C27FA188F00F70849 /* MaPLFileCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BC8F09927A9E22E00C57FC7 /* MaPLFileCache.cpp */; };
+		9B7AC54D27FA188F00F70849 /* MaPLFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B883A0926102B9E00CFE16B /* MaPLFile.cpp */; };
+		9B7AC54E27FA188F00F70849 /* MaPLBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BC8F09627A9A40C00C57FC7 /* MaPLBuffer.cpp */; };
+		9B7AC54F27FA188F00F70849 /* MaPLVariableStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B76DBF727D1B4CF00362D4F /* MaPLVariableStack.cpp */; };
+		9B7AC55027FA188F00F70849 /* MaPLCompilerHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */; };
+		9B7AC55127FA188F00F70849 /* MaPLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */; };
+		9B7AC55227FA188F00F70849 /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */; };
+		9B7AC55527FA28B100F70849 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */; };
 		9B8839B9260FEACB00CFE16B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839B8260FEACB00CFE16B /* main.cpp */; };
-		9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */; };
-		9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */; };
-		9B883A0B26102B9E00CFE16B /* MaPLFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B883A0926102B9E00CFE16B /* MaPLFile.cpp */; };
-		9B883A1E2630FB4D00CFE16B /* libantlr4-runtime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8839F2260FEDCC00CFE16B /* libantlr4-runtime.a */; };
-		9BC8F09827A9A40C00C57FC7 /* MaPLBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BC8F09627A9A40C00C57FC7 /* MaPLBuffer.cpp */; };
-		9BC8F09B27A9E22E00C57FC7 /* MaPLFileCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BC8F09927A9E22E00C57FC7 /* MaPLFileCache.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		9B7AC54627FA12D400F70849 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 37C147161B4D5A04008EDDDB;
+			remoteInfo = antlr4_static;
+		};
+		9B7AC55327FA27F600F70849 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B8839AD260FEACB00CFE16B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B7AC53F27FA12CB00F70849;
+			remoteInfo = libMaPLCompiler;
+		};
 		9B8839EF260FEDCC00CFE16B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */;
@@ -40,13 +56,6 @@
 			remoteGlobalIDString = 270C67F01CDB4F1E00116E17;
 			remoteInfo = antlr4_ios;
 		};
-		9B883A142630FA6B00CFE16B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 37C147161B4D5A04008EDDDB;
-			remoteInfo = antlr4_static;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -66,7 +75,9 @@
 		9B0ED97D27BAA81400BE2857 /* MaPLCompilerHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLCompilerHelpers.h; sourceTree = "<group>"; };
 		9B76DBF727D1B4CF00362D4F /* MaPLVariableStack.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLVariableStack.cpp; sourceTree = "<group>"; };
 		9B76DBF827D1B4CF00362D4F /* MaPLVariableStack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLVariableStack.h; sourceTree = "<group>"; };
-		9B8839B5260FEACB00CFE16B /* MaPLCompiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLCompiler; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMaPLCompiler.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B7AC54827FA12E200F70849 /* MaPLCompiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLCompiler.h; sourceTree = "<group>"; };
+		9B8839B5260FEACB00CFE16B /* MaPLCompilerExecutable */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLCompilerExecutable; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B8839B8260FEACB00CFE16B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = antlrcpp.xcodeproj; path = ../ANTLR4/runtime/Cpp/runtime/antlrcpp.xcodeproj; sourceTree = "<group>"; };
 		9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MaPLParser.cpp; path = "../../c++/MaPLParser.cpp"; sourceTree = "<group>"; };
@@ -83,11 +94,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		9B7AC53E27FA12CB00F70849 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B7AC54B27FA186F00F70849 /* libantlr4-runtime.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B8839B2260FEACB00CFE16B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B883A1E2630FB4D00CFE16B /* libantlr4-runtime.a in Frameworks */,
+				9B7AC55527FA28B100F70849 /* libMaPLCompiler.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,7 +127,8 @@
 		9B8839B6260FEACB00CFE16B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9B8839B5260FEACB00CFE16B /* MaPLCompiler */,
+				9B8839B5260FEACB00CFE16B /* MaPLCompilerExecutable */,
+				9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -117,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				9B8839B8260FEACB00CFE16B /* main.cpp */,
+				9B7AC54827FA12E200F70849 /* MaPLCompiler.h */,
 				9BC8F09927A9E22E00C57FC7 /* MaPLFileCache.cpp */,
 				9BC8F09A27A9E22E00C57FC7 /* MaPLFileCache.h */,
 				9B883A0926102B9E00CFE16B /* MaPLFile.cpp */,
@@ -162,12 +183,41 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		9B7AC53C27FA12CB00F70849 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B7AC54927FA12E200F70849 /* MaPLCompiler.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
-		9B8839B4260FEACB00CFE16B /* MaPLCompiler */ = {
+		9B7AC53F27FA12CB00F70849 /* MaPLCompiler */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 9B8839BC260FEACB00CFE16B /* Build configuration list for PBXNativeTarget "MaPLCompiler" */;
+			buildConfigurationList = 9B7AC54527FA12CB00F70849 /* Build configuration list for PBXNativeTarget "MaPLCompiler" */;
 			buildPhases = (
-				9B883A00260FEDF300CFE16B /* ShellScript */,
+				9B7AC54A27FA175300F70849 /* ShellScript */,
+				9B7AC53C27FA12CB00F70849 /* Headers */,
+				9B7AC53D27FA12CB00F70849 /* Sources */,
+				9B7AC53E27FA12CB00F70849 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9B7AC54727FA12D400F70849 /* PBXTargetDependency */,
+			);
+			name = MaPLCompiler;
+			productName = libMaPLCompiler;
+			productReference = 9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		9B8839B4260FEACB00CFE16B /* MaPLCompilerExecutable */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B8839BC260FEACB00CFE16B /* Build configuration list for PBXNativeTarget "MaPLCompilerExecutable" */;
+			buildPhases = (
 				9B8839B1260FEACB00CFE16B /* Sources */,
 				9B8839B2260FEACB00CFE16B /* Frameworks */,
 				9B8839B3260FEACB00CFE16B /* CopyFiles */,
@@ -175,11 +225,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				9B883A152630FA6B00CFE16B /* PBXTargetDependency */,
+				9B7AC55427FA27F600F70849 /* PBXTargetDependency */,
 			);
-			name = MaPLCompiler;
+			name = MaPLCompilerExecutable;
 			productName = MaPLCompiler;
-			productReference = 9B8839B5260FEACB00CFE16B /* MaPLCompiler */;
+			productReference = 9B8839B5260FEACB00CFE16B /* MaPLCompilerExecutable */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -190,6 +240,9 @@
 			attributes = {
 				LastUpgradeCheck = 1240;
 				TargetAttributes = {
+					9B7AC53F27FA12CB00F70849 = {
+						CreatedOnToolsVersion = 13.3;
+					};
 					9B8839B4260FEACB00CFE16B = {
 						CreatedOnToolsVersion = 12.4;
 					};
@@ -214,7 +267,8 @@
 			);
 			projectRoot = "";
 			targets = (
-				9B8839B4260FEACB00CFE16B /* MaPLCompiler */,
+				9B8839B4260FEACB00CFE16B /* MaPLCompilerExecutable */,
+				9B7AC53F27FA12CB00F70849 /* MaPLCompiler */,
 			);
 		};
 /* End PBXProject section */
@@ -244,15 +298,15 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		9B883A00260FEDF300CFE16B /* ShellScript */ = {
+		9B7AC54A27FA175300F70849 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/../MaPL.g4",
 			);
 			outputFileListPaths = (
 			);
@@ -265,32 +319,70 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9B7AC53D27FA12CB00F70849 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B7AC54C27FA188F00F70849 /* MaPLFileCache.cpp in Sources */,
+				9B7AC54D27FA188F00F70849 /* MaPLFile.cpp in Sources */,
+				9B7AC54E27FA188F00F70849 /* MaPLBuffer.cpp in Sources */,
+				9B7AC54F27FA188F00F70849 /* MaPLVariableStack.cpp in Sources */,
+				9B7AC55027FA188F00F70849 /* MaPLCompilerHelpers.cpp in Sources */,
+				9B7AC55127FA188F00F70849 /* MaPLLexer.cpp in Sources */,
+				9B7AC55227FA188F00F70849 /* MaPLParser.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B8839B1260FEACB00CFE16B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B8839FD260FEDDF00CFE16B /* MaPLParser.cpp in Sources */,
 				9B8839B9260FEACB00CFE16B /* main.cpp in Sources */,
-				9B76DBF927D1B4CF00362D4F /* MaPLVariableStack.cpp in Sources */,
-				9B0ED97E27BAA81400BE2857 /* MaPLCompilerHelpers.cpp in Sources */,
-				9B8839FE260FEDDF00CFE16B /* MaPLLexer.cpp in Sources */,
-				9BC8F09827A9A40C00C57FC7 /* MaPLBuffer.cpp in Sources */,
-				9BC8F09B27A9E22E00C57FC7 /* MaPLFileCache.cpp in Sources */,
-				9B883A0B26102B9E00CFE16B /* MaPLFile.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		9B883A152630FA6B00CFE16B /* PBXTargetDependency */ = {
+		9B7AC54727FA12D400F70849 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = antlr4_static;
-			targetProxy = 9B883A142630FA6B00CFE16B /* PBXContainerItemProxy */;
+			targetProxy = 9B7AC54627FA12D400F70849 /* PBXContainerItemProxy */;
+		};
+		9B7AC55427FA27F600F70849 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9B7AC53F27FA12CB00F70849 /* MaPLCompiler */;
+			targetProxy = 9B7AC55327FA27F600F70849 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		9B7AC54127FA12CB00F70849 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		9B7AC54227FA12CB00F70849 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				MACOSX_DEPLOYMENT_TARGET = 12.2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		9B8839BA260FEACB00CFE16B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -423,6 +515,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		9B7AC54527FA12CB00F70849 /* Build configuration list for PBXNativeTarget "MaPLCompiler" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B7AC54127FA12CB00F70849 /* Debug */,
+				9B7AC54227FA12CB00F70849 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		9B8839B0260FEACB00CFE16B /* Build configuration list for PBXProject "MaPLCompiler" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -432,7 +533,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		9B8839BC260FEACB00CFE16B /* Build configuration list for PBXNativeTarget "MaPLCompiler" */ = {
+		9B8839BC260FEACB00CFE16B /* Build configuration list for PBXNativeTarget "MaPLCompilerExecutable" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				9B8839BD260FEACB00CFE16B /* Debug */,

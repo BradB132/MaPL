@@ -8,8 +8,62 @@
 #include <set>
 #include <vector>
 
+#include "MaPLCompiler.h"
 #include "MaPLCompilerHelpers.h"
 #include "MaPLFile.h"
+#include "MaPLFileCache.h"
+#include "MaPLBuffer.h"
+
+MaPLCompileResult compileMaPL(const std::vector<std::filesystem::path> &scriptPaths, const MaPLCompileOptions &options) {
+    MaPLCompileResult compileResult;
+    MaPLFileCache fileCache;
+    std::vector<MaPLFile *> files;
+    
+    // Create a file for each path.
+    for (const std::filesystem::path &path : scriptPaths) {
+        if (!path.is_absolute()) {
+            compileResult.errorMessages.push_back("Path '"+path.string()+"' must be specified as an absolute path.");
+            continue;
+        }
+        MaPLFile *file = fileCache.fileForNormalizedPath(path.lexically_normal());
+        file->setOptions(options);
+        files.push_back(file);
+    }
+    
+    // Check for errors.
+    for (MaPLFile *file : files) {
+        std::vector<std::string> errors = file->getErrors();
+        compileResult.errorMessages.insert(compileResult.errorMessages.end(), errors.begin(), errors.end());
+    }
+    if (compileResult.errorMessages.size()) {
+        return compileResult;
+    }
+    
+    // Generate the symbol table.
+    std::map<std::string, MaPLSymbol> symbolTable = symbolTableForFiles(files);
+    compileResult.symbolTable = "enum "+options.symbolsPrefix+" {\n";
+    for (const auto&[descriptor, symbol] : symbolTable) {
+        compileResult.symbolTable += "    "+options.symbolsPrefix+"_"+descriptor+" = "+std::to_string(symbol)+",\n";
+    }
+    compileResult.symbolTable += "};\n";
+    
+    // Add the bytecode from each file to the result.
+    for (MaPLFile *file : files) {
+        MaPLBuffer *buffer = file->getBytecode();
+        buffer->resolveSymbolsWithTable(symbolTable);
+        
+        // Prepend the amount of memory that the script requires.
+        MaPLMemoryAddress prependedAddresses[] = {
+            file->getVariableStack()->getMaximumPrimitiveMemoryUsed(),
+            file->getVariableStack()->getMaximumAllocatedMemoryUsed()
+        };
+        buffer->prependBytes(prependedAddresses, sizeof(prependedAddresses));
+        
+        compileResult.compiledFiles[file->getNormalizedFilePath()] = buffer->getBytes();
+    }
+    
+    return compileResult;
+}
 
 bool isAmbiguousNumericType(MaPLPrimitiveType type) {
     switch (type) {

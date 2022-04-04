@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "MaPLCompiler.h"
 #include "MaPLParser.h"
 #include "BaseErrorListener.h"
 #include "MaPLCompilerHelpers.h"
@@ -22,10 +23,6 @@
 class MaPLLexer;
 class MaPLFileCache;
 class MaPLBuffer;
-
-struct MaPLFileOptions {
-    bool includeDebugBytes;
-};
 
 /**
  * Represents a single MaPL file in from the filesystem.
@@ -65,16 +62,6 @@ public:
     std::filesystem::path getNormalizedFilePath();
     
     /**
-     * @return The path in the filesystem where the bytecode should be saved.
-     */
-    std::filesystem::path getNormalizedOutputPath();
-    
-    /**
-     * Mutator for this file's output path.
-     */
-    void setNormalizedOutputPath(std::filesystem::path outputPath);
-    
-    /**
      * Logs an error that is then retrievable via @c getErrors().
      */
     void logError(antlr4::Token *token, const std::string &msg);
@@ -88,7 +75,7 @@ public:
      * Mutator for this file's options. Options can change the way that the bytecode is compiled, but this
      * must be assigned before compilation is triggered by accessing the bytecode buffer or error list.
      */
-    void setOptions(const MaPLFileOptions &options);
+    void setOptions(const MaPLCompileOptions &options);
     
 private:
     
@@ -127,8 +114,7 @@ private:
     void logNotAssignableError(antlr4::Token *token);
     
     std::filesystem::path _normalizedFilePath;
-    std::filesystem::path _normalizedOutputPath;
-    MaPLFileOptions _options;
+    MaPLCompileOptions _options;
     MaPLFileCache *_fileCache;
     MaPLBuffer *_bytecode;
     MaPLVariableStack *_variableStack;
