@@ -3,7 +3,7 @@
 import Foundation
 
 let scriptPath = URL(fileURLWithPath: CommandLine.arguments[0], relativeTo: URL(fileURLWithPath: FileManager.default.currentDirectoryPath)).deletingLastPathComponent().path
-let bytecodePath = scriptPath+"/MaPLCompiler/MaPLBytecodeConstants.h"
+let bytecodePath = scriptPath+"/MaPLBytecodeConstants.h"
 var output = ""
 var byteCode = 0
 

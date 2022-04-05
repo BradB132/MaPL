@@ -17,6 +17,7 @@
 		9B7AC55127FA188F00F70849 /* MaPLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */; };
 		9B7AC55227FA188F00F70849 /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */; };
 		9B7AC55527FA28B100F70849 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */; };
+		9B7AC56027FCD6A400F70849 /* MaPLBytecodeConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B7AC55E27FCD6A400F70849 /* MaPLBytecodeConstants.h */; };
 		9B8839B9260FEACB00CFE16B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839B8260FEACB00CFE16B /* main.cpp */; };
 /* End PBXBuildFile section */
 
@@ -77,6 +78,7 @@
 		9B76DBF827D1B4CF00362D4F /* MaPLVariableStack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLVariableStack.h; sourceTree = "<group>"; };
 		9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMaPLCompiler.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B7AC54827FA12E200F70849 /* MaPLCompiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLCompiler.h; sourceTree = "<group>"; };
+		9B7AC55E27FCD6A400F70849 /* MaPLBytecodeConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLBytecodeConstants.h; sourceTree = "<group>"; };
 		9B8839B5260FEACB00CFE16B /* MaPLCompilerExecutable */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLCompilerExecutable; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B8839B8260FEACB00CFE16B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = antlrcpp.xcodeproj; path = ../ANTLR4/runtime/Cpp/runtime/antlrcpp.xcodeproj; sourceTree = "<group>"; };
@@ -86,7 +88,6 @@
 		9B8839FC260FEDDF00CFE16B /* MaPLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MaPLParser.h; path = "../../c++/MaPLParser.h"; sourceTree = "<group>"; };
 		9B883A0926102B9E00CFE16B /* MaPLFile.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLFile.cpp; sourceTree = "<group>"; };
 		9B883A0A26102B9E00CFE16B /* MaPLFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLFile.h; sourceTree = "<group>"; };
-		9BB770A627AF14E10086ECF6 /* MaPLBytecodeConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLBytecodeConstants.h; sourceTree = "<group>"; };
 		9BC8F09627A9A40C00C57FC7 /* MaPLBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLBuffer.cpp; sourceTree = "<group>"; };
 		9BC8F09727A9A40C00C57FC7 /* MaPLBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLBuffer.h; sourceTree = "<group>"; };
 		9BC8F09927A9E22E00C57FC7 /* MaPLFileCache.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLFileCache.cpp; sourceTree = "<group>"; };
@@ -113,11 +114,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9B7AC55C27FCD6A400F70849 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				9B7AC55E27FCD6A400F70849 /* MaPLBytecodeConstants.h */,
+			);
+			name = Shared;
+			path = ../../Shared;
+			sourceTree = "<group>";
+		};
 		9B8839AC260FEACB00CFE16B = {
 			isa = PBXGroup;
 			children = (
 				9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */,
 				9B8839B7260FEACB00CFE16B /* MaPLCompiler */,
+				9B7AC55C27FCD6A400F70849 /* Shared */,
 				9B8839DF260FECBD00CFE16B /* Generated Code */,
 				9B8839B6260FEACB00CFE16B /* Products */,
 				9B8839DB260FEC0A00CFE16B /* Frameworks */,
@@ -146,7 +157,6 @@
 				9BC8F09727A9A40C00C57FC7 /* MaPLBuffer.h */,
 				9B76DBF727D1B4CF00362D4F /* MaPLVariableStack.cpp */,
 				9B76DBF827D1B4CF00362D4F /* MaPLVariableStack.h */,
-				9BB770A627AF14E10086ECF6 /* MaPLBytecodeConstants.h */,
 				9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */,
 				9B0ED97D27BAA81400BE2857 /* MaPLCompilerHelpers.h */,
 			);
@@ -189,6 +199,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B7AC54927FA12E200F70849 /* MaPLCompiler.h in Headers */,
+				9B7AC56027FCD6A400F70849 /* MaPLBytecodeConstants.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
