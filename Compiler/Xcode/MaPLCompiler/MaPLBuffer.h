@@ -14,6 +14,8 @@
 #include "MaPLBytecodeConstants.h"
 #include "MaPLCompilerHelpers.h"
 
+class MaPLFile;
+
 enum MaPLBufferAnnotationType {
     MaPLBufferAnnotationType_Break,
     MaPLBufferAnnotationType_Continue,
@@ -35,7 +37,7 @@ struct MaPLBufferAnnotation {
 class  MaPLBuffer {
 public:
     
-    MaPLBuffer();
+    MaPLBuffer(MaPLFile *parentFile);
     
     /**
      * Appends new bytes onto the buffer.
@@ -135,6 +137,7 @@ public:
     
 private:
     
+    MaPLFile *_parentFile;
     std::vector<u_int8_t> _bytes;
     std::vector<MaPLBufferAnnotation> _annotations;
 };

@@ -17,7 +17,7 @@ typedef u_int16_t MaPLLineNumber;
 
 // Bytecodes are sorted by return type.
 enum MaPLInstruction : u_int8_t {
-    MaPLInstruction_placeholder_or_error = 0,
+    MaPLInstruction_placeholder = 0,
     
     // CHAR
     MaPLInstruction_char_literal = 1,
@@ -281,6 +281,9 @@ enum MaPLInstruction : u_int8_t {
     MaPLInstruction_debug_line = 231,
     MaPLInstruction_debug_update_variable = 232,
     MaPLInstruction_debug_delete_variable = 233,
+    
+    // ERROR CHECKING
+    MaPLInstruction_error = 234,
 };
 
 #endif /* MaPLBytecodeConstants_h */

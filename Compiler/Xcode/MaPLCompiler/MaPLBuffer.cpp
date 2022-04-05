@@ -9,10 +9,14 @@
 #include <stdlib.h>
 #include <string>
 #include <regex>
+#include "MaPLFile.h"
 
-MaPLBuffer::MaPLBuffer() {
+MaPLBuffer::MaPLBuffer(MaPLFile *parentFile) :
+    _parentFile(parentFile)
+{
     // Avoid several vector resizes by initially reserving a larger chunk of memory.
     _bytes.reserve(64);
+    _annotations.reserve(16);
 }
 
 void MaPLBuffer::appendBytes(const void *bytes, size_t byteSize) {
@@ -35,6 +39,9 @@ void MaPLBuffer::overwriteBytes(const void *bytes, size_t byteSize, size_t overw
 }
 
 void MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
+    if (instruction == MaPLInstruction_error) {
+        _parentFile->logError(NULL, "Internal compiler error. Encountered error instruction.");
+    }
     appendBytes(&instruction, sizeof(instruction));
 }
 
@@ -104,7 +111,7 @@ void MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
 void MaPLBuffer::appendString(std::string string) {
     // Replace escaped chars.
     std::smatch match;
-    std::regex escapeChars("\\\\([abefnrtv\"\\\\])");
+    std::regex escapeChars("\\\\(.)");
     auto searchStart = cbegin(string);
     while (std::regex_search(searchStart, cend(string), match, escapeChars)) {
         const char *replaceString = "";
@@ -139,7 +146,9 @@ void MaPLBuffer::appendString(std::string string) {
             case '\\':
                 replaceString = "\\";
                 break;
-            default: break;
+            default:
+                _parentFile->logError(NULL, "Invalid esacpe sequence "+match[0].str()+" specified in string. Accepted escape sequences are: \\a, \\b, \\e, \\f, \\n, \\r, \\t, \\v, \\\", \\\\.");
+                break;
         }
         string.replace(match[0].first, match[0].second, replaceString);
         searchStart = match[0].first;

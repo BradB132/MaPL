@@ -123,7 +123,7 @@ MaPLBuffer *MaPLFile::getBytecode() {
         return NULL;
     }
     
-    _bytecode = new MaPLBuffer();
+    _bytecode = new MaPLBuffer(this);
     
     // Concatenate all preceding bytecode and variables from dependencies.
     for(MaPLFile *file : _dependencies) {
@@ -328,7 +328,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             logError(statement->keyToken, "Break statements can only be used within loops.");
                         }
                         currentBuffer->addAnnotation(MaPLBufferAnnotationType_Break);
-                        currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
+                        currentBuffer->appendInstruction(MaPLInstruction_placeholder);
                         MaPLCursorMove placeholderMove = 0;
                         currentBuffer->appendBytes(&placeholderMove, sizeof(placeholderMove));
                     }
@@ -338,7 +338,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             logError(statement->keyToken, "Continue statements can only be used within loops.");
                         }
                         currentBuffer->addAnnotation(MaPLBufferAnnotationType_Continue);
-                        currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
+                        currentBuffer->appendInstruction(MaPLInstruction_placeholder);
                         MaPLCursorMove placeholderMove = 0;
                         currentBuffer->appendBytes(&placeholderMove, sizeof(placeholderMove));
                     }
@@ -1167,12 +1167,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             //   ScopeContext - The contents of the loop.
             // ┌ MaPLInstruction_cursor_move_back - Signals the end of the loop.
             // └ MaPLCursorMove - The size of the backward move required to return to the top of the loop.
-            MaPLBuffer scopeBuffer;
+            MaPLBuffer scopeBuffer(this);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
             
             // If the conditional is always true, this is an infinite while loop.
             bool infiniteLoop = expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean && expressionLiteral.booleanValue;
-            MaPLBuffer loopBuffer;
+            MaPLBuffer loopBuffer(this);
             if (!infiniteLoop) {
                 // This is not an infinite loop, so the conditional must be checked on each iteration.
                 loopBuffer.appendInstruction(MaPLInstruction_conditional);
@@ -1232,7 +1232,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 break;
             }
             
-            MaPLBuffer scopeBuffer;
+            MaPLBuffer scopeBuffer(this);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
             if (controlStatements->lastStatement) {
                 compileNode(controlStatements->lastStatement, { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
@@ -1240,7 +1240,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             // If the conditional is always true, this is an infinite for loop.
             bool infiniteLoop = expressionLiteral.type.primitiveType == MaPLPrimitiveType_Boolean && expressionLiteral.booleanValue;
-            MaPLBuffer loopBuffer;
+            MaPLBuffer loopBuffer(this);
             if (!infiniteLoop) {
                 loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
@@ -1274,7 +1274,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // └ MaPLCursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             // ┌ MaPLInstruction_cursor_move_back - Contained within the MaPLInstruction_conditional, loops back to the top.
             // └ MaPLCursorMove - The size of the backward move required to return to the top of the loop.
-            MaPLBuffer loopBuffer;
+            MaPLBuffer loopBuffer(this);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &loopBuffer);
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, true);
             
@@ -1336,11 +1336,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 currentBuffer->appendInstruction(MaPLInstruction_conditional);
                 compileNode(conditionalExpression, { MaPLPrimitiveType_Boolean }, currentBuffer);
                 
-                MaPLBuffer scopeBuffer;
+                MaPLBuffer scopeBuffer(this);
                 compileNode(conditional->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
                 
                 MaPLParser::ConditionalElseContext *conditionalElse = conditional->conditionalElse();
-                MaPLBuffer elseBuffer;
+                MaPLBuffer elseBuffer(this);
                 if (conditionalElse) {
                     compileChildNodes(conditionalElse, { MaPLPrimitiveType_Uninitialized }, &elseBuffer);
                 }
@@ -1392,7 +1392,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 
                 // Set a placeholder until the API's return type can be examined.
                 size_t instructionPosition = currentBuffer->getByteCount();
-                currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
+                currentBuffer->appendInstruction(MaPLInstruction_placeholder);
                 
                 MaPLType invokedReturnType = compileObjectExpression(expression->objectExpression(0), NULL, currentBuffer);
                 
@@ -1422,7 +1422,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 
                 // Set a placeholder until the API's return type can be examined.
                 size_t instructionPosition = currentBuffer->getByteCount();
-                currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
+                currentBuffer->appendInstruction(MaPLInstruction_placeholder);
                 
                 std::string functionName = expression->identifier()->getText();
                 std::string invokedOnType;
@@ -1527,7 +1527,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         
         // Set a placeholder until the API's return type can be examined.
         size_t instructionPosition = currentBuffer->getByteCount();
-        currentBuffer->appendInstruction(MaPLInstruction_placeholder_or_error);
+        currentBuffer->appendInstruction(MaPLInstruction_placeholder);
         
         std::string invokedOnType;
         MaPLType invokedReturnType{ MaPLPrimitiveType_Uninitialized };
