@@ -147,7 +147,7 @@ void MaPLBuffer::appendString(std::string string) {
                 replaceString = "\\";
                 break;
             default:
-                _parentFile->logError(NULL, "Invalid esacpe sequence "+match[0].str()+" specified in string. Accepted escape sequences are: \\a, \\b, \\e, \\f, \\n, \\r, \\t, \\v, \\\", \\\\.");
+                _parentFile->logError(NULL, "Invalid escape sequence "+match[0].str()+" specified in string. Accepted escape sequences are: \\a, \\b, \\e, \\f, \\n, \\r, \\t, \\v, \\\", \\\\.");
                 break;
         }
         string.replace(match[0].first, match[0].second, replaceString);
