@@ -1,6 +1,5 @@
 //
 //  MaPLBytecodeConstants.h
-//  MaPLCompiler
 //
 //  Created by Brad Bambara on 2/5/22.
 //
