@@ -35,6 +35,8 @@ struct MaPLBufferAnnotation {
 class  MaPLBuffer {
 public:
     
+    MaPLBuffer();
+    
     /**
      * Appends new bytes onto the buffer.
      *

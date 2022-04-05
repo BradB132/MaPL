@@ -10,6 +10,11 @@
 #include <string>
 #include <regex>
 
+MaPLBuffer::MaPLBuffer() {
+    // Avoid several vector resizes by initially reserving a larger chunk of memory.
+    _bytes.reserve(64);
+}
+
 void MaPLBuffer::appendBytes(const void *bytes, size_t byteSize) {
     const uint8_t *copyPointer = (const uint8_t *)bytes;
     for (size_t i = 0; i < byteSize; i++) {
