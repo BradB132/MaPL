@@ -90,7 +90,7 @@ public:
      *
      * @param string The string value that will be appended onto the buffer.
      */
-    void appendString(const std::string &string);
+    void appendString(std::string string);
     
     /**
      * @return The bytes stored in this buffer.

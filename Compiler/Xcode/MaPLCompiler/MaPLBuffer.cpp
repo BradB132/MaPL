@@ -7,7 +7,8 @@
 
 #include "MaPLBuffer.h"
 #include <stdlib.h>
-#include <string.h>
+#include <string>
+#include <regex>
 
 void MaPLBuffer::appendBytes(const void *bytes, size_t byteSize) {
     const uint8_t *copyPointer = (const uint8_t *)bytes;
@@ -95,7 +96,50 @@ void MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
     }
 }
 
-void MaPLBuffer::appendString(const std::string &string) {
+void MaPLBuffer::appendString(std::string string) {
+    // Replace escaped chars.
+    std::smatch match;
+    std::regex escapeChars("\\\\([abefnrtv\"\\\\])");
+    auto searchStart = cbegin(string);
+    while (std::regex_search(searchStart, cend(string), match, escapeChars)) {
+        const char *replaceString = "";
+        switch (*match[1].first.base()) {
+            case 'a':
+                replaceString = "\a";
+                break;
+            case 'b':
+                replaceString = "\b";
+                break;
+            case 'e':
+                replaceString = "\e";
+                break;
+            case 'f':
+                replaceString = "\f";
+                break;
+            case 'n':
+                replaceString = "\n";
+                break;
+            case 'r':
+                replaceString = "\r";
+                break;
+            case 't':
+                replaceString = "\t";
+                break;
+            case 'v':
+                replaceString = "\v";
+                break;
+            case '"':
+                replaceString = "\"";
+                break;
+            case '\\':
+                replaceString = "\\";
+                break;
+            default: break;
+        }
+        string.replace(match[0].first, match[0].second, replaceString);
+        searchStart = match[0].first;
+    }
+    
     const char* cString = string.c_str();
     size_t length = strlen(cString);
     return appendBytes(cString, length+1);
