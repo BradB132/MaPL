@@ -96,8 +96,8 @@ MaPLParameter MaPLStringByReference(char* stringValue) {
 }
 MaPLParameter MaPLStringByValue(char* stringValue) {
     MaPLParameter parameter = { MaPLDataType_string };
-    parameter.stringValue = (char *)malloc(strlen(stringValue)+1);
-    strcpy(parameter.stringValue, stringValue);
+    parameter.stringValue = malloc(strlen(stringValue)+1);
+    strcpy((char *)parameter.stringValue, stringValue);
     parameter.stringValue = tagStringAsAllocated(parameter.stringValue);
     return parameter;
 }

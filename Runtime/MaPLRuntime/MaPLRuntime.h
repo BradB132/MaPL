@@ -47,7 +47,7 @@ typedef struct {
         u_int64_t uint64Value;
         float float32Value;
         double float64Value;
-        char* stringValue;
+        const char* stringValue;
         bool booleanValue;
         void* pointerValue;
     };
