@@ -9,6 +9,19 @@
 #include "MaPLBytecodeConstants.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+
+char *tagStringAsAllocated(const char *taggedString) {
+    return (char *)((uintptr_t)taggedString | 0x8000000000000000);
+}
+
+bool isStringAllocated(const char *taggedString) {
+    return ((uintptr_t)taggedString & 0x8000000000000000) != 0;
+}
+
+char *untaggedString(const char *taggedString) {
+    return (char *)((uintptr_t)taggedString & 0x7FFFFFFFFFFFFFFF);
+}
 
 MaPLParameter MaPLUninitialized(void) {
     return (MaPLParameter){ MaPLDataType_uninitialized };
@@ -51,7 +64,7 @@ MaPLParameter MaPLFloat64(double float64Value) {
     parameter.float64Value = float64Value;
     return parameter;
 }
-MaPLParameter MaPLBool(u_int8_t booleanValue) {
+MaPLParameter MaPLBool(bool booleanValue) {
     MaPLParameter parameter = { MaPLDataType_boolean };
     parameter.booleanValue = booleanValue;
     return parameter;
@@ -63,16 +76,18 @@ MaPLParameter MaPLPointer(void* pointerValue) {
 }
 MaPLParameter MaPLStringByReference(char* stringValue) {
     MaPLParameter parameter = { MaPLDataType_string };
-    parameter.stringValue = stringValue;// TODO: Pointer tagging.
+    parameter.stringValue = stringValue;
     return parameter;
 }
 MaPLParameter MaPLStringByValue(char* stringValue) {
     MaPLParameter parameter = { MaPLDataType_string };
     parameter.stringValue = (char *)malloc(strlen(stringValue)+1);
-    strcpy(parameter.stringValue, stringValue);// TODO: Pointer tagging.
+    strcpy(parameter.stringValue, stringValue);
+    parameter.stringValue = tagStringAsAllocated(parameter.stringValue);
     return parameter;
 }
 
 void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const MaPLCallbacks *callbacks) {
     // TODO: Execute script.
+    // TODO: Here and in compiler assert the byte sizes of all types ( https://stackoverflow.com/a/18511691 ).
 }

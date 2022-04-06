@@ -9,7 +9,7 @@
 #define MaPLRuntime_h
 
 #include <stdio.h>
-#include <math.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,7 +48,7 @@ typedef struct {
         float float32Value;
         double float64Value;
         char* stringValue;
-        u_int8_t booleanValue;
+        bool booleanValue;
         void* pointerValue;
     };
 } MaPLParameter;
@@ -65,7 +65,7 @@ MaPLParameter MaPLUint32(u_int32_t uint32Value);
 MaPLParameter MaPLUint64(u_int64_t uint64Value);
 MaPLParameter MaPLFloat32(float float32Value);
 MaPLParameter MaPLFloat64(double float64Value);
-MaPLParameter MaPLBool(u_int8_t booleanValue);
+MaPLParameter MaPLBool(bool booleanValue);
 /**
  * Only passes the pointer, and does not copy the pointer contents. MaPL will make no attempt to free this object.
  * MaPL may reference this object throughout script execution, so the object referenced by this pointer must not freed
