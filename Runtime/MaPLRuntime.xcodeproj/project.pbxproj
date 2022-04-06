@@ -39,9 +39,9 @@
 		9B7AC56A27FD059B00F70849 /* MaPLRuntimeExecutable */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLRuntimeExecutable; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B7AC56D27FD059B00F70849 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		9B7AC57827FD05CD00F70849 /* libMaPLRuntime.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMaPLRuntime.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		9B7AC57E27FD05F100F70849 /* MaPLBytecodeConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLBytecodeConstants.h; sourceTree = "<group>"; };
 		9B7AC58127FD062F00F70849 /* MaPLRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLRuntime.h; sourceTree = "<group>"; };
 		9B7AC58227FD062F00F70849 /* MaPLRuntime.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = MaPLRuntime.c; sourceTree = "<group>"; };
+		9B7AC58B27FD18B700F70849 /* MaPLBytecodeConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLBytecodeConstants.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,7 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				9B7AC56C27FD059B00F70849 /* MaPLRuntime */,
-				9B7AC57C27FD05F100F70849 /* Shared */,
+				9B7AC58927FD18B700F70849 /* Shared */,
 				9B7AC56B27FD059B00F70849 /* Products */,
 				9B7AC58727FD063F00F70849 /* Frameworks */,
 			);
@@ -92,20 +92,20 @@
 			path = MaPLRuntime;
 			sourceTree = "<group>";
 		};
-		9B7AC57C27FD05F100F70849 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				9B7AC57E27FD05F100F70849 /* MaPLBytecodeConstants.h */,
-			);
-			name = Shared;
-			path = ../../Shared;
-			sourceTree = "<group>";
-		};
 		9B7AC58727FD063F00F70849 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		9B7AC58927FD18B700F70849 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				9B7AC58B27FD18B700F70849 /* MaPLBytecodeConstants.h */,
+			);
+			name = Shared;
+			path = ../Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

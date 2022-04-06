@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9B7AC56927FD059B00F70849"
-               BuildableName = "MaPLRuntime"
+               BuildableName = "MaPLRuntimeExecutable"
                BlueprintName = "MaPLRuntimeExecutable"
                ReferencedContainer = "container:MaPLRuntime.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9B7AC56927FD059B00F70849"
-            BuildableName = "MaPLRuntime"
+            BuildableName = "MaPLRuntimeExecutable"
             BlueprintName = "MaPLRuntimeExecutable"
             ReferencedContainer = "container:MaPLRuntime.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9B7AC56927FD059B00F70849"
-            BuildableName = "MaPLRuntime"
+            BuildableName = "MaPLRuntimeExecutable"
             BlueprintName = "MaPLRuntimeExecutable"
             ReferencedContainer = "container:MaPLRuntime.xcodeproj">
          </BuildableReference>
