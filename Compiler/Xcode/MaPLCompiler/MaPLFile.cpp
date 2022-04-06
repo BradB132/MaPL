@@ -2454,7 +2454,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 std::vector<MaPLParser::ObjectExpressionContext *> childExpressions = expression->objectExpression();
                 MaPLType prefixType = objectExpressionReturnType(childExpressions[0], invokedOnType);
                 if (prefixType.primitiveType != MaPLPrimitiveType_Pointer) {
-                    logError(keyToken, "The '.' operator can only be used on pointers.");
+                    logError(keyToken, "The '.' operator cannot be invoked on "+descriptorForType(prefixType)+", it can only be invoked on pointers.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 return objectExpressionReturnType(childExpressions[1], prefixType.pointerType);
@@ -2463,7 +2463,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 // Subscript invocation.
                 MaPLType prefixType = objectExpressionReturnType(expression->objectExpression(0), invokedOnType);
                 if (prefixType.primitiveType != MaPLPrimitiveType_Pointer) {
-                    logError(keyToken, "The subscript operator can only be used on pointers.");
+                    logError(keyToken, "The subscript operator cannot be invoked on "+descriptorForType(prefixType)+", it can only be invoked on pointers.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 MaPLType indexType = dataTypeForExpression(expression->expression(0));
