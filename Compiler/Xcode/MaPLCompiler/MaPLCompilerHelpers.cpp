@@ -885,30 +885,30 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
         case MaPLPrimitiveType_Float32:
             switch (literal.type.primitiveType) {
                 case MaPLPrimitiveType_Char:
-                    returnVal.float32Value = (float_t)literal.charValue;
+                    returnVal.float32Value = (float)literal.charValue;
                     return returnVal;
                 case MaPLPrimitiveType_Int32:
-                    returnVal.float32Value = (float_t)literal.int32Value;
+                    returnVal.float32Value = (float)literal.int32Value;
                     return returnVal;
                 case MaPLPrimitiveType_Int64: // Intentional fallthrough.
                 case MaPLPrimitiveType_SignedInt_AmbiguousSize:
-                    returnVal.float32Value = (float_t)literal.int64Value;
+                    returnVal.float32Value = (float)literal.int64Value;
                     return returnVal;
                 case MaPLPrimitiveType_UInt32:
-                    returnVal.float32Value = (float_t)literal.uInt32Value;
+                    returnVal.float32Value = (float)literal.uInt32Value;
                     return returnVal;
                 case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
                 case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
-                    returnVal.float32Value = (float_t)literal.uInt64Value;
+                    returnVal.float32Value = (float)literal.uInt64Value;
                     return returnVal;
                 case MaPLPrimitiveType_Float32:
                     return literal;
                 case MaPLPrimitiveType_Float64: // Intentional fallthrough.
                 case MaPLPrimitiveType_Float_AmbiguousSize:
-                    returnVal.float32Value = (float_t)literal.float64Value;
+                    returnVal.float32Value = (float)literal.float64Value;
                     return returnVal;
                 case MaPLPrimitiveType_String:
-                    returnVal.float32Value = (float_t)std::stof(literal.stringValue);
+                    returnVal.float32Value = (float)std::stof(literal.stringValue);
                     return returnVal;
                 case MaPLPrimitiveType_Boolean:
                     returnVal.float32Value = literal.booleanValue ? 1 : 0;
@@ -919,24 +919,24 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
         case MaPLPrimitiveType_Float64:
             switch (literal.type.primitiveType) {
                 case MaPLPrimitiveType_Char:
-                    returnVal.float64Value = (double_t)literal.charValue;
+                    returnVal.float64Value = (double)literal.charValue;
                     return returnVal;
                 case MaPLPrimitiveType_Int32:
-                    returnVal.float64Value = (double_t)literal.int32Value;
+                    returnVal.float64Value = (double)literal.int32Value;
                     return returnVal;
                 case MaPLPrimitiveType_Int64: // Intentional fallthrough.
                 case MaPLPrimitiveType_SignedInt_AmbiguousSize:
-                    returnVal.float64Value = (double_t)literal.int64Value;
+                    returnVal.float64Value = (double)literal.int64Value;
                     return returnVal;
                 case MaPLPrimitiveType_UInt32:
-                    returnVal.float64Value = (double_t)literal.uInt32Value;
+                    returnVal.float64Value = (double)literal.uInt32Value;
                     return returnVal;
                 case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
                 case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
-                    returnVal.float64Value = (double_t)literal.uInt64Value;
+                    returnVal.float64Value = (double)literal.uInt64Value;
                     return returnVal;
                 case MaPLPrimitiveType_Float32:
-                    returnVal.float64Value = (double_t)literal.float32Value;
+                    returnVal.float64Value = (double)literal.float32Value;
                     return returnVal;
                 case MaPLPrimitiveType_Float64:
                     return literal;
@@ -944,7 +944,7 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
                     returnVal.float64Value = literal.float64Value;
                     return returnVal;
                 case MaPLPrimitiveType_String:
-                    returnVal.float64Value = (double_t)std::stod(literal.stringValue);
+                    returnVal.float64Value = (double)std::stod(literal.stringValue);
                     return returnVal;
                 case MaPLPrimitiveType_Boolean:
                     returnVal.float64Value = literal.booleanValue ? 1 : 0;

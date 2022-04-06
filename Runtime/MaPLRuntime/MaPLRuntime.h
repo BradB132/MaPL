@@ -45,8 +45,8 @@ typedef struct {
         int64_t int64Value;
         u_int32_t uint32Value;
         u_int64_t uint64Value;
-        float_t float32Value;
-        double_t float64Value;
+        float float32Value;
+        double float64Value;
         char* stringValue;
         u_int8_t booleanValue;
         void* pointerValue;
@@ -63,8 +63,8 @@ MaPLParameter MaPLInt32(int32_t int32Value);
 MaPLParameter MaPLInt64(int64_t int64Value);
 MaPLParameter MaPLUint32(u_int32_t uint32Value);
 MaPLParameter MaPLUint64(u_int64_t uint64Value);
-MaPLParameter MaPLFloat32(float_t float32Value);
-MaPLParameter MaPLFloat64(double_t float64Value);
+MaPLParameter MaPLFloat32(float float32Value);
+MaPLParameter MaPLFloat64(double float64Value);
 MaPLParameter MaPLBool(u_int8_t booleanValue);
 /**
  * Only passes the pointer, and does not copy the pointer contents. MaPL will make no attempt to free this object.

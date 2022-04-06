@@ -2298,7 +2298,7 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
             case MaPLParser::LITERAL_FLOAT: {
                 std::string floatAsString = expression->LITERAL_FLOAT()->getText();
                 MaPLLiteral literal{ { MaPLPrimitiveType_Float_AmbiguousSize } };
-                literal.float64Value = (double_t)std::stod(floatAsString);
+                literal.float64Value = std::stod(floatAsString);
                 return literal;
             }
             case MaPLParser::LITERAL_STRING: {

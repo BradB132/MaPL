@@ -41,12 +41,12 @@ MaPLParameter MaPLUint64(u_int64_t uint64Value) {
     parameter.uint64Value = uint64Value;
     return parameter;
 }
-MaPLParameter MaPLFloat32(float_t float32Value) {
+MaPLParameter MaPLFloat32(float float32Value) {
     MaPLParameter parameter = { MaPLDataType_float32 };
     parameter.float32Value = float32Value;
     return parameter;
 }
-MaPLParameter MaPLFloat64(double_t float64Value) {
+MaPLParameter MaPLFloat64(double float64Value) {
     MaPLParameter parameter = { MaPLDataType_float64 };
     parameter.float64Value = float64Value;
     return parameter;

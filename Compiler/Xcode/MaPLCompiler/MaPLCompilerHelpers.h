@@ -65,8 +65,8 @@ struct MaPLLiteral {
         int64_t int64Value;
         u_int32_t uInt32Value;
         u_int64_t uInt64Value;
-        float_t float32Value;
-        double_t float64Value;
+        float float32Value;
+        double float64Value;
         bool booleanValue;
     };
     // String value (C++ disallows declaring this as part of a union).
