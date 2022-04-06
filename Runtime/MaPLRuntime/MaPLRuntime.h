@@ -91,6 +91,7 @@ typedef struct {
     MaPLParameter (*invokeSubscript)(const void *calledOnObject, MaPLParameter index);
     MaPLParameter (*assignSubscript)(const void *calledOnObject, MaPLParameter index, MaPLParameter assignedValue);
     MaPLParameter (*assignProperty)(const void *calledOnObject, const char *propertyName, MaPLParameter assignedValue);
+    void (*metadata)(const char* metadataString);
     void (*debugLine)(u_int16_t lineNumber);
     void (*debugVariableUpdate)(const char *variableName, MaPLParameter newValue);
     void (*debugVariableDelete)(const char *variableName);

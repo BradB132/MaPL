@@ -11,6 +11,15 @@
 #include <string.h>
 #include <stdint.h>
 
+typedef struct {
+    const u_int8_t* scriptBuffer;
+    MaPLCursorMove bufferLength;
+    MaPLCursorMove cursorPosition;
+    u_int8_t *primitiveTable;
+    char **stringTable;
+    const MaPLCallbacks *callbacks;
+} MaPLExecutionContext;
+
 char *tagStringAsAllocated(const char *taggedString) {
     return (char *)((uintptr_t)taggedString | 0x8000000000000000);
 }
@@ -21,6 +30,12 @@ bool isStringAllocated(const char *taggedString) {
 
 char *untaggedString(const char *taggedString) {
     return (char *)((uintptr_t)taggedString & 0x7FFFFFFFFFFFFFFF);
+}
+
+void freeTaggedString(const char *taggedString) {
+    if (taggedString && isStringAllocated(taggedString)) {
+        free(untaggedString(taggedString));
+    }
 }
 
 MaPLParameter MaPLUninitialized(void) {
@@ -87,7 +102,174 @@ MaPLParameter MaPLStringByValue(char* stringValue) {
     return parameter;
 }
 
+enum MaPLInstruction readInstruction(MaPLExecutionContext *context) {
+    enum MaPLInstruction instruction = context->scriptBuffer[context->cursorPosition];
+    context->cursorPosition++;
+    return instruction;
+}
+
+const char *readString(MaPLExecutionContext *context) {
+    const char *string = (const char *)(context->scriptBuffer+context->cursorPosition);
+    context->cursorPosition += strlen(string)+1;
+    return string;
+}
+
+bool evaluateStatement(MaPLExecutionContext *context) {
+    switch(readInstruction(context)) {
+        case MaPLInstruction_void_function_invocation:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_void_subscript_invocation:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_char_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_int32_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_int64_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_uint32_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_uint64_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_float32_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_float64_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_boolean_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_string_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_pointer_assign:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_char_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_int32_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_int64_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_uint32_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_uint64_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_float32_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_float64_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_boolean_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_string_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_pointer_assign_subscript:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_char_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_int32_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_int64_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_uint32_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_uint64_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_float32_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_float64_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_boolean_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_string_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_pointer_assign_property:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_conditional:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_cursor_move_forward:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_cursor_move_back:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_program_exit:
+            return false;
+        case MaPLInstruction_metadata: {
+            const char *metadata = readString(context);
+            if (context->callbacks->metadata) {
+                context->callbacks->metadata(metadata);
+            }
+        }
+            break;
+        case MaPLInstruction_debug_line:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_debug_update_variable:
+            // TODO: Implement this.
+            break;
+        case MaPLInstruction_debug_delete_variable:
+            // TODO: Implement this.
+            break;
+        default:
+            if (context->callbacks->error) {
+                context->callbacks->error("Encountered invalid bytecode instruction");
+            }
+            return false;
+    }
+    return true;
+}
+
 void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const MaPLCallbacks *callbacks) {
+    MaPLExecutionContext context;
+    context.scriptBuffer = (u_int8_t *)scriptBuffer;
+    context.bufferLength = bufferLength;
+    context.callbacks = callbacks;
+    
+    // The first bytes are always two instances of MaPLMemoryAddress that describe the table sizes.
+    // The entire script execution happens synchronously inside this function, so these tables can be stack allocated.
+    MaPLMemoryAddress primitiveTableSize = *((MaPLMemoryAddress *)context.scriptBuffer);
+    MaPLMemoryAddress stringTableSize = *((MaPLMemoryAddress *)context.scriptBuffer+sizeof(MaPLMemoryAddress));
+    u_int8_t primitiveTable[primitiveTableSize];
+    char *stringTable[stringTableSize];
+    memset(stringTable, 0, sizeof(char *)*stringTableSize);
+    context.primitiveTable = primitiveTable;
+    context.stringTable = stringTable;
+    context.cursorPosition = sizeof(MaPLMemoryAddress)*2;
+    
     // TODO: Execute script.
     // TODO: Here and in compiler assert the byte sizes of all types ( https://stackoverflow.com/a/18511691 ).
+    
+    // Free any remaining allocated strings.
+    for(MaPLMemoryAddress i = 0; i < stringTableSize; i++) {
+        freeTaggedString(stringTable[i]);
+    }
 }

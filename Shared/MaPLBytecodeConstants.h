@@ -259,27 +259,29 @@ enum MaPLInstruction : u_int8_t {
     MaPLInstruction_conditional = 216,
     MaPLInstruction_cursor_move_forward = 217,
     MaPLInstruction_cursor_move_back = 218,
-    MaPLInstruction_no_op = 219,
-    MaPLInstruction_program_exit = 220,
+    MaPLInstruction_program_exit = 219,
 
     // METADATA
-    MaPLInstruction_metadata = 221,
-    
-    // CAST
-    MaPLInstruction_typecast_from_char = 222,
-    MaPLInstruction_typecast_from_int32 = 223,
-    MaPLInstruction_typecast_from_int64 = 224,
-    MaPLInstruction_typecast_from_uint32 = 225,
-    MaPLInstruction_typecast_from_uint64 = 226,
-    MaPLInstruction_typecast_from_float32 = 227,
-    MaPLInstruction_typecast_from_float64 = 228,
-    MaPLInstruction_typecast_from_boolean = 229,
-    MaPLInstruction_typecast_from_string = 230,
+    MaPLInstruction_metadata = 220,
 
     // DEBUGGING
-    MaPLInstruction_debug_line = 231,
-    MaPLInstruction_debug_update_variable = 232,
-    MaPLInstruction_debug_delete_variable = 233,
+    MaPLInstruction_debug_line = 221,
+    MaPLInstruction_debug_update_variable = 222,
+    MaPLInstruction_debug_delete_variable = 223,
+    
+    // NO-OP
+    MaPLInstruction_no_op = 224,
+    
+    // CAST
+    MaPLInstruction_typecast_from_char = 225,
+    MaPLInstruction_typecast_from_int32 = 226,
+    MaPLInstruction_typecast_from_int64 = 227,
+    MaPLInstruction_typecast_from_uint32 = 228,
+    MaPLInstruction_typecast_from_uint64 = 229,
+    MaPLInstruction_typecast_from_float32 = 230,
+    MaPLInstruction_typecast_from_float64 = 231,
+    MaPLInstruction_typecast_from_boolean = 232,
+    MaPLInstruction_typecast_from_string = 233,
     
     // ERROR CHECKING
     MaPLInstruction_error = 234,
