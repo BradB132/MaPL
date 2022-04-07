@@ -874,16 +874,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             logError(expression->type()->start, "Cannot cast primitive "+descriptorForType(expressionType)+" type to pointer type "+descriptorForType(castType)+".");
                             break;
                         }
-                        if (expressionType.primitiveType == MaPLPrimitiveType_Pointer) {
-                            // Strings are the only primitive that can cast from pointer (to print the memory address of pointers).
-                            if (castType.primitiveType == MaPLPrimitiveType_String) {
-                                currentBuffer->appendInstruction(MaPLInstruction_string_typecast_from_pointer);
-                                compileNode(expression->expression(0), expressionType, currentBuffer);
-                                break;
-                            } else {
-                                logError(expression->type()->start, "Pointer types, like "+descriptorForType(expressionType)+", can only be cast to other pointer types with a child/ancestor relationship or 'string'.");
-                                break;
-                            }
+                        // Strings are the only primitive that can cast from pointer (to print the memory address of pointers).
+                        if (expressionType.primitiveType == MaPLPrimitiveType_Pointer &&
+                            castType.primitiveType != MaPLPrimitiveType_String) {
+                            logError(expression->type()->start, "Pointer types, like "+descriptorForType(expressionType)+", can only be cast to other pointer types with a child/ancestor relationship or 'string'.");
+                            break;
                         }
                         if (isAmbiguousNumericType(expressionType.primitiveType)) {
                             if (isAssignable(this, expressionType, castType)) {
