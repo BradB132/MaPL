@@ -71,17 +71,17 @@ MaPLParameter MaPLBool(bool booleanValue);
  * MaPL may reference this object throughout script execution, so the object referenced by this pointer must not freed
  * before the completion of the MaPL script execution.
  */
-MaPLParameter MaPLPointer(void* pointerValue);
+MaPLParameter MaPLPointer(void *pointerValue);
 /**
  * Only passes the string pointer, and does not copy the string contents. MaPL will make no attempt to free the string.
  * MaPL may reference this string throughout script execution, so the string referenced by this pointer must not freed
  * before the completion of the MaPL script execution.
  */
-MaPLParameter MaPLStringByReference(char* stringValue);
+MaPLParameter MaPLStringByReference(char *stringValue);
 /**
  * Makes a copy of the string by invoking malloc, and assumes responsibility for freeing that copied string.
  */
-MaPLParameter MaPLStringByValue(char* stringValue);
+MaPLParameter MaPLStringByValue(char *stringValue);
 
 /**
  * A struct that holds all the function pointers which the MaPL runtime uses to interact with the host program.
@@ -95,7 +95,7 @@ typedef struct {
     void (*debugLine)(u_int16_t lineNumber);
     void (*debugVariableUpdate)(const char *variableName, MaPLParameter newValue);
     void (*debugVariableDelete)(const char *variableName);
-    void (*error)(const char* errorDescription);
+    void (*error)(void);
 } MaPLCallbacks;
 
 /**
