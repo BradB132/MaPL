@@ -164,11 +164,6 @@ std::string descriptorForSymbol(const std::string &typeName,
                                 bool hasVariadicParams);
 
 /**
- * @return The instruction byte that indicates a typecast from the corresponding primitive type.
- */
-MaPLInstruction typecastFromInstructionForPrimitive(MaPLPrimitiveType type);
-
-/**
  * @return The instruction byte that indicates a typecast to the corresponding primitive type.
  */
 MaPLInstruction typecastToInstructionForPrimitive(MaPLPrimitiveType type);

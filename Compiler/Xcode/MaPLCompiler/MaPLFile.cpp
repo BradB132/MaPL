@@ -894,14 +894,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             }
                             break;
                         }
-                        MaPLInstruction castFrom = typecastFromInstructionForPrimitive(expressionType.primitiveType);
-                        MaPLInstruction castTo = typecastToInstructionForPrimitive(castType.primitiveType);
-                        if (!castTo || !castFrom) {
-                            logError(expression->type()->start, "Unable to cast from type "+descriptorForType(expressionType)+" to "+descriptorForType(castType)+".");
-                            break;
-                        }
-                        currentBuffer->appendInstruction(castTo);
-                        currentBuffer->appendInstruction(castFrom);
+                        currentBuffer->appendInstruction(typecastToInstructionForPrimitive(castType.primitiveType));
                         compileNode(expression->expression(0), expressionType, currentBuffer);
                     }
                         break;

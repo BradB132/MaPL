@@ -223,21 +223,6 @@ std::string descriptorForSymbol(const std::string &typeName,
     return formattedName;
 }
 
-MaPLInstruction typecastFromInstructionForPrimitive(MaPLPrimitiveType type) {
-    switch (type) {
-        case MaPLPrimitiveType_Char: return MaPLInstruction_typecast_from_char;
-        case MaPLPrimitiveType_Int32: return MaPLInstruction_typecast_from_int32;
-        case MaPLPrimitiveType_Int64: return MaPLInstruction_typecast_from_int64;
-        case MaPLPrimitiveType_UInt32: return MaPLInstruction_typecast_from_uint32;
-        case MaPLPrimitiveType_UInt64: return MaPLInstruction_typecast_from_uint64;
-        case MaPLPrimitiveType_Float32: return MaPLInstruction_typecast_from_float32;
-        case MaPLPrimitiveType_Float64: return MaPLInstruction_typecast_from_float64;
-        case MaPLPrimitiveType_Boolean: return MaPLInstruction_typecast_from_boolean;
-        case MaPLPrimitiveType_String: return MaPLInstruction_typecast_from_string;
-        default: return MaPLInstruction_error;
-    }
-}
-
 MaPLInstruction typecastToInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
         case MaPLPrimitiveType_Char: return MaPLInstruction_char_typecast;
