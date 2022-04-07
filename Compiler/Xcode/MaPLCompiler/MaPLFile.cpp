@@ -203,7 +203,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     typeName == "float32" ||
                     typeName == "float64" ||
                     typeName == "bool" ||
-                    typeName == "string") {
+                    typeName == "string" ||
+                    typeName == "void") {
                     logError(identifier->start, "Type name conflicts with a primitive type.");
                 }
             }
