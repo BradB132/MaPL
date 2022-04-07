@@ -147,10 +147,90 @@ MaPLMemoryAddress readMemoryAddress(MaPLExecutionContext *context) {
     return address;
 }
 
+MaPLSymbol readSymbol(MaPLExecutionContext *context) {
+    MaPLSymbol symbol = *((MaPLSymbol *)(context->scriptBuffer+context->cursorPosition));
+    context->cursorPosition += sizeof(MaPLSymbol);
+    return symbol;
+}
+
 const char *readString(MaPLExecutionContext *context) {
     const char *string = (const char *)(context->scriptBuffer+context->cursorPosition);
     context->cursorPosition += strlen(string)+1;
     return string;
+}
+
+MaPLParameter readParameter(MaPLExecutionContext *context) {
+    switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
+        case MaPLDataType_char:
+            return MaPLChar(evaluateChar(context));
+        case MaPLDataType_int32:
+            return MaPLInt32(evaluateInt32(context));
+        case MaPLDataType_int64:
+            return MaPLInt64(evaluateInt64(context));
+        case MaPLDataType_uint32:
+            return MaPLUint32(evaluateUint32(context));
+        case MaPLDataType_uint64:
+            return MaPLUint64(evaluateUint64(context));
+        case MaPLDataType_float32:
+            return MaPLFloat32(evaluateFloat32(context));
+        case MaPLDataType_float64:
+            return MaPLFloat64(evaluateFloat64(context));
+        case MaPLDataType_string:
+            return MaPLStringByReference(evaluateString(context));
+        case MaPLDataType_boolean:
+            return MaPLBool(evaluateBool(context));
+        case MaPLDataType_pointer:
+            return MaPLPointer(evaluatePointer(context));
+        default:
+            context->executionState = MaPLExecutionState_error;
+            return MaPLUninitialized();
+    }
+}
+
+MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
+    // This function assumes that we've already advanced past the initial "function_invocation" byte.
+    const void *invokedOnPointer = NULL;
+    if (context->scriptBuffer[context->cursorPosition] == MaPLInstruction_no_op) {
+        // This function is not invoked on another pointer, it's a global call.
+        context->cursorPosition++;
+    } else {
+        // TODO: Evaluate the prefix expression.
+    }
+    
+    MaPLSymbol symbol = readSymbol(context);
+ 
+    // Create the list of parameters.
+    MaPLParameterCount paramCount = *((MaPLParameterCount *)(context->scriptBuffer+context->cursorPosition));
+    context->cursorPosition += sizeof(MaPLParameterCount);
+    MaPLParameter functionParams[paramCount];
+    char *taggedStringParams[paramCount];
+    memset(taggedStringParams, 0, sizeof(taggedStringParams));
+    for (MaPLParameterCount i = 0; i < paramCount; i++) {
+        functionParams[i] = readParameter(context);
+        if (functionParams[i].dataType == MaPLDataType_string) {
+            // Untag the string, store the tagged pointer for later release.
+            taggedStringParams[i] = (char *)functionParams[i].stringValue;
+            functionParams[i].stringValue = untaggedString(functionParams[i].stringValue);
+        }
+    }
+    
+    // Call the function.
+    MaPLParameter returnValue = MaPLUninitialized();
+    if (context->executionState == MaPLExecutionState_continue &&
+        !context->skipFunctionCalls &&
+        context->callbacks->invokeFunction) {
+        returnValue = context->callbacks->invokeFunction(invokedOnPointer,
+                                                         symbol,
+                                                         functionParams,
+                                                         paramCount);
+    }
+    
+    // Clean up string params.
+    for (MaPLParameterCount i = 0; i < paramCount; i++) {
+        freeTaggedString(taggedStringParams[i]);
+    }
+    
+    return returnValue;
 }
 
 u_int8_t evaluateChar(MaPLExecutionContext *context) {
@@ -410,7 +490,7 @@ void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const M
     MaPLMemoryAddress stringTableSize = *((MaPLMemoryAddress *)context.scriptBuffer+sizeof(MaPLMemoryAddress));
     u_int8_t primitiveTable[primitiveTableSize];
     char *stringTable[stringTableSize];
-    memset(stringTable, 0, sizeof(char *)*stringTableSize);
+    memset(stringTable, 0, sizeof(stringTable));
     context.primitiveTable = primitiveTable;
     context.stringTable = stringTable;
     context.cursorPosition = sizeof(MaPLMemoryAddress)*2;
