@@ -1367,6 +1367,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
 MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *expression,
                                            MaPLParser::ObjectExpressionContext *invokedOnExpression,
                                            MaPLBuffer *currentBuffer) {
+    // TODO: Object expressions don't currently contain null coalescing or ternary conditional. This should be fixed.
     if (expression->keyToken) {
         switch (expression->keyToken->getType()) {
             case MaPLParser::OBJECT_TO_MEMBER:

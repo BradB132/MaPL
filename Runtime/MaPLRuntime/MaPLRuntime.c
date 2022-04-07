@@ -24,7 +24,7 @@ typedef struct {
     u_int8_t *primitiveTable;
     char **stringTable;
     const MaPLCallbacks *callbacks;
-    bool skipFunctionCalls;
+    bool skipInvocations;
     MaPLExecutionState executionState;
 } MaPLExecutionContext;
 
@@ -176,7 +176,7 @@ const char *readString(MaPLExecutionContext *context) {
 }
 
 // Returned string parameters have a reference count of +1. You need to decrement when done using them.
-MaPLParameter readParameter(MaPLExecutionContext *context) {
+MaPLParameter evaluateParameter(MaPLExecutionContext *context) {
     switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
         case MaPLDataType_char:
             return MaPLChar(evaluateChar(context));
@@ -211,7 +211,7 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
         // This function is not invoked on another pointer, it's a global call.
         context->cursorPosition++;
     } else {
-        // TODO: Evaluate the prefix expression.
+        invokedOnPointer = evaluatePointer(context);
     }
     
     MaPLSymbol symbol = readSymbol(context);
@@ -223,18 +223,18 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     char *taggedStringParams[paramCount];
     memset(taggedStringParams, 0, sizeof(taggedStringParams));
     for (MaPLParameterCount i = 0; i < paramCount; i++) {
-        functionParams[i] = readParameter(context);
+        functionParams[i] = evaluateParameter(context);
         if (functionParams[i].dataType == MaPLDataType_string) {
-            // Untag the string, store the tagged pointer for later release.
+            // Untag the string and store the tagged pointer for later release.
             taggedStringParams[i] = (char *)functionParams[i].stringValue;
             functionParams[i].stringValue = untagString((char *)functionParams[i].stringValue);
         }
     }
     
-    // Call the function.
+    // Invoke the function.
     MaPLParameter returnValue = MaPLUninitialized();
     if (context->executionState == MaPLExecutionState_continue &&
-        !context->skipFunctionCalls &&
+        !context->skipInvocations &&
         context->callbacks->invokeFunction) {
         returnValue = context->callbacks->invokeFunction(invokedOnPointer,
                                                          symbol,
@@ -246,6 +246,35 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     for (MaPLParameterCount i = 0; i < paramCount; i++) {
         decrementReferenceCount(taggedStringParams[i]);
     }
+    
+    return returnValue;
+}
+
+MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
+    // This function assumes that we've already advanced past the initial "subscript_invocation" byte.
+    const void *invokedOnPointer = evaluatePointer(context);
+    if (!invokedOnPointer) {
+        context->executionState = MaPLExecutionState_error;
+    }
+    
+    MaPLParameter subscriptIndex = evaluateParameter(context);
+    char *taggedIndex = NULL;
+    if (subscriptIndex.dataType == MaPLDataType_string) {
+        // Untag the string and store the tagged pointer for later release.
+        taggedIndex = (char *)subscriptIndex.stringValue;
+        subscriptIndex.stringValue = untagString((char *)subscriptIndex.stringValue);
+    }
+    
+    // Invoke the subscript.
+    MaPLParameter returnValue = MaPLUninitialized();
+    if (context->executionState == MaPLExecutionState_continue &&
+        !context->skipInvocations &&
+        context->callbacks->invokeSubscript) {
+        returnValue = context->callbacks->invokeSubscript(invokedOnPointer, subscriptIndex);
+    }
+    
+    // Clean up string index.
+    decrementReferenceCount(taggedIndex);
     
     return returnValue;
 }
@@ -281,12 +310,32 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
             return evaluateChar(context) << evaluateChar(context);
         case MaPLInstruction_char_bitwise_shift_right:
             return evaluateChar(context) >> evaluateChar(context);
-        case MaPLInstruction_char_function_invocation:
-            // TODO: Factor this out to another function. Check the result to make sure it's Char.
-            break;
-        case MaPLInstruction_char_subscript_invocation:
-            // TODO: Factor this out to another function. Check the result to make sure it's Char.
-            break;
+        case MaPLInstruction_char_function_invocation: {
+            MaPLParameter returnedValue = evaluateFunctionInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_char) {
+                if (!context->skipInvocations) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        decrementReferenceCount((char *)returnedValue.stringValue);
+                    }
+                }
+                return 0;
+            }
+            return returnedValue.charValue;
+        }
+        case MaPLInstruction_char_subscript_invocation: {
+            MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_char) {
+                if (!context->skipInvocations) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        decrementReferenceCount((char *)returnedValue.stringValue);
+                    }
+                }
+                return 0;
+            }
+            return returnedValue.charValue;
+        }
         case MaPLInstruction_char_ternary_conditional: {
             bool conditional = evaluateBool(context);
             u_int8_t char1 = evaluateChar(context);
