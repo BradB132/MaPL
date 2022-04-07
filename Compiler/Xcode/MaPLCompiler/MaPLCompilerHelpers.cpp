@@ -365,7 +365,6 @@ MaPLInstruction functionInvocationInstructionForPrimitive(MaPLPrimitiveType type
         case MaPLPrimitiveType_String: return MaPLInstruction_string_function_invocation;
         case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_function_invocation;
         case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_function_invocation;
-        case MaPLPrimitiveType_Void: return MaPLInstruction_void_function_invocation;
         default: return MaPLInstruction_error;
     }
 }
@@ -382,7 +381,6 @@ MaPLInstruction subscriptInvocationInstructionForPrimitive(MaPLPrimitiveType typ
         case MaPLPrimitiveType_String: return MaPLInstruction_string_subscript_invocation;
         case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_subscript_invocation;
         case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_subscript_invocation;
-        case MaPLPrimitiveType_Void: return MaPLInstruction_void_subscript_invocation;
         default: return MaPLInstruction_error;
     }
 }
@@ -1353,6 +1351,17 @@ bool isInsideLoopScope(antlr4::tree::ParseTree *node) {
         node = node->parent;
     }
     return false;
+}
+
+bool isTerminalImperativeObjectExpression(MaPLParser::ObjectExpressionContext *objectExpression) {
+    MaPLParser::ObjectExpressionContext *parentObjectExpression = dynamic_cast<MaPLParser::ObjectExpressionContext *>(objectExpression->parent);
+    if (parentObjectExpression && parentObjectExpression->keyToken->getType() == MaPLParser::OBJECT_TO_MEMBER) {
+        if (objectExpression != parentObjectExpression->objectExpression(1)) {
+            return false;
+        }
+        objectExpression = parentObjectExpression;
+    }
+    return dynamic_cast<MaPLParser::ImperativeStatementContext *>(objectExpression->parent) != NULL;
 }
 
 MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, const std::string &type, MaPLParser::ApiDeclarationContext *excludingType) {

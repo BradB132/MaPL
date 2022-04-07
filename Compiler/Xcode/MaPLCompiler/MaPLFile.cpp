@@ -1499,7 +1499,12 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 }
                 
                 // Overwrite the placeholder with the instruction that matches the return value.
-                MaPLInstruction functionInvocationInstruction = functionInvocationInstructionForPrimitive(returnType.primitiveType);
+                MaPLInstruction functionInvocationInstruction;
+                if (isTerminalImperativeObjectExpression(expression)) {
+                    functionInvocationInstruction = MaPLInstruction_unused_return_function_invocation;
+                } else {
+                    functionInvocationInstruction = functionInvocationInstructionForPrimitive(returnType.primitiveType);
+                }
                 currentBuffer->overwriteBytes(&functionInvocationInstruction, sizeof(functionInvocationInstruction), instructionPosition);
                 
                 return returnType;

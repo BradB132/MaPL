@@ -339,6 +339,14 @@ std::map<std::string, MaPLSymbol> symbolTableForFiles(const std::vector<MaPLFile
 bool isInsideLoopScope(antlr4::tree::ParseTree *node);
 
 /**
+ * If an object expression is the last expression in a chain of object expressions, and that chain comprises an imperative expression,
+ * then the runtime can safely disregard the return value of the chain because the function is invoked, but the value is never read.
+ *
+ * @return @c true if @c objectExpression is a terminal imperative object expression.
+ */
+bool isTerminalImperativeObjectExpression(MaPLParser::ObjectExpressionContext *objectExpression);
+
+/**
  * @return A @c MaPLType as described by a type node in the parse tree.
  */
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);

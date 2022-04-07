@@ -116,10 +116,7 @@ const char *readString(MaPLExecutionContext *context) {
 
 bool evaluateStatement(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_void_function_invocation:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_void_subscript_invocation:
+        case MaPLInstruction_unused_return_function_invocation:
             // TODO: Implement this.
             break;
         case MaPLInstruction_char_assign:
