@@ -104,14 +104,18 @@ std::vector<MaPLFile *> MaPLFile::getDependencies() {
 }
 
 MaPLBuffer *MaPLFile::getBytecode() {
+    return _bytecode;
+}
+
+void MaPLFile::compileIfNeeded() {
     if (_bytecode) {
-        return _bytecode;
+        return;
     }
     if (!parseRawScript()) {
-        return NULL;
+        return;
     }
     if(findInheritanceCycle(this)) {
-        return NULL;
+        return;
     }
     
     // Check the dependency graph for duplicate includes of the same file.
@@ -120,13 +124,14 @@ MaPLBuffer *MaPLFile::getBytecode() {
         logError(NULL, "File at path '"+normalizedPath.string()+"' exists more than once in the dependency graph.");
     }
     if (duplicates.size() > 0) {
-        return NULL;
+        return;
     }
     
     _bytecode = new MaPLBuffer(this);
     
     // Concatenate all preceding bytecode and variables from dependencies.
     for(MaPLFile *file : _dependencies) {
+        file->compileIfNeeded();
         MaPLBuffer *dependencyBytecode = file->getBytecode();
         if (dependencyBytecode) {
             _bytecode->appendBuffer(dependencyBytecode,
@@ -144,8 +149,6 @@ MaPLBuffer *MaPLFile::getBytecode() {
     
     // Compile the bytecode from this file.
     compileChildNodes(_program, { MaPLPrimitiveType_Uninitialized }, _bytecode);
-    
-    return _bytecode;
 }
 
 MaPLVariableStack *MaPLFile::getVariableStack() {

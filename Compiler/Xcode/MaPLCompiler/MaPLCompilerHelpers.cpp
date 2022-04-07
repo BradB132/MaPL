@@ -27,11 +27,12 @@ MaPLCompileResult compileMaPL(const std::vector<std::filesystem::path> &scriptPa
         }
         MaPLFile *file = fileCache.fileForNormalizedPath(path.lexically_normal());
         file->setOptions(options);
+        file->compileIfNeeded();
         files.push_back(file);
     }
     
-    // Check for errors.
-    for (MaPLFile *file : files) {
+    // Check for errors, not just in the listed files, but in all included dependent files.
+    for (const auto&[path, file] : fileCache.getFiles()) {
         std::vector<std::string> errors = file->getErrors();
         compileResult.errorMessages.insert(compileResult.errorMessages.end(), errors.begin(), errors.end());
     }
@@ -47,7 +48,7 @@ MaPLCompileResult compileMaPL(const std::vector<std::filesystem::path> &scriptPa
     }
     compileResult.symbolTable += "};\n";
     
-    // Add the bytecode from each file to the result.
+    // Put the finishing touches on the bytecode and add each one to the result.
     for (MaPLFile *file : files) {
         MaPLBuffer *buffer = file->getBytecode();
         buffer->resolveSymbolsWithTable(symbolTable);

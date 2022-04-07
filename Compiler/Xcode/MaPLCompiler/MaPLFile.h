@@ -38,12 +38,13 @@ public:
     ~MaPLFile();
     
     /**
-     * @return The bytecode representation of the script in this file. This recusrively includes bytecode from dependent files. Function symbols are not initially filled in. NULL if error.
+     * @return The bytecode representation of the script in this file. This recursively includes bytecode from dependent files.
+     * Function symbols are not initially filled in. NULL if accessed before compilation.
      */
     MaPLBuffer *getBytecode();
     
     /**
-     * @return The variable stack containing all top-level variables declared in this file. This recusrively includes variables from dependent files. NULL if error.
+     * @return The variable stack containing all top-level variables declared in this file. This recusrively includes variables from dependent files.
      */
     MaPLVariableStack *getVariableStack();
     
@@ -73,10 +74,14 @@ public:
     std::vector<std::string> getErrors();
     
     /**
-     * Mutator for this file's options. Options can change the way that the bytecode is compiled, but this
-     * must be assigned before compilation is triggered by accessing the bytecode buffer or error list.
+     * Mutator for this file's options. To take effect, this must be assigned before compilation.
      */
     void setOptions(const MaPLCompileOptions &options);
+    
+    /**
+     * Performs the compilation of the script for this file.
+     */
+    void compileIfNeeded();
     
 private:
     
