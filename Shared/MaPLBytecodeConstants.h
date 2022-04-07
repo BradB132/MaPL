@@ -7,12 +7,11 @@
 #ifndef MaPLBytecodeConstants_h
 #define MaPLBytecodeConstants_h
 
+#include "MaPLTypedefs.h"
+
 // Byte sizes for MaPL bytecode.
-typedef u_int8_t MaPLParameterCount;
 typedef u_int16_t MaPLMemoryAddress;
 typedef u_int16_t MaPLCursorMove;
-typedef u_int16_t MaPLSymbol;
-typedef u_int16_t MaPLLineNumber;
 
 // Bytecodes are sorted by return type.
 enum MaPLInstruction : u_int8_t {

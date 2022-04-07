@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "MaPLTypedefs.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -87,12 +89,12 @@ MaPLParameter MaPLStringByValue(char *stringValue);
  * A struct that holds all the function pointers which the MaPL runtime uses to interact with the host program.
  */
 typedef struct {
-    MaPLParameter (*invokeFunction)(const void *calledOnObject, const char *functionName, const MaPLParameter *argv, uint32_t argc);
-    MaPLParameter (*invokeSubscript)(const void *calledOnObject, MaPLParameter index);
-    MaPLParameter (*assignSubscript)(const void *calledOnObject, MaPLParameter index, MaPLParameter assignedValue);
-    MaPLParameter (*assignProperty)(const void *calledOnObject, const char *propertyName, MaPLParameter assignedValue);
+    MaPLParameter (*invokeFunction)(const void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
+    MaPLParameter (*invokeSubscript)(const void *invokedOnPointer, MaPLParameter index);
+    MaPLParameter (*assignSubscript)(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue);
+    MaPLParameter (*assignProperty)(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue);
     void (*metadata)(const char* metadataString);
-    void (*debugLine)(u_int16_t lineNumber);
+    void (*debugLine)(MaPLLineNumber lineNumber);
     void (*debugVariableUpdate)(const char *variableName, MaPLParameter newValue);
     void (*debugVariableDelete)(const char *variableName);
     void (*error)(void);

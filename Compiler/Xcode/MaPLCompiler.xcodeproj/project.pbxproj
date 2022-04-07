@@ -18,6 +18,7 @@
 		9B7AC55227FA188F00F70849 /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */; };
 		9B7AC55527FA28B100F70849 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */; };
 		9B7AC56027FCD6A400F70849 /* MaPLBytecodeConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B7AC55E27FCD6A400F70849 /* MaPLBytecodeConstants.h */; };
+		9B7AC59727FF32CF00F70849 /* MaPLTypedefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B7AC59427FF32CF00F70849 /* MaPLTypedefs.h */; };
 		9B8839B9260FEACB00CFE16B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839B8260FEACB00CFE16B /* main.cpp */; };
 /* End PBXBuildFile section */
 
@@ -79,6 +80,7 @@
 		9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMaPLCompiler.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B7AC54827FA12E200F70849 /* MaPLCompiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLCompiler.h; sourceTree = "<group>"; };
 		9B7AC55E27FCD6A400F70849 /* MaPLBytecodeConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLBytecodeConstants.h; sourceTree = "<group>"; };
+		9B7AC59427FF32CF00F70849 /* MaPLTypedefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLTypedefs.h; sourceTree = "<group>"; };
 		9B8839B5260FEACB00CFE16B /* MaPLCompilerExecutable */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLCompilerExecutable; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B8839B8260FEACB00CFE16B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = antlrcpp.xcodeproj; path = ../ANTLR4/runtime/Cpp/runtime/antlrcpp.xcodeproj; sourceTree = "<group>"; };
@@ -118,6 +120,7 @@
 			isa = PBXGroup;
 			children = (
 				9B7AC55E27FCD6A400F70849 /* MaPLBytecodeConstants.h */,
+				9B7AC59427FF32CF00F70849 /* MaPLTypedefs.h */,
 			);
 			name = Shared;
 			path = ../../Shared;
@@ -198,6 +201,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B7AC59727FF32CF00F70849 /* MaPLTypedefs.h in Headers */,
 				9B7AC54927FA12E200F70849 /* MaPLCompiler.h in Headers */,
 				9B7AC56027FCD6A400F70849 /* MaPLBytecodeConstants.h in Headers */,
 			);

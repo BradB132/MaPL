@@ -11,6 +11,7 @@
 		9B7AC58327FD062F00F70849 /* MaPLRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B7AC58127FD062F00F70849 /* MaPLRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9B7AC58427FD062F00F70849 /* MaPLRuntime.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B7AC58227FD062F00F70849 /* MaPLRuntime.c */; };
 		9B7AC58827FD063F00F70849 /* libMaPLRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7AC57827FD05CD00F70849 /* libMaPLRuntime.a */; };
+		9B7AC59327FF321A00F70849 /* MaPLTypedefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B7AC59227FF321A00F70849 /* MaPLTypedefs.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +43,7 @@
 		9B7AC58127FD062F00F70849 /* MaPLRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLRuntime.h; sourceTree = "<group>"; };
 		9B7AC58227FD062F00F70849 /* MaPLRuntime.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = MaPLRuntime.c; sourceTree = "<group>"; };
 		9B7AC58B27FD18B700F70849 /* MaPLBytecodeConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLBytecodeConstants.h; sourceTree = "<group>"; };
+		9B7AC59227FF321A00F70849 /* MaPLTypedefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLTypedefs.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				9B7AC58B27FD18B700F70849 /* MaPLBytecodeConstants.h */,
+				9B7AC59227FF321A00F70849 /* MaPLTypedefs.h */,
 			);
 			name = Shared;
 			path = ../Shared;
@@ -115,6 +118,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B7AC59327FF321A00F70849 /* MaPLTypedefs.h in Headers */,
 				9B7AC58327FD062F00F70849 /* MaPLRuntime.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
