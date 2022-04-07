@@ -39,22 +39,38 @@ bool evaluateBool(MaPLExecutionContext *context);
 void *evaluatePointer(MaPLExecutionContext *context);
 char *evaluateString(MaPLExecutionContext *context);
 
-char *tagStringAsAllocated(const char *taggedString) {
-    return (char *)((uintptr_t)taggedString | 0x8000000000000000);
-}
-
-bool isStringAllocated(const char *taggedString) {
-    return ((uintptr_t)taggedString & 0x8000000000000000) != 0;
-}
-
-char *untaggedString(const char *taggedString) {
-    return (char *)((uintptr_t)taggedString & 0x7FFFFFFFFFFFFFFF);
-}
-
-void freeTaggedString(const char *taggedString) {
-    if (taggedString && isStringAllocated(taggedString)) {
-        free(untaggedString(taggedString));
+char *incrementReferenceCount(char *taggedString) {
+    u_int16_t referenceCount = (uintptr_t)taggedString >> 48;
+    if (!referenceCount) {
+        // This is an untagged string, don't change it.
+        return taggedString;
     }
+    referenceCount++;
+    return (char *)(((uintptr_t)taggedString & 0x0000FFFFFFFFFFFF) | (uintptr_t)referenceCount << 48);
+}
+
+char *decrementReferenceCount(char *taggedString) {
+    u_int16_t referenceCount = (uintptr_t)taggedString >> 48;
+    if (!referenceCount) {
+        // This is an untagged string, don't change it.
+        return taggedString;
+    }
+    referenceCount--;
+    taggedString = (char *)(((uintptr_t)taggedString & 0x0000FFFFFFFFFFFF) | (uintptr_t)referenceCount << 48);
+    if (!referenceCount) {
+        free(taggedString);
+        return NULL;
+    }
+    return taggedString;
+}
+
+char *tagString(char *untaggedString) {
+    // Initial tag sets the reference count at +1.
+    return (char *)((uintptr_t)untaggedString | 0x0001000000000000);
+}
+
+char *untagString(char *taggedString) {
+    return (char *)((uintptr_t)taggedString & 0x0000FFFFFFFFFFFF);
 }
 
 MaPLParameter MaPLUninitialized(void) {
@@ -117,7 +133,7 @@ MaPLParameter MaPLStringByValue(char *stringValue) {
     MaPLParameter parameter = { MaPLDataType_string };
     parameter.stringValue = malloc(strlen(stringValue)+1);
     strcpy((char *)parameter.stringValue, stringValue);
-    parameter.stringValue = tagStringAsAllocated(parameter.stringValue);
+    parameter.stringValue = tagString((char *)parameter.stringValue);
     return parameter;
 }
 
@@ -159,6 +175,7 @@ const char *readString(MaPLExecutionContext *context) {
     return string;
 }
 
+// Returned string parameters have a reference count of +1. You need to decrement when done using them.
 MaPLParameter readParameter(MaPLExecutionContext *context) {
     switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
         case MaPLDataType_char:
@@ -210,7 +227,7 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
         if (functionParams[i].dataType == MaPLDataType_string) {
             // Untag the string, store the tagged pointer for later release.
             taggedStringParams[i] = (char *)functionParams[i].stringValue;
-            functionParams[i].stringValue = untaggedString(functionParams[i].stringValue);
+            functionParams[i].stringValue = untagString((char *)functionParams[i].stringValue);
         }
     }
     
@@ -227,7 +244,7 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     
     // Clean up string params.
     for (MaPLParameterCount i = 0; i < paramCount; i++) {
-        freeTaggedString(taggedStringParams[i]);
+        decrementReferenceCount(taggedStringParams[i]);
     }
     
     return returnValue;
@@ -292,8 +309,8 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
                     return (u_int8_t)evaluateFloat64(context);
                 case MaPLDataType_string: {
                     char *taggedString = evaluateString(context);
-                    u_int8_t returnChar = (u_int8_t)atoi(untaggedString(taggedString));
-                    freeTaggedString(taggedString);
+                    u_int8_t returnChar = (u_int8_t)atoi(untagString(taggedString));
+                    decrementReferenceCount(taggedString);
                     return returnChar;
                 }
                 case MaPLDataType_boolean:
@@ -342,6 +359,7 @@ void *evaluatePointer(MaPLExecutionContext *context) {
     return NULL; // TODO: Implement this.
 }
 
+// Returned strings have a reference count of +1. You need to decrement when done using them.
 char *evaluateString(MaPLExecutionContext *context) {
     return NULL; // TODO: Implement this.
 }
@@ -504,6 +522,6 @@ void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const M
     
     // Free any remaining allocated strings.
     for(MaPLMemoryAddress i = 0; i < stringTableSize; i++) {
-        freeTaggedString(stringTable[i]);
+        decrementReferenceCount(stringTable[i]);
     }
 }
