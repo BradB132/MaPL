@@ -930,7 +930,103 @@ float evaluateFloat32(MaPLExecutionContext *context) {
 }
 
 double evaluateFloat64(MaPLExecutionContext *context) {
-    return 0; // TODO: Implement this.
+    switch(readInstruction(context)) {
+        case MaPLInstruction_float64_literal: {
+            double literal = *((double *)(context->scriptBuffer+context->cursorPosition));
+            context->cursorPosition += sizeof(double);
+            return literal;
+        }
+        case MaPLInstruction_float64_variable:
+            return *((double *)(context->primitiveTable+readMemoryAddress(context)));
+        case MaPLInstruction_float64_add:
+            return evaluateFloat64(context) + evaluateFloat64(context);
+        case MaPLInstruction_float64_subtract:
+            return evaluateFloat64(context) - evaluateFloat64(context);
+        case MaPLInstruction_float64_divide:
+            return evaluateFloat64(context) / evaluateFloat64(context);
+        case MaPLInstruction_float64_multiply:
+            return evaluateFloat64(context) * evaluateFloat64(context);
+        case MaPLInstruction_float64_modulo: {
+            double d1 = evaluateFloat64(context);
+            double d2 = evaluateFloat64(context);
+            return fmod(d1, d2);
+        }
+        case MaPLInstruction_float64_numeric_negation:
+            return -evaluateFloat64(context);
+        case MaPLInstruction_float64_function_invocation: {
+            MaPLParameter returnedValue = evaluateFunctionInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_float64) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
+                    }
+                }
+                return 0.0;
+            }
+            return returnedValue.float64Value;
+        }
+        case MaPLInstruction_float64_subscript_invocation: {
+            MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_float64) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
+                    }
+                }
+                return 0.0;
+            }
+            return returnedValue.float64Value;
+        }
+        case MaPLInstruction_float64_ternary_conditional: {
+            bool previousUnusedCodepath = context->isUnusedCodepath;
+            double result;
+            if (evaluateBool(context)) {
+                result = evaluateFloat64(context);
+                context->isUnusedCodepath = true;
+                evaluateFloat64(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+            } else {
+                context->isUnusedCodepath = true;
+                evaluateFloat64(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+                result = evaluateFloat64(context);
+            }
+            return result;
+        }
+        case MaPLInstruction_float64_typecast:
+            switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
+                case MaPLDataType_char:
+                    return (double)evaluateChar(context);
+                case MaPLDataType_int32:
+                    return (double)evaluateInt32(context);
+                case MaPLDataType_int64:
+                    return (double)evaluateInt64(context);
+                case MaPLDataType_uint32:
+                    return (double)evaluateUint32(context);
+                case MaPLDataType_uint64:
+                    return (double)evaluateUint64(context);
+                case MaPLDataType_float32:
+                    return (double)evaluateFloat32(context);
+                case MaPLDataType_string: {
+                    char *taggedString = evaluateString(context);
+                    double returnDouble = atof(untagString(taggedString));
+                    freeStringIfNeeded(taggedString);
+                    return returnDouble;
+                }
+                case MaPLDataType_boolean:
+                    return evaluateBool(context) ? 1.0 : 0.0;
+                default:
+                    context->executionState = MaPLExecutionState_error;
+                    break;
+            }
+            break;
+        default:
+            context->executionState = MaPLExecutionState_error;
+            break;
+    }
+    return 0.0;
 }
 
 bool evaluateBool(MaPLExecutionContext *context) {
