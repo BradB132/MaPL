@@ -39,38 +39,55 @@ bool evaluateBool(MaPLExecutionContext *context);
 void *evaluatePointer(MaPLExecutionContext *context);
 char *evaluateString(MaPLExecutionContext *context);
 
-char *incrementReferenceCount(char *taggedString) {
-    u_int16_t referenceCount = (uintptr_t)taggedString >> 48;
-    if (!referenceCount) {
-        // This is an untagged string, don't change it.
-        return taggedString;
-    }
-    referenceCount++;
-    return (char *)(((uintptr_t)taggedString & 0x0000FFFFFFFFFFFF) | (uintptr_t)referenceCount << 48);
+// Memory management scheme for MaPL strings:
+// The higher-order bits in 64-bit pointers are unused, so the MaPL runtime
+// "tags" these pointers to store metadata about the usage of the string.
+// Two flags are stored:
+// 1- Allocated - Indicates when the string has been malloc'd and needs to be freed when no longer used.
+// 2- Stored - Indicates if the string is stored in the string table.
+//
+// Example #1:
+// string s = ""; -> Both the Lvalue "s" and the literal Rvalue are neither allocated nor stored.
+//   If there was an allocated string previously stored in "s", it will be freed.
+//
+// Example #2:
+// string s1 = mallocString(); -> Rvalue is allocated but not stored. Lvalue is the same memory address tagged as allocated and stored.
+// string s2 = s1; -> Rvalue is stored but not allocated. Lvalue is allocated and stored.
+//   Tagged pointers are not capable of a more complex memory management scheme like reference counting.
+//   In the edge case of assigning the same malloc'd string to multiple variables, the string must be copied.
+//
+// Example #3:
+// string s = mallocString(); -> Same as example #2.
+// s = s;
+//   In the edge case of assigning a stored string to itself, this should be a no-op.
+char *tagStringAsAllocated(char *string) {
+    return (char *)((uintptr_t)string | 0x8000000000000000);
 }
 
-char *decrementReferenceCount(char *taggedString) {
-    u_int16_t referenceCount = (uintptr_t)taggedString >> 48;
-    if (!referenceCount) {
-        // This is an untagged string, don't change it.
-        return taggedString;
-    }
-    referenceCount--;
-    taggedString = (char *)(((uintptr_t)taggedString & 0x0000FFFFFFFFFFFF) | (uintptr_t)referenceCount << 48);
-    if (!referenceCount) {
-        free(taggedString);
-        return NULL;
-    }
-    return taggedString;
+char *tagStringAsNotAllocated(char *string) {
+    return (char *)((uintptr_t)string & 0x7FFFFFFFFFFFFFFF);
 }
 
-char *tagString(char *untaggedString) {
-    // Initial tag sets the reference count at +1.
-    return (char *)((uintptr_t)untaggedString | 0x0001000000000000);
+bool isStringAllocated(const char *taggedString) {
+    return ((uintptr_t)taggedString & 0x8000000000000000) != 0;
 }
 
-char *untagString(char *taggedString) {
-    return (char *)((uintptr_t)taggedString & 0x0000FFFFFFFFFFFF);
+char *tagStringAsStored(char *string) {
+    return (char *)((uintptr_t)string | 0x4000000000000000);
+}
+
+bool isStringStored(const char *taggedString) {
+    return ((uintptr_t)taggedString & 0x4000000000000000) != 0;
+}
+
+char *untagString(char *string) {
+    return (char *)((uintptr_t)string & 0x3FFFFFFFFFFFFFFF);
+}
+
+void freeStringIfNeeded(char *string) {
+    if (isStringAllocated(string)) {
+        free(untagString(string));
+    }
 }
 
 MaPLParameter MaPLUninitialized(void) {
@@ -133,7 +150,7 @@ MaPLParameter MaPLStringByValue(char *stringValue) {
     MaPLParameter parameter = { MaPLDataType_string };
     parameter.stringValue = malloc(strlen(stringValue)+1);
     strcpy((char *)parameter.stringValue, stringValue);
-    parameter.stringValue = tagString((char *)parameter.stringValue);
+    parameter.stringValue = tagStringAsAllocated((char *)parameter.stringValue);
     return parameter;
 }
 
@@ -244,7 +261,7 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     
     // Clean up string params.
     for (MaPLParameterCount i = 0; i < paramCount; i++) {
-        decrementReferenceCount(taggedStringParams[i]);
+        freeStringIfNeeded(taggedStringParams[i]);
     }
     
     return returnValue;
@@ -274,7 +291,7 @@ MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
     }
     
     // Clean up string index.
-    decrementReferenceCount(taggedIndex);
+    freeStringIfNeeded(taggedIndex);
     
     return returnValue;
 }
@@ -316,7 +333,7 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
                 if (!context->skipInvocations) {
                     context->executionState = MaPLExecutionState_error;
                     if (returnedValue.dataType == MaPLDataType_string) {
-                        decrementReferenceCount((char *)returnedValue.stringValue);
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
                     }
                 }
                 return 0;
@@ -329,7 +346,7 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
                 if (!context->skipInvocations) {
                     context->executionState = MaPLExecutionState_error;
                     if (returnedValue.dataType == MaPLDataType_string) {
-                        decrementReferenceCount((char *)returnedValue.stringValue);
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
                     }
                 }
                 return 0;
@@ -359,7 +376,7 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
                 case MaPLDataType_string: {
                     char *taggedString = evaluateString(context);
                     u_int8_t returnChar = (u_int8_t)atoi(untagString(taggedString));
-                    decrementReferenceCount(taggedString);
+                    freeStringIfNeeded(taggedString);
                     return returnChar;
                 }
                 case MaPLDataType_boolean:
@@ -571,6 +588,6 @@ void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const M
     
     // Free any remaining allocated strings.
     for(MaPLMemoryAddress i = 0; i < stringTableSize; i++) {
-        decrementReferenceCount(stringTable[i]);
+        freeStringIfNeeded(stringTable[i]);
     }
 }
