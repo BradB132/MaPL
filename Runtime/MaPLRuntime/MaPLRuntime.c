@@ -24,7 +24,7 @@ typedef struct {
     u_int8_t *primitiveTable;
     char **stringTable;
     const MaPLCallbacks *callbacks;
-    bool skipInvocations;
+    bool isUnusedCodepath;
     MaPLExecutionState executionState;
 } MaPLExecutionContext;
 
@@ -251,7 +251,7 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     // Invoke the function.
     MaPLParameter returnValue = MaPLUninitialized();
     if (context->executionState == MaPLExecutionState_continue &&
-        !context->skipInvocations &&
+        !context->isUnusedCodepath &&
         context->callbacks->invokeFunction) {
         returnValue = context->callbacks->invokeFunction(invokedOnPointer,
                                                          symbol,
@@ -285,7 +285,7 @@ MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
     // Invoke the subscript.
     MaPLParameter returnValue = MaPLUninitialized();
     if (context->executionState == MaPLExecutionState_continue &&
-        !context->skipInvocations &&
+        !context->isUnusedCodepath &&
         context->callbacks->invokeSubscript) {
         returnValue = context->callbacks->invokeSubscript(invokedOnPointer, subscriptIndex);
     }
@@ -330,7 +330,7 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
         case MaPLInstruction_char_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             if (returnedValue.dataType != MaPLDataType_char) {
-                if (!context->skipInvocations) {
+                if (!context->isUnusedCodepath) {
                     context->executionState = MaPLExecutionState_error;
                     if (returnedValue.dataType == MaPLDataType_string) {
                         freeStringIfNeeded((char *)returnedValue.stringValue);
@@ -343,7 +343,7 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
         case MaPLInstruction_char_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             if (returnedValue.dataType != MaPLDataType_char) {
-                if (!context->skipInvocations) {
+                if (!context->isUnusedCodepath) {
                     context->executionState = MaPLExecutionState_error;
                     if (returnedValue.dataType == MaPLDataType_string) {
                         freeStringIfNeeded((char *)returnedValue.stringValue);
@@ -354,10 +354,20 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
             return returnedValue.charValue;
         }
         case MaPLInstruction_char_ternary_conditional: {
-            bool conditional = evaluateBool(context);
-            u_int8_t char1 = evaluateChar(context);
-            u_int8_t char2 = evaluateChar(context);
-            return conditional ? char1 : char2;
+            bool previousUnusedCodepath = context->isUnusedCodepath;
+            u_int8_t result;
+            if (evaluateBool(context)) {
+                result = evaluateChar(context);
+                context->isUnusedCodepath = true;
+                evaluateChar(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+            } else {
+                context->isUnusedCodepath = true;
+                evaluateChar(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+                result = evaluateChar(context);
+            }
+            return result;
         }
         case MaPLInstruction_char_typecast:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
@@ -427,6 +437,7 @@ void *evaluatePointer(MaPLExecutionContext *context) {
 
 // Returned strings have a reference count of +1. You need to decrement when done using them.
 char *evaluateString(MaPLExecutionContext *context) {
+    // TODO: Skip any string allocations if isUnusedCodepath.
     return NULL; // TODO: Implement this.
 }
 
@@ -566,6 +577,7 @@ void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const M
     context.scriptBuffer = (u_int8_t *)scriptBuffer;
     context.bufferLength = bufferLength;
     context.callbacks = callbacks;
+    context.isUnusedCodepath = false;
     context.executionState = MaPLExecutionState_continue;
     
     // The first bytes are always two instances of MaPLMemoryAddress that describe the table sizes.
