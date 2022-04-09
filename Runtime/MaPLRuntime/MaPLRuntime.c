@@ -1317,8 +1317,147 @@ void *evaluatePointer(MaPLExecutionContext *context) {
 }
 
 char *evaluateString(MaPLExecutionContext *context) {
-    // TODO: Skip any string allocations if isUnusedCodepath.
-    return NULL; // TODO: Implement this.
+    switch(readInstruction(context)) {
+        case MaPLInstruction_string_literal: {
+            char *literal = (char *)(context->scriptBuffer+context->cursorPosition);
+            context->cursorPosition += strlen(literal)+1;
+            return literal;
+        }
+        case MaPLInstruction_string_variable:
+            return tagStringAsNotAllocated(context->stringTable[readMemoryAddress(context)]);
+        case MaPLInstruction_string_concat: {
+            char *taggedString1 = evaluateString(context);
+            char *taggedString2 = evaluateString(context);
+            if (context->isUnusedCodepath) {
+                // If this is an unused codepath, the strings that are returned are not allocated.
+                break;
+            }
+            char *untaggedString1 = untagString(taggedString1);
+            char *untaggedString2 = untagString(taggedString2);
+            char *concatString = malloc(strlen(untaggedString1)+strlen(untaggedString2)+1);
+            strcpy(concatString, untaggedString1);
+            strcat(concatString, untaggedString2);
+            freeStringIfNeeded(taggedString1);
+            freeStringIfNeeded(taggedString2);
+            return tagStringAsAllocated(concatString);
+        }
+        case MaPLInstruction_string_function_invocation: {
+            MaPLParameter returnedValue = evaluateFunctionInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_string) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                }
+                return NULL;
+            }
+            return (char *)returnedValue.stringValue;
+        }
+        case MaPLInstruction_string_subscript_invocation: {
+            MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_string) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                }
+                return NULL;
+            }
+            return returnedValue.pointerValue;
+        }
+        case MaPLInstruction_string_ternary_conditional: {
+            bool previousUnusedCodepath = context->isUnusedCodepath;
+            char *result;
+            if (evaluateBool(context)) {
+                result = evaluateString(context);
+                context->isUnusedCodepath = true;
+                evaluateString(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+            } else {
+                context->isUnusedCodepath = true;
+                evaluateString(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+                result = evaluateString(context);
+            }
+            return result;
+        }
+        case MaPLInstruction_string_typecast: {
+            if (context->isUnusedCodepath) {
+                switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
+                    case MaPLDataType_char:
+                        evaluateChar(context);
+                        break;
+                    case MaPLDataType_int32:
+                        evaluateInt32(context);
+                        break;
+                    case MaPLDataType_int64:
+                        evaluateInt64(context);
+                        break;
+                    case MaPLDataType_uint32:
+                        evaluateUint32(context);
+                        break;
+                    case MaPLDataType_uint64:
+                        evaluateUint64(context);
+                        break;
+                    case MaPLDataType_float32:
+                        evaluateFloat32(context);
+                        break;
+                    case MaPLDataType_float64:
+                        evaluateFloat64(context);
+                        break;
+                    case MaPLDataType_boolean:
+                        evaluateBool(context);
+                        break;
+                    case MaPLDataType_pointer:
+                        evaluatePointer(context);
+                        break;
+                    default:
+                        break;
+                }
+                return NULL;
+            }
+            char *returnString = malloc(24);
+            switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
+                case MaPLDataType_char:
+                    snprintf(returnString, 24, "%hhu", evaluateChar(context));
+                    break;
+                case MaPLDataType_int32:
+                    snprintf(returnString, 24, "%d", evaluateInt32(context));
+                    break;
+                case MaPLDataType_int64:
+                    snprintf(returnString, 24, "%lld", evaluateInt64(context));
+                    break;
+                case MaPLDataType_uint32:
+                    snprintf(returnString, 24, "%u", evaluateUint32(context));
+                    break;
+                case MaPLDataType_uint64:
+                    snprintf(returnString, 24, "%lld", evaluateUint64(context));
+                    break;
+                case MaPLDataType_float32:
+                    snprintf(returnString, 24, "%g", evaluateFloat32(context));
+                    break;
+                case MaPLDataType_float64:
+                    snprintf(returnString, 24, "%g", evaluateFloat64(context));
+                    break;
+                case MaPLDataType_boolean:
+                    if (evaluateBool(context)) {
+                        strcpy(returnString, "true");
+                    } else {
+                        strcpy(returnString, "false");
+                    }
+                    break;
+                case MaPLDataType_pointer: {
+                    snprintf(returnString, 24, "%#018lX", (uintptr_t)evaluatePointer(context));
+                    break;
+                }
+                default:
+                    strcpy(returnString, "");
+                    context->executionState = MaPLExecutionState_error;
+                    break;
+            }
+            return tagStringAsAllocated(returnString);
+        }
+        default:
+            context->executionState = MaPLExecutionState_error;
+            break;
+    }
+    return NULL;
 }
 
 void evaluateStatement(MaPLExecutionContext *context) {
