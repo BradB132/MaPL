@@ -1250,7 +1250,70 @@ bool evaluateBool(MaPLExecutionContext *context) {
 }
 
 void *evaluatePointer(MaPLExecutionContext *context) {
-    return NULL; // TODO: Implement this.
+    switch(readInstruction(context)) {
+        case MaPLInstruction_literal_null:
+            return NULL;
+        case MaPLInstruction_pointer_variable:
+            return *((void **)(context->primitiveTable+readMemoryAddress(context)));
+        case MaPLInstruction_pointer_null_coalescing: {
+            // If the first pointer is non-NULL, we don't need to evaluate the second one.
+            void *firstPointer = evaluatePointer(context);
+            if (!firstPointer) {
+                return evaluatePointer(context);
+            }
+            bool previousUnusedCodepath = context->isUnusedCodepath;
+            context->isUnusedCodepath = true;
+            evaluatePointer(context);
+            context->isUnusedCodepath = previousUnusedCodepath;
+            return firstPointer;
+        }
+        case MaPLInstruction_pointer_function_invocation: {
+            MaPLParameter returnedValue = evaluateFunctionInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_pointer) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
+                    }
+                }
+                return NULL;
+            }
+            return returnedValue.pointerValue;
+        }
+        case MaPLInstruction_pointer_subscript_invocation: {
+            MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_pointer) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
+                    }
+                }
+                return NULL;
+            }
+            return returnedValue.pointerValue;
+        }
+        case MaPLInstruction_pointer_ternary_conditional: {
+            bool previousUnusedCodepath = context->isUnusedCodepath;
+            void *result;
+            if (evaluateBool(context)) {
+                result = evaluatePointer(context);
+                context->isUnusedCodepath = true;
+                evaluatePointer(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+            } else {
+                context->isUnusedCodepath = true;
+                evaluatePointer(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+                result = evaluatePointer(context);
+            }
+            return result;
+        }
+        default:
+            context->executionState = MaPLExecutionState_error;
+            break;
+    }
+    return NULL;
 }
 
 char *evaluateString(MaPLExecutionContext *context) {
