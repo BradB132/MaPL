@@ -192,7 +192,6 @@ const char *readString(MaPLExecutionContext *context) {
     return string;
 }
 
-// Returned string parameters have a reference count of +1. You need to decrement when done using them.
 MaPLParameter evaluateParameter(MaPLExecutionContext *context) {
     switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
         case MaPLDataType_char:
@@ -513,7 +512,112 @@ int32_t evaluateInt32(MaPLExecutionContext *context) {
 }
 
 int64_t evaluateInt64(MaPLExecutionContext *context) {
-    return 0; // TODO: Implement this.
+    switch(readInstruction(context)) {
+        case MaPLInstruction_int64_literal: {
+            int64_t literal = *((int64_t *)(context->scriptBuffer+context->cursorPosition));
+            context->cursorPosition += sizeof(int64_t);
+            return literal;
+        }
+        case MaPLInstruction_int64_variable:
+            return *((int64_t *)(context->primitiveTable+readMemoryAddress(context)));
+        case MaPLInstruction_int64_add:
+            return evaluateInt64(context) + evaluateInt64(context);
+        case MaPLInstruction_int64_subtract:
+            return evaluateInt64(context) - evaluateInt64(context);
+        case MaPLInstruction_int64_divide:
+            return evaluateInt64(context) / evaluateInt64(context);
+        case MaPLInstruction_int64_multiply:
+            return evaluateInt64(context) * evaluateInt64(context);
+        case MaPLInstruction_int64_modulo:
+            return evaluateInt64(context) % evaluateInt64(context);
+        case MaPLInstruction_int64_numeric_negation:
+            return -evaluateInt64(context);
+        case MaPLInstruction_int64_bitwise_and:
+            return evaluateInt64(context) & evaluateInt64(context);
+        case MaPLInstruction_int64_bitwise_or:
+            return evaluateInt64(context) | evaluateInt64(context);
+        case MaPLInstruction_int64_bitwise_xor:
+            return evaluateInt64(context) ^ evaluateInt64(context);
+        case MaPLInstruction_int64_bitwise_negation:
+            return ~evaluateInt64(context);
+        case MaPLInstruction_int64_bitwise_shift_left:
+            return evaluateInt64(context) << evaluateInt64(context);
+        case MaPLInstruction_int64_bitwise_shift_right:
+            return evaluateInt64(context) >> evaluateInt64(context);
+        case MaPLInstruction_int64_function_invocation: {
+            MaPLParameter returnedValue = evaluateFunctionInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_int64) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
+                    }
+                }
+                return 0;
+            }
+            return returnedValue.int64Value;
+        }
+        case MaPLInstruction_int64_subscript_invocation: {
+            MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_int64) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
+                    }
+                }
+                return 0;
+            }
+            return returnedValue.int64Value;
+        }
+        case MaPLInstruction_int64_ternary_conditional: {
+            bool previousUnusedCodepath = context->isUnusedCodepath;
+            int64_t result;
+            if (evaluateBool(context)) {
+                result = evaluateInt64(context);
+                context->isUnusedCodepath = true;
+                evaluateInt64(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+            } else {
+                context->isUnusedCodepath = true;
+                evaluateInt64(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+                result = evaluateInt64(context);
+            }
+            return result;
+        }
+        case MaPLInstruction_int64_typecast:
+            switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
+                case MaPLDataType_char:
+                    return (int64_t)evaluateChar(context);
+                case MaPLDataType_int32:
+                    return (int64_t)evaluateInt32(context);
+                case MaPLDataType_uint32:
+                    return (int64_t)evaluateUint32(context);
+                case MaPLDataType_uint64:
+                    return (int64_t)evaluateUint64(context);
+                case MaPLDataType_float32:
+                    return (int64_t)evaluateFloat32(context);
+                case MaPLDataType_float64:
+                    return (int64_t)evaluateFloat64(context);
+                case MaPLDataType_string: {
+                    char *taggedString = evaluateString(context);
+                    int64_t returnInt = (int64_t)atol(untagString(taggedString));
+                    freeStringIfNeeded(taggedString);
+                    return returnInt;
+                }
+                case MaPLDataType_boolean:
+                    return evaluateBool(context) ? 1 : 0;
+                default:
+                    context->executionState = MaPLExecutionState_error;
+                    break;
+            }
+            break;
+        default:
+            context->executionState = MaPLExecutionState_error;
+            break;
+    }
+    return 0;
 }
 
 u_int32_t evaluateUint32(MaPLExecutionContext *context) {
@@ -540,7 +644,6 @@ void *evaluatePointer(MaPLExecutionContext *context) {
     return NULL; // TODO: Implement this.
 }
 
-// Returned strings have a reference count of +1. You need to decrement when done using them.
 char *evaluateString(MaPLExecutionContext *context) {
     // TODO: Skip any string allocations if isUnusedCodepath.
     return NULL; // TODO: Implement this.
