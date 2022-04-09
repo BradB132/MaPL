@@ -1030,7 +1030,223 @@ double evaluateFloat64(MaPLExecutionContext *context) {
 }
 
 bool evaluateBool(MaPLExecutionContext *context) {
-    return false; // TODO: Implement this.
+    switch(readInstruction(context)) {
+        case MaPLInstruction_literal_true:
+            return true;
+        case MaPLInstruction_literal_false:
+            return false;
+        case MaPLInstruction_boolean_variable: {
+            u_int8_t variableValue = *((u_int8_t *)(context->primitiveTable+readMemoryAddress(context)));
+            return variableValue != 0;
+        }
+        case MaPLInstruction_boolean_function_invocation: {
+            MaPLParameter returnedValue = evaluateFunctionInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_boolean) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
+                    }
+                }
+                return false;
+            }
+            return returnedValue.booleanValue;
+        }
+        case MaPLInstruction_boolean_subscript_invocation: {
+            MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
+            if (returnedValue.dataType != MaPLDataType_boolean) {
+                if (!context->isUnusedCodepath) {
+                    context->executionState = MaPLExecutionState_error;
+                    if (returnedValue.dataType == MaPLDataType_string) {
+                        freeStringIfNeeded((char *)returnedValue.stringValue);
+                    }
+                }
+                return false;
+            }
+            return returnedValue.booleanValue;
+        }
+        case MaPLInstruction_boolean_ternary_conditional: {
+            bool previousUnusedCodepath = context->isUnusedCodepath;
+            bool result;
+            if (evaluateBool(context)) {
+                result = evaluateBool(context);
+                context->isUnusedCodepath = true;
+                evaluateBool(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+            } else {
+                context->isUnusedCodepath = true;
+                evaluateBool(context);
+                context->isUnusedCodepath = previousUnusedCodepath;
+                result = evaluateBool(context);
+            }
+            return result;
+        }
+        case MaPLInstruction_boolean_typecast:
+            switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
+                case MaPLDataType_char:
+                    return evaluateChar(context) != 0;
+                case MaPLDataType_int32:
+                    return evaluateInt32(context) != 0;
+                case MaPLDataType_int64:
+                    return evaluateInt64(context) != 0;
+                case MaPLDataType_uint32:
+                    return evaluateUint32(context) != 0;
+                case MaPLDataType_uint64:
+                    return evaluateUint64(context) != 0;
+                case MaPLDataType_float32:
+                    return evaluateFloat32(context) != 0.0f;
+                case MaPLDataType_float64:
+                    return evaluateFloat32(context) != 0.0;
+                case MaPLDataType_string: {
+                    char *taggedString = evaluateString(context);
+                    bool returnBool = !strcmp(untagString(taggedString), "true");
+                    freeStringIfNeeded(taggedString);
+                    return returnBool;
+                }
+                default:
+                    context->executionState = MaPLExecutionState_error;
+                    break;
+            }
+            break;
+        case MaPLInstruction_logical_equality_char:
+            return evaluateChar(context) == evaluateChar(context);
+        case MaPLInstruction_logical_equality_int32:
+            return evaluateInt32(context) == evaluateInt32(context);
+        case MaPLInstruction_logical_equality_int64:
+            return evaluateInt64(context) == evaluateInt64(context);
+        case MaPLInstruction_logical_equality_uint32:
+            return evaluateUint32(context) == evaluateUint32(context);
+        case MaPLInstruction_logical_equality_uint64:
+            return evaluateUint64(context) == evaluateUint64(context);
+        case MaPLInstruction_logical_equality_float32:
+            return evaluateFloat32(context) == evaluateFloat32(context);
+        case MaPLInstruction_logical_equality_float64:
+            return evaluateFloat64(context) == evaluateFloat64(context);
+        case MaPLInstruction_logical_equality_boolean:
+            return evaluateBool(context) == evaluateBool(context);
+        case MaPLInstruction_logical_equality_string: {
+            char *taggedString1 = evaluateString(context);
+            char *taggedString2 = evaluateString(context);
+            bool returnValue = !strcmp(untagString(taggedString1), untagString(taggedString2));
+            freeStringIfNeeded(taggedString1);
+            freeStringIfNeeded(taggedString2);
+            return returnValue;
+        }
+        case MaPLInstruction_logical_equality_pointer:
+            return evaluatePointer(context) == evaluatePointer(context);
+        case MaPLInstruction_logical_inequality_char:
+            return evaluateChar(context) != evaluateChar(context);
+        case MaPLInstruction_logical_inequality_int32:
+            return evaluateInt32(context) != evaluateInt32(context);
+        case MaPLInstruction_logical_inequality_int64:
+            return evaluateInt64(context) != evaluateInt64(context);
+        case MaPLInstruction_logical_inequality_uint32:
+            return evaluateUint32(context) != evaluateUint32(context);
+        case MaPLInstruction_logical_inequality_uint64:
+            return evaluateUint64(context) != evaluateUint64(context);
+        case MaPLInstruction_logical_inequality_float32:
+            return evaluateFloat32(context) != evaluateFloat32(context);
+        case MaPLInstruction_logical_inequality_float64:
+            return evaluateFloat64(context) != evaluateFloat64(context);
+        case MaPLInstruction_logical_inequality_boolean:
+            return evaluateBool(context) != evaluateBool(context);
+        case MaPLInstruction_logical_inequality_string: {
+            char *taggedString1 = evaluateString(context);
+            char *taggedString2 = evaluateString(context);
+            bool returnValue = strcmp(untagString(taggedString1), untagString(taggedString2)) != 0;
+            freeStringIfNeeded(taggedString1);
+            freeStringIfNeeded(taggedString2);
+            return returnValue;
+        }
+        case MaPLInstruction_logical_inequality_pointer:
+            return evaluatePointer(context) != evaluatePointer(context);
+        case MaPLInstruction_logical_less_than_char:
+            return evaluateChar(context) < evaluateChar(context);
+        case MaPLInstruction_logical_less_than_int32:
+            return evaluateInt32(context) < evaluateInt32(context);
+        case MaPLInstruction_logical_less_than_int64:
+            return evaluateInt64(context) < evaluateInt64(context);
+        case MaPLInstruction_logical_less_than_uint32:
+            return evaluateUint32(context) < evaluateUint32(context);
+        case MaPLInstruction_logical_less_than_uint64:
+            return evaluateUint64(context) < evaluateUint64(context);
+        case MaPLInstruction_logical_less_than_float32:
+            return evaluateFloat32(context) < evaluateFloat32(context);
+        case MaPLInstruction_logical_less_than_float64:
+            return evaluateFloat64(context) < evaluateFloat64(context);
+        case MaPLInstruction_logical_less_than_equal_char:
+            return evaluateChar(context) <= evaluateChar(context);
+        case MaPLInstruction_logical_less_than_equal_int32:
+            return evaluateInt32(context) <= evaluateInt32(context);
+        case MaPLInstruction_logical_less_than_equal_int64:
+            return evaluateInt64(context) <= evaluateInt64(context);
+        case MaPLInstruction_logical_less_than_equal_uint32:
+            return evaluateUint32(context) <= evaluateUint32(context);
+        case MaPLInstruction_logical_less_than_equal_uint64:
+            return evaluateUint64(context) <= evaluateUint64(context);
+        case MaPLInstruction_logical_less_than_equal_float32:
+            return evaluateFloat32(context) <= evaluateFloat32(context);
+        case MaPLInstruction_logical_less_than_equal_float64:
+            return evaluateFloat64(context) <= evaluateFloat64(context);
+        case MaPLInstruction_logical_greater_than_char:
+            return evaluateChar(context) > evaluateChar(context);
+        case MaPLInstruction_logical_greater_than_int32:
+            return evaluateInt32(context) > evaluateInt32(context);
+        case MaPLInstruction_logical_greater_than_int64:
+            return evaluateInt64(context) > evaluateInt64(context);
+        case MaPLInstruction_logical_greater_than_uint32:
+            return evaluateUint32(context) > evaluateUint32(context);
+        case MaPLInstruction_logical_greater_than_uint64:
+            return evaluateUint64(context) > evaluateUint64(context);
+        case MaPLInstruction_logical_greater_than_float32:
+            return evaluateFloat32(context) > evaluateFloat32(context);
+        case MaPLInstruction_logical_greater_than_float64:
+            return evaluateFloat64(context) > evaluateFloat64(context);
+        case MaPLInstruction_logical_greater_than_equal_char:
+            return evaluateChar(context) >= evaluateChar(context);
+        case MaPLInstruction_logical_greater_than_equal_int32:
+            return evaluateInt32(context) >= evaluateInt32(context);
+        case MaPLInstruction_logical_greater_than_equal_int64:
+            return evaluateInt64(context) >= evaluateInt64(context);
+        case MaPLInstruction_logical_greater_than_equal_uint32:
+            return evaluateUint32(context) >= evaluateUint32(context);
+        case MaPLInstruction_logical_greater_than_equal_uint64:
+            return evaluateUint64(context) >= evaluateUint64(context);
+        case MaPLInstruction_logical_greater_than_equal_float32:
+            return evaluateFloat32(context) >= evaluateFloat32(context);
+        case MaPLInstruction_logical_greater_than_equal_float64:
+            return evaluateFloat64(context) >= evaluateFloat64(context);
+        case MaPLInstruction_logical_and: {
+            // If the first bool is false, we don't need to evaluate the second one.
+            bool firstBool = evaluateBool(context);
+            if (firstBool) {
+                return evaluateBool(context);
+            }
+            bool previousUnusedCodepath = context->isUnusedCodepath;
+            context->isUnusedCodepath = true;
+            evaluateBool(context);
+            context->isUnusedCodepath = previousUnusedCodepath;
+            return false;
+        }
+        case MaPLInstruction_logical_or: {
+            // If the first bool is true, we don't need to evaluate the second one.
+            bool firstBool = evaluateBool(context);
+            if (!firstBool) {
+                return evaluateBool(context);
+            }
+            bool previousUnusedCodepath = context->isUnusedCodepath;
+            context->isUnusedCodepath = true;
+            evaluateBool(context);
+            context->isUnusedCodepath = previousUnusedCodepath;
+            return true;
+        }
+        case MaPLInstruction_logical_negation:
+            return !evaluateBool(context);
+        default:
+            context->executionState = MaPLExecutionState_error;
+            break;
+    }
+    return false;
 }
 
 void *evaluatePointer(MaPLExecutionContext *context) {
