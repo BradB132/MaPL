@@ -1621,7 +1621,14 @@ void evaluateStatement(MaPLExecutionContext *context) {
                 context->executionState = MaPLExecutionState_error;
             }
             if (context->executionState == MaPLExecutionState_continue) {
+                char *taggedAssignedString = NULL;
+                if (assignedExpression.dataType == MaPLDataType_string) {
+                    // Untag the string and store the tagged pointer for later release.
+                    taggedAssignedString = (char *)assignedExpression.stringValue;
+                    assignedExpression.stringValue = untagString((char *)assignedExpression.stringValue);
+                }
                 context->callbacks->assignSubscript(invokedOnPointer, subscriptIndex, assignedExpression);
+                assignedExpression.stringValue = taggedAssignedString;
             }
             
             // Clean up strings.
@@ -1629,8 +1636,52 @@ void evaluateStatement(MaPLExecutionContext *context) {
             freeMaPLParameterIfNeeded(&assignedExpression);
         }
             break;
-        case MaPLInstruction_assign_property:
-            // TODO: Implement this.
+        case MaPLInstruction_assign_property: {
+            const void *invokedOnPointer = NULL;
+            if (context->scriptBuffer[context->cursorPosition] == MaPLInstruction_no_op) {
+                // This property is not invoked on another pointer, it's a global call.
+                context->cursorPosition++;
+            } else {
+                invokedOnPointer = evaluatePointer(context);
+            }
+            
+            MaPLSymbol symbol = readSymbol(context);
+            enum MaPLInstruction operatorAssignInstruction = readInstruction(context);
+            MaPLParameter assignedExpression = evaluateParameter(context);
+            
+            if (operatorAssignInstruction != MaPLInstruction_no_op) {
+                // This is an increment operator. Read from the property to get the initial value.
+                if (!context->callbacks->invokeFunction) {
+                    context->executionState = MaPLExecutionState_error;
+                }
+                MaPLParameter initialValue = MaPLUninitialized();
+                if (context->executionState == MaPLExecutionState_continue) {
+                    initialValue = context->callbacks->invokeFunction(invokedOnPointer, symbol, NULL, 0);
+                    MaPLParameter incrementedValue = applyOperatorAssign(context, operatorAssignInstruction, &initialValue, &assignedExpression);
+                    freeMaPLParameterIfNeeded(&initialValue);
+                    freeMaPLParameterIfNeeded(&assignedExpression);
+                    assignedExpression = incrementedValue;
+                }
+            }
+            
+            // Assign the property.
+            if (!context->callbacks->assignProperty) {
+                context->executionState = MaPLExecutionState_error;
+            }
+            if (context->executionState == MaPLExecutionState_continue) {
+                char *taggedAssignedString = NULL;
+                if (assignedExpression.dataType == MaPLDataType_string) {
+                    // Untag the string and store the tagged pointer for later release.
+                    taggedAssignedString = (char *)assignedExpression.stringValue;
+                    assignedExpression.stringValue = untagString((char *)assignedExpression.stringValue);
+                }
+                context->callbacks->assignProperty(invokedOnPointer, symbol, assignedExpression);
+                assignedExpression.stringValue = taggedAssignedString;
+            }
+            
+            // Clean up assigned expression.
+            freeMaPLParameterIfNeeded(&assignedExpression);
+        }
             break;
         case MaPLInstruction_conditional: {
             bool conditional = evaluateBool(context);
