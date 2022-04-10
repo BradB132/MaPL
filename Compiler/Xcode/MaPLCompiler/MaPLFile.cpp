@@ -382,8 +382,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (expression) {
                 currentBuffer->appendInstruction(assignmentInstructionForPrimitive(variable.type.primitiveType));
                 currentBuffer->addAnnotation(variableType.primitiveType == MaPLPrimitiveType_String ? MaPLBufferAnnotationType_AllocatedVariableIndex : MaPLBufferAnnotationType_PrimitiveVariableAddress);
-                MaPLMemoryAddress variableMemoryAddress = _variableStack->getVariable(variableName).memoryAddress;
-                currentBuffer->appendBytes(&variableMemoryAddress, sizeof(variableMemoryAddress));
+                variable.memoryAddress = _variableStack->getVariable(variableName).memoryAddress;
+                currentBuffer->appendBytes(&(variable.memoryAddress), sizeof(variable.memoryAddress));
                 compileNode(expression, variable.type, currentBuffer);
                 
                 if (_options.includeDebugBytes) {
