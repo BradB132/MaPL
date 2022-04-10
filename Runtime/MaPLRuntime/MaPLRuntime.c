@@ -84,6 +84,11 @@ void freeStringIfNeeded(char *string) {
         free(untagString(string));
     }
 }
+void freeMaPLParameterIfNeeded(MaPLParameter *parameter) {
+    if (parameter->dataType == MaPLDataType_string) {
+        freeStringIfNeeded((char *)parameter->stringValue);
+    }
+}
 
 MaPLParameter MaPLUninitialized(void) {
     return (MaPLParameter){ MaPLDataType_uninitialized };
@@ -204,6 +209,15 @@ const char *readString(MaPLExecutionContext *context) {
     const char *string = (const char *)(context->scriptBuffer+context->cursorPosition);
     context->cursorPosition += strlen(string)+1;
     return string;
+}
+
+char *concatenateStrings(const char *taggedString1, const char *taggedString2) {
+    char *untaggedString1 = untagString(taggedString1);
+    char *untaggedString2 = untagString(taggedString2);
+    char *concatString = malloc(strlen(untaggedString1)+strlen(untaggedString2)+1);
+    strcpy(concatString, untaggedString1);
+    strcat(concatString, untaggedString2);
+    return tagStringAsAllocated(concatString);
 }
 
 MaPLParameter evaluateParameter(MaPLExecutionContext *context) {
@@ -1189,14 +1203,10 @@ char *evaluateString(MaPLExecutionContext *context) {
                 // If this is an unused codepath, the strings that are returned are not allocated.
                 break;
             }
-            char *untaggedString1 = untagString(taggedString1);
-            char *untaggedString2 = untagString(taggedString2);
-            char *concatString = malloc(strlen(untaggedString1)+strlen(untaggedString2)+1);
-            strcpy(concatString, untaggedString1);
-            strcat(concatString, untaggedString2);
+            char *concatenatedString = concatenateStrings(taggedString1, taggedString2);
             freeStringIfNeeded(taggedString1);
             freeStringIfNeeded(taggedString2);
-            return tagStringAsAllocated(concatString);
+            return concatenatedString;
         }
         case MaPLInstruction_string_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
@@ -1305,6 +1315,201 @@ char *evaluateString(MaPLExecutionContext *context) {
     return NULL;
 }
 
+MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, enum MaPLInstruction operatorAssignInstruction, MaPLParameter *initialValue, MaPLParameter *incrementValue) {
+    MaPLParameter result = MaPLUninitialized();
+    if (verifyReturnValue(context, initialValue, incrementValue->dataType)) {
+        switch (operatorAssignInstruction) {
+            case MaPLInstruction_int32_add:
+                result.int32Value = initialValue->int32Value + incrementValue->int32Value;
+                break;
+            case MaPLInstruction_int32_subtract:
+                result.int32Value = initialValue->int32Value - incrementValue->int32Value;
+                break;
+            case MaPLInstruction_int32_divide:
+                result.int32Value = initialValue->int32Value / incrementValue->int32Value;
+                break;
+            case MaPLInstruction_int32_multiply:
+                result.int32Value = initialValue->int32Value * incrementValue->int32Value;
+                break;
+            case MaPLInstruction_int32_modulo:
+                result.int32Value = initialValue->int32Value % incrementValue->int32Value;
+                break;
+            case MaPLInstruction_int32_bitwise_and:
+                result.int32Value = initialValue->int32Value & incrementValue->int32Value;
+                break;
+            case MaPLInstruction_int32_bitwise_or:
+                result.int32Value = initialValue->int32Value | incrementValue->int32Value;
+                break;
+            case MaPLInstruction_int32_bitwise_xor:
+                result.int32Value = initialValue->int32Value ^ incrementValue->int32Value;
+                break;
+            case MaPLInstruction_int32_bitwise_shift_left:
+                result.int32Value = initialValue->int32Value << incrementValue->int32Value;
+                break;
+            case MaPLInstruction_int32_bitwise_shift_right:
+                result.int32Value = initialValue->int32Value >> incrementValue->int32Value;
+                break;
+            case MaPLInstruction_float32_add:
+                result.float32Value = initialValue->float32Value + incrementValue->float32Value;
+                break;
+            case MaPLInstruction_float32_subtract:
+                result.float32Value = initialValue->float32Value - incrementValue->float32Value;
+                break;
+            case MaPLInstruction_float32_divide:
+                result.float32Value = initialValue->float32Value / incrementValue->float32Value;
+                break;
+            case MaPLInstruction_float32_multiply:
+                result.float32Value = initialValue->float32Value * incrementValue->float32Value;
+                break;
+            case MaPLInstruction_float32_modulo:
+                result.float32Value = fmodf(initialValue->float32Value, incrementValue->float32Value);
+                break;
+            case MaPLInstruction_string_concat:
+                result.stringValue = concatenateStrings(initialValue->stringValue, incrementValue->stringValue);
+                break;
+            case MaPLInstruction_int64_add:
+                result.int64Value = initialValue->int64Value + incrementValue->int64Value;
+                break;
+            case MaPLInstruction_int64_subtract:
+                result.int64Value = initialValue->int64Value - incrementValue->int64Value;
+                break;
+            case MaPLInstruction_int64_divide:
+                result.int64Value = initialValue->int64Value / incrementValue->int64Value;
+                break;
+            case MaPLInstruction_int64_multiply:
+                result.int64Value = initialValue->int64Value * incrementValue->int64Value;
+                break;
+            case MaPLInstruction_int64_modulo:
+                result.int64Value = initialValue->int64Value % incrementValue->int64Value;
+                break;
+            case MaPLInstruction_int64_bitwise_and:
+                result.int64Value = initialValue->int64Value & incrementValue->int64Value;
+                break;
+            case MaPLInstruction_int64_bitwise_or:
+                result.int64Value = initialValue->int64Value | incrementValue->int64Value;
+                break;
+            case MaPLInstruction_int64_bitwise_xor:
+                result.int64Value = initialValue->int64Value ^ incrementValue->int64Value;
+                break;
+            case MaPLInstruction_int64_bitwise_shift_left:
+                result.int64Value = initialValue->int64Value << incrementValue->int64Value;
+                break;
+            case MaPLInstruction_int64_bitwise_shift_right:
+                result.int64Value = initialValue->int64Value >> incrementValue->int64Value;
+                break;
+            case MaPLInstruction_float64_add:
+                result.float64Value = initialValue->float64Value + incrementValue->float64Value;
+                break;
+            case MaPLInstruction_float64_subtract:
+                result.float64Value = initialValue->float64Value - incrementValue->float64Value;
+                break;
+            case MaPLInstruction_float64_divide:
+                result.float64Value = initialValue->float64Value / incrementValue->float64Value;
+                break;
+            case MaPLInstruction_float64_multiply:
+                result.float64Value = initialValue->float64Value * incrementValue->float64Value;
+                break;
+            case MaPLInstruction_float64_modulo:
+                result.float64Value = fmod(initialValue->float64Value, incrementValue->float64Value);
+                break;
+            case MaPLInstruction_uint32_add:
+                result.uint32Value = initialValue->uint32Value + incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint32_subtract:
+                result.uint32Value = initialValue->uint32Value - incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint32_divide:
+                result.uint32Value = initialValue->uint32Value / incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint32_multiply:
+                result.uint32Value = initialValue->uint32Value * incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint32_modulo:
+                result.uint32Value = initialValue->uint32Value % incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint32_bitwise_and:
+                result.uint32Value = initialValue->uint32Value & incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint32_bitwise_or:
+                result.uint32Value = initialValue->uint32Value | incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint32_bitwise_xor:
+                result.uint32Value = initialValue->uint32Value ^ incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint32_bitwise_shift_left:
+                result.uint32Value = initialValue->uint32Value << incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint32_bitwise_shift_right:
+                result.uint32Value = initialValue->uint32Value >> incrementValue->uint32Value;
+                break;
+            case MaPLInstruction_uint64_add:
+                result.uint64Value = initialValue->uint64Value + incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_uint64_subtract:
+                result.uint64Value = initialValue->uint64Value - incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_uint64_divide:
+                result.uint64Value = initialValue->uint64Value / incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_uint64_multiply:
+                result.uint64Value = initialValue->uint64Value * incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_uint64_modulo:
+                result.uint64Value = initialValue->uint64Value % incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_uint64_bitwise_and:
+                result.uint64Value = initialValue->uint64Value & incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_uint64_bitwise_or:
+                result.uint64Value = initialValue->uint64Value | incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_uint64_bitwise_xor:
+                result.uint64Value = initialValue->uint64Value ^ incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_uint64_bitwise_shift_left:
+                result.uint64Value = initialValue->uint64Value << incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_uint64_bitwise_shift_right:
+                result.uint64Value = initialValue->uint64Value >> incrementValue->uint64Value;
+                break;
+            case MaPLInstruction_char_add:
+                result.charValue = initialValue->charValue + incrementValue->charValue;
+                break;
+            case MaPLInstruction_char_subtract:
+                result.charValue = initialValue->charValue - incrementValue->charValue;
+                break;
+            case MaPLInstruction_char_divide:
+                result.charValue = initialValue->charValue / incrementValue->charValue;
+                break;
+            case MaPLInstruction_char_multiply:
+                result.charValue = initialValue->charValue * incrementValue->charValue;
+                break;
+            case MaPLInstruction_char_modulo:
+                result.charValue = initialValue->charValue % incrementValue->charValue;
+                break;
+            case MaPLInstruction_char_bitwise_and:
+                result.charValue = initialValue->charValue & incrementValue->charValue;
+                break;
+            case MaPLInstruction_char_bitwise_or:
+                result.charValue = initialValue->charValue | incrementValue->charValue;
+                break;
+            case MaPLInstruction_char_bitwise_xor:
+                result.charValue = initialValue->charValue ^ incrementValue->charValue;
+                break;
+            case MaPLInstruction_char_bitwise_shift_left:
+                result.charValue = initialValue->charValue << incrementValue->charValue;
+                break;
+            case MaPLInstruction_char_bitwise_shift_right:
+                result.charValue = initialValue->charValue >> incrementValue->charValue;
+                break;
+            default:
+                context->executionState = MaPLExecutionState_error;
+                break;
+        }
+    }
+    return result;
+}
+
 void evaluateStatement(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
         case MaPLInstruction_unused_return_function_invocation:
@@ -1380,6 +1585,48 @@ void evaluateStatement(MaPLExecutionContext *context) {
         }
             break;
         case MaPLInstruction_assign_subscript: {
+            const void *invokedOnPointer = evaluatePointer(context);
+            if (!invokedOnPointer) {
+                context->executionState = MaPLExecutionState_error;
+            }
+            
+            MaPLParameter subscriptIndex = evaluateParameter(context);
+            char *taggedIndex = NULL;
+            if (subscriptIndex.dataType == MaPLDataType_string) {
+                // Untag the string and store the tagged pointer for later release.
+                taggedIndex = (char *)subscriptIndex.stringValue;
+                subscriptIndex.stringValue = untagString((char *)subscriptIndex.stringValue);
+            }
+            
+            enum MaPLInstruction operatorAssignInstruction = readInstruction(context);
+            MaPLParameter assignedExpression = evaluateParameter(context);
+            
+            if (operatorAssignInstruction != MaPLInstruction_no_op) {
+                // This is an increment operator. Read from the subscript to get the initial value.
+                if (!context->callbacks->invokeSubscript) {
+                    context->executionState = MaPLExecutionState_error;
+                }
+                MaPLParameter initialValue = MaPLUninitialized();
+                if (context->executionState == MaPLExecutionState_continue) {
+                    initialValue = context->callbacks->invokeSubscript(invokedOnPointer, subscriptIndex);
+                    MaPLParameter incrementedValue = applyOperatorAssign(context, operatorAssignInstruction, &initialValue, &assignedExpression);
+                    freeMaPLParameterIfNeeded(&initialValue);
+                    freeMaPLParameterIfNeeded(&assignedExpression);
+                    assignedExpression = incrementedValue;
+                }
+            }
+            
+            // Assign the subscript.
+            if (!context->callbacks->assignSubscript) {
+                context->executionState = MaPLExecutionState_error;
+            }
+            if (context->executionState == MaPLExecutionState_continue) {
+                context->callbacks->assignSubscript(invokedOnPointer, subscriptIndex, assignedExpression);
+            }
+            
+            // Clean up strings.
+            freeStringIfNeeded(taggedIndex);
+            freeMaPLParameterIfNeeded(&assignedExpression);
         }
             break;
         case MaPLInstruction_assign_property:
