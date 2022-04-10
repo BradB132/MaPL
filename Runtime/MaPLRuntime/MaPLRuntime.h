@@ -91,8 +91,8 @@ MaPLParameter MaPLStringByValue(char *stringValue);
 typedef struct {
     MaPLParameter (*invokeFunction)(const void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     MaPLParameter (*invokeSubscript)(const void *invokedOnPointer, MaPLParameter index);
-    MaPLParameter (*assignSubscript)(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue);
-    MaPLParameter (*assignProperty)(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue);
+    void (*assignSubscript)(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue);
+    void (*assignProperty)(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue);
     void (*metadata)(const char* metadataString);
     void (*debugLine)(MaPLLineNumber lineNumber);
     void (*debugVariableUpdate)(const char *variableName, MaPLParameter newValue);
