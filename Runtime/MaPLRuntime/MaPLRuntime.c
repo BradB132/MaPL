@@ -175,6 +175,12 @@ MaPLMemoryAddress readMemoryAddress(MaPLExecutionContext *context) {
     return address;
 }
 
+MaPLCursorMove readCursorMove(MaPLExecutionContext *context) {
+    MaPLCursorMove move = *((MaPLCursorMove *)(context->scriptBuffer+context->cursorPosition));
+    context->cursorPosition += sizeof(MaPLCursorMove);
+    return move;
+}
+
 MaPLSymbol readSymbol(MaPLExecutionContext *context) {
     MaPLSymbol symbol = *((MaPLSymbol *)(context->scriptBuffer+context->cursorPosition));
     context->cursorPosition += sizeof(MaPLSymbol);
@@ -1594,14 +1600,23 @@ void evaluateStatement(MaPLExecutionContext *context) {
         case MaPLInstruction_pointer_assign_property:
             // TODO: Implement this.
             break;
-        case MaPLInstruction_conditional:
-            // TODO: Implement this.
+        case MaPLInstruction_conditional: {
+            bool conditional = evaluateBool(context);
+            MaPLCursorMove move = readCursorMove(context);
+            if (!conditional) {
+                context->cursorPosition += move;
+            }
+        }
             break;
-        case MaPLInstruction_cursor_move_forward:
-            // TODO: Implement this.
+        case MaPLInstruction_cursor_move_forward: {
+            MaPLCursorMove move = readCursorMove(context);
+            context->cursorPosition += move;
+        }
             break;
-        case MaPLInstruction_cursor_move_back:
-            // TODO: Implement this.
+        case MaPLInstruction_cursor_move_back: {
+            MaPLCursorMove move = readCursorMove(context);
+            context->cursorPosition -= move;
+        }
             break;
         case MaPLInstruction_program_exit:
             context->executionState = MaPLExecutionState_exit;

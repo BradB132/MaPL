@@ -1322,7 +1322,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // | ExpressionContext - The boolean expression at the top of the conditional.
                 // └ MaPLCursorMove - If the conditional is false, this is how many bytes to skip forward to exit the conditional.
                 //   ScopeContext - The contents of the conditional.
-                // ┌ MaPLInstruction_cursor_move_back - Signals the end of conditional contents (omitted if there's no "else").
+                // ┌ MaPLInstruction_cursor_move_forward - Signals the end of conditional contents (omitted if there's no "else").
                 // └ MaPLCursorMove - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
                 //   ConditionalElseContext - The "else" portion of the conditional (omitted if there's no "else").
                 currentBuffer->appendInstruction(MaPLInstruction_conditional);
