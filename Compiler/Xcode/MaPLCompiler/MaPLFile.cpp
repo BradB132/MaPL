@@ -1573,7 +1573,6 @@ void MaPLFile::compileDebugPopFromTopStackFrame(MaPLBuffer *currentBuffer) {
     for (const auto&[variableName, variable] : _variableStack->getTopStackFrame()) {
         currentBuffer->appendInstruction(MaPLInstruction_debug_delete_variable);
         currentBuffer->appendString(variableName);
-        currentBuffer->appendInstruction(variableInstructionForPrimitive(variable.type.primitiveType));
     }
 }
 

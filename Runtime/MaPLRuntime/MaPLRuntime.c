@@ -1613,14 +1613,28 @@ void evaluateStatement(MaPLExecutionContext *context) {
             }
         }
             break;
-        case MaPLInstruction_debug_line:
-            // TODO: Implement this.
+        case MaPLInstruction_debug_line: {
+            MaPLLineNumber lineNumber = *((MaPLLineNumber *)(context->scriptBuffer+context->cursorPosition));
+            context->cursorPosition += sizeof(MaPLLineNumber);
+            if (context->callbacks->debugLine) {
+                context->callbacks->debugLine(lineNumber);
+            }
+        }
             break;
-        case MaPLInstruction_debug_update_variable:
-            // TODO: Implement this.
+        case MaPLInstruction_debug_update_variable: {
+            const char *variableName = readString(context);
+            MaPLParameter variableValue = evaluateParameter(context);
+            if (context->callbacks->debugVariableUpdate) {
+                context->callbacks->debugVariableUpdate(variableName, variableValue);
+            }
+        }
             break;
-        case MaPLInstruction_debug_delete_variable:
-            // TODO: Implement this.
+        case MaPLInstruction_debug_delete_variable: {
+            const char *variableName = readString(context);
+            if (context->callbacks->debugVariableDelete) {
+                context->callbacks->debugVariableDelete(variableName);
+            }
+        }
             break;
         default:
             context->executionState = MaPLExecutionState_error;
