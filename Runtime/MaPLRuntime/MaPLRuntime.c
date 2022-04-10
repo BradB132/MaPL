@@ -53,7 +53,7 @@ char *evaluateString(MaPLExecutionContext *context);
 //
 // Example #2:
 // string s1 = mallocString(); -> Rvalue is allocated but not stored. Lvalue is the same memory address tagged as allocated and stored.
-// string s2 = s1; -> Rvalue is stored but not allocated. Lvalue is allocated and stored.
+// string s2 = s1; -> "s1" is stored but changed to "not allocated" when referenced as Rvalue. Lvalue is allocated and stored.
 //   Tagged pointers are not capable of a more complex memory management scheme like reference counting.
 //   In the edge case of assigning the same malloc'd string to multiple variables, the string must be copied.
 //
@@ -1463,37 +1463,76 @@ char *evaluateString(MaPLExecutionContext *context) {
 void evaluateStatement(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
         case MaPLInstruction_unused_return_function_invocation:
-            // TODO: Implement this.
+            evaluateFunctionInvocation(context);
             break;
-        case MaPLInstruction_char_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_char_assign: {
+            MaPLMemoryAddress variableAddress = readMemoryAddress(context);
+            *(u_int8_t *)(context->primitiveTable+variableAddress) = evaluateChar(context);
+        }
             break;
-        case MaPLInstruction_int32_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_int32_assign: {
+            MaPLMemoryAddress variableAddress = readMemoryAddress(context);
+            *(int32_t *)(context->primitiveTable+variableAddress) = evaluateInt32(context);
+        }
             break;
-        case MaPLInstruction_int64_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_int64_assign: {
+            MaPLMemoryAddress variableAddress = readMemoryAddress(context);
+            *(int64_t *)(context->primitiveTable+variableAddress) = evaluateInt64(context);
+        }
             break;
-        case MaPLInstruction_uint32_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_uint32_assign: {
+            MaPLMemoryAddress variableAddress = readMemoryAddress(context);
+            *(u_int32_t *)(context->primitiveTable+variableAddress) = evaluateUint32(context);
+        }
             break;
-        case MaPLInstruction_uint64_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_uint64_assign: {
+            MaPLMemoryAddress variableAddress = readMemoryAddress(context);
+            *(u_int64_t *)(context->primitiveTable+variableAddress) = evaluateUint64(context);
+        }
             break;
-        case MaPLInstruction_float32_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_float32_assign: {
+            MaPLMemoryAddress variableAddress = readMemoryAddress(context);
+            *(float *)(context->primitiveTable+variableAddress) = evaluateFloat32(context);
+        }
             break;
-        case MaPLInstruction_float64_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_float64_assign: {
+            MaPLMemoryAddress variableAddress = readMemoryAddress(context);
+            *(double *)(context->primitiveTable+variableAddress) = evaluateFloat64(context);
+        }
             break;
-        case MaPLInstruction_boolean_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_boolean_assign: {
+            MaPLMemoryAddress variableAddress = readMemoryAddress(context);
+            *(u_int8_t *)(context->primitiveTable+variableAddress) = (u_int8_t)evaluateBool(context);
+        }
             break;
-        case MaPLInstruction_string_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_string_assign: {
+            MaPLMemoryAddress stringIndex = readMemoryAddress(context);
+            char *assignedString = evaluateString(context);
+            char *existingString = context->stringTable[stringIndex];
+            if (untagString(assignedString) == untagString(existingString)) {
+                // In the edge case where a string is assigned to itself, do nothing.
+                break;
+            }
+            freeStringIfNeeded(existingString);
+            if (isStringStored(assignedString)) {
+                // In the edge case that this value is the same pointer that's stored elsewhere
+                // in the table, we need to do a copy to manage the memory correctly.
+                char *untaggedString = untagString(assignedString);
+                char *copiedAssignedString = malloc(strlen(untaggedString)+1);
+                strcpy(copiedAssignedString, untaggedString);
+                assignedString = tagStringAsAllocated(copiedAssignedString);
+            }
+            if (isStringAllocated(assignedString)) {
+                // Only allocated strings need to track stored vs not stored.
+                assignedString = tagStringAsStored(assignedString);
+            }
+            context->stringTable[stringIndex] = assignedString;
+        }
             break;
-        case MaPLInstruction_pointer_assign:
-            // TODO: Implement this.
+        case MaPLInstruction_pointer_assign: {
+            MaPLMemoryAddress variableAddress = readMemoryAddress(context);
+            *(void **)(context->primitiveTable+variableAddress) = evaluatePointer(context);
+        }
             break;
         case MaPLInstruction_char_assign_subscript:
             // TODO: Implement this.
