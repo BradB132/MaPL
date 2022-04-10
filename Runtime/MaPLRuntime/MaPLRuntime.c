@@ -276,10 +276,11 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     }
     
     // Invoke the function.
+    if (!context->callbacks->invokeFunction) {
+        context->executionState = MaPLExecutionState_error;
+    }
     MaPLParameter returnValue = MaPLUninitialized();
-    if (context->executionState == MaPLExecutionState_continue &&
-        !context->isDeadCodepath &&
-        context->callbacks->invokeFunction) {
+    if (context->executionState == MaPLExecutionState_continue && !context->isDeadCodepath) {
         returnValue = context->callbacks->invokeFunction(invokedOnPointer,
                                                          symbol,
                                                          functionParams,
@@ -310,10 +311,11 @@ MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
     }
     
     // Invoke the subscript.
+    if (!context->callbacks->invokeSubscript) {
+        context->executionState = MaPLExecutionState_error;
+    }
     MaPLParameter returnValue = MaPLUninitialized();
-    if (context->executionState == MaPLExecutionState_continue &&
-        !context->isDeadCodepath &&
-        context->callbacks->invokeSubscript) {
+    if (context->executionState == MaPLExecutionState_continue && !context->isDeadCodepath) {
         returnValue = context->callbacks->invokeSubscript(invokedOnPointer, subscriptIndex);
     }
     
