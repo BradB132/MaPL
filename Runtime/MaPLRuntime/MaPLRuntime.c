@@ -149,6 +149,19 @@ MaPLParameter MaPLStringByValue(char *stringValue) {
     return parameter;
 }
 
+bool verifyReturnValue(MaPLExecutionContext *context, MaPLParameter *returnValue, MaPLDataType expectedType) {
+    if (returnValue->dataType != expectedType) {
+        if (!context->isDeadCodepath) {
+            context->executionState = MaPLExecutionState_error;
+            if (returnValue->dataType == MaPLDataType_string) {
+                freeStringIfNeeded((char *)returnValue->stringValue);
+            }
+        }
+        return false;
+    }
+    return true;
+}
+
 MaPLDataType typeForInstruction(enum MaPLInstruction instruction) {
     if (instruction <= MaPLInstruction_int32_typecast) { return MaPLDataType_int32; }
     if (instruction <= MaPLInstruction_float32_typecast) { return MaPLDataType_float32; }
@@ -329,29 +342,11 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
             return evaluateChar(context) >> evaluateChar(context);
         case MaPLInstruction_char_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_char) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.charValue;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_char) ? returnedValue.charValue : 0;
         }
         case MaPLInstruction_char_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_char) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.charValue;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_char) ? returnedValue.charValue : 0;
         }
         case MaPLInstruction_char_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
@@ -438,29 +433,11 @@ int32_t evaluateInt32(MaPLExecutionContext *context) {
             return evaluateInt32(context) >> evaluateInt32(context);
         case MaPLInstruction_int32_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_int32) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.int32Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_int32) ? returnedValue.int32Value : 0;
         }
         case MaPLInstruction_int32_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_int32) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.int32Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_int32) ? returnedValue.int32Value : 0;
         }
         case MaPLInstruction_int32_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
@@ -547,29 +524,11 @@ int64_t evaluateInt64(MaPLExecutionContext *context) {
             return evaluateInt64(context) >> evaluateInt64(context);
         case MaPLInstruction_int64_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_int64) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.int64Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_int64) ? returnedValue.int64Value : 0;
         }
         case MaPLInstruction_int64_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_int64) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.int64Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_int64) ? returnedValue.int64Value : 0;
         }
         case MaPLInstruction_int64_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
@@ -654,29 +613,11 @@ u_int32_t evaluateUint32(MaPLExecutionContext *context) {
             return evaluateUint32(context) >> evaluateUint32(context);
         case MaPLInstruction_uint32_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_uint32) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.uint32Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_uint32) ? returnedValue.uint32Value : 0;
         }
         case MaPLInstruction_uint32_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_uint32) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.uint32Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_uint32) ? returnedValue.uint32Value : 0;
         }
         case MaPLInstruction_uint32_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
@@ -761,29 +702,11 @@ u_int64_t evaluateUint64(MaPLExecutionContext *context) {
             return evaluateUint64(context) >> evaluateUint64(context);
         case MaPLInstruction_uint64_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_uint64) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.uint64Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_uint64) ? returnedValue.uint64Value : 0;
         }
         case MaPLInstruction_uint64_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_uint64) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0;
-            }
-            return returnedValue.uint64Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_uint64) ? returnedValue.uint64Value : 0;
         }
         case MaPLInstruction_uint64_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
@@ -861,29 +784,11 @@ float evaluateFloat32(MaPLExecutionContext *context) {
             return -evaluateFloat32(context);
         case MaPLInstruction_float32_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_float32) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0.0f;
-            }
-            return returnedValue.float32Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_float32) ? returnedValue.float32Value : 0.0f;
         }
         case MaPLInstruction_float32_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_float32) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0.0f;
-            }
-            return returnedValue.float32Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_float32) ? returnedValue.float32Value : 0.0f;
         }
         case MaPLInstruction_float32_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
@@ -961,29 +866,11 @@ double evaluateFloat64(MaPLExecutionContext *context) {
             return -evaluateFloat64(context);
         case MaPLInstruction_float64_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_float64) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0.0;
-            }
-            return returnedValue.float64Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_float64) ? returnedValue.float64Value : 0.0;
         }
         case MaPLInstruction_float64_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_float64) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return 0.0;
-            }
-            return returnedValue.float64Value;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_float64) ? returnedValue.float64Value : 0.0;
         }
         case MaPLInstruction_float64_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
@@ -1047,29 +934,11 @@ bool evaluateBool(MaPLExecutionContext *context) {
         }
         case MaPLInstruction_boolean_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_boolean) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return false;
-            }
-            return returnedValue.booleanValue;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_boolean) ? returnedValue.booleanValue : false;
         }
         case MaPLInstruction_boolean_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_boolean) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return false;
-            }
-            return returnedValue.booleanValue;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_boolean) ? returnedValue.booleanValue : false;
         }
         case MaPLInstruction_boolean_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
@@ -1275,29 +1144,11 @@ void *evaluatePointer(MaPLExecutionContext *context) {
         }
         case MaPLInstruction_pointer_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_pointer) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return NULL;
-            }
-            return returnedValue.pointerValue;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_pointer) ? returnedValue.pointerValue : NULL;
         }
         case MaPLInstruction_pointer_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_pointer) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                    if (returnedValue.dataType == MaPLDataType_string) {
-                        freeStringIfNeeded((char *)returnedValue.stringValue);
-                    }
-                }
-                return NULL;
-            }
-            return returnedValue.pointerValue;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_pointer) ? returnedValue.pointerValue : NULL;
         }
         case MaPLInstruction_pointer_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
@@ -1349,23 +1200,11 @@ char *evaluateString(MaPLExecutionContext *context) {
         }
         case MaPLInstruction_string_function_invocation: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_string) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                }
-                return NULL;
-            }
-            return (char *)returnedValue.stringValue;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_string) ? (char *)returnedValue.stringValue : NULL;
         }
         case MaPLInstruction_string_subscript_invocation: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
-            if (returnedValue.dataType != MaPLDataType_string) {
-                if (!context->isDeadCodepath) {
-                    context->executionState = MaPLExecutionState_error;
-                }
-                return NULL;
-            }
-            return returnedValue.pointerValue;
+            return verifyReturnValue(context, &returnedValue, MaPLDataType_string) ? (char *)returnedValue.stringValue : NULL;
         }
         case MaPLInstruction_string_ternary_conditional: {
             bool previousUnusedCodepath = context->isDeadCodepath;
