@@ -86,17 +86,30 @@ MaPLParameter MaPLStringByReference(char *stringValue);
 MaPLParameter MaPLStringByValue(char *stringValue);
 
 /**
- * A struct that holds all the function pointers which the MaPL runtime uses to interact with the host program.
+ * A struct that holds all the function pointers which the MaPL runtime uses to interact with the host program. Error method will be invoked if required callbacks are missing.
  */
 typedef struct {
+    /// Required. Invoked whenever a MaPL script invokes a function or property.
     MaPLParameter (*invokeFunction)(const void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
+    
+    /// Required. Invoked whenever a MaPL script invokes a subscript.
     MaPLParameter (*invokeSubscript)(const void *invokedOnPointer, MaPLParameter index);
-    void (*assignSubscript)(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue);
+    
+    /// Required. Invoked whenever a MaPL script assigns to a function or property.
     void (*assignProperty)(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue);
+    
+    /// Required. Invoked whenever a MaPL script assigns to a subscript.
+    void (*assignSubscript)(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue);
+    
+    /// Optional. Required only if metadata feature is used (common for code generation / templating).
     void (*metadata)(const char* metadataString);
+    
+    /// Optional. Useful only when debugging the script. Script must be compiled with --debug flag or these callbacks will never be invoked.
     void (*debugLine)(MaPLLineNumber lineNumber);
     void (*debugVariableUpdate)(const char *variableName, MaPLParameter newValue);
     void (*debugVariableDelete)(const char *variableName);
+    
+    /// Optional. Error callback is invoked when the script has encountered an error and cannot continue. If callback is NULL, script will fail silently.
     void (*error)(void);
 } MaPLCallbacks;
 
