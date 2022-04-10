@@ -211,7 +211,7 @@ const char *readString(MaPLExecutionContext *context) {
     return string;
 }
 
-char *concatenateStrings(const char *taggedString1, const char *taggedString2) {
+char *concatenateStrings(char *taggedString1, char *taggedString2) {
     char *untaggedString1 = untagString(taggedString1);
     char *untaggedString2 = untagString(taggedString2);
     char *concatString = malloc(strlen(untaggedString1)+strlen(untaggedString2)+1);
@@ -1365,7 +1365,7 @@ MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, enum MaPLInstru
                 result.float32Value = fmodf(initialValue->float32Value, incrementValue->float32Value);
                 break;
             case MaPLInstruction_string_concat:
-                result.stringValue = concatenateStrings(initialValue->stringValue, incrementValue->stringValue);
+                result.stringValue = concatenateStrings((char *)initialValue->stringValue, (char *)incrementValue->stringValue);
                 break;
             case MaPLInstruction_int64_add:
                 result.int64Value = initialValue->int64Value + incrementValue->int64Value;
