@@ -214,16 +214,6 @@ MaPLInstruction functionInvocationInstructionForPrimitive(MaPLPrimitiveType type
 MaPLInstruction subscriptInvocationInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
- * @return The instruction byte that indicates a subscript assignment corresponding to @c type.
- */
-MaPLInstruction subscriptAssignmentInstructionForPrimitive(MaPLPrimitiveType type);
-
-/**
- * @return The instruction byte that indicates a property assignment corresponding to @c type.
- */
-MaPLInstruction propertyAssignmentInstructionForPrimitive(MaPLPrimitiveType type);
-
-/**
  * @return The instruction byte that represents an operator-assign.
  */
 MaPLInstruction operatorAssignInstructionForTokenType(size_t tokenType, MaPLPrimitiveType primitiveType);

@@ -1379,64 +1379,10 @@ void evaluateStatement(MaPLExecutionContext *context) {
             *(void **)(context->primitiveTable+variableAddress) = evaluatePointer(context);
         }
             break;
-        case MaPLInstruction_char_assign_subscript:
-            // TODO: Implement this.
+        case MaPLInstruction_assign_subscript: {
+        }
             break;
-        case MaPLInstruction_int32_assign_subscript:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_int64_assign_subscript:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_uint32_assign_subscript:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_uint64_assign_subscript:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_float32_assign_subscript:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_float64_assign_subscript:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_boolean_assign_subscript:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_string_assign_subscript:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_pointer_assign_subscript:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_char_assign_property:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_int32_assign_property:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_int64_assign_property:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_uint32_assign_property:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_uint64_assign_property:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_float32_assign_property:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_float64_assign_property:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_boolean_assign_property:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_string_assign_property:
-            // TODO: Implement this.
-            break;
-        case MaPLInstruction_pointer_assign_property:
+        case MaPLInstruction_assign_property:
             // TODO: Implement this.
             break;
         case MaPLInstruction_conditional: {

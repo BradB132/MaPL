@@ -550,12 +550,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     // Subscript assignments are represented in bytecode as follows:
-                    //   MaPLInstruction_[type]_assign_subscript - Type refers to type of assigned expression.
+                    //   MaPLInstruction_assign_subscript - Indicates the beginning of a subscript assignment.
                     //   ObjectExpressionContext - The object prefix.
                     //   ExpressionContext - The index of the subscript.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   ExpressionContext - The assigned expression.
-                    currentBuffer->appendInstruction(subscriptAssignmentInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(MaPLInstruction_assign_subscript);
                     compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     
                     MaPLType indexType = typeForTypeContext(subscript->type(1));
@@ -572,12 +572,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     // Property assignments are represented in bytecode as follows:
-                    //   MaPLInstruction_[type]_assign_property - Type refers to type of assigned expression.
+                    //   MaPLInstruction_assign_property - Indicates the beginning of a property assignment.
                     //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
                     //   MaPLSymbol - The bytecode representation of the name of this property.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   ExpressionContext - The assigned expression.
-                    currentBuffer->appendInstruction(propertyAssignmentInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(MaPLInstruction_assign_property);
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
@@ -720,14 +720,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     // Subscript assignments are represented in bytecode as follows:
-                    //   MaPLInstruction_[type]_assign_subscript - Type refers to type of assigned expression.
+                    //   MaPLInstruction_assign_subscript - Indicates the beginning of a subscript assignment.
                     //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
                     //   ExpressionContext - The index of the subscript.
                     //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
                     // This logic takes an increment, and rewrites it into the same format as a normal assignment.
                     // For example: "object[i]++" becomes "object[i]=object[i]+1".
-                    currentBuffer->appendInstruction(subscriptAssignmentInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(MaPLInstruction_assign_subscript);
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {
@@ -748,14 +748,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                     
                     // Property assignments are represented in bytecode as follows:
-                    //   MaPLInstruction_[type]_assign_property - Type refers to type of assigned expression.
+                    //   MaPLInstruction_assign_property - Indicates the beginning of a property assignment.
                     //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
                     //   MaPLSymbol - The bytecode representation of the name of this property.
                     //   Operator instruction - Indicates which type of operator-assign to apply. Always numeric add or subtract for increments.
                     //   ExpressionContext - The assigned expression. For increments this is always a literal "1".
                     // This logic takes an increment, and rewrites it into the same format as a normal assignment.
                     // For example: "property++" becomes "property=property+1".
-                    currentBuffer->appendInstruction(propertyAssignmentInstructionForPrimitive(returnType.primitiveType));
+                    currentBuffer->appendInstruction(MaPLInstruction_assign_property);
                     if (prefixExpression) {
                         compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     } else {

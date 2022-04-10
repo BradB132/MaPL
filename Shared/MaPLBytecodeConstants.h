@@ -231,46 +231,28 @@ enum MaPLInstruction : u_int8_t {
     MaPLInstruction_boolean_assign = 191,
     MaPLInstruction_string_assign = 192,
     MaPLInstruction_pointer_assign = 193,
-    MaPLInstruction_char_assign_subscript = 194,
-    MaPLInstruction_int32_assign_subscript = 195,
-    MaPLInstruction_int64_assign_subscript = 196,
-    MaPLInstruction_uint32_assign_subscript = 197,
-    MaPLInstruction_uint64_assign_subscript = 198,
-    MaPLInstruction_float32_assign_subscript = 199,
-    MaPLInstruction_float64_assign_subscript = 200,
-    MaPLInstruction_boolean_assign_subscript = 201,
-    MaPLInstruction_string_assign_subscript = 202,
-    MaPLInstruction_pointer_assign_subscript = 203,
-    MaPLInstruction_char_assign_property = 204,
-    MaPLInstruction_int32_assign_property = 205,
-    MaPLInstruction_int64_assign_property = 206,
-    MaPLInstruction_uint32_assign_property = 207,
-    MaPLInstruction_uint64_assign_property = 208,
-    MaPLInstruction_float32_assign_property = 209,
-    MaPLInstruction_float64_assign_property = 210,
-    MaPLInstruction_boolean_assign_property = 211,
-    MaPLInstruction_string_assign_property = 212,
-    MaPLInstruction_pointer_assign_property = 213,
+    MaPLInstruction_assign_subscript = 194,
+    MaPLInstruction_assign_property = 195,
 
     // CONTROL FLOW
-    MaPLInstruction_conditional = 214,
-    MaPLInstruction_cursor_move_forward = 215,
-    MaPLInstruction_cursor_move_back = 216,
-    MaPLInstruction_program_exit = 217,
+    MaPLInstruction_conditional = 196,
+    MaPLInstruction_cursor_move_forward = 197,
+    MaPLInstruction_cursor_move_back = 198,
+    MaPLInstruction_program_exit = 199,
 
     // METADATA
-    MaPLInstruction_metadata = 218,
+    MaPLInstruction_metadata = 200,
 
     // DEBUGGING
-    MaPLInstruction_debug_line = 219,
-    MaPLInstruction_debug_update_variable = 220,
-    MaPLInstruction_debug_delete_variable = 221,
+    MaPLInstruction_debug_line = 201,
+    MaPLInstruction_debug_update_variable = 202,
+    MaPLInstruction_debug_delete_variable = 203,
     
     // NO-OP
-    MaPLInstruction_no_op = 222,
+    MaPLInstruction_no_op = 204,
     
     // ERROR CHECKING
-    MaPLInstruction_error = 223,
+    MaPLInstruction_error = 205,
 };
 
 #endif /* MaPLBytecodeConstants_h */

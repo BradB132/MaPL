@@ -370,38 +370,6 @@ MaPLInstruction subscriptInvocationInstructionForPrimitive(MaPLPrimitiveType typ
     }
 }
 
-MaPLInstruction subscriptAssignmentInstructionForPrimitive(MaPLPrimitiveType type) {
-    switch (type) {
-        case MaPLPrimitiveType_Char: return MaPLInstruction_char_assign_subscript;
-        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_assign_subscript;
-        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_assign_subscript;
-        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_assign_subscript;
-        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_assign_subscript;
-        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_assign_subscript;
-        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_assign_subscript;
-        case MaPLPrimitiveType_String: return MaPLInstruction_string_assign_subscript;
-        case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_assign_subscript;
-        case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_assign_subscript;
-        default: return MaPLInstruction_error;
-    }
-}
-
-MaPLInstruction propertyAssignmentInstructionForPrimitive(MaPLPrimitiveType type) {
-    switch (type) {
-        case MaPLPrimitiveType_Char: return MaPLInstruction_char_assign_property;
-        case MaPLPrimitiveType_Int32: return MaPLInstruction_int32_assign_property;
-        case MaPLPrimitiveType_Int64: return MaPLInstruction_int64_assign_property;
-        case MaPLPrimitiveType_UInt32: return MaPLInstruction_uint32_assign_property;
-        case MaPLPrimitiveType_UInt64: return MaPLInstruction_uint64_assign_property;
-        case MaPLPrimitiveType_Float32: return MaPLInstruction_float32_assign_property;
-        case MaPLPrimitiveType_Float64: return MaPLInstruction_float64_assign_property;
-        case MaPLPrimitiveType_String: return MaPLInstruction_string_assign_property;
-        case MaPLPrimitiveType_Boolean: return MaPLInstruction_boolean_assign_property;
-        case MaPLPrimitiveType_Pointer: return MaPLInstruction_pointer_assign_property;
-        default: return MaPLInstruction_error;
-    }
-}
-
 MaPLInstruction operatorAssignInstructionForTokenType(size_t tokenType, MaPLPrimitiveType primitiveType) {
     switch (tokenType) {
         case MaPLParser::ADD_ASSIGN:
