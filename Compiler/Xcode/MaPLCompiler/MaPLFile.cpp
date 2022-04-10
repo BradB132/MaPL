@@ -551,16 +551,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     
                     // Subscript assignments are represented in bytecode as follows:
                     //   MaPLInstruction_[type]_assign_subscript - Type refers to type of assigned expression.
-                    //   ObjectExpressionContext - The object prefix. Value is MaPLInstruction_no_op if no expression.
+                    //   ObjectExpressionContext - The object prefix.
                     //   ExpressionContext - The index of the subscript.
                     //   Operator instruction - Indicates which type of operator-assign to apply.
                     //   ExpressionContext - The assigned expression.
                     currentBuffer->appendInstruction(subscriptAssignmentInstructionForPrimitive(returnType.primitiveType));
-                    if (prefixExpression) {
-                        compileObjectExpression(prefixExpression, NULL, currentBuffer);
-                    } else {
-                        currentBuffer->appendInstruction(MaPLInstruction_no_op);
-                    }
+                    compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     
                     MaPLType indexType = typeForTypeContext(subscript->type(1));
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
