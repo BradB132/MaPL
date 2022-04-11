@@ -365,17 +365,17 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_char) ? returnedValue.charValue : 0;
         }
         case MaPLInstruction_char_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             u_int8_t result;
             if (evaluateBool(context)) {
                 result = evaluateChar(context);
                 context->isDeadCodepath = true;
                 evaluateChar(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluateChar(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluateChar(context);
             }
             return result;
@@ -456,17 +456,17 @@ int32_t evaluateInt32(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_int32) ? returnedValue.int32Value : 0;
         }
         case MaPLInstruction_int32_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             int32_t result;
             if (evaluateBool(context)) {
                 result = evaluateInt32(context);
                 context->isDeadCodepath = true;
                 evaluateInt32(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluateInt32(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluateInt32(context);
             }
             return result;
@@ -547,17 +547,17 @@ int64_t evaluateInt64(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_int64) ? returnedValue.int64Value : 0;
         }
         case MaPLInstruction_int64_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             int64_t result;
             if (evaluateBool(context)) {
                 result = evaluateInt64(context);
                 context->isDeadCodepath = true;
                 evaluateInt64(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluateInt64(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluateInt64(context);
             }
             return result;
@@ -636,17 +636,17 @@ u_int32_t evaluateUint32(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_uint32) ? returnedValue.uint32Value : 0;
         }
         case MaPLInstruction_uint32_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             u_int32_t result;
             if (evaluateBool(context)) {
                 result = evaluateUint32(context);
                 context->isDeadCodepath = true;
                 evaluateUint32(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluateUint32(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluateUint32(context);
             }
             return result;
@@ -725,17 +725,17 @@ u_int64_t evaluateUint64(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_uint64) ? returnedValue.uint64Value : 0;
         }
         case MaPLInstruction_uint64_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             u_int64_t result;
             if (evaluateBool(context)) {
                 result = evaluateUint64(context);
                 context->isDeadCodepath = true;
                 evaluateUint64(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluateUint64(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluateUint64(context);
             }
             return result;
@@ -807,17 +807,17 @@ float evaluateFloat32(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_float32) ? returnedValue.float32Value : 0.0f;
         }
         case MaPLInstruction_float32_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             float result;
             if (evaluateBool(context)) {
                 result = evaluateFloat32(context);
                 context->isDeadCodepath = true;
                 evaluateFloat32(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluateFloat32(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluateFloat32(context);
             }
             return result;
@@ -889,17 +889,17 @@ double evaluateFloat64(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_float64) ? returnedValue.float64Value : 0.0;
         }
         case MaPLInstruction_float64_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             double result;
             if (evaluateBool(context)) {
                 result = evaluateFloat64(context);
                 context->isDeadCodepath = true;
                 evaluateFloat64(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluateFloat64(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluateFloat64(context);
             }
             return result;
@@ -957,17 +957,17 @@ bool evaluateBool(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_boolean) ? returnedValue.booleanValue : false;
         }
         case MaPLInstruction_boolean_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             bool result;
             if (evaluateBool(context)) {
                 result = evaluateBool(context);
                 context->isDeadCodepath = true;
                 evaluateBool(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluateBool(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluateBool(context);
             }
             return result;
@@ -1113,10 +1113,10 @@ bool evaluateBool(MaPLExecutionContext *context) {
             if (firstBool) {
                 return evaluateBool(context);
             }
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             context->isDeadCodepath = true;
             evaluateBool(context);
-            context->isDeadCodepath = previousUnusedCodepath;
+            context->isDeadCodepath = previousDeadCodepath;
             return false;
         }
         case MaPLInstruction_logical_or: {
@@ -1125,10 +1125,10 @@ bool evaluateBool(MaPLExecutionContext *context) {
             if (!firstBool) {
                 return evaluateBool(context);
             }
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             context->isDeadCodepath = true;
             evaluateBool(context);
-            context->isDeadCodepath = previousUnusedCodepath;
+            context->isDeadCodepath = previousDeadCodepath;
             return true;
         }
         case MaPLInstruction_logical_negation:
@@ -1152,10 +1152,10 @@ void *evaluatePointer(MaPLExecutionContext *context) {
             if (!firstPointer) {
                 return evaluatePointer(context);
             }
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             context->isDeadCodepath = true;
             evaluatePointer(context);
-            context->isDeadCodepath = previousUnusedCodepath;
+            context->isDeadCodepath = previousDeadCodepath;
             return firstPointer;
         }
         case MaPLInstruction_pointer_function_invocation: {
@@ -1167,17 +1167,17 @@ void *evaluatePointer(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_pointer) ? returnedValue.pointerValue : NULL;
         }
         case MaPLInstruction_pointer_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             void *result;
             if (evaluateBool(context)) {
                 result = evaluatePointer(context);
                 context->isDeadCodepath = true;
                 evaluatePointer(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluatePointer(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluatePointer(context);
             }
             return result;
@@ -1202,7 +1202,7 @@ char *evaluateString(MaPLExecutionContext *context) {
             char *taggedString1 = evaluateString(context);
             char *taggedString2 = evaluateString(context);
             if (context->isDeadCodepath) {
-                // If this is an unused codepath, the strings that are returned are not allocated.
+                // If this is a dead codepath, the strings that are returned are not allocated.
                 break;
             }
             char *concatenatedString = concatenateStrings(taggedString1, taggedString2);
@@ -1219,17 +1219,17 @@ char *evaluateString(MaPLExecutionContext *context) {
             return verifyReturnValue(context, &returnedValue, MaPLDataType_string) ? (char *)returnedValue.stringValue : NULL;
         }
         case MaPLInstruction_string_ternary_conditional: {
-            bool previousUnusedCodepath = context->isDeadCodepath;
+            bool previousDeadCodepath = context->isDeadCodepath;
             char *result;
             if (evaluateBool(context)) {
                 result = evaluateString(context);
                 context->isDeadCodepath = true;
                 evaluateString(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
             } else {
                 context->isDeadCodepath = true;
                 evaluateString(context);
-                context->isDeadCodepath = previousUnusedCodepath;
+                context->isDeadCodepath = previousDeadCodepath;
                 result = evaluateString(context);
             }
             return result;
