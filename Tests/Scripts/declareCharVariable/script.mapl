@@ -1,0 +1,4 @@
+#import "../TestAPI.mapl"
+
+char assignedChar = 99;
+print((string)assignedChar);
