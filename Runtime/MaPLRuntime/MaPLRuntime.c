@@ -987,7 +987,7 @@ bool evaluateBool(MaPLExecutionContext *context) {
                 case MaPLDataType_float32:
                     return evaluateFloat32(context) != 0.0f;
                 case MaPLDataType_float64:
-                    return evaluateFloat32(context) != 0.0;
+                    return evaluateFloat64(context) != 0.0;
                 case MaPLDataType_string: {
                     char *taggedString = evaluateString(context);
                     bool returnBool = !strcmp(untagString(taggedString), "true");
@@ -1300,7 +1300,7 @@ char *evaluateString(MaPLExecutionContext *context) {
                     }
                     break;
                 case MaPLDataType_pointer: {
-                    snprintf(returnString, 24, "%#018lX", (uintptr_t)evaluatePointer(context));
+                    snprintf(returnString, 24, "0x%#016lX", (uintptr_t)evaluatePointer(context));
                     break;
                 }
                 default:
