@@ -1,0 +1,60 @@
+#import "../TestAPI.mapl"
+
+bool trueBool = true;
+bool falseBool = false;
+
+print("1 - Outside of conditional");
+
+if trueBool {
+    print("This should print");
+}
+
+print("2 - Outside of conditional");
+
+if falseBool {
+    print("This should NOT print");
+}
+
+print("3 - Outside of conditional");
+
+if trueBool {
+    print("This should print");
+} else {
+    print("This should NOT print");
+}
+
+print("4 - Outside of conditional");
+
+if falseBool {
+    print("This should NOT print");
+} else {
+    print("This should print");
+}
+
+print("5 - Outside of conditional");
+
+if trueBool {
+    print("This should print");
+} else if trueBool {
+    print("This should NOT print");
+}
+
+print("6 - Outside of conditional");
+
+if falseBool {
+    print("This should NOT print");
+} else if trueBool {
+    print("This should print");
+}
+
+print("7 - Outside of conditional");
+
+if falseBool {
+    print("This should NOT print");
+} else if falseBool {
+    print("This should NOT print");
+} else {
+    print("This should print");
+}
+
+print("8 - Outside of conditional");
