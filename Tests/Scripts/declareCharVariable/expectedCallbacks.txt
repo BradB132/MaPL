@@ -1,1 +1,0 @@
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(char)99

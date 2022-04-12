@@ -1,0 +1,9 @@
+(char)99, (char)77
+(int32)1234, (int32)-1234, (int32)4567, (int32)-4567
+(int64)678, (int64)-678, (int64)789, (int64)-789
+(uint32)4321, (uint32)5432
+(uint64)9876, (uint64)3456
+(float32)1.230000, (float32)-1.230000, (float32)4.560000, (float32)-4.560000
+(float64)6.540000, (float64)-6.540000, (float64)9.870000, (float64)-9.870000
+(string)"asdf", (string)"zxcv"
+(bool)true, (bool)false

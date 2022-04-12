@@ -1,0 +1,87 @@
+#import "../TestAPI.mapl"
+
+// Declare directly, then declare with no initial value and assign later.
+
+// CHAR.
+char assignedChar = 99;
+
+char declaredChar;
+declaredChar = 77;
+
+print(assignedChar, declaredChar);
+
+// INT32.
+int32 positiveAssignedInt32 = 1234;
+int32 negativeAssignedInt32 = -1234;
+
+int32 positiveDeclaredInt32;
+positiveDeclaredInt32 = 4567;
+int32 negativeDeclaredInt32;
+negativeDeclaredInt32 = -4567;
+
+print(positiveAssignedInt32, negativeAssignedInt32, positiveDeclaredInt32, negativeDeclaredInt32);
+
+// INT64.
+int64 positiveAssignedInt64 = 678;
+int64 negativeAssignedInt64 = -678;
+
+int64 positiveDeclaredInt64;
+positiveDeclaredInt64 = 789;
+int64 negativeDeclaredInt64;
+negativeDeclaredInt64 = -789;
+
+print(positiveAssignedInt64, negativeAssignedInt64, positiveDeclaredInt64, negativeDeclaredInt64);
+
+// UINT32.
+uint32 assignedUint32 = 4321;
+
+uint32 declaredUint32;
+declaredUint32 = 5432;
+
+print(assignedUint32, declaredUint32);
+
+// UINT64.
+uint64 assignedUint64 = 9876;
+
+uint64 declaredUint64;
+declaredUint64 = 3456;
+
+print(assignedUint64, declaredUint64);
+
+// FLOAT32.
+float32 positiveAssignedFloat32 = 1.23;
+float32 negativeAssignedFloat32 = -1.23;
+
+float32 positiveDeclaredFloat32;
+positiveDeclaredFloat32 = 4.56;
+float32 negativeDeclaredFloat32;
+negativeDeclaredFloat32 = -4.56;
+
+print(positiveAssignedFloat32, negativeAssignedFloat32, positiveDeclaredFloat32, negativeDeclaredFloat32);
+
+// FLOAT64.
+float64 positiveAssignedFloat64 = 6.54;
+float64 negativeAssignedFloat64 = -6.54;
+
+float64 positiveDeclaredFloat64;
+positiveDeclaredFloat64 = 9.87;
+float64 negativeDeclaredFloat64;
+negativeDeclaredFloat64 = -9.87;
+
+print(positiveAssignedFloat64, negativeAssignedFloat64, positiveDeclaredFloat64, negativeDeclaredFloat64);
+
+// STRING.
+string assignedString = "asdf";
+
+string declaredString;
+declaredString = "zxcv";
+
+print(assignedString, declaredString);
+
+// BOOL.
+bool assignedBool = true;
+
+bool declaredBool;
+declaredBool = false;
+
+print(assignedBool, declaredBool);
