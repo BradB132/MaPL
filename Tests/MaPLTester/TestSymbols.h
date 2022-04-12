@@ -1,3 +1,3 @@
 enum TestSymbols {
-    TestSymbols_GLOBAL_print_string = 1,
+    TestSymbols_GLOBAL_print_VARIADIC = 1,
 };

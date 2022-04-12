@@ -1,1 +1,1 @@
-#global void print(string);
+#global void print(...);

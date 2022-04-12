@@ -71,9 +71,15 @@ MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSy
             scriptCallbacksString += ", ";
         }
     }
-    if (!invokedOnPointer && functionSymbol == TestSymbols_GLOBAL_print_string) {
-        scriptPrintString += argv[0].stringValue;
-        scriptPrintString += "\n";
+    if (!invokedOnPointer && functionSymbol == TestSymbols_GLOBAL_print_VARIADIC) {
+        for (MaPLParameterCount i = 0; i < argc; i++) {
+            scriptPrintString += parameterToString(argv[i]);
+            if (i == argc-1) {
+                scriptPrintString += "\n";
+            } else {
+                scriptPrintString += ", ";
+            }
+        }
     }
     
     return MaPLUninitialized();

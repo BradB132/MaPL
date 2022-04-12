@@ -1,4 +1,4 @@
 Debug line: 3
 Debug variable update: 'assignedChar' = (char)99
 Debug line: 4
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"99"
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(char)99
