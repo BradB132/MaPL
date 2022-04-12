@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		9B7AC56E27FD059B00F70849 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B7AC56D27FD059B00F70849 /* main.c */; };
-		9B7AC58327FD062F00F70849 /* MaPLRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B7AC58127FD062F00F70849 /* MaPLRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9B7AC58427FD062F00F70849 /* MaPLRuntime.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B7AC58227FD062F00F70849 /* MaPLRuntime.c */; };
 		9B7AC58827FD063F00F70849 /* libMaPLRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7AC57827FD05CD00F70849 /* libMaPLRuntime.a */; };
-		9B7AC59327FF321A00F70849 /* MaPLTypedefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B7AC59227FF321A00F70849 /* MaPLTypedefs.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9BE175A72805B489006E427A /* MaPLRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = 9BE175A62805B489006E427A /* MaPLRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9BE175AA2805B4DB006E427A /* MaPLTypedefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 9BE175A92805B4DB006E427A /* MaPLTypedefs.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,10 +40,10 @@
 		9B7AC56A27FD059B00F70849 /* MaPLRuntimeExecutable */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLRuntimeExecutable; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B7AC56D27FD059B00F70849 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		9B7AC57827FD05CD00F70849 /* libMaPLRuntime.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMaPLRuntime.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		9B7AC58127FD062F00F70849 /* MaPLRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLRuntime.h; sourceTree = "<group>"; };
 		9B7AC58227FD062F00F70849 /* MaPLRuntime.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = MaPLRuntime.c; sourceTree = "<group>"; };
 		9B7AC58B27FD18B700F70849 /* MaPLBytecodeConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLBytecodeConstants.h; sourceTree = "<group>"; };
-		9B7AC59227FF321A00F70849 /* MaPLTypedefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLTypedefs.h; sourceTree = "<group>"; };
+		9BE175A62805B489006E427A /* MaPLRuntime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLRuntime.h; sourceTree = "<group>"; };
+		9BE175A92805B4DB006E427A /* MaPLTypedefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLTypedefs.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +68,7 @@
 		9B7AC56127FD059B00F70849 = {
 			isa = PBXGroup;
 			children = (
+				9BE175A52805B489006E427A /* Headers */,
 				9B7AC56C27FD059B00F70849 /* MaPLRuntime */,
 				9B7AC58927FD18B700F70849 /* Shared */,
 				9B7AC56B27FD059B00F70849 /* Products */,
@@ -88,7 +89,6 @@
 			isa = PBXGroup;
 			children = (
 				9B7AC56D27FD059B00F70849 /* main.c */,
-				9B7AC58127FD062F00F70849 /* MaPLRuntime.h */,
 				9B7AC58227FD062F00F70849 /* MaPLRuntime.c */,
 			);
 			path = MaPLRuntime;
@@ -105,10 +105,26 @@
 			isa = PBXGroup;
 			children = (
 				9B7AC58B27FD18B700F70849 /* MaPLBytecodeConstants.h */,
-				9B7AC59227FF321A00F70849 /* MaPLTypedefs.h */,
+				9BE175A82805B4DB006E427A /* Headers */,
 			);
 			name = Shared;
 			path = ../Shared;
+			sourceTree = "<group>";
+		};
+		9BE175A52805B489006E427A /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				9BE175A62805B489006E427A /* MaPLRuntime.h */,
+			);
+			path = Headers;
+			sourceTree = "<group>";
+		};
+		9BE175A82805B4DB006E427A /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				9BE175A92805B4DB006E427A /* MaPLTypedefs.h */,
+			);
+			path = Headers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -118,8 +134,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B7AC59327FF321A00F70849 /* MaPLTypedefs.h in Headers */,
-				9B7AC58327FD062F00F70849 /* MaPLRuntime.h in Headers */,
+				9BE175AA2805B4DB006E427A /* MaPLTypedefs.h in Headers */,
+				9BE175A72805B489006E427A /* MaPLRuntime.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

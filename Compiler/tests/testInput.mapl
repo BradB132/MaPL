@@ -1,8 +1,0 @@
-#import "./API.mapl"
-
-for(uint32 i = 0; i < 5; i++) {
-    print("Hello World #" + (string)i);
-}
-
-global.map["test"] = "ABC";
-global.count++;

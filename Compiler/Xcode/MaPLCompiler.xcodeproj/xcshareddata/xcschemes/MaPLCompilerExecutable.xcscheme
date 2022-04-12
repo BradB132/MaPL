@@ -52,7 +52,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "&quot;${SRCROOT}/../tests/testInput.mapl&quot;"
+            argument = "&quot;${SRCROOT}/../../Tests/Scripts/TestAPI.mapl&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -60,7 +60,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;${SRCROOT}/../c++/testInput.maplb&quot;"
+            argument = "&quot;${SRCROOT}/../c++/compilerTestOutput.maplb&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
