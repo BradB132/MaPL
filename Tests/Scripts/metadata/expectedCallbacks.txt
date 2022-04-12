@@ -1,0 +1,6 @@
+Debug metadata: 'Beginning Metadata'
+Debug metadata: 'This Metadata should print'
+Debug metadata: 'First loop'
+Debug metadata: 'Second loop'
+Debug metadata: 'Third loop'
+Debug metadata: 'End Metadata'

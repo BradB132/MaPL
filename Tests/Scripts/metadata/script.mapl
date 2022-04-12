@@ -1,0 +1,27 @@
+#import "../TestAPI.mapl"
+
+// Intersperse metadata within logic.
+
+<?Beginning Metadata?>
+
+if false {
+    <?This Metadata should NOT print?>
+}
+
+if true {
+    <?This Metadata should print?>
+}
+
+for(int32 i = 0; i < 3; i++) {
+    if i == 0 {
+        <?First loop?>
+    } else if i == 1 {
+        <?Second loop?>
+    } else if i == 2 {
+        <?Third loop?>
+    } else {
+        <?This Metadata should NOT print?>
+    }
+}
+
+<?End Metadata?>
