@@ -14,6 +14,9 @@
 #include "MaPLRuntime.h"
 #include "TestSymbols.h"
 
+// Generating the various expected files can be laborious. Enabling this option overwrites all expected files with the generated values.
+#define OUTPUT_EXPECTED_FILES 0
+
 struct TestDirectoryContents {
     std::filesystem::path bytecodePath;
     std::filesystem::path printPath;
@@ -140,17 +143,20 @@ void runTests(const std::vector<std::filesystem::path> &scriptsUnderTest,
     // Compare the bytecode for each script against its expected bytecode.
     for (const auto&[path, bytecode] : result.compiledFiles) {
         TestDirectoryContents contents = directoryMap.at(path);
-        
+#if OUTPUT_EXPECTED_FILES
+        std::ofstream bytecodeOutputStream(contents.bytecodePath);
+        bytecodeOutputStream.write((char *)(&bytecode[0]), bytecode.size());
+#else
         // Compare the length of expected bytecode.
         std::ifstream inputStream(contents.bytecodePath);
         if (!inputStream) {
-            printf("Unable to find expected bytecode file '%s'\n", contents.bytecodePath.c_str());
+            printf("Unable to find expected bytecode file '%s'.\n", contents.bytecodePath.c_str());
             exit(1);
         }
         inputStream.seekg(0, std::ios::end);
         size_t length = inputStream.tellg();
         if (length != bytecode.size()) {
-            printf("Compiled bytecode is a different length than expected bytecode '%s'\n", contents.bytecodePath.c_str());
+            printf("Compiled bytecode is a different length than expected bytecode '%s'.\n", contents.bytecodePath.c_str());
             exit(1);
         }
         
@@ -159,16 +165,25 @@ void runTests(const std::vector<std::filesystem::path> &scriptsUnderTest,
         u_int8_t expectedBytecode[length];
         inputStream.read((char *)expectedBytecode, length);
         if (memcmp(expectedBytecode, &bytecode[0], length)) {
-            printf("Compiled bytecode has different content than expected bytecode '%s'\n", contents.bytecodePath.c_str());
+            printf("Compiled bytecode has different content than expected bytecode '%s'.\n", contents.bytecodePath.c_str());
             exit(1);
         }
+#endif
         
         // Run the script.
         scriptPrintString.clear();
         scriptCallbacksString.clear();
         scriptEncounteredError = false;
         executeMaPLScript(&bytecode[0], bytecode.size(), &testCallbacks);
-        
+        if (scriptEncounteredError) {
+            printf("Script encountered a runtime error '%s'.\n", path.c_str());
+            exit(1);
+        }
+
+#if OUTPUT_EXPECTED_FILES
+        std::ofstream printOutputStream(contents.printPath);
+        printOutputStream << scriptPrintString;
+#else
         // Compare the log of actual output to expected output.
         std::ifstream printInputStream(contents.printPath);
         if (!printInputStream) {
@@ -182,7 +197,12 @@ void runTests(const std::vector<std::filesystem::path> &scriptsUnderTest,
             printf("Expected print output did not match actual print output for '%s'.\n\nExpected:\n\n%s\nActual:\n\n%s\n", contents.printPath.c_str(), expectedPrintString.c_str(), scriptPrintString.c_str());
             exit(1);
         }
+#endif
         
+#if OUTPUT_EXPECTED_FILES
+        std::ofstream callbackOutputStream(contents.callbacksPath);
+        callbackOutputStream << scriptCallbacksString;
+#else
         // Compare the log of actual callbacks to expected callbacks.
         std::ifstream callbackInputStream(contents.callbacksPath);
         if (!callbackInputStream) {
@@ -196,6 +216,7 @@ void runTests(const std::vector<std::filesystem::path> &scriptsUnderTest,
             printf("Expected callback output did not match actual callback output for '%s'.\n\nExpected:\n\n%s\nActual:\n\n%s\n", contents.callbacksPath.c_str(), expectedCallbackString.c_str(), scriptCallbacksString.c_str());
             exit(1);
         }
+#endif
     }
 }
 
@@ -247,6 +268,10 @@ int main(int argc, const char * argv[]) {
     runTests(scriptsUnderTest, nonDebugDirectoryMap, nonDebugOptions);
     runTests(scriptsUnderTest, debugDirectoryMap, debugOptions);
     
+#if OUTPUT_EXPECTED_FILES
+    printf("All expected files formatted.\n");
+#else
     printf("All tests completed successfully.\n");
+#endif
     return 0;
 }
