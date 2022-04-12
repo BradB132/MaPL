@@ -1,0 +1,45 @@
+#import "../TestAPI.mapl"
+
+char testChar = 11;
+print((int32)testChar, (int64)testChar, (uint32)testChar, (uint64)testChar, (float32)testChar, (float64)testChar, (string)testChar, (bool)testChar);
+
+int32 testInt32 = 22;
+print((char)testInt32, (int64)testInt32, (uint32)testInt32, (uint64)testInt32, (float32)testInt32, (float64)testInt32, (string)testInt32, (bool)testInt32);
+
+int64 testInt64 = 33;
+print((char)testInt64, (int32)testInt64, (uint32)testInt64, (uint64)testInt64, (float32)testInt64, (float64)testInt64, (string)testInt64, (bool)testInt64);
+
+uint32 testUint32 = 44;
+print((char)testUint32, (int32)testUint32, (int64)testUint32, (uint64)testUint32, (float32)testUint32, (float64)testUint32, (string)testUint32, (bool)testUint32);
+
+uint64 testUint64 = 55;
+print((char)testUint64, (int32)testUint64, (int64)testUint64, (uint32)testUint64, (float32)testUint64, (float64)testUint64, (string)testUint64, (bool)testUint64);
+
+float32 testFloat32 = 66.0;
+print((char)testFloat32, (int32)testFloat32, (int64)testFloat32, (uint32)testFloat32, (uint64)testFloat32, (float64)testFloat32, (string)testFloat32, (bool)testFloat32);
+
+float64 testFloat64 = 77.0;
+print((char)testFloat64, (int32)testFloat64, (int64)testFloat64, (uint32)testFloat64, (uint64)testFloat64, (float32)testFloat64, (string)testFloat64, (bool)testFloat64);
+
+string testString = "88";
+print((char)testString, (int32)testString, (int64)testString, (uint32)testString, (uint64)testString, (float32)testString, (float64)testString, (bool)testString);
+
+bool testTrue = true;
+bool testFalse = false;
+print((char)testTrue, (int32)testTrue, (int64)testTrue, (uint32)testTrue, (uint64)testTrue, (float32)testTrue, (float64)testTrue, (string)testTrue);
+print((char)testFalse, (int32)testFalse, (int64)testFalse, (uint32)testFalse, (uint64)testFalse, (float32)testFalse, (float64)testFalse, (string)testFalse);
+
+char zeroChar = 0;
+int32 zeroInt32 = 0;
+int64 zeroInt64 = 0;
+uint32 zeroUint32 = 0;
+uint64 zeroUint64 = 0;
+float32 zeroFloat32 = 0.0;
+float64 zeroFloat64 = 0.0;
+string trueString = "true";
+string falseString = "false";
+string irrelevantString = "asdf";
+print((bool)zeroChar, (bool)zeroInt32, (bool)zeroInt64, (bool)zeroUint32, (bool)zeroUint64, (bool)zeroFloat32, (bool)zeroFloat64, (bool)trueString, (bool)falseString, (bool)irrelevantString);
+
+Object nullObj = NULL;
+print((string)nullObj);

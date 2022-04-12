@@ -1,0 +1,12 @@
+(int32)11, (int64)11, (uint32)11, (uint64)11, (float32)11.000000, (float64)11.000000, (string)"11", (bool)true
+(char)22, (int64)22, (uint32)22, (uint64)22, (float32)22.000000, (float64)22.000000, (string)"22", (bool)true
+(char)33, (int32)33, (uint32)33, (uint64)33, (float32)33.000000, (float64)33.000000, (string)"33", (bool)true
+(char)44, (int32)44, (int64)44, (uint64)44, (float32)44.000000, (float64)44.000000, (string)"44", (bool)true
+(char)55, (int32)55, (int64)55, (uint32)55, (float32)55.000000, (float64)55.000000, (string)"55", (bool)true
+(char)66, (int32)66, (int64)66, (uint32)66, (uint64)66, (float64)66.000000, (string)"66", (bool)true
+(char)77, (int32)77, (int64)77, (uint32)77, (uint64)77, (float32)77.000000, (string)"77", (bool)true
+(char)88, (int32)88, (int64)88, (uint32)88, (uint64)88, (float32)88.000000, (float64)88.000000, (bool)false
+(char)1, (int32)1, (int64)1, (uint32)1, (uint64)1, (float32)1.000000, (float64)1.000000, (string)"true"
+(char)0, (int32)0, (int64)0, (uint32)0, (uint64)0, (float32)0.000000, (float64)0.000000, (string)"false"
+(bool)false, (bool)false, (bool)false, (bool)false, (bool)false, (bool)false, (bool)false, (bool)true, (bool)false, (bool)false
+(string)"0x0000000000000000"
