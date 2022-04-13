@@ -30,3 +30,9 @@ Debug line: 57
 Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
 Debug line: 60
 Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"8 - Outside of conditional"
+Debug line: 62
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Debug line: 63
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Debug line: 65
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9 - Outside of conditional"

@@ -12,3 +12,6 @@
 (string)"7 - Outside of conditional"
 (string)"This should print"
 (string)"8 - Outside of conditional"
+(string)"This should print"
+(string)"This should print"
+(string)"9 - Outside of conditional"
