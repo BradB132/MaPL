@@ -1,0 +1,112 @@
+Debug line: 4
+Debug variable update: 'incrementChar' = (char)11
+Debug line: 5
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before increment", parameter #1=(char)11
+Debug line: 6
+Debug variable update: 'incrementChar' = (char)12
+Debug line: 7
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After increment", parameter #1=(char)12
+Debug line: 9
+Debug variable update: 'decrementChar' = (char)11
+Debug line: 10
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before decrement", parameter #1=(char)11
+Debug line: 11
+Debug variable update: 'decrementChar' = (char)10
+Debug line: 12
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After decrement", parameter #1=(char)10
+Debug line: 15
+Debug variable update: 'incrementInt32' = (int32)22
+Debug line: 16
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before increment", parameter #1=(int32)22
+Debug line: 17
+Debug variable update: 'incrementInt32' = (int32)23
+Debug line: 18
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After increment", parameter #1=(int32)23
+Debug line: 20
+Debug variable update: 'decrementInt32' = (int32)22
+Debug line: 21
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before decrement", parameter #1=(int32)22
+Debug line: 22
+Debug variable update: 'decrementInt32' = (int32)21
+Debug line: 23
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After decrement", parameter #1=(int32)21
+Debug line: 26
+Debug variable update: 'incrementInt64' = (int64)33
+Debug line: 27
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before increment", parameter #1=(int64)33
+Debug line: 28
+Debug variable update: 'incrementInt64' = (int64)34
+Debug line: 29
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After increment", parameter #1=(int64)34
+Debug line: 31
+Debug variable update: 'decrementInt64' = (int64)33
+Debug line: 32
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before decrement", parameter #1=(int64)33
+Debug line: 33
+Debug variable update: 'decrementInt64' = (int64)32
+Debug line: 34
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After decrement", parameter #1=(int64)32
+Debug line: 37
+Debug variable update: 'incrementUint32' = (uint32)44
+Debug line: 38
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before increment", parameter #1=(uint32)44
+Debug line: 39
+Debug variable update: 'incrementUint32' = (uint32)45
+Debug line: 40
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After increment", parameter #1=(uint32)45
+Debug line: 42
+Debug variable update: 'decrementUint32' = (uint32)44
+Debug line: 43
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before decrement", parameter #1=(uint32)44
+Debug line: 44
+Debug variable update: 'decrementUint32' = (uint32)43
+Debug line: 45
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After decrement", parameter #1=(uint32)43
+Debug line: 48
+Debug variable update: 'incrementUint64' = (uint64)55
+Debug line: 49
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before increment", parameter #1=(uint64)55
+Debug line: 50
+Debug variable update: 'incrementUint64' = (uint64)56
+Debug line: 51
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After increment", parameter #1=(uint64)56
+Debug line: 53
+Debug variable update: 'decrementUint64' = (uint64)55
+Debug line: 54
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before decrement", parameter #1=(uint64)55
+Debug line: 55
+Debug variable update: 'decrementUint64' = (uint64)54
+Debug line: 56
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After decrement", parameter #1=(uint64)54
+Debug line: 59
+Debug variable update: 'incrementFloat32' = (float32)6.600000
+Debug line: 60
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before increment", parameter #1=(float32)6.600000
+Debug line: 61
+Debug variable update: 'incrementFloat32' = (float32)7.600000
+Debug line: 62
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After increment", parameter #1=(float32)7.600000
+Debug line: 64
+Debug variable update: 'decrementFloat32' = (float32)6.600000
+Debug line: 65
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before decrement", parameter #1=(float32)6.600000
+Debug line: 66
+Debug variable update: 'decrementFloat32' = (float32)5.600000
+Debug line: 67
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After decrement", parameter #1=(float32)5.600000
+Debug line: 70
+Debug variable update: 'incrementFloat64' = (float64)7.700000
+Debug line: 71
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before increment", parameter #1=(float64)7.700000
+Debug line: 72
+Debug variable update: 'incrementFloat64' = (float64)8.700000
+Debug line: 73
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After increment", parameter #1=(float64)8.700000
+Debug line: 75
+Debug variable update: 'decrementFloat64' = (float64)7.700000
+Debug line: 76
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Before decrement", parameter #1=(float64)7.700000
+Debug line: 77
+Debug variable update: 'decrementFloat64' = (float64)6.700000
+Debug line: 78
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"After decrement", parameter #1=(float64)6.700000
