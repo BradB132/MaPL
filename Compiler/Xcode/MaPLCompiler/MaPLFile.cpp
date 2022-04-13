@@ -1286,7 +1286,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 loopBuffer.appendBytes(&cursorMoveSize, sizeof(cursorMoveSize));
             }
             loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
-            MaPLCursorMove loopSize = loopBuffer.getByteCount();
+            MaPLCursorMove loopSize = loopBuffer.getByteCount() + sizeof(MaPLCursorMove);
             loopBuffer.appendBytes(&loopSize, sizeof(loopSize));
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
