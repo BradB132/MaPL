@@ -1318,8 +1318,9 @@ char *evaluateString(MaPLExecutionContext *context) {
 }
 
 MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, enum MaPLInstruction operatorAssignInstruction, MaPLParameter *initialValue, MaPLParameter *incrementValue) {
-    MaPLParameter result = { typeForInstruction(operatorAssignInstruction) };
+    MaPLParameter result = MaPLUninitialized();
     if (verifyReturnValue(context, initialValue, incrementValue->dataType)) {
+        result.dataType = typeForInstruction(operatorAssignInstruction);
         switch (operatorAssignInstruction) {
             case MaPLInstruction_int32_add:
                 result.int32Value = initialValue->int32Value + incrementValue->int32Value;
