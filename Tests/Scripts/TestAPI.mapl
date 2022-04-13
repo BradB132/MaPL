@@ -3,6 +3,8 @@
 #type Object {
     int32 intProperty;
     float32 floatProperty;
+    string stringProperty;
     int32 [int32]; // Only index 0 exists.
     float32 [float32]; // Only index 0 exists.
+    string [string]; // Only index "0" exists.
 }

@@ -15,7 +15,7 @@
 #include "TestSymbols.h"
 
 // Generating the various expected files can be laborious. Enabling this option overwrites all expected files with the generated values.
-#define OUTPUT_EXPECTED_FILES 0
+#define OUTPUT_EXPECTED_FILES 1
 
 struct TestDirectoryContents {
     std::filesystem::path bytecodePath;
@@ -26,8 +26,10 @@ struct TestDirectoryContents {
 char fakeGlobalObject;
 int32_t fakeIntProperty;
 float fakeFloatProperty;
+std::string fakeStringProperty;
 int32_t fakeIntSubscript;
 float fakeFloatSubscript;
+std::string fakeStringSubscript;
 
 std::string scriptPrintString;
 std::string scriptCallbacksString;
@@ -101,6 +103,8 @@ MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSy
                 return MaPLInt32(fakeIntProperty);
             case TestSymbols_Object_floatProperty:
                 return MaPLFloat32(fakeFloatProperty);
+            case TestSymbols_Object_stringProperty:
+                return MaPLStringByValue(fakeStringProperty.c_str());
             default: break;
         }
     }
@@ -122,6 +126,11 @@ MaPLParameter invokeSubscript(const void *invokedOnPointer, MaPLParameter index)
                     return MaPLFloat32(fakeFloatSubscript);
                 }
                 break;
+            case MaPLDataType_string:
+                if (!strcmp(index.stringValue, "0")) {
+                    return MaPLStringByValue(fakeStringSubscript.c_str());
+                }
+                break;
             default: break;
         }
     }
@@ -137,6 +146,9 @@ void assignProperty(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaP
                 break;
             case TestSymbols_Object_floatProperty:
                 fakeFloatProperty = assignedValue.float32Value;
+                break;
+            case TestSymbols_Object_stringProperty:
+                fakeStringProperty = assignedValue.stringValue;
                 break;
             default: break;
         }
@@ -155,6 +167,11 @@ void assignSubscript(const void *invokedOnPointer, MaPLParameter index, MaPLPara
             case MaPLDataType_float32:
                 if (index.float32Value == 0) {
                     fakeFloatSubscript = assignedValue.float32Value;
+                }
+                break;
+            case MaPLDataType_string:
+                if (!strcmp(index.stringValue, "0")) {
+                    fakeStringSubscript = assignedValue.stringValue;
                 }
                 break;
             default: break;
