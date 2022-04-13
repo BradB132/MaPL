@@ -1,0 +1,24 @@
+(string)"For continue", (int32)0
+(string)"End for loop body", (int32)1
+(string)"For continue", (int32)2
+(string)"End for loop body", (int32)3
+(string)"End for loop body", (int32)0
+(string)"End for loop body", (int32)1
+(string)"For break", (int32)2
+(string)"End while loop body", (int32)1
+(string)"While continue", (int32)2
+(string)"End while loop body", (int32)3
+(string)"While continue", (int32)4
+(string)"End while loop body", (int32)5
+(string)"End while loop body", (int32)1
+(string)"End while loop body", (int32)2
+(string)"While break", (int32)3
+(string)"End do-while loop body", (int32)1
+(string)"Do-while continue", (int32)2
+(string)"End do-while loop body", (int32)3
+(string)"Do-while continue", (int32)4
+(string)"End do-while loop body", (int32)5
+(string)"End do-while loop body", (int32)1
+(string)"End do-while loop body", (int32)2
+(string)"Do-while break", (int32)3
+(string)"Right before exit"

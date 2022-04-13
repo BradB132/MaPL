@@ -1,0 +1,65 @@
+#import "../TestAPI.mapl"
+
+for int32 i = 0; i < 4; i++ {
+    if i % 2 == 0 {
+        print("For continue", i);
+        continue;
+    }
+    print("End for loop body", i);
+}
+
+for int32 i = 0; i < 4; i++ {
+    if i == 2 {
+        print("For break", i);
+        break;
+    }
+    print("End for loop body", i);
+}
+
+int32 i = 0;
+while i < 5 {
+    i++;
+    if i % 2 == 0 {
+        print("While continue", i);
+        continue;
+    }
+    print("End while loop body", i);
+}
+
+i = 0;
+while i < 5 {
+    i++;
+    if i == 3 {
+        print("While break", i);
+        break;
+    }
+    print("End while loop body", i);
+}
+
+i = 0;
+do {
+    i++;
+    if i % 2 == 0 {
+        print("Do-while continue", i);
+        continue;
+    }
+    print("End do-while loop body", i);
+} while i < 5;
+
+i = 0;
+do {
+    i++;
+    if i == 3 {
+        print("Do-while break", i);
+        break;
+    }
+    print("End do-while loop body", i);
+} while i < 5;
+
+for i = 0; i < 999; i++ {
+    print("Right before exit");
+    exit;
+    print("This line should NOT print");
+}
+
+print("This line should NOT print");
