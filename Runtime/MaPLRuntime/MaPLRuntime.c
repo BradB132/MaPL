@@ -141,12 +141,12 @@ MaPLParameter MaPLPointer(void *pointerValue) {
     parameter.pointerValue = pointerValue;
     return parameter;
 }
-MaPLParameter MaPLStringByReference(char *stringValue) {
+MaPLParameter MaPLStringByReference(const char *stringValue) {
     MaPLParameter parameter = { MaPLDataType_string };
     parameter.stringValue = stringValue;
     return parameter;
 }
-MaPLParameter MaPLStringByValue(char *stringValue) {
+MaPLParameter MaPLStringByValue(const char *stringValue) {
     MaPLParameter parameter = { MaPLDataType_string };
     parameter.stringValue = malloc(strlen(stringValue)+1);
     strcpy((char *)parameter.stringValue, stringValue);

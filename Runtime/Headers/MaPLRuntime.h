@@ -78,11 +78,11 @@ MaPLParameter MaPLPointer(void *pointerValue);
  * MaPL may reference this string throughout script execution, so the string referenced by this pointer must not be
  * freed before the completion of the MaPL script execution.
  */
-MaPLParameter MaPLStringByReference(char *stringValue);
+MaPLParameter MaPLStringByReference(const char *stringValue);
 /**
  * Makes a copy of the string by invoking malloc, and assumes responsibility for freeing that copied string.
  */
-MaPLParameter MaPLStringByValue(char *stringValue);
+MaPLParameter MaPLStringByValue(const char *stringValue);
 
 /**
  * A struct that holds all the function pointers that the MaPL runtime uses to interact with the host program. The error method will be invoked if required callbacks are NULL.
