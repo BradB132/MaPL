@@ -121,9 +121,9 @@ void error(void) {
     scriptEncounteredError = true;
 }
 
-void runTests(const std::vector<std::filesystem::path> &scriptsUnderTest,
-              const std::map<std::filesystem::path, TestDirectoryContents> &directoryMap,
-              const MaPLCompileOptions &compileOptions) {
+MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnderTest,
+                           const std::map<std::filesystem::path, TestDirectoryContents> &directoryMap,
+                           const MaPLCompileOptions &compileOptions) {
     MaPLCompileResult result = compileMaPL(scriptsUnderTest, compileOptions);
     
     if (result.errorMessages.size()) {
@@ -224,6 +224,7 @@ void runTests(const std::vector<std::filesystem::path> &scriptsUnderTest,
         }
 #endif
     }
+    return result;
 }
 
 int main(int argc, const char * argv[]) {
@@ -268,13 +269,16 @@ int main(int argc, const char * argv[]) {
         }
     }
     
-    MaPLCompileOptions nonDebugOptions = { false };
     MaPLCompileOptions debugOptions = { true };
-    
-    runTests(scriptsUnderTest, nonDebugDirectoryMap, nonDebugOptions);
+    MaPLCompileOptions nonDebugOptions = { false, "TestSymbols" };
     runTests(scriptsUnderTest, debugDirectoryMap, debugOptions);
+    MaPLCompileResult result = runTests(scriptsUnderTest, nonDebugDirectoryMap, nonDebugOptions);
     
 #if OUTPUT_EXPECTED_FILES
+    if (result.symbolTable.size() > 0) {
+        std::ofstream symbolOutputStream(rootDir / "../MaPLTester/TestSymbols.h");
+        symbolOutputStream << result.symbolTable;
+    }
     printf("All expected files formatted.\n");
 #else
     printf("All tests completed successfully.\n");
