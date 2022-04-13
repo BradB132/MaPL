@@ -1318,7 +1318,7 @@ char *evaluateString(MaPLExecutionContext *context) {
 }
 
 MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, enum MaPLInstruction operatorAssignInstruction, MaPLParameter *initialValue, MaPLParameter *incrementValue) {
-    MaPLParameter result = MaPLUninitialized();
+    MaPLParameter result = { typeForInstruction(operatorAssignInstruction) };
     if (verifyReturnValue(context, initialValue, incrementValue->dataType)) {
         switch (operatorAssignInstruction) {
             case MaPLInstruction_int32_add:
@@ -1506,7 +1506,7 @@ MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, enum MaPLInstru
                 break;
             default:
                 context->executionState = MaPLExecutionState_error;
-                break;
+                return MaPLUninitialized();
         }
     }
     return result;
