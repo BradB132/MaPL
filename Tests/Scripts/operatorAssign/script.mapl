@@ -4,43 +4,107 @@ float64 floatValue = 5;
 print("Initial value", floatValue);
 int64 intValue = 5;
 print("Initial value", intValue);
+globalObject.floatProperty = 5;
+print("Initial value", globalObject.floatProperty);
+globalObject.intProperty = 5;
+print("Initial value", globalObject.intProperty);
+globalObject[0.0] = 5;
+print("Initial value", globalObject[0.0]);
+globalObject[0] = 5;
+print("Initial value", globalObject[0]);
 
 floatValue += 2;
 print("+=2", floatValue);
 intValue += 2;
 print("+=2", intValue);
+globalObject.floatProperty += 2;
+print("+=2", globalObject.floatProperty);
+globalObject.intProperty += 2;
+print("+=2", globalObject.intProperty);
+globalObject[0.0] += 2;
+print("+=2", globalObject[0.0]);
+globalObject[0] += 2;
+print("+=2", globalObject[0]);
 
 floatValue -= 2;
 print("-=2", floatValue);
 intValue -= 2;
 print("-=2", intValue);
+globalObject.floatProperty -= 2;
+print("-=2", globalObject.floatProperty);
+globalObject.intProperty -= 2;
+print("-=2", globalObject.intProperty);
+globalObject[0.0] -= 2;
+print("-=2", globalObject[0.0]);
+globalObject[0] -= 2;
+print("-=2", globalObject[0]);
 
 floatValue *= 5;
 print("*=5", floatValue);
 intValue *= 5;
 print("*=5", intValue);
+globalObject.floatProperty *= 5;
+print("*=5", globalObject.floatProperty);
+globalObject.intProperty *= 5;
+print("*=5", globalObject.intProperty);
+globalObject[0.0] *= 5;
+print("*=5", globalObject[0.0]);
+globalObject[0] *= 5;
+print("*=5", globalObject[0]);
 
 floatValue /= 5;
 print("/=5", floatValue);
 intValue /= 5;
 print("/=5", intValue);
+globalObject.floatProperty /= 5;
+print("/=5", globalObject.floatProperty);
+globalObject.intProperty /= 5;
+print("/=5", globalObject.intProperty);
+globalObject[0.0] /= 5;
+print("/=5", globalObject[0.0]);
+globalObject[0] /= 5;
+print("/=5", globalObject[0]);
 
 floatValue %= 3;
 print("%=3", floatValue);
 intValue %= 3;
 print("%=3", intValue);
+globalObject.floatProperty %= 3;
+print("%=3", globalObject.floatProperty);
+globalObject.intProperty %= 3;
+print("%=3", globalObject.intProperty);
+globalObject[0.0] %= 3;
+print("%=3", globalObject[0.0]);
+globalObject[0] %= 3;
+print("%=3", globalObject[0]);
 
 intValue |= 9;
 print("|=9", intValue);
+globalObject.intProperty |= 9;
+print("|=9", globalObject.intProperty);
+globalObject[0] |= 9;
+print("|=9", globalObject[0]);
 
 intValue &= 10;
 print("&=10", intValue);
+globalObject.intProperty &= 10;
+print("&=10", globalObject.intProperty);
+globalObject[0] &= 10;
+print("&=10", globalObject[0]);
 
 intValue <<= 2;
 print("<<=2", intValue);
+globalObject.intProperty <<= 2;
+print("<<=2", globalObject.intProperty);
+globalObject[0] <<= 2;
+print("<<=2", globalObject[0]);
 
 intValue >>= 1;
 print(">>=1", intValue);
+globalObject.intProperty >>= 1;
+print(">>=1", globalObject.intProperty);
+globalObject[0] >>= 1;
+print(">>=1", globalObject[0]);
 
 // Xor in-place swap.
 int32 a = 99;
@@ -50,3 +114,13 @@ a ^= b;
 b ^= a;
 a ^= b;
 print(a, b);
+
+globalObject.intProperty ^= 6;
+print("^=6", globalObject.intProperty);
+globalObject[0] ^= 6;
+print("^=6", globalObject[0]);
+
+string s = "Hello";
+s += " World";
+print(s);
+

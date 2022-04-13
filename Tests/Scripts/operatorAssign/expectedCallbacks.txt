@@ -1,18 +1,119 @@
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Initial value", parameter #1=(float64)5.000000
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Initial value", parameter #1=(int64)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Assign property: pointer=(pointer)[memory address], symbol=3, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Initial value", parameter #1=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Initial value", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Assign subscript: pointer=(pointer)[memory address], index=(float32)0.000000, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Initial value", parameter #1=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Initial value", parameter #1=(int32)5
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"+=2", parameter #1=(float64)7.000000
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"+=2", parameter #1=(int64)7
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Assign property: pointer=(pointer)[memory address], symbol=3, value=(float32)7.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"+=2", parameter #1=(float32)7.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)7
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"+=2", parameter #1=(int32)7
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Assign subscript: pointer=(pointer)[memory address], index=(float32)0.000000, value=(float32)7.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"+=2", parameter #1=(float32)7.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)7
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"+=2", parameter #1=(int32)7
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"-=2", parameter #1=(float64)5.000000
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"-=2", parameter #1=(int64)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Assign property: pointer=(pointer)[memory address], symbol=3, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"-=2", parameter #1=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"-=2", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Assign subscript: pointer=(pointer)[memory address], index=(float32)0.000000, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"-=2", parameter #1=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"-=2", parameter #1=(int32)5
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"*=5", parameter #1=(float64)25.000000
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"*=5", parameter #1=(int64)25
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Assign property: pointer=(pointer)[memory address], symbol=3, value=(float32)25.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"*=5", parameter #1=(float32)25.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)25
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"*=5", parameter #1=(int32)25
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Assign subscript: pointer=(pointer)[memory address], index=(float32)0.000000, value=(float32)25.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"*=5", parameter #1=(float32)25.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)25
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"*=5", parameter #1=(int32)25
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"/=5", parameter #1=(float64)5.000000
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"/=5", parameter #1=(int64)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Assign property: pointer=(pointer)[memory address], symbol=3, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"/=5", parameter #1=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"/=5", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Assign subscript: pointer=(pointer)[memory address], index=(float32)0.000000, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"/=5", parameter #1=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"/=5", parameter #1=(int32)5
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"%=3", parameter #1=(float64)2.000000
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"%=3", parameter #1=(int64)2
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Assign property: pointer=(pointer)[memory address], symbol=3, value=(float32)2.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=3, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"%=3", parameter #1=(float32)2.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"%=3", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Assign subscript: pointer=(pointer)[memory address], index=(float32)0.000000, value=(float32)2.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"%=3", parameter #1=(float32)2.000000
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"%=3", parameter #1=(int32)2
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"|=9", parameter #1=(int64)11
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)11
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"|=9", parameter #1=(int32)11
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)11
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"|=9", parameter #1=(int32)11
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"&=10", parameter #1=(int64)10
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)10
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"&=10", parameter #1=(int32)10
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)10
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"&=10", parameter #1=(int32)10
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"<<=2", parameter #1=(int64)40
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)40
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"<<=2", parameter #1=(int32)40
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)40
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"<<=2", parameter #1=(int32)40
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)">>=1", parameter #1=(int64)20
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)20
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)">>=1", parameter #1=(int32)20
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)20
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)">>=1", parameter #1=(int32)20
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(int32)99, parameter #1=(int32)66
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(int32)66, parameter #1=(int32)99
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Assign property: pointer=(pointer)[memory address], symbol=4, value=(int32)18
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=4, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"^=6", parameter #1=(int32)18
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)18
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"^=6", parameter #1=(int32)18
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Hello World"

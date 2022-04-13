@@ -1,18 +1,53 @@
 (string)"Initial value", (float64)5.000000
 (string)"Initial value", (int64)5
+(string)"Initial value", (float32)5.000000
+(string)"Initial value", (int32)5
+(string)"Initial value", (float32)5.000000
+(string)"Initial value", (int32)5
 (string)"+=2", (float64)7.000000
 (string)"+=2", (int64)7
+(string)"+=2", (float32)7.000000
+(string)"+=2", (int32)7
+(string)"+=2", (float32)7.000000
+(string)"+=2", (int32)7
 (string)"-=2", (float64)5.000000
 (string)"-=2", (int64)5
+(string)"-=2", (float32)5.000000
+(string)"-=2", (int32)5
+(string)"-=2", (float32)5.000000
+(string)"-=2", (int32)5
 (string)"*=5", (float64)25.000000
 (string)"*=5", (int64)25
+(string)"*=5", (float32)25.000000
+(string)"*=5", (int32)25
+(string)"*=5", (float32)25.000000
+(string)"*=5", (int32)25
 (string)"/=5", (float64)5.000000
 (string)"/=5", (int64)5
+(string)"/=5", (float32)5.000000
+(string)"/=5", (int32)5
+(string)"/=5", (float32)5.000000
+(string)"/=5", (int32)5
 (string)"%=3", (float64)2.000000
 (string)"%=3", (int64)2
+(string)"%=3", (float32)2.000000
+(string)"%=3", (int32)2
+(string)"%=3", (float32)2.000000
+(string)"%=3", (int32)2
 (string)"|=9", (int64)11
+(string)"|=9", (int32)11
+(string)"|=9", (int32)11
 (string)"&=10", (int64)10
+(string)"&=10", (int32)10
+(string)"&=10", (int32)10
 (string)"<<=2", (int64)40
+(string)"<<=2", (int32)40
+(string)"<<=2", (int32)40
 (string)">>=1", (int64)20
+(string)">>=1", (int32)20
+(string)">>=1", (int32)20
 (int32)99, (int32)66
 (int32)66, (int32)99
+(string)"^=6", (int32)18
+(string)"^=6", (int32)18
+(string)"Hello World"
