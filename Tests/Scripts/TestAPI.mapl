@@ -1,2 +1,8 @@
 #global void print(...);
-#type Object {}
+#global Object globalObject;
+#type Object {
+    int32 intProperty;
+    float32 floatProperty;
+    int32 [int32]; // Only index 0 exists.
+    float32 [float32]; // Only index 0 exists.
+}

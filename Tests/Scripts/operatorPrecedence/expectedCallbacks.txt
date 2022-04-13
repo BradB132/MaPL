@@ -1,18 +1,18 @@
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9*3+5", parameter #1=(int32)32
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9*3-5", parameter #1=(int32)22
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9/3+5", parameter #1=(int32)8
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9/3-5", parameter #1=(int32)-2
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9*(3+5)", parameter #1=(int32)72
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9*(3-5)", parameter #1=(int32)-18
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9/(3+5)", parameter #1=(int32)1
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9/(3-5)", parameter #1=(int32)-4
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9+3<<1", parameter #1=(int32)24
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9-3<<1", parameter #1=(int32)12
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9*3<<1", parameter #1=(int32)54
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9/3<<1", parameter #1=(int32)6
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9+3|5", parameter #1=(int32)13
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9-3|1", parameter #1=(int32)7
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9*3|1", parameter #1=(int32)31
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9/3|1", parameter #1=(int32)7
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"5%3*9", parameter #1=(int32)18
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"!false || true", parameter #1=(bool)false
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9*3+5", parameter #1=(int32)32
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9*3-5", parameter #1=(int32)22
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9/3+5", parameter #1=(int32)8
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9/3-5", parameter #1=(int32)-2
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9*(3+5)", parameter #1=(int32)72
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9*(3-5)", parameter #1=(int32)-18
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9/(3+5)", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9/(3-5)", parameter #1=(int32)-4
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9+3<<1", parameter #1=(int32)24
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9-3<<1", parameter #1=(int32)12
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9*3<<1", parameter #1=(int32)54
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9/3<<1", parameter #1=(int32)6
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9+3|5", parameter #1=(int32)13
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9-3|1", parameter #1=(int32)7
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9*3|1", parameter #1=(int32)31
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9/3|1", parameter #1=(int32)7
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"5%3*9", parameter #1=(int32)18
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"!false || true", parameter #1=(bool)false

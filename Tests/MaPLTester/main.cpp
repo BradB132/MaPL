@@ -17,6 +17,12 @@
 // Generating the various expected files can be laborious. Enabling this option overwrites all expected files with the generated values.
 #define OUTPUT_EXPECTED_FILES 0
 
+char fakeGlobalObject;
+int32_t fakeIntProperty;
+float fakeFloatProperty;
+int32_t fakeIntSubscript;
+float fakeFloatSubscript;
+
 struct TestDirectoryContents {
     std::filesystem::path bytecodePath;
     std::filesystem::path printPath;
@@ -71,14 +77,31 @@ MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSy
             scriptCallbacksString += ", ";
         }
     }
-    if (!invokedOnPointer && functionSymbol == TestSymbols_GLOBAL_print_VARIADIC) {
-        for (MaPLParameterCount i = 0; i < argc; i++) {
-            scriptPrintString += parameterToString(argv[i]);
-            if (i == argc-1) {
-                scriptPrintString += "\n";
-            } else {
-                scriptPrintString += ", ";
-            }
+    
+    if (!invokedOnPointer) {
+        // invokedOnPointer is NULL when accessing a global.
+        switch (functionSymbol) {
+            case TestSymbols_GLOBAL_print_VARIADIC:
+                for (MaPLParameterCount i = 0; i < argc; i++) {
+                    scriptPrintString += parameterToString(argv[i]);
+                    if (i == argc-1) {
+                        scriptPrintString += "\n";
+                    } else {
+                        scriptPrintString += ", ";
+                    }
+                }
+                break;
+            case TestSymbols_GLOBAL_globalObject:
+                return MaPLPointer(&fakeGlobalObject);
+            default: break;
+        }
+    } else if (invokedOnPointer == &fakeGlobalObject) {
+        switch (functionSymbol) {
+            case TestSymbols_Object_intProperty:
+                return MaPLInt32(fakeIntProperty);
+            case TestSymbols_Object_floatProperty:
+                return MaPLFloat32(fakeFloatProperty);
+            default: break;
         }
     }
     
@@ -87,18 +110,54 @@ MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSy
 
 MaPLParameter invokeSubscript(const void *invokedOnPointer, MaPLParameter index) {
     scriptCallbacksString += "Invoke subscript: pointer="+pointerToString(invokedOnPointer)+", index="+parameterToString(index)+"\n";
-    
+    if (invokedOnPointer == &fakeGlobalObject) {
+        switch (index.dataType) {
+            case MaPLDataType_int32:
+                if (index.int32Value == 0) {
+                    return MaPLInt32(fakeIntSubscript);
+                }
+                break;
+            case MaPLDataType_float32:
+                if (index.float32Value == 0) {
+                    return MaPLFloat32(fakeFloatSubscript);
+                }
+                break;
+            default: break;
+        }
+    }
     return MaPLUninitialized();
 }
 
 void assignProperty(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
     scriptCallbacksString += "Assign property: pointer="+pointerToString(invokedOnPointer)+", symbol="+std::to_string(propertySymbol)+", value="+parameterToString(assignedValue)+"\n";
-    
+    if (invokedOnPointer == &fakeGlobalObject) {
+        switch (propertySymbol) {
+            case TestSymbols_Object_intProperty:
+                fakeIntProperty = assignedValue.int32Value;
+            case TestSymbols_Object_floatProperty:
+                fakeFloatProperty = assignedValue.float32Value;
+            default: break;
+        }
+    }
 }
 
 void assignSubscript(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
     scriptCallbacksString += "Assign subscript: pointer="+pointerToString(invokedOnPointer)+", index="+parameterToString(index)+", value="+parameterToString(assignedValue)+"\n";
-    
+    if (invokedOnPointer == &fakeGlobalObject) {
+        switch (index.dataType) {
+            case MaPLDataType_int32:
+                if (index.int32Value == 0) {
+                    fakeIntSubscript = assignedValue.int32Value;
+                }
+                break;
+            case MaPLDataType_float32:
+                if (index.float32Value == 0) {
+                    fakeFloatSubscript = assignedValue.float32Value;
+                }
+                break;
+            default: break;
+        }
+    }
 }
 
 void metadata(const char* metadataString) {
@@ -176,10 +235,16 @@ MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnde
         }
 #endif
         
-        // Run the script.
+        // Reset all global test variables.
         scriptPrintString.clear();
         scriptCallbacksString.clear();
         scriptEncounteredError = false;
+        fakeIntProperty = 0;
+        fakeFloatProperty = 0;
+        fakeIntSubscript = 0;
+        fakeFloatSubscript = 0;
+        
+        // Run the script.
         executeMaPLScript(&bytecode[0], bytecode.size(), &testCallbacks);
         if (scriptEncounteredError) {
             printf("Script encountered a runtime error '%s'.\n", path.c_str());

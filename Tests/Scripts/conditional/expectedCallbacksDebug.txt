@@ -3,36 +3,36 @@ Debug variable update: 'trueBool' = (bool)true
 Debug line: 4
 Debug variable update: 'falseBool' = (bool)false
 Debug line: 6
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"1 - Outside of conditional"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"1 - Outside of conditional"
 Debug line: 9
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"This should print"
 Debug line: 12
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"2 - Outside of conditional"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"2 - Outside of conditional"
 Debug line: 18
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"3 - Outside of conditional"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"3 - Outside of conditional"
 Debug line: 21
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"This should print"
 Debug line: 26
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"4 - Outside of conditional"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"4 - Outside of conditional"
 Debug line: 31
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"This should print"
 Debug line: 34
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"5 - Outside of conditional"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"5 - Outside of conditional"
 Debug line: 37
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"This should print"
 Debug line: 42
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"6 - Outside of conditional"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"6 - Outside of conditional"
 Debug line: 47
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"This should print"
 Debug line: 50
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"7 - Outside of conditional"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"7 - Outside of conditional"
 Debug line: 57
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"This should print"
 Debug line: 60
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"8 - Outside of conditional"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"8 - Outside of conditional"
 Debug line: 62
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"This should print"
 Debug line: 63
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"This should print"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"This should print"
 Debug line: 65
-Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"9 - Outside of conditional"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"9 - Outside of conditional"
