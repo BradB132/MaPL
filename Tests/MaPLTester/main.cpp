@@ -17,17 +17,17 @@
 // Generating the various expected files can be laborious. Enabling this option overwrites all expected files with the generated values.
 #define OUTPUT_EXPECTED_FILES 0
 
-char fakeGlobalObject;
-int32_t fakeIntProperty;
-float fakeFloatProperty;
-int32_t fakeIntSubscript;
-float fakeFloatSubscript;
-
 struct TestDirectoryContents {
     std::filesystem::path bytecodePath;
     std::filesystem::path printPath;
     std::filesystem::path callbacksPath;
 };
+
+char fakeGlobalObject;
+int32_t fakeIntProperty;
+float fakeFloatProperty;
+int32_t fakeIntSubscript;
+float fakeFloatSubscript;
 
 std::string scriptPrintString;
 std::string scriptCallbacksString;
@@ -134,8 +134,10 @@ void assignProperty(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaP
         switch (propertySymbol) {
             case TestSymbols_Object_intProperty:
                 fakeIntProperty = assignedValue.int32Value;
+                break;
             case TestSymbols_Object_floatProperty:
                 fakeFloatProperty = assignedValue.float32Value;
+                break;
             default: break;
         }
     }
