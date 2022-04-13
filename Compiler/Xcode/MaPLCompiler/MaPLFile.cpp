@@ -1222,6 +1222,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             MaPLBuffer scopeBuffer(this);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
+            scopeBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, true);
             if (controlStatements->lastStatement) {
                 compileNode(controlStatements->lastStatement, { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
             }
@@ -1242,7 +1243,6 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
-            loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, false);
             
             currentBuffer->appendBuffer(&loopBuffer, 0, 0);
             
