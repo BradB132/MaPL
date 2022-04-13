@@ -38,7 +38,12 @@ bool scriptEncounteredError = false;
 std::string pointerToString(const void *pointer) {
     // Memory address can (and almost certainly will be) different each time.
     // Only meaningful distinction is NULL vs non-NULL.
-    return "(pointer)"+std::string(pointer ? "[memory address]" : "NULL");
+    if (!pointer) {
+        return "(pointer)NULL";
+    } else if (pointer == &fakeGlobalObject) {
+        return "(Object)globalObject";
+    }
+    return "(pointer)[unrecognized non-NULL address]";
 }
 
 std::string parameterToString(const MaPLParameter &parameter) {
