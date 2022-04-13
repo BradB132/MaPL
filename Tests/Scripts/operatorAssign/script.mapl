@@ -121,6 +121,13 @@ globalObject[0] ^= 6;
 print("^=6", globalObject[0]);
 
 string s = "Hello";
-s += " World";
+s += " ";
 print(s);
-
+globalObject.stringProperty = s;
+print(globalObject.stringProperty);
+globalObject.stringProperty += "World";
+print(globalObject.stringProperty);
+globalObject["0"] = globalObject.stringProperty;
+print(globalObject["0"]);
+globalObject["0"] += "!";
+print(globalObject["0"]);

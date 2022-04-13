@@ -116,4 +116,15 @@ Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(poi
 Assign subscript: pointer=(pointer)[memory address], index=(int32)0, value=(int32)18
 Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"^=6", parameter #1=(int32)18
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Hello "
+Invoke function: pointer=(pointer)NULL, symbol=1, Assign property: pointer=(pointer)[memory address], symbol=5, value=(string)"Hello "
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=5, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Hello "
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=5, Assign property: pointer=(pointer)[memory address], symbol=5, value=(string)"Hello World"
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=5, Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Hello World"
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)NULL, symbol=1, Invoke function: pointer=(pointer)[memory address], symbol=5, Assign subscript: pointer=(pointer)[memory address], index=(string)"0", value=(string)"Hello World"
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(string)"0"
 Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Hello World"
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(string)"0"
+Assign subscript: pointer=(pointer)[memory address], index=(string)"0", value=(string)"Hello World!"
+Invoke function: pointer=(pointer)NULL, symbol=1, Invoke subscript: pointer=(pointer)[memory address], index=(string)"0"
+Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Hello World!"
