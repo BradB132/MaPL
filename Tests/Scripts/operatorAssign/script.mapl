@@ -1,0 +1,52 @@
+#import "../TestAPI.mapl"
+
+float64 floatValue = 5;
+print("Initial value", floatValue);
+int64 intValue = 5;
+print("Initial value", intValue);
+
+floatValue += 2;
+print("+=2", floatValue);
+intValue += 2;
+print("+=2", intValue);
+
+floatValue -= 2;
+print("-=2", floatValue);
+intValue -= 2;
+print("-=2", intValue);
+
+floatValue *= 5;
+print("*=5", floatValue);
+intValue *= 5;
+print("*=5", intValue);
+
+floatValue /= 5;
+print("/=5", floatValue);
+intValue /= 5;
+print("/=5", intValue);
+
+floatValue %= 3;
+print("%=3", floatValue);
+intValue %= 3;
+print("%=3", intValue);
+
+intValue |= 9;
+print("|=9", intValue);
+
+intValue &= 10;
+print("&=10", intValue);
+
+intValue <<= 2;
+print("<<=2", intValue);
+
+intValue >>= 1;
+print(">>=1", intValue);
+
+// Xor in-place swap.
+int32 a = 99;
+int32 b = 66;
+print(a, b);
+a ^= b;
+b ^= a;
+a ^= b;
+print(a, b);

@@ -1,0 +1,78 @@
+Debug line: 3
+Debug variable update: 'floatValue' = (float64)5.000000
+Debug line: 4
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Initial value", parameter #1=(float64)5.000000
+Debug line: 5
+Debug variable update: 'intValue' = (int64)5
+Debug line: 6
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"Initial value", parameter #1=(int64)5
+Debug line: 8
+Debug variable update: 'floatValue' = (float64)7.000000
+Debug line: 9
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"+=2", parameter #1=(float64)7.000000
+Debug line: 10
+Debug variable update: 'intValue' = (int64)7
+Debug line: 11
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"+=2", parameter #1=(int64)7
+Debug line: 13
+Debug variable update: 'floatValue' = (float64)5.000000
+Debug line: 14
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"-=2", parameter #1=(float64)5.000000
+Debug line: 15
+Debug variable update: 'intValue' = (int64)5
+Debug line: 16
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"-=2", parameter #1=(int64)5
+Debug line: 18
+Debug variable update: 'floatValue' = (float64)25.000000
+Debug line: 19
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"*=5", parameter #1=(float64)25.000000
+Debug line: 20
+Debug variable update: 'intValue' = (int64)25
+Debug line: 21
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"*=5", parameter #1=(int64)25
+Debug line: 23
+Debug variable update: 'floatValue' = (float64)5.000000
+Debug line: 24
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"/=5", parameter #1=(float64)5.000000
+Debug line: 25
+Debug variable update: 'intValue' = (int64)5
+Debug line: 26
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"/=5", parameter #1=(int64)5
+Debug line: 28
+Debug variable update: 'floatValue' = (float64)2.000000
+Debug line: 29
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"%=3", parameter #1=(float64)2.000000
+Debug line: 30
+Debug variable update: 'intValue' = (int64)2
+Debug line: 31
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"%=3", parameter #1=(int64)2
+Debug line: 33
+Debug variable update: 'intValue' = (int64)11
+Debug line: 34
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"|=9", parameter #1=(int64)11
+Debug line: 36
+Debug variable update: 'intValue' = (int64)10
+Debug line: 37
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"&=10", parameter #1=(int64)10
+Debug line: 39
+Debug variable update: 'intValue' = (int64)40
+Debug line: 40
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)"<<=2", parameter #1=(int64)40
+Debug line: 42
+Debug variable update: 'intValue' = (int64)20
+Debug line: 43
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(string)">>=1", parameter #1=(int64)20
+Debug line: 46
+Debug variable update: 'a' = (int32)99
+Debug line: 47
+Debug variable update: 'b' = (int32)66
+Debug line: 48
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(int32)99, parameter #1=(int32)66
+Debug line: 49
+Debug variable update: 'a' = (int32)33
+Debug line: 50
+Debug variable update: 'b' = (int32)99
+Debug line: 51
+Debug variable update: 'a' = (int32)66
+Debug line: 52
+Invoke function: pointer=(pointer)NULL, symbol=1, parameter #0=(int32)66, parameter #1=(int32)99

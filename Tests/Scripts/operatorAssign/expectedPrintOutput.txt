@@ -1,0 +1,18 @@
+(string)"Initial value", (float64)5.000000
+(string)"Initial value", (int64)5
+(string)"+=2", (float64)7.000000
+(string)"+=2", (int64)7
+(string)"-=2", (float64)5.000000
+(string)"-=2", (int64)5
+(string)"*=5", (float64)25.000000
+(string)"*=5", (int64)25
+(string)"/=5", (float64)5.000000
+(string)"/=5", (int64)5
+(string)"%=3", (float64)2.000000
+(string)"%=3", (int64)2
+(string)"|=9", (int64)11
+(string)"&=10", (int64)10
+(string)"<<=2", (int64)40
+(string)">>=1", (int64)20
+(int32)99, (int32)66
+(int32)66, (int32)99
