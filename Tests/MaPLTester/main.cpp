@@ -241,11 +241,11 @@ int main(int argc, const char * argv[]) {
     
     // Each directory is expected to contain:
     // 1- script.mapl - The script under test.
-    // 2- expectedBytecode.maplb - The expected bytecode output for script.mapl.
-    // 3- expectedBytecodeDebug.maplb - The expected bytecode output for script.mapl when debug is enabled.
-    // 4- expectedPrintOutput.txt - Calls that the script makes to print output, listed one call per line.
-    // 5- expectedCallbacks.txt - Describes the callbacks made to the host program, listed one call per line.
-    // 6- expectedCallbacksDebug.txt - Describes the callbacks made to the host program when debug is enabled, listed one call per line.
+    // 2- expectedBytecode.maplb - The expected compiled bytecode for script.mapl.
+    // 3- expectedBytecodeDebug.maplb - The expected compiled bytecode for script.mapl when debug is enabled.
+    // 4- expectedPrintOutput.txt - A log of all calls that the script makes to print output, listed one call per line.
+    // 5- expectedCallbacks.txt - A log of all callbacks made to the host program, listed one call per line.
+    // 6- expectedCallbacksDebug.txt - A log of all callbacks made to the host program when debug is enabled, listed one call per line.
     std::vector<std::filesystem::path> scriptsUnderTest;
     std::map<std::filesystem::path, TestDirectoryContents> nonDebugDirectoryMap;
     std::map<std::filesystem::path, TestDirectoryContents> debugDirectoryMap;
