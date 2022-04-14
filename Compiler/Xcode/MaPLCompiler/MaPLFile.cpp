@@ -2463,6 +2463,13 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                     logError(expression->keyToken, "Unable to find a subscript on type '"+prefixType.pointerType+"' with an index parameter of type "+descriptorForType(indexType)+".");
                     return { MaPLPrimitiveType_TypeError };
                 }
+                
+                MaPLParser::ApiSubscriptContext *conflictingSubscript = findSubscript(this, prefixType.pointerType, indexType, subscript);
+                if (conflictingSubscript) {
+                    logError(expression->keyToken, "This subscript invocation is ambiguous between index types '"+descriptorForType(typeForTypeContext(subscript->type(1)))+"' and '"+descriptorForType(typeForTypeContext(conflictingSubscript->type(1)))+"' in type '"+prefixType.pointerType+"'. This ambiguity can be resolved by adding a typecast to explicitly describe the type of the index.");
+                    return { MaPLPrimitiveType_TypeError };
+                }
+                
                 return typeForTypeContext(subscript->type(0));
             }
             case MaPLParser::PAREN_OPEN: {
