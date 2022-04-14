@@ -1,0 +1,8 @@
+int32 i1 = 3;
+string s1 = "TestString";
+float32 f1 = 7;
+
+{
+    // This should be able to exist in this scope without conflicting with other files.
+    uint32 conflictInt = 99;
+}

@@ -15,7 +15,7 @@
 #include "TestSymbols.h"
 
 // Generating the various expected files can be laborious. Enabling this option overwrites all expected files with the generated values.
-#define OUTPUT_EXPECTED_FILES 1
+#define OUTPUT_EXPECTED_FILES 0
 
 struct TestDirectoryContents {
     std::filesystem::path bytecodePath;

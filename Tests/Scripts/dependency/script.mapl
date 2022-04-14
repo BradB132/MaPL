@@ -1,0 +1,9 @@
+#import "./dependentScript1.mapl"
+
+o[0] = i2;
+o[0.0] = f2;
+o["0"] = s2;
+
+print(o);
+print(o.intProperty, o.floatProperty, o.stringProperty);
+print(o[0], o[0.0], o["0"]);

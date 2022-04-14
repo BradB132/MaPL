@@ -1,0 +1,10 @@
+#import "./dependentScript2.mapl"
+#import "./dependentScript3.mapl"
+
+int32 i2 = 5;
+float32 f2 = 9;
+string s2 = "FooBar";
+
+o.intProperty = i1;
+o.floatProperty = f1;
+o.stringProperty = s1;

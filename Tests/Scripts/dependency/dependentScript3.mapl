@@ -1,0 +1,8 @@
+#import "../TestAPI.mapl"
+
+Object o = globalObject;
+
+{
+    // This should be able to exist in this scope without conflicting with other files.
+    uint32 conflictInt = 66;
+}
