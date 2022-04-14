@@ -140,9 +140,7 @@ void MaPLFile::compileIfNeeded() {
         }
         MaPLVariableStack *dependencyStack = file->getVariableStack();
         if (dependencyStack) {
-            for (const auto&[name, variable] : dependencyStack->getGlobalVariables()) {
-                _variableStack->declareVariable(name, variable);
-            }
+            _variableStack->appendVariableStack(dependencyStack);
         }
     }
     _bytecode->zeroDebugLines();

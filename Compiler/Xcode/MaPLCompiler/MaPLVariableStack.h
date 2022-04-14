@@ -65,6 +65,11 @@ public:
     bool declareVariable(const std::string &variableName, MaPLVariable variable);
     
     /**
+     * Inserts all global variables from another stack into the top stack frame.
+     */
+    bool appendVariableStack(MaPLVariableStack *otherStack);
+    
+    /**
      * @return The @c MaPLVariable with the given name. If the variable does not exist, its @c primitiveType will be @c MaPLPrimitiveType_TypeError.
      */
     MaPLVariable getVariable(const std::string &variableName);
