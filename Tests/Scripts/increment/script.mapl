@@ -1,0 +1,53 @@
+#import "../TestAPI.mapl"
+
+char testChar = 1;
+int32 testInt32 = 2;
+int64 testInt64 = 3;
+uint32 testUint32 = 4;
+uint64 testUint64 = 5;
+float32 testFloat32 = 6;
+float64 testFloat64 = 7;
+
+print("Original primitive values", testChar, testInt32, testInt64, testUint32, testUint64, testFloat32, testFloat64);
+
+testChar++;
+testInt32++;
+testInt64++;
+testUint32++;
+testUint64++;
+testFloat32++;
+testFloat64++;
+
+print("Incremented", testChar, testInt32, testInt64, testUint32, testUint64, testFloat32, testFloat64);
+
+testChar--;
+testInt32--;
+testInt64--;
+testUint32--;
+testUint64--;
+testFloat32--;
+testFloat64--;
+
+print("Decremented", testChar, testInt32, testInt64, testUint32, testUint64, testFloat32, testFloat64);
+
+Object o = globalObject;
+o.intProperty = 1;
+o.floatProperty = 2;
+o[(int32)0] = 3;
+o[(float32)0] = 4;
+
+print("Original object values", o.intProperty, o.floatProperty, o[(int32)0], o[(float32)0]);
+
+o.intProperty++;
+o.floatProperty++;
+o[(int32)0]++;
+o[(float32)0]++;
+
+print("Incremented", o.intProperty, o.floatProperty, o[(int32)0], o[(float32)0]);
+
+o.intProperty--;
+o.floatProperty--;
+o[(int32)0]--;
+o[(float32)0]--;
+
+print("Decremented", o.intProperty, o.floatProperty, o[(int32)0], o[(float32)0]);
