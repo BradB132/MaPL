@@ -81,12 +81,11 @@ MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSy
     scriptCallbacksString += "Invoke function: pointer="+pointerToString(invokedOnPointer)+", symbol="+std::to_string(functionSymbol)+", ";
     for (MaPLParameterCount i = 0; i < argc; i++) {
         scriptCallbacksString += "parameter #"+std::to_string(i)+"="+parameterToString(argv[i]);
-        if (i == argc-1) {
-            scriptCallbacksString += "\n";
-        } else {
+        if (i != argc-1) {
             scriptCallbacksString += ", ";
         }
     }
+    scriptCallbacksString += "\n";
     
     if (!invokedOnPointer) {
         // invokedOnPointer is NULL when accessing a global.

@@ -7,22 +7,32 @@ Debug variable update: 'intValue' = (int64)5
 Debug line: 6
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Initial value", parameter #1=(int64)5
 Debug line: 7
-Invoke function: pointer=(pointer)NULL, symbol=3, Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)5.000000
 Debug line: 8
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Initial value", parameter #1=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Initial value", parameter #1=(float32)5.000000
 Debug line: 9
-Invoke function: pointer=(pointer)NULL, symbol=3, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)5
 Debug line: 10
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Initial value", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Initial value", parameter #1=(int32)5
 Debug line: 11
-Invoke function: pointer=(pointer)NULL, symbol=3, Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)5.000000
 Debug line: 12
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Initial value", parameter #1=(float32)5.000000
 Debug line: 13
-Invoke function: pointer=(pointer)NULL, symbol=3, Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)5
 Debug line: 14
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Initial value", parameter #1=(int32)5
 Debug line: 16
 Debug variable update: 'floatValue' = (float64)7.000000
@@ -33,24 +43,36 @@ Debug variable update: 'intValue' = (int64)7
 Debug line: 19
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"+=2", parameter #1=(int64)7
 Debug line: 20
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)7.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)7.000000
 Debug line: 21
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"+=2", parameter #1=(float32)7.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"+=2", parameter #1=(float32)7.000000
 Debug line: 22
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)7
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)7
 Debug line: 23
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"+=2", parameter #1=(int32)7
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"+=2", parameter #1=(int32)7
 Debug line: 24
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)7.000000
 Debug line: 25
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"+=2", parameter #1=(float32)7.000000
 Debug line: 26
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)7
 Debug line: 27
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"+=2", parameter #1=(int32)7
 Debug line: 29
 Debug variable update: 'floatValue' = (float64)5.000000
@@ -61,24 +83,36 @@ Debug variable update: 'intValue' = (int64)5
 Debug line: 32
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"-=2", parameter #1=(int64)5
 Debug line: 33
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)5.000000
 Debug line: 34
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"-=2", parameter #1=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"-=2", parameter #1=(float32)5.000000
 Debug line: 35
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)5
 Debug line: 36
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"-=2", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"-=2", parameter #1=(int32)5
 Debug line: 37
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)5.000000
 Debug line: 38
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"-=2", parameter #1=(float32)5.000000
 Debug line: 39
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)5
 Debug line: 40
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"-=2", parameter #1=(int32)5
 Debug line: 42
 Debug variable update: 'floatValue' = (float64)25.000000
@@ -89,24 +123,36 @@ Debug variable update: 'intValue' = (int64)25
 Debug line: 45
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"*=5", parameter #1=(int64)25
 Debug line: 46
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)25.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)25.000000
 Debug line: 47
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"*=5", parameter #1=(float32)25.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"*=5", parameter #1=(float32)25.000000
 Debug line: 48
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)25
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)25
 Debug line: 49
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"*=5", parameter #1=(int32)25
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"*=5", parameter #1=(int32)25
 Debug line: 50
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)25.000000
 Debug line: 51
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"*=5", parameter #1=(float32)25.000000
 Debug line: 52
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)25
 Debug line: 53
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"*=5", parameter #1=(int32)25
 Debug line: 55
 Debug variable update: 'floatValue' = (float64)5.000000
@@ -117,24 +163,36 @@ Debug variable update: 'intValue' = (int64)5
 Debug line: 58
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"/=5", parameter #1=(int64)5
 Debug line: 59
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)5.000000
 Debug line: 60
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"/=5", parameter #1=(float32)5.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"/=5", parameter #1=(float32)5.000000
 Debug line: 61
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)5
 Debug line: 62
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"/=5", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"/=5", parameter #1=(int32)5
 Debug line: 63
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)5.000000
 Debug line: 64
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"/=5", parameter #1=(float32)5.000000
 Debug line: 65
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)5
 Debug line: 66
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"/=5", parameter #1=(int32)5
 Debug line: 68
 Debug variable update: 'floatValue' = (float64)2.000000
@@ -145,80 +203,116 @@ Debug variable update: 'intValue' = (int64)2
 Debug line: 71
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"%=3", parameter #1=(int64)2
 Debug line: 72
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)2.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)2.000000
 Debug line: 73
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=5, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"%=3", parameter #1=(float32)2.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"%=3", parameter #1=(float32)2.000000
 Debug line: 74
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)2
 Debug line: 75
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"%=3", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"%=3", parameter #1=(int32)2
 Debug line: 76
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)2.000000
 Debug line: 77
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"%=3", parameter #1=(float32)2.000000
 Debug line: 78
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)2
 Debug line: 79
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"%=3", parameter #1=(int32)2
 Debug line: 81
 Debug variable update: 'intValue' = (int64)11
 Debug line: 82
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"|=9", parameter #1=(int64)11
 Debug line: 83
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)11
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)11
 Debug line: 84
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"|=9", parameter #1=(int32)11
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"|=9", parameter #1=(int32)11
 Debug line: 85
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)11
 Debug line: 86
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"|=9", parameter #1=(int32)11
 Debug line: 88
 Debug variable update: 'intValue' = (int64)10
 Debug line: 89
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"&=10", parameter #1=(int64)10
 Debug line: 90
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)10
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)10
 Debug line: 91
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"&=10", parameter #1=(int32)10
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"&=10", parameter #1=(int32)10
 Debug line: 92
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)10
 Debug line: 93
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"&=10", parameter #1=(int32)10
 Debug line: 95
 Debug variable update: 'intValue' = (int64)40
 Debug line: 96
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"<<=2", parameter #1=(int64)40
 Debug line: 97
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)40
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)40
 Debug line: 98
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"<<=2", parameter #1=(int32)40
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"<<=2", parameter #1=(int32)40
 Debug line: 99
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)40
 Debug line: 100
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"<<=2", parameter #1=(int32)40
 Debug line: 102
 Debug variable update: 'intValue' = (int64)20
 Debug line: 103
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)">>=1", parameter #1=(int64)20
 Debug line: 104
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)20
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)20
 Debug line: 105
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)">>=1", parameter #1=(int32)20
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)">>=1", parameter #1=(int32)20
 Debug line: 106
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)20
 Debug line: 107
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)">>=1", parameter #1=(int32)20
 Debug line: 110
 Debug variable update: 'a' = (int32)99
@@ -235,14 +329,20 @@ Debug variable update: 'a' = (int32)66
 Debug line: 116
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(int32)66, parameter #1=(int32)99
 Debug line: 118
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)18
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)18
 Debug line: 119
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=6, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"^=6", parameter #1=(int32)18
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"^=6", parameter #1=(int32)18
 Debug line: 120
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)18
 Debug line: 121
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"^=6", parameter #1=(int32)18
 Debug line: 123
 Debug variable update: 's' = (string)"Hello"
@@ -251,21 +351,34 @@ Debug variable update: 's' = (string)"Hello "
 Debug line: 125
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Hello "
 Debug line: 126
-Invoke function: pointer=(pointer)NULL, symbol=3, Assign property: pointer=(Object)globalObject, symbol=7, value=(string)"Hello "
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Assign property: pointer=(Object)globalObject, symbol=7, value=(string)"Hello "
 Debug line: 127
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=7, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Hello "
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=7, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Hello "
 Debug line: 128
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=7, Assign property: pointer=(Object)globalObject, symbol=7, value=(string)"Hello World"
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=7, 
+Assign property: pointer=(Object)globalObject, symbol=7, value=(string)"Hello World"
 Debug line: 129
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=7, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Hello World"
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=7, 
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Hello World"
 Debug line: 130
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(pointer)NULL, symbol=3, Invoke function: pointer=(Object)globalObject, symbol=7, Assign subscript: pointer=(Object)globalObject, index=(string)"0", value=(string)"Hello World"
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(Object)globalObject, symbol=7, 
+Assign subscript: pointer=(Object)globalObject, index=(string)"0", value=(string)"Hello World"
 Debug line: 131
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(string)"0"
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(string)"0"
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Hello World"
 Debug line: 132
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(string)"0"
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(string)"0"
 Assign subscript: pointer=(Object)globalObject, index=(string)"0", value=(string)"Hello World!"
 Debug line: 133
-Invoke function: pointer=(pointer)NULL, symbol=3, Invoke subscript: pointer=(Object)globalObject, index=(string)"0"
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke subscript: pointer=(Object)globalObject, index=(string)"0"
 Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Hello World!"
