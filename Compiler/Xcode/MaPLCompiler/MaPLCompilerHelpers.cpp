@@ -223,6 +223,15 @@ std::string descriptorForSymbol(const std::string &typeName,
     return formattedName;
 }
 
+std::string typeNameForAPI(antlr4::ParserRuleContext *api) {
+    MaPLParser::ApiDeclarationContext *declaration = dynamic_cast<MaPLParser::ApiDeclarationContext *>(api->parent);
+    if (declaration && declaration->API_TYPE()) {
+        return declaration->identifier()->getText();
+    }
+    // If no API_TYPE, then this is a global.
+    return "";
+}
+
 MaPLInstruction typecastToInstructionForPrimitive(MaPLPrimitiveType type) {
     switch (type) {
         case MaPLPrimitiveType_Char: return MaPLInstruction_char_typecast;

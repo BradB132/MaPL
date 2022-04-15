@@ -585,7 +585,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
                     std::vector<MaPLType> emptyParameterList;
-                    std::string symbolName = descriptorForSymbol(prefixType.pointerType, propertyName, emptyParameterList, false);
+                    std::string symbolName = descriptorForSymbol(typeNameForAPI(property), propertyName, emptyParameterList, false);
                     currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, symbolName);
                     MaPLSymbol symbol = 0;
                     currentBuffer->appendBytes(&symbol, sizeof(symbol));
@@ -763,7 +763,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
                     std::vector<MaPLType> emptyParameterList;
-                    std::string symbolName = descriptorForSymbol(prefixType.pointerType, propertyName, emptyParameterList, false);
+                    std::string symbolName = descriptorForSymbol(typeNameForAPI(property), propertyName, emptyParameterList, false);
                     currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, symbolName);
                     MaPLSymbol symbol = 0;
                     currentBuffer->appendBytes(&symbol, sizeof(symbol));
@@ -1445,7 +1445,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 
                 // The eventual value for this symbol is set after compilation is completed
                 // and symbol values can be calculated. Add a placeholder 0 for now.
-                std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, functionName, apiParameterTypes, hasVariadicParams);
+                std::string symbolName = descriptorForSymbol(typeNameForAPI(functionApi), functionName, apiParameterTypes, hasVariadicParams);
                 currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, symbolName);
                 MaPLSymbol symbol = 0;
                 currentBuffer->appendBytes(&symbol, sizeof(symbol));
@@ -1530,20 +1530,20 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
             currentBuffer->appendInstruction(MaPLInstruction_no_op);
         }
         
+        MaPLParser::ApiPropertyContext *propertyApi = findProperty(this,
+                                                                   invokedOnType,
+                                                                   propertyOrVariableName,
+                                                                   NULL);
+        
         // The eventual value for this symbol is set after compilation is completed
         // and symbol values can be calculated. Add a placeholder 0 for now.
         std::vector<MaPLType> emptyParameterList;
-        std::string symbolName = descriptorForSymbol(invokedReturnType.pointerType, propertyOrVariableName, emptyParameterList, false);
+        std::string symbolName = descriptorForSymbol(typeNameForAPI(propertyApi), propertyOrVariableName, emptyParameterList, false);
         currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, symbolName);
         MaPLSymbol symbol = 0;
         currentBuffer->appendBytes(&symbol, sizeof(symbol));
         MaPLParameterCount parameterCount = 0;
         currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
-        
-        MaPLParser::ApiPropertyContext *propertyApi = findProperty(this,
-                                                                   invokedOnType,
-                                                                   propertyOrVariableName,
-                                                                   NULL);
         
         // Overwrite the placeholder with the instruction that matches the return value.
         MaPLType returnType = typeForTypeContext(propertyApi->type());

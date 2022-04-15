@@ -164,6 +164,13 @@ std::string descriptorForSymbol(const std::string &typeName,
                                 bool hasVariadicParams);
 
 /**
+ * @param api Assumed to be @c MaPLParser::ApiFunctionContext, @c MaPLParser::ApiPropertyContext, or @c MaPLParser::ApiSubscriptContext.
+ *
+ * @return The #type name within which @c api is declared.
+ */
+std::string typeNameForAPI(antlr4::ParserRuleContext *api);
+
+/**
  * @return The instruction byte that indicates a typecast to the corresponding primitive type.
  */
 MaPLInstruction typecastToInstructionForPrimitive(MaPLPrimitiveType type);
