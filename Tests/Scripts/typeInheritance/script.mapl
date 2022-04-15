@@ -1,0 +1,15 @@
+#import "../TestAPI.mapl"
+
+#type ParentType {
+    readonly int32 parentProperty;
+}
+
+#type ChildType : ParentType {
+    readonly int32 childProperty;
+}
+
+#global ChildType childObject;
+
+// Confirm that APIs from both ChildType and ParentType are available on ChildType.
+ChildType child = childObject;
+print(child, child.childProperty, child.parentProperty);

@@ -1,36 +1,36 @@
 Debug line: 3
 Debug variable update: 'i' = (int32)0
 Debug line: 5
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"For continue", parameter #1=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"For continue", parameter #1=(int32)0
 Debug line: 6
 Debug line: 3
 Debug variable update: 'i' = (int32)1
 Debug line: 8
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End for loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End for loop body", parameter #1=(int32)1
 Debug line: 3
 Debug variable update: 'i' = (int32)2
 Debug line: 5
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"For continue", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"For continue", parameter #1=(int32)2
 Debug line: 6
 Debug line: 3
 Debug variable update: 'i' = (int32)3
 Debug line: 8
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End for loop body", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End for loop body", parameter #1=(int32)3
 Debug line: 3
 Debug variable update: 'i' = (int32)4
 Debug variable delete: 'i'
 Debug line: 11
 Debug variable update: 'i' = (int32)0
 Debug line: 16
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End for loop body", parameter #1=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End for loop body", parameter #1=(int32)0
 Debug line: 11
 Debug variable update: 'i' = (int32)1
 Debug line: 16
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End for loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End for loop body", parameter #1=(int32)1
 Debug line: 11
 Debug variable update: 'i' = (int32)2
 Debug line: 13
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"For break", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"For break", parameter #1=(int32)2
 Debug line: 14
 Debug variable delete: 'i'
 Debug line: 19
@@ -38,81 +38,81 @@ Debug variable update: 'i' = (int32)0
 Debug line: 21
 Debug variable update: 'i' = (int32)1
 Debug line: 26
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End while loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End while loop body", parameter #1=(int32)1
 Debug line: 21
 Debug variable update: 'i' = (int32)2
 Debug line: 23
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"While continue", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"While continue", parameter #1=(int32)2
 Debug line: 24
 Debug line: 21
 Debug variable update: 'i' = (int32)3
 Debug line: 26
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End while loop body", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End while loop body", parameter #1=(int32)3
 Debug line: 21
 Debug variable update: 'i' = (int32)4
 Debug line: 23
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"While continue", parameter #1=(int32)4
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"While continue", parameter #1=(int32)4
 Debug line: 24
 Debug line: 21
 Debug variable update: 'i' = (int32)5
 Debug line: 26
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End while loop body", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End while loop body", parameter #1=(int32)5
 Debug line: 29
 Debug variable update: 'i' = (int32)0
 Debug line: 31
 Debug variable update: 'i' = (int32)1
 Debug line: 36
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End while loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End while loop body", parameter #1=(int32)1
 Debug line: 31
 Debug variable update: 'i' = (int32)2
 Debug line: 36
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End while loop body", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End while loop body", parameter #1=(int32)2
 Debug line: 31
 Debug variable update: 'i' = (int32)3
 Debug line: 33
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"While break", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"While break", parameter #1=(int32)3
 Debug line: 34
 Debug line: 39
 Debug variable update: 'i' = (int32)0
 Debug line: 41
 Debug variable update: 'i' = (int32)1
 Debug line: 46
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End do-while loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End do-while loop body", parameter #1=(int32)1
 Debug line: 41
 Debug variable update: 'i' = (int32)2
 Debug line: 43
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Do-while continue", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Do-while continue", parameter #1=(int32)2
 Debug line: 44
 Debug line: 41
 Debug variable update: 'i' = (int32)3
 Debug line: 46
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End do-while loop body", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End do-while loop body", parameter #1=(int32)3
 Debug line: 41
 Debug variable update: 'i' = (int32)4
 Debug line: 43
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Do-while continue", parameter #1=(int32)4
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Do-while continue", parameter #1=(int32)4
 Debug line: 44
 Debug line: 41
 Debug variable update: 'i' = (int32)5
 Debug line: 46
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End do-while loop body", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End do-while loop body", parameter #1=(int32)5
 Debug line: 49
 Debug variable update: 'i' = (int32)0
 Debug line: 51
 Debug variable update: 'i' = (int32)1
 Debug line: 56
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End do-while loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End do-while loop body", parameter #1=(int32)1
 Debug line: 51
 Debug variable update: 'i' = (int32)2
 Debug line: 56
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"End do-while loop body", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"End do-while loop body", parameter #1=(int32)2
 Debug line: 51
 Debug variable update: 'i' = (int32)3
 Debug line: 53
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Do-while break", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Do-while break", parameter #1=(int32)3
 Debug line: 54
 Debug line: 59
 Debug variable update: 'i' = (int32)0
 Debug line: 60
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"Right before exit"
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Right before exit"
 Debug line: 61

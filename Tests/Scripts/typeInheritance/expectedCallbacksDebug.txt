@@ -1,0 +1,4 @@
+Debug line: 14
+Invoke function: pointer=(pointer)NULL, symbol=2, Debug variable update: 'child' = (ChildType)childObject
+Debug line: 15
+Invoke function: pointer=(ChildType)childObject, symbol=1, Invoke function: pointer=(ChildType)childObject, symbol=8, Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(ChildType)childObject, parameter #1=(int32)1234, parameter #2=(int32)5678

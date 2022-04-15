@@ -1,9 +1,9 @@
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(char)99, parameter #1=(char)77
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(int32)1234, parameter #1=(int32)-1234, parameter #2=(int32)4567, parameter #3=(int32)-4567
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(int64)678, parameter #1=(int64)-678, parameter #2=(int64)789, parameter #3=(int64)-789
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(uint32)4321, parameter #1=(uint32)5432
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(uint64)9876, parameter #1=(uint64)3456
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(float32)1.230000, parameter #1=(float32)-1.230000, parameter #2=(float32)4.560000, parameter #3=(float32)-4.560000
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(float64)6.540000, parameter #1=(float64)-6.540000, parameter #2=(float64)9.870000, parameter #3=(float64)-9.870000
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(string)"asdf", parameter #1=(string)"zxcv"
-Invoke function: pointer=(pointer)NULL, symbol=2, parameter #0=(bool)true, parameter #1=(bool)false
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(char)99, parameter #1=(char)77
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(int32)1234, parameter #1=(int32)-1234, parameter #2=(int32)4567, parameter #3=(int32)-4567
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(int64)678, parameter #1=(int64)-678, parameter #2=(int64)789, parameter #3=(int64)-789
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(uint32)4321, parameter #1=(uint32)5432
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(uint64)9876, parameter #1=(uint64)3456
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(float32)1.230000, parameter #1=(float32)-1.230000, parameter #2=(float32)4.560000, parameter #3=(float32)-4.560000
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(float64)6.540000, parameter #1=(float64)-6.540000, parameter #2=(float64)9.870000, parameter #3=(float64)-9.870000
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"asdf", parameter #1=(string)"zxcv"
+Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(bool)true, parameter #1=(bool)false

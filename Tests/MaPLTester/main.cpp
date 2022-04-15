@@ -24,6 +24,7 @@ struct TestDirectoryContents {
 };
 
 char fakeGlobalObject;
+char fakeChildObject;
 int32_t fakeIntProperty;
 float fakeFloatProperty;
 std::string fakeStringProperty;
@@ -42,6 +43,8 @@ std::string pointerToString(const void *pointer) {
         return "(pointer)NULL";
     } else if (pointer == &fakeGlobalObject) {
         return "(Object)globalObject";
+    } else if (pointer == &fakeChildObject) {
+        return "(ChildType)childObject";
     }
     return "(pointer)[unrecognized non-NULL address]";
 }
@@ -100,6 +103,8 @@ MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSy
                 break;
             case TestSymbols_GLOBAL_globalObject:
                 return MaPLPointer(&fakeGlobalObject);
+            case TestSymbols_GLOBAL_childObject:
+                return MaPLPointer(&fakeChildObject);
             default: break;
         }
     } else if (invokedOnPointer == &fakeGlobalObject) {
@@ -110,6 +115,14 @@ MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSy
                 return MaPLFloat32(fakeFloatProperty);
             case TestSymbols_Object_stringProperty:
                 return MaPLStringByValue(fakeStringProperty.c_str());
+            default: break;
+        }
+    } else if (invokedOnPointer == &fakeChildObject) {
+        switch (functionSymbol) {
+            case TestSymbols_ChildType_childProperty:
+                return MaPLInt32(1234);
+            case TestSymbols_ParentType_parentProperty:
+                return MaPLInt32(5678);
             default: break;
         }
     }

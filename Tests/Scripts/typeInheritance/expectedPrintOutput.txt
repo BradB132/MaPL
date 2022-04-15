@@ -1,0 +1,1 @@
+(ChildType)childObject, (int32)1234, (int32)5678
