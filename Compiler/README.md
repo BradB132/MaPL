@@ -18,3 +18,5 @@ Make sure you include the `C++` argument, or the script will build the Java vers
 * MaPL/Compiler/c++/MaPLLexer.cpp
 * MaPL/Compiler/c++/MaPLParser.h
 * MaPL/Compiler/c++/MaPLParser.cpp
+
+_Note: When the compiler is built with Xcode the above script is already invoked via a script build phase._
