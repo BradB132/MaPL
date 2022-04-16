@@ -102,3 +102,22 @@ myCar.speed = "five";
 myCar.fooBar();
 ```
 ...the compiler would emit errors regarding the incorrect type of the `speed` value and the usage of the undeclared `fooBar()` function.
+
+### Metadata
+MaPL can be used for code generation (or generation of any type of text file). By including metadata tags in MaPL script, the host program can receive the content of those tags as the script executes. For example:
+```
+<?Start Metadata?>
+for int32 i = 0; i < 3; i++ {
+    <?Loop Metadata?>
+}
+<?Start Metadata?>
+```
+The above script will send callbacks to the host program in the following order:
+
+1. `Start Metadata`
+1. `Loop Metadata`
+1. `Loop Metadata`
+1. `Loop Metadata`
+1. `End Metadata`
+
+The host program can take these callbacks, append them, and output to file.
