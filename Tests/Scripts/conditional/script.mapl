@@ -60,6 +60,8 @@ if falseBool {
 print("8 - Outside of conditional");
 
 print(trueBool ? "This should print" : "This should NOT print");
+print(true ? "This should print" : "This should NOT print");
 print(falseBool ? "This should NOT print" : "This should print");
+print(false ? "This should NOT print" : "This should print");
 
 print("9 - Outside of conditional");

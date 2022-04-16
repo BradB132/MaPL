@@ -1109,6 +1109,17 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         break;
                     case MaPLParser::TERNARY_CONDITIONAL: {
                         std::vector<MaPLParser::ExpressionContext *> childExpressions = expression->expression();
+                        
+                        // Attempt to strip dead code.
+                        MaPLLiteral conditionalLiteral = constantValueForExpression(childExpressions[0]);
+                        if (conditionalLiteral.type.primitiveType == MaPLPrimitiveType_Boolean) {
+                            // The boolean is a compile time constant, compile only the codepath that is actually used.
+                            size_t chosenExpressionIndex = conditionalLiteral.booleanValue ? 1 : 2;
+                            compileNode(childExpressions[chosenExpressionIndex], expectedType, currentBuffer);
+                            break;
+                        }
+                        
+                        // No dead code, compile this normally.
                         currentBuffer->appendInstruction(ternaryConditionalInstructionForPrimitive(expectedType.primitiveType));
                         compileNode(childExpressions[0], { MaPLPrimitiveType_Boolean }, currentBuffer);
                         compileNode(childExpressions[1], expectedType, currentBuffer);
