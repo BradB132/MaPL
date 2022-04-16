@@ -28,6 +28,20 @@ Make sure you include the `C++` argument, or the script will build the Java vers
 
 The MaPL compiler attempts to make optimizations where it can. More complex optimizations that require broad analysis of multiple code paths etc is not implemented. However, the following low-hanging fruit is currently implemented:
 
-* **Constant folding** - Expressions which are entirely constant will be resolved at compile time. For example, the statement `float32 two_pi = 3.14*2` would be rewritten as `float32 two_pi = 6.28`.
-* **Strength reduction** - The compiler rewrites some expressions in a way that is computationally cheaper. For example, `float32 y = x/2.0` is rewritten as `float32 y = x*0.5`, and `int32 y = x*4` is rewritten as `int32 y = x << 2`.
-* **Dead code stripping** - The compiler will omit logic that is obviously unused. For example, `int32 x = true ? 1 : 2` is rewritten as `int32 x = 1`. Similarly if a loop is declared with `while true { /* logic */ }` it will be rewritten as an infinite loop resembling `label "start"; /* logic */; goto "start";`. Note the previous example is more to illustrate an idea, there is no `label` or `goto` in MaPL.
+**Constant folding** - Expressions which are entirely constant will be resolved at compile time. For example, the statement `float32 two_pi = 3.14*2` would be rewritten as `float32 two_pi = 6.28`.
+
+**Strength reduction** - The compiler rewrites some expressions in a way that is computationally cheaper. For example, `float32 y = x/2.0` is rewritten as `float32 y = x*0.5`, and `int32 y = x*4` is rewritten as `int32 y = x << 2`.
+
+**Dead code stripping** - The compiler will omit logic that is obviously unused. For example, `int32 x = true ? 1 : 2` is rewritten as `int32 x = 1`. Similarly if a loop is declared with...
+```
+while true {
+    /* logic */
+}
+```
+...it will be rewritten as an infinite loop resembling...
+```
+label "start";
+/* logic */;
+goto "start";
+```
+Note the previous example is more to illustrate an idea, there are no `label` or `goto` statements in MaPL.
