@@ -64,6 +64,7 @@ Object myObject = possiblyNull() ?? fallbackValue;
 ```
 ### Operators
 MaPL includes many of the C-style operators:
+
 * **Arithmetic** (numeric types only) - `+`, `-`, `*`, `/`, `%`, `++`, `--`
 * **Numeric comparison** (numeric types only) - `<`, `<=`, `>`, `>=`
 * **Equality comparison** - `==`, `!=`
