@@ -1,5 +1,7 @@
 #global void print(...);
 #global Object globalObject;
+#global bool trueFunc(); // Returns 'true'.
+#global bool falseFunc(); // Returns 'false'.
 #type Object {
     int32 intProperty;
     float32 floatProperty;

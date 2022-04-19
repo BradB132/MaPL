@@ -104,6 +104,10 @@ MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSy
                 return MaPLPointer(&fakeGlobalObject);
             case TestSymbols_GLOBAL_childObject:
                 return MaPLPointer(&fakeChildObject);
+            case TestSymbols_GLOBAL_falseFunc:
+                return MaPLBool(false);
+            case TestSymbols_GLOBAL_trueFunc:
+                return MaPLBool(true);
             default: break;
         }
     } else if (invokedOnPointer == &fakeGlobalObject) {
@@ -284,7 +288,9 @@ MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnde
         executeMaPLScript(&bytecode[0], bytecode.size(), &testCallbacks);
         if (scriptEncounteredError) {
             printf("Script encountered a runtime error '%s'.\n", path.c_str());
+#if !OUTPUT_EXPECTED_FILES
             exit(1);
+#endif
         }
 
 #if OUTPUT_EXPECTED_FILES

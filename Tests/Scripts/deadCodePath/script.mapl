@@ -1,0 +1,15 @@
+#import "../TestAPI.mapl"
+
+// 'falseFunc()' should never be invoked because the first condition is always true.
+bool b1 = trueFunc() || falseFunc();
+
+// 'trueFunc()' should never be invoked because the first condition is always false.
+bool b2 = falseFunc() && trueFunc();
+
+bool b3 = falseFunc() ? falseFunc() : trueFunc();
+bool b4 = trueFunc() ? trueFunc() : falseFunc();
+
+Object o1 = globalObject;
+Object o2 = o1 ?? globalObject; // 'globalObject' should not be invoked on this line.
+
+print(b1, b2, b3, b4, o2);

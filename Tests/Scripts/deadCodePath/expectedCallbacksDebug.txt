@@ -1,0 +1,21 @@
+Debug line: 4
+Invoke function: pointer=(pointer)NULL, symbol=6, 
+Debug variable update: 'b1' = (bool)true
+Debug line: 7
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Debug variable update: 'b2' = (bool)false
+Debug line: 9
+Invoke function: pointer=(pointer)NULL, symbol=3, 
+Invoke function: pointer=(pointer)NULL, symbol=6, 
+Debug variable update: 'b3' = (bool)true
+Debug line: 10
+Invoke function: pointer=(pointer)NULL, symbol=6, 
+Invoke function: pointer=(pointer)NULL, symbol=6, 
+Debug variable update: 'b4' = (bool)true
+Debug line: 12
+Invoke function: pointer=(pointer)NULL, symbol=4, 
+Debug variable update: 'o1' = (Object)globalObject
+Debug line: 13
+Debug variable update: 'o2' = (Object)globalObject
+Debug line: 15
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(bool)true, parameter #1=(bool)false, parameter #2=(bool)true, parameter #3=(bool)true, parameter #4=(Object)globalObject

@@ -1,16 +1,16 @@
-Invoke function: pointer=(pointer)NULL, symbol=3, 
-Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)3
-Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)7.000000
-Assign property: pointer=(Object)globalObject, symbol=7, value=(string)"TestString"
+Invoke function: pointer=(pointer)NULL, symbol=4, 
+Assign property: pointer=(Object)globalObject, symbol=8, value=(int32)3
+Assign property: pointer=(Object)globalObject, symbol=7, value=(float32)7.000000
+Assign property: pointer=(Object)globalObject, symbol=9, value=(string)"TestString"
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)5
 Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)9.000000
 Assign subscript: pointer=(Object)globalObject, index=(string)"0", value=(string)"FooBar"
-Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(Object)globalObject
-Invoke function: pointer=(Object)globalObject, symbol=6, 
-Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(Object)globalObject
+Invoke function: pointer=(Object)globalObject, symbol=8, 
 Invoke function: pointer=(Object)globalObject, symbol=7, 
-Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(int32)3, parameter #1=(float32)7.000000, parameter #2=(string)"TestString"
+Invoke function: pointer=(Object)globalObject, symbol=9, 
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(int32)3, parameter #1=(float32)7.000000, parameter #2=(string)"TestString"
 Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Invoke subscript: pointer=(Object)globalObject, index=(string)"0"
-Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(int32)5, parameter #1=(float32)9.000000, parameter #2=(string)"FooBar"
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(int32)5, parameter #1=(float32)9.000000, parameter #2=(string)"FooBar"

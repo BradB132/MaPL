@@ -1,39 +1,39 @@
-Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Original primitive values", parameter #1=(char)1, parameter #2=(int32)2, parameter #3=(int64)3, parameter #4=(uint32)4, parameter #5=(uint64)5, parameter #6=(float32)6.000000, parameter #7=(float64)7.000000
-Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Incremented", parameter #1=(char)2, parameter #2=(int32)3, parameter #3=(int64)4, parameter #4=(uint32)5, parameter #5=(uint64)6, parameter #6=(float32)7.000000, parameter #7=(float64)8.000000
-Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Decremented", parameter #1=(char)1, parameter #2=(int32)2, parameter #3=(int64)3, parameter #4=(uint32)4, parameter #5=(uint64)5, parameter #6=(float32)6.000000, parameter #7=(float64)7.000000
-Invoke function: pointer=(pointer)NULL, symbol=3, 
-Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)1
-Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)2.000000
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Original primitive values", parameter #1=(char)1, parameter #2=(int32)2, parameter #3=(int64)3, parameter #4=(uint32)4, parameter #5=(uint64)5, parameter #6=(float32)6.000000, parameter #7=(float64)7.000000
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Incremented", parameter #1=(char)2, parameter #2=(int32)3, parameter #3=(int64)4, parameter #4=(uint32)5, parameter #5=(uint64)6, parameter #6=(float32)7.000000, parameter #7=(float64)8.000000
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Decremented", parameter #1=(char)1, parameter #2=(int32)2, parameter #3=(int64)3, parameter #4=(uint32)4, parameter #5=(uint64)5, parameter #6=(float32)6.000000, parameter #7=(float64)7.000000
+Invoke function: pointer=(pointer)NULL, symbol=4, 
+Assign property: pointer=(Object)globalObject, symbol=8, value=(int32)1
+Assign property: pointer=(Object)globalObject, symbol=7, value=(float32)2.000000
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)3
 Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)4.000000
-Invoke function: pointer=(Object)globalObject, symbol=6, 
-Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(Object)globalObject, symbol=8, 
+Invoke function: pointer=(Object)globalObject, symbol=7, 
 Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
-Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Original object values", parameter #1=(int32)1, parameter #2=(float32)2.000000, parameter #3=(int32)3, parameter #4=(float32)4.000000
-Invoke function: pointer=(Object)globalObject, symbol=6, 
-Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)2
-Invoke function: pointer=(Object)globalObject, symbol=5, 
-Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)3.000000
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Original object values", parameter #1=(int32)1, parameter #2=(float32)2.000000, parameter #3=(int32)3, parameter #4=(float32)4.000000
+Invoke function: pointer=(Object)globalObject, symbol=8, 
+Assign property: pointer=(Object)globalObject, symbol=8, value=(int32)2
+Invoke function: pointer=(Object)globalObject, symbol=7, 
+Assign property: pointer=(Object)globalObject, symbol=7, value=(float32)3.000000
 Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)4
 Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)5.000000
-Invoke function: pointer=(Object)globalObject, symbol=6, 
-Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(Object)globalObject, symbol=8, 
+Invoke function: pointer=(Object)globalObject, symbol=7, 
 Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
-Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Incremented", parameter #1=(int32)2, parameter #2=(float32)3.000000, parameter #3=(int32)4, parameter #4=(float32)5.000000
-Invoke function: pointer=(Object)globalObject, symbol=6, 
-Assign property: pointer=(Object)globalObject, symbol=6, value=(int32)1
-Invoke function: pointer=(Object)globalObject, symbol=5, 
-Assign property: pointer=(Object)globalObject, symbol=5, value=(float32)2.000000
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Incremented", parameter #1=(int32)2, parameter #2=(float32)3.000000, parameter #3=(int32)4, parameter #4=(float32)5.000000
+Invoke function: pointer=(Object)globalObject, symbol=8, 
+Assign property: pointer=(Object)globalObject, symbol=8, value=(int32)1
+Invoke function: pointer=(Object)globalObject, symbol=7, 
+Assign property: pointer=(Object)globalObject, symbol=7, value=(float32)2.000000
 Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Assign subscript: pointer=(Object)globalObject, index=(int32)0, value=(int32)3
 Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
 Assign subscript: pointer=(Object)globalObject, index=(float32)0.000000, value=(float32)4.000000
-Invoke function: pointer=(Object)globalObject, symbol=6, 
-Invoke function: pointer=(Object)globalObject, symbol=5, 
+Invoke function: pointer=(Object)globalObject, symbol=8, 
+Invoke function: pointer=(Object)globalObject, symbol=7, 
 Invoke subscript: pointer=(Object)globalObject, index=(int32)0
 Invoke subscript: pointer=(Object)globalObject, index=(float32)0.000000
-Invoke function: pointer=(pointer)NULL, symbol=4, parameter #0=(string)"Decremented", parameter #1=(int32)1, parameter #2=(float32)2.000000, parameter #3=(int32)3, parameter #4=(float32)4.000000
+Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Decremented", parameter #1=(int32)1, parameter #2=(float32)2.000000, parameter #3=(int32)3, parameter #4=(float32)4.000000
