@@ -5,7 +5,9 @@
 MaPL is a C-style scripting language that focuses on a few different design goals:
 
 1. **Runtime performance** - To achieve this goal, MaPL is compiled into bytecode instead of interpreted at runtime. The compiler is able to absorb the expensive parsing and compilation processes so that the runtime can execute the script with better performance.
-1. **Compile-time feedback** - The MaPL compiler is responsible for much of the error checking, allowing it to catch errors as early and proactively as possible, and minimize the number of surprises at runtime. For example, MaPL requires that the types of variables are explicit, and the compiler will emit errors whenever types are mismatched or ambiguous. MaPL also requires that the API of the host program is explicitly specified within the script. With this complete understand of the API surface, the compiler can provide the maximum amount of feedback about API usage.
+1. **Compile-time feedback** - The MaPL compiler is responsible for much of the error checking, allowing it to catch errors as early and proactively as possible, and minimize the number of surprises at runtime. A couple of examples:
+    * MaPL is strongly typed, so the compiler will emit errors whenever types are mismatched or ambiguous.
+    * MaPL requires the API of the host program to be explicitly specified within the script. With this complete understanding of the API surface, the compiler can provide the maximum amount of feedback about API usage.
 1. **Small runtime footprint** - The compiler absorbs most of the complexity, so bytecode files tend to be small in size (usually smaller than the script itself), and the runtime is lightweight.
 1. **Small in scope** - MaPL scripts are intended to be macros, not entire programs. MaPL intentionally omits language features like the ability to implement entire classes or functions within a script. Instead, think of each MaPL script as the body of a function that can only utilize the existing classes and functions within the host program.
 
@@ -89,7 +91,7 @@ MaPL requires explicit declarations for the entire API surface of the host progr
 }
 #global Car getCar();
 ```
-The above API would let a subsequent script write logic like:
+The above API would allow a subsequent script write logic like:
 ```
 Car myCar = getCar();
 for int32 i = 0; i < myCar.wheels.count; i++) {
