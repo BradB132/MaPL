@@ -186,8 +186,8 @@ void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bo
             
             // 'byteLocation' describes the beginning of the relevant sequence of bytes.
             // Add the size of the Instruction and CursorMove to find the end of that sequence.
-            size_t byteEndLocation = annotation.byteLocation + sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
-            MaPLCursorMove cursorMove;
+            size_t byteEndLocation = annotation.byteLocation + sizeof(MaPLInstruction) + sizeof(MaPLBytecodeLength);
+            MaPLBytecodeLength cursorMove;
             if (jumpToEnd) {
                 cursorMove = _bytes.size()-byteEndLocation;
             } else {// Jump to beginning.

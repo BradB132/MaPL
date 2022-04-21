@@ -11,5 +11,6 @@
 typedef u_int8_t MaPLParameterCount;
 typedef u_int16_t MaPLSymbol;
 typedef u_int16_t MaPLLineNumber;
+typedef u_int16_t MaPLBytecodeLength;
 
 #endif /* MaPLTypedefs_h */

@@ -331,7 +331,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         }
                         currentBuffer->addAnnotation(MaPLBufferAnnotationType_Break);
                         currentBuffer->appendInstruction(MaPLInstruction_placeholder);
-                        MaPLCursorMove placeholderMove = 0;
+                        MaPLBytecodeLength placeholderMove = 0;
                         currentBuffer->appendBytes(&placeholderMove, sizeof(placeholderMove));
                     }
                         break;
@@ -341,7 +341,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         }
                         currentBuffer->addAnnotation(MaPLBufferAnnotationType_Continue);
                         currentBuffer->appendInstruction(MaPLInstruction_placeholder);
-                        MaPLCursorMove placeholderMove = 0;
+                        MaPLBytecodeLength placeholderMove = 0;
                         currentBuffer->appendBytes(&placeholderMove, sizeof(placeholderMove));
                     }
                         break;
@@ -1160,10 +1160,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // "While" loops are represented in bytecode as follows:
             // ┌ MaPLInstruction_conditional - Signals the start of the loop.
             // | ExpressionContext - The boolean expression at the top of the loop.
-            // └ MaPLCursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
+            // └ MaPLBytecodeLength - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             //   ScopeContext - The contents of the loop.
             // ┌ MaPLInstruction_cursor_move_back - Signals the end of the loop.
-            // └ MaPLCursorMove - The size of the backward move required to return to the top of the loop.
+            // └ MaPLBytecodeLength - The size of the backward move required to return to the top of the loop.
             MaPLBuffer scopeBuffer(this);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &scopeBuffer);
             
@@ -1175,12 +1175,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
                 // Scope size must also include the MaPLInstruction_cursor_move_back.
-                MaPLCursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
+                MaPLBytecodeLength scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLBytecodeLength);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
             loopBuffer.appendBuffer(&scopeBuffer, 0, 0);
             loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
-            MaPLCursorMove byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPLCursorMove);
+            MaPLBytecodeLength byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPLBytecodeLength);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
@@ -1200,11 +1200,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             //   ImperativeStatementContext - The first imperative statement at the top of the loop (typically variable declaration).
             // ┌ MaPLInstruction_conditional - The conditional at the top of the loop.
             // | ExpressionContext - The boolean expression at the top of the loop.
-            // └ MaPLCursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
+            // └ MaPLBytecodeLength - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             //   ScopeContext - The contents of the loop.
             //   ImperativeStatementContext - The last imperative statement at the top of the loop (typically variable increment).
             // ┌ MaPLInstruction_cursor_move_back - Signals the end of the loop.
-            // └ MaPLCursorMove - The size of the backward move required to return to the top of the loop.
+            // └ MaPLBytecodeLength - The size of the backward move required to return to the top of the loop.
             MaPLParser::ForLoopControlStatementsContext *controlStatements = loop->forLoopControlStatements();
             if (controlStatements->firstStatement) {
                 compileNode(controlStatements->firstStatement, { MaPLPrimitiveType_Uninitialized }, currentBuffer);
@@ -1243,12 +1243,12 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
                 // Scope size must also include the MaPLInstruction_cursor_move_back.
-                MaPLCursorMove scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
+                MaPLBytecodeLength scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLBytecodeLength);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
             loopBuffer.appendBuffer(&scopeBuffer, 0, 0);
             loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
-            MaPLCursorMove byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPLCursorMove);
+            MaPLBytecodeLength byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPLBytecodeLength);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
@@ -1268,9 +1268,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             //   ScopeContext - The contents of the loop.
             // ┌ MaPLInstruction_conditional - The conditional at the end of the loop.
             // | ExpressionContext - The boolean expression at the end of the loop.
-            // └ MaPLCursorMove - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
+            // └ MaPLBytecodeLength - If the boolean expression is false, this is how many bytes to skip forward to exit the loop.
             // ┌ MaPLInstruction_cursor_move_back - Contained within the MaPLInstruction_conditional, loops back to the top.
-            // └ MaPLCursorMove - The size of the backward move required to return to the top of the loop.
+            // └ MaPLBytecodeLength - The size of the backward move required to return to the top of the loop.
             MaPLBuffer loopBuffer(this);
             compileNode(loop->scope(), { MaPLPrimitiveType_Uninitialized }, &loopBuffer);
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, true);
@@ -1291,11 +1291,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 loopBuffer.appendInstruction(MaPLInstruction_conditional);
                 compileNode(loopExpression, { MaPLPrimitiveType_Boolean }, &loopBuffer);
                 // This is already at the end of the loop, and just needs to skip the MaPLInstruction_cursor_move_back that makes the loop repeat.
-                MaPLCursorMove cursorMoveSize = sizeof(MaPLInstruction) + sizeof(MaPLCursorMove);
+                MaPLBytecodeLength cursorMoveSize = sizeof(MaPLInstruction) + sizeof(MaPLBytecodeLength);
                 loopBuffer.appendBytes(&cursorMoveSize, sizeof(cursorMoveSize));
             }
             loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
-            MaPLCursorMove loopSize = loopBuffer.getByteCount() + sizeof(MaPLCursorMove);
+            MaPLBytecodeLength loopSize = loopBuffer.getByteCount() + sizeof(MaPLBytecodeLength);
             loopBuffer.appendBytes(&loopSize, sizeof(loopSize));
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
@@ -1325,10 +1325,10 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // Conditionals are represented in bytecode as follows:
                 // ┌ MaPLInstruction_conditional - Signals the start of a conditional.
                 // | ExpressionContext - The boolean expression at the top of the conditional.
-                // └ MaPLCursorMove - If the conditional is false, this is how many bytes to skip forward to exit the conditional.
+                // └ MaPLBytecodeLength - If the conditional is false, this is how many bytes to skip forward to exit the conditional.
                 //   ScopeContext - The contents of the conditional.
                 // ┌ MaPLInstruction_cursor_move_forward - Signals the end of conditional contents (omitted if there's no "else").
-                // └ MaPLCursorMove - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
+                // └ MaPLBytecodeLength - After the conditional content, how far to skip past all subsequent "else" bytes (omitted if there's no "else").
                 //   ConditionalElseContext - The "else" portion of the conditional (omitted if there's no "else").
                 currentBuffer->appendInstruction(MaPLInstruction_conditional);
                 compileNode(conditionalExpression, { MaPLPrimitiveType_Boolean }, currentBuffer);
@@ -1342,13 +1342,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     compileChildNodes(conditionalElse, { MaPLPrimitiveType_Uninitialized }, &elseBuffer);
                 }
                 
-                MaPLCursorMove elseBufferSize = (MaPLCursorMove)elseBuffer.getByteCount();
+                MaPLBytecodeLength elseBufferSize = (MaPLBytecodeLength)elseBuffer.getByteCount();
                 if (elseBufferSize > 0) {
                     scopeBuffer.appendInstruction(MaPLInstruction_cursor_move_forward);
                     scopeBuffer.appendBytes(&elseBufferSize, sizeof(elseBufferSize));
                 }
                 
-                MaPLCursorMove scopeSize = (MaPLCursorMove)scopeBuffer.getByteCount();
+                MaPLBytecodeLength scopeSize = (MaPLBytecodeLength)scopeBuffer.getByteCount();
                 currentBuffer->appendBytes(&scopeSize, sizeof(scopeSize));
                 
                 currentBuffer->appendBuffer(&scopeBuffer, 0, 0);

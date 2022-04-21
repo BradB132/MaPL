@@ -11,7 +11,6 @@
 
 // Byte sizes for MaPL bytecode.
 typedef u_int16_t MaPLMemoryAddress;
-typedef u_int16_t MaPLCursorMove;
 
 // Bytecodes are sorted by return type.
 enum MaPLInstruction : u_int8_t {

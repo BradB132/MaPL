@@ -129,7 +129,7 @@ typedef struct {
  * @param bufferLength The byte length of @c scriptBuffer.
  * @param callbacks A struct of callbacks that determines how the MaPL runtime should interact with the host program during script execution.
  */
-void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const MaPLCallbacks *callbacks);
+void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength, const MaPLCallbacks *callbacks);
 
 #ifdef __cplusplus
 }

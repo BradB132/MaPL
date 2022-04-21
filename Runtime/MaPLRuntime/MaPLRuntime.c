@@ -20,8 +20,8 @@ typedef enum {
 
 typedef struct {
     const u_int8_t* scriptBuffer;
-    MaPLCursorMove bufferLength;
-    MaPLCursorMove cursorPosition;
+    MaPLBytecodeLength bufferLength;
+    MaPLBytecodeLength cursorPosition;
     u_int8_t *primitiveTable;
     char **stringTable;
     const MaPLCallbacks *callbacks;
@@ -195,9 +195,9 @@ MaPLMemoryAddress readMemoryAddress(MaPLExecutionContext *context) {
     return address;
 }
 
-MaPLCursorMove readCursorMove(MaPLExecutionContext *context) {
-    MaPLCursorMove move = *((MaPLCursorMove *)(context->scriptBuffer+context->cursorPosition));
-    context->cursorPosition += sizeof(MaPLCursorMove);
+MaPLBytecodeLength readCursorMove(MaPLExecutionContext *context) {
+    MaPLBytecodeLength move = *((MaPLBytecodeLength *)(context->scriptBuffer+context->cursorPosition));
+    context->cursorPosition += sizeof(MaPLBytecodeLength);
     return move;
 }
 
@@ -1727,19 +1727,19 @@ void evaluateStatement(MaPLExecutionContext *context) {
             break;
         case MaPLInstruction_conditional: {
             bool conditional = evaluateBool(context);
-            MaPLCursorMove move = readCursorMove(context);
+            MaPLBytecodeLength move = readCursorMove(context);
             if (!conditional) {
                 context->cursorPosition += move;
             }
         }
             break;
         case MaPLInstruction_cursor_move_forward: {
-            MaPLCursorMove move = readCursorMove(context);
+            MaPLBytecodeLength move = readCursorMove(context);
             context->cursorPosition += move;
         }
             break;
         case MaPLInstruction_cursor_move_back: {
-            MaPLCursorMove move = readCursorMove(context);
+            MaPLBytecodeLength move = readCursorMove(context);
             context->cursorPosition -= move;
         }
             break;
@@ -1783,7 +1783,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
     }
 }
 
-void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const MaPLCallbacks *callbacks) {
+void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength, const MaPLCallbacks *callbacks) {
     // TODO: Here and in compiler assert the byte sizes of all types ( https://stackoverflow.com/a/18511691 ).
     // TODO: Check endianness <endian.h> ( https://stackoverflow.com/a/2100363 ).
     
