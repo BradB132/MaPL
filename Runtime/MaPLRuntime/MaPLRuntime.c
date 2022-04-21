@@ -259,6 +259,10 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
         context->cursorPosition++;
     } else {
         invokedOnPointer = evaluatePointer(context);
+        if (!invokedOnPointer) {
+            context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_invocationOnNullPointer;
+        }
     }
     
     MaPLSymbol symbol = readSymbol(context);
@@ -304,7 +308,7 @@ MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
     const void *invokedOnPointer = evaluatePointer(context);
     if (!invokedOnPointer) {
         context->executionState = MaPLExecutionState_error;
-        context->errorType = MaPLRuntimeError_subscriptInvokedOnNULL;
+        context->errorType = MaPLRuntimeError_invocationOnNullPointer;
     }
     
     MaPLParameter subscriptIndex = evaluateParameter(context);
@@ -1617,7 +1621,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             const void *invokedOnPointer = evaluatePointer(context);
             if (!invokedOnPointer) {
                 context->executionState = MaPLExecutionState_error;
-                context->errorType = MaPLRuntimeError_subscriptInvokedOnNULL;
+                context->errorType = MaPLRuntimeError_invocationOnNullPointer;
             }
             
             MaPLParameter subscriptIndex = evaluateParameter(context);
@@ -1675,6 +1679,10 @@ void evaluateStatement(MaPLExecutionContext *context) {
                 context->cursorPosition++;
             } else {
                 invokedOnPointer = evaluatePointer(context);
+                if (!invokedOnPointer) {
+                    context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_invocationOnNullPointer;
+                }
             }
             
             MaPLSymbol symbol = readSymbol(context);

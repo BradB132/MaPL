@@ -91,7 +91,7 @@ typedef enum {
     MaPLRuntimeError_malformedBytecode,
     MaPLRuntimeError_returnValueTypeMismatch,
     MaPLRuntimeError_missingCallback,
-    MaPLRuntimeError_subscriptInvokedOnNULL,
+    MaPLRuntimeError_invocationOnNullPointer,
 } MaPLRuntimeError;
 
 /**
