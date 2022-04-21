@@ -27,6 +27,7 @@ typedef struct {
     const MaPLCallbacks *callbacks;
     bool isDeadCodepath;
     MaPLExecutionState executionState;
+    MaPLRuntimeError errorType;
 } MaPLExecutionContext;
 
 u_int8_t evaluateChar(MaPLExecutionContext *context);
@@ -158,6 +159,7 @@ bool verifyReturnValue(MaPLExecutionContext *context, MaPLParameter *returnValue
     if (returnValue->dataType != expectedType) {
         if (!context->isDeadCodepath) {
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_returnValueTypeMismatch;
             if (returnValue->dataType == MaPLDataType_string) {
                 freeStringIfNeeded((char *)returnValue->stringValue);
             }
@@ -244,6 +246,7 @@ MaPLParameter evaluateParameter(MaPLExecutionContext *context) {
             return MaPLPointer(evaluatePointer(context));
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             return MaPLUninitialized();
     }
 }
@@ -278,6 +281,7 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     // Invoke the function.
     if (!context->callbacks->invokeFunction) {
         context->executionState = MaPLExecutionState_error;
+        context->errorType = MaPLRuntimeError_missingCallback;
     }
     MaPLParameter returnValue = MaPLUninitialized();
     if (context->executionState == MaPLExecutionState_continue && !context->isDeadCodepath) {
@@ -300,6 +304,7 @@ MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
     const void *invokedOnPointer = evaluatePointer(context);
     if (!invokedOnPointer) {
         context->executionState = MaPLExecutionState_error;
+        context->errorType = MaPLRuntimeError_subscriptInvokedOnNULL;
     }
     
     MaPLParameter subscriptIndex = evaluateParameter(context);
@@ -313,6 +318,7 @@ MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
     // Invoke the subscript.
     if (!context->callbacks->invokeSubscript) {
         context->executionState = MaPLExecutionState_error;
+        context->errorType = MaPLRuntimeError_missingCallback;
     }
     MaPLParameter returnValue = MaPLUninitialized();
     if (context->executionState == MaPLExecutionState_continue && !context->isDeadCodepath) {
@@ -404,11 +410,13 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
                     return evaluateBool(context) ? 1 : 0;
                 default:
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
             }
             break;
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return 0;
@@ -495,11 +503,13 @@ int32_t evaluateInt32(MaPLExecutionContext *context) {
                     return evaluateBool(context) ? 1 : 0;
                 default:
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
             }
             break;
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return 0;
@@ -586,11 +596,13 @@ int64_t evaluateInt64(MaPLExecutionContext *context) {
                     return evaluateBool(context) ? 1 : 0;
                 default:
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
             }
             break;
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return 0;
@@ -675,11 +687,13 @@ u_int32_t evaluateUint32(MaPLExecutionContext *context) {
                     return evaluateBool(context) ? 1 : 0;
                 default:
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
             }
             break;
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return 0;
@@ -764,11 +778,13 @@ u_int64_t evaluateUint64(MaPLExecutionContext *context) {
                     return evaluateBool(context) ? 1 : 0;
                 default:
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
             }
             break;
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return 0;
@@ -846,11 +862,13 @@ float evaluateFloat32(MaPLExecutionContext *context) {
                     return evaluateBool(context) ? 1.0f : 0.0f;
                 default:
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
             }
             break;
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return 0.0f;
@@ -928,11 +946,13 @@ double evaluateFloat64(MaPLExecutionContext *context) {
                     return evaluateBool(context) ? 1.0 : 0.0;
                 default:
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
             }
             break;
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return 0.0;
@@ -996,6 +1016,7 @@ bool evaluateBool(MaPLExecutionContext *context) {
                 }
                 default:
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
             }
             break;
@@ -1135,6 +1156,7 @@ bool evaluateBool(MaPLExecutionContext *context) {
             return !evaluateBool(context);
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return false;
@@ -1184,6 +1206,7 @@ void *evaluatePointer(MaPLExecutionContext *context) {
         }
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return NULL;
@@ -1306,12 +1329,14 @@ char *evaluateString(MaPLExecutionContext *context) {
                 default:
                     strcpy(returnString, "");
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
             }
             return tagStringAsAllocated(returnString);
         }
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
     return NULL;
@@ -1507,6 +1532,7 @@ MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, enum MaPLInstru
                 break;
             default:
                 context->executionState = MaPLExecutionState_error;
+                context->errorType = MaPLRuntimeError_malformedBytecode;
                 return MaPLUninitialized();
         }
     }
@@ -1591,6 +1617,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             const void *invokedOnPointer = evaluatePointer(context);
             if (!invokedOnPointer) {
                 context->executionState = MaPLExecutionState_error;
+                context->errorType = MaPLRuntimeError_subscriptInvokedOnNULL;
             }
             
             MaPLParameter subscriptIndex = evaluateParameter(context);
@@ -1608,6 +1635,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
                 // This is an increment operator. Read from the subscript to get the initial value.
                 if (!context->callbacks->invokeSubscript) {
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_missingCallback;
                 }
                 MaPLParameter initialValue = MaPLUninitialized();
                 if (context->executionState == MaPLExecutionState_continue) {
@@ -1622,6 +1650,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             // Assign the subscript.
             if (!context->callbacks->assignSubscript) {
                 context->executionState = MaPLExecutionState_error;
+                context->errorType = MaPLRuntimeError_missingCallback;
             }
             if (context->executionState == MaPLExecutionState_continue) {
                 char *taggedAssignedString = NULL;
@@ -1656,6 +1685,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
                 // This is an increment operator. Read from the property to get the initial value.
                 if (!context->callbacks->invokeFunction) {
                     context->executionState = MaPLExecutionState_error;
+                    context->errorType = MaPLRuntimeError_missingCallback;
                 }
                 MaPLParameter initialValue = MaPLUninitialized();
                 if (context->executionState == MaPLExecutionState_continue) {
@@ -1670,6 +1700,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             // Assign the property.
             if (!context->callbacks->assignProperty) {
                 context->executionState = MaPLExecutionState_error;
+                context->errorType = MaPLRuntimeError_missingCallback;
             }
             if (context->executionState == MaPLExecutionState_continue) {
                 char *taggedAssignedString = NULL;
@@ -1739,12 +1770,14 @@ void evaluateStatement(MaPLExecutionContext *context) {
             break;
         default:
             context->executionState = MaPLExecutionState_error;
+            context->errorType = MaPLRuntimeError_malformedBytecode;
             break;
     }
 }
 
 void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const MaPLCallbacks *callbacks) {
     // TODO: Here and in compiler assert the byte sizes of all types ( https://stackoverflow.com/a/18511691 ).
+    // TODO: Check endianness <endian.h> ( https://stackoverflow.com/a/2100363 ).
     
     MaPLExecutionContext context;
     context.scriptBuffer = (u_int8_t *)scriptBuffer;
@@ -1768,7 +1801,7 @@ void executeMaPLScript(const void* scriptBuffer, u_int16_t bufferLength, const M
         evaluateStatement(&context);
     }
     if (context.executionState == MaPLExecutionState_error && context.callbacks->error) {
-        context.callbacks->error();
+        context.callbacks->error(context.errorType);
     }
     
     // Free any remaining allocated strings.

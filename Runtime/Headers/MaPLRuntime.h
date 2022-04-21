@@ -85,6 +85,16 @@ MaPLParameter MaPLStringByReference(const char *stringValue);
 MaPLParameter MaPLStringByValue(const char *stringValue);
 
 /**
+ * Describes the types of errors that can occur during execution of a MaPL script.
+ */
+typedef enum {
+    MaPLRuntimeError_malformedBytecode,
+    MaPLRuntimeError_returnValueTypeMismatch,
+    MaPLRuntimeError_missingCallback,
+    MaPLRuntimeError_subscriptInvokedOnNULL,
+} MaPLRuntimeError;
+
+/**
  * A struct that holds all the function pointers that the MaPL runtime uses to interact with the host program. The error method will be invoked if required callbacks are NULL.
  */
 typedef struct {
@@ -109,7 +119,7 @@ typedef struct {
     void (*debugVariableDelete)(const char *variableName);
     
     /// Optional. Error callback is invoked when the script has encountered an error and cannot continue. If callback is NULL, script will fail silently.
-    void (*error)(void);
+    void (*error)(MaPLRuntimeError);
 } MaPLCallbacks;
 
 /**

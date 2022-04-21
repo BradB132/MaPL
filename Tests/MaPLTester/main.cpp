@@ -216,7 +216,7 @@ void debugVariableDelete(const char *variableName) {
     scriptCallbacksString += "Debug variable delete: '"+std::string(variableName)+"'\n";
 }
 
-void error(void) {
+void error(MaPLRuntimeError error) {
     scriptEncounteredError = true;
 }
 
