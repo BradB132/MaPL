@@ -1,3 +1,5 @@
+#ifndef TestSymbols_h
+#define TestSymbols_h
 enum TestSymbols {
     TestSymbols_ChildType_childProperty = 1,
     TestSymbols_GLOBAL_childObject = 2,
@@ -10,3 +12,4 @@ enum TestSymbols {
     TestSymbols_Object_stringProperty = 9,
     TestSymbols_ParentType_parentProperty = 10,
 };
+#endif /* TestSymbols_h */

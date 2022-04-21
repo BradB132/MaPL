@@ -42,11 +42,11 @@ MaPLCompileResult compileMaPL(const std::vector<std::filesystem::path> &scriptPa
     
     // Generate the symbol table.
     std::map<std::string, MaPLSymbol> symbolTable = symbolTableForFiles(files);
-    compileResult.symbolTable = "enum "+options.symbolsPrefix+" {\n";
+    compileResult.symbolTable = "#ifndef "+options.symbolsPrefix+"_h\n#define "+options.symbolsPrefix+"_h\nenum "+options.symbolsPrefix+" {\n";
     for (const auto&[descriptor, symbol] : symbolTable) {
         compileResult.symbolTable += "    "+options.symbolsPrefix+"_"+descriptor+" = "+std::to_string(symbol)+",\n";
     }
-    compileResult.symbolTable += "};\n";
+    compileResult.symbolTable += "};\n#endif /* "+options.symbolsPrefix+"_h */\n";
     
     // Put the finishing touches on the bytecode and add each one to the result.
     for (MaPLFile *file : files) {
