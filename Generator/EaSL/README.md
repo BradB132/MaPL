@@ -1,4 +1,4 @@
 # EaSL
 **(Easy Schema Language)**
 
-![Logo](./Easl.svg)
+![Logo](./EaSL.svg)
