@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+[
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:layerName CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:mask CDATA #IMPLIED >
+<!ATTLIST text
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:width CDATA #IMPLIED >
+<!ATTLIST text
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:text CDATA #IMPLIED >
+
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:blendMode CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowColor CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOpacity CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowRadius CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOffset CDATA #IMPLIED >
+<!ATTLIST path
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowAngle CDATA #IMPLIED >
+
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:blendMode CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowColor CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOpacity CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowRadius CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOffset CDATA #IMPLIED >
+<!ATTLIST image
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowAngle CDATA #IMPLIED >
+
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:blendMode CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowColor CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOpacity CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowRadius CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowOffset CDATA #IMPLIED >
+<!ATTLIST g
+  xmlns:vectornator CDATA #FIXED "http://vectornator.io"
+  vectornator:shadowAngle CDATA #IMPLIED >
+
+<!ENTITY % SVG.filter.extra.content  "| feDropShadow" >
+<!ELEMENT feDropShadow EMPTY>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  dx CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  dy CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  stdDeviation CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  flood-opacity CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  in CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  result CDATA #IMPLIED>
+<!ATTLIST feDropShadow
+  xmlns:svg CDATA #FIXED "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+  flood-color CDATA #IMPLIED>
+]
+>
+<!-- Created with Vectornator (http://vectornator.io/) -->
+<svg height="100%" stroke-miterlimit="10" style="fill-rule:nonzero;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" version="1.1" viewBox="0 0 1417.5 1148.17" width="100%" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:vectornator="http://vectornator.io" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs/>
+<clipPath id="ArtboardFrame">
+<rect height="1148.17" width="1417.5" x="0" y="0"/>
+</clipPath>
+<g clip-path="url(#ArtboardFrame)" id="Layer-4" vectornator:layerName="Layer 4">
+<path d="M674.73-1.42109e-14L742.77-1.42109e-14L742.77 283.5L674.73 283.5L674.73-1.42109e-14Z" fill="#000000" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M0 813.645L1417.5 813.645L1417.5 884.52L0 884.52L0 813.645Z" fill="#000000" fill-rule="evenodd" opacity="1" stroke="none"/>
+</g>
+<g id="Layer-1" vectornator:layerName="Layer 1">
+<path d="M844.28 297.675C823.421 297.675 805.47 301.271 790.405 308.456C775.34 315.641 762.92 325.248 753.186 337.3C742.988 349.352 735.348 363.707 730.249 380.394C725.15 397.081 722.592 414.696 722.592 433.238C722.592 464.294 727.819 490.141 738.249 510.769C748.678 531.396 769.187 547.972 799.78 560.487L850.53 581.362C859.337 585.071 866.418 588.524 871.749 591.769C877.079 595.013 881.379 599.201 884.624 604.3C887.405 609.399 889.259 616.113 890.186 624.456C891.113 632.8 891.561 643.477 891.561 656.456C891.561 667.581 891.225 677.636 890.53 686.675C889.835 695.714 887.613 703.498 883.905 709.987C880.197 716.477 875.001 721.448 868.28 724.925C861.559 728.402 852.176 730.144 840.124 730.144C822.046 730.144 809.178 724.917 801.53 714.487C793.882 704.058 790.061 692.373 790.061 679.394L790.061 657.144L719.124 657.144L719.124 683.55C719.124 700.237 722.272 715.662 728.53 729.8C734.788 743.938 743.244 756.326 753.905 766.987C764.566 777.649 777.291 785.993 792.124 792.019C806.957 798.045 822.973 801.05 840.124 801.05C862.837 801.05 882.051 797.373 897.811 789.956C913.571 782.54 926.327 772.341 936.061 759.362C945.332 746.847 952.046 731.646 956.217 713.8C960.389 695.954 962.499 676.597 962.499 655.737C962.499 637.66 961.572 621.563 959.717 607.425C957.863 593.287 954.379 580.644 949.28 569.519C943.718 558.857 936.077 549.474 926.342 541.362C916.608 533.251 903.853 526.201 888.092 520.175L833.842 498.613C824.572 494.904 817.267 491.196 811.936 487.488C806.605 483.779 802.561 479.368 799.78 474.269C796.999 469.17 795.257 463.383 794.561 456.894C793.866 450.404 793.53 442.284 793.53 432.55C793.53 424.206 794.233 416.23 795.624 408.581C797.014 400.933 799.54 394.076 803.249 388.05C806.957 382.488 811.848 377.852 817.874 374.144C823.9 370.435 831.765 368.581 841.499 368.581C859.577 368.581 872.444 374.511 880.092 386.331C887.741 398.151 891.561 412.17 891.561 428.394L891.561 444.363L962.499 444.363L962.499 409.613C962.499 380.873 951.821 355.393 930.499 333.144C919.837 322.483 907.194 313.883 892.592 307.394C877.991 300.904 861.894 297.675 844.28 297.675ZM192.78 301.831L192.78 796.894L404.155 796.894L404.155 725.987L263.717 725.987L263.717 580.644L386.092 580.644L386.092 513.894L263.717 513.894L263.717 368.581L404.155 368.581L404.155 301.831L192.78 301.831ZM1015.31 301.831L1015.31 796.894L1226.69 796.894L1226.69 725.987L1086.25 725.987L1086.25 301.831L1015.31 301.831Z" fill="#000000" fill-rule="evenodd" opacity="1" stroke="none"/>
+</g>
+<g id="Layer-3" vectornator:layerName="Layer 3">
+<path d="M311.788 898.688L170.1 1144.03L248.694 1144.03L390.35 898.688L311.788 898.688Z" fill="#000000" fill-rule="evenodd" opacity="1" stroke="none"/>
+<path d="M1104.83 898.695L1246.52 1144.04L1167.93 1144.04L1026.27 898.695L1104.83 898.695Z" fill="#000000" fill-rule="evenodd" opacity="1" stroke="none"/>
+</g>
+<g id="Layer-2" vectornator:layerName="Layer 2">
+<path d="M560.719 297.375C543.105 297.375 527.007 300.604 512.406 307.094C497.804 313.583 485.162 322.183 474.5 332.844C453.178 355.093 442.5 380.572 442.5 409.312L442.5 444.062L513.438 444.062L513.438 428.094C513.438 411.87 517.257 397.851 524.906 386.031C532.554 374.211 545.422 368.281 563.5 368.281C573.234 368.281 581.099 370.135 587.125 373.844C593.151 377.552 598.042 382.188 601.75 387.75C605.459 393.776 607.985 400.633 609.375 408.281C610.766 415.93 611.469 423.906 611.469 432.25C611.469 441.984 611.132 450.104 610.438 456.594C609.741 463.083 608 468.87 605.219 473.969C602.438 479.068 598.393 483.478 593.062 487.188C587.731 490.896 580.426 494.603 571.156 498.312L516.906 519.875C501.145 525.901 488.39 532.951 478.656 541.062C468.921 549.174 461.281 558.557 455.719 569.219C450.62 580.344 447.135 592.987 445.281 607.125C443.426 621.263 442.5 637.36 442.5 655.438C442.5 676.297 444.609 695.654 448.781 713.5C452.952 731.346 459.667 746.547 468.938 759.062C478.671 772.041 491.427 782.24 507.188 789.656C522.948 797.073 542.162 800.75 564.875 800.75C581.8 800.75 597.613 797.806 612.281 791.938L612.281 796.75L681.969 796.75L681.969 713.219L681.969 656.844L681.969 601.219L681.969 447.062C682.224 442.459 682.406 437.795 682.406 432.938C682.406 414.396 679.849 396.781 674.75 380.094C669.651 363.407 662.01 349.052 651.812 337C642.079 324.948 629.659 315.341 614.594 308.156C599.529 300.971 581.578 297.375 560.719 297.375ZM612.281 557.031L612.281 696.688C610.375 702.862 607.485 708.711 603.469 714.188C595.821 724.617 582.953 729.844 564.875 729.844C552.823 729.844 543.44 728.102 536.719 724.625C529.998 721.148 524.802 716.177 521.094 709.688C517.386 703.198 515.164 695.414 514.469 686.375C513.774 677.336 513.438 667.281 513.438 656.156C513.438 643.177 513.885 632.5 514.812 624.156C515.74 615.813 517.594 609.099 520.375 604C523.62 598.901 527.92 594.713 533.25 591.469C538.581 588.224 545.662 584.771 554.469 581.062L605.219 560.188C607.675 559.183 609.955 558.088 612.281 557.031Z" fill="#000000" fill-rule="evenodd" opacity="1" stroke="none"/>
+</g>
+</svg>

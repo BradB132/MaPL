@@ -1,6 +1,8 @@
 # MaPL
 **(Macro Programming Language)**
 
+![Logo](./MaPL.svg)
+
 ## Design
 MaPL is a C-style scripting language that focuses on a few different design goals:
 
