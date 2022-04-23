@@ -64,7 +64,7 @@ int main(int argc, const char * argv[]) {
     // Convoluted "Hello World!" example:
     /*
     #global readonly Global global;
-    #global void print(string);
+    #global void print(string printedString);
     #type Global {
         string [string];
     }

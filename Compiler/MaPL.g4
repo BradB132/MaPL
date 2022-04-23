@@ -135,7 +135,7 @@ apiDeclaration
 
 apiInheritance : COLON identifier (PARAM_DELIMITER identifier)* ;
 apiFunction : ( API_VOID | type ) identifier PAREN_OPEN apiFunctionParams? PAREN_CLOSE ;
-apiFunctionParams : API_VARIADIC_PARAMETERS | type (PARAM_DELIMITER type)* (PARAM_DELIMITER API_VARIADIC_PARAMETERS)? ;
+apiFunctionParams : API_VARIADIC_PARAMETERS | type identifier (PARAM_DELIMITER type identifier)* (PARAM_DELIMITER API_VARIADIC_PARAMETERS)? ;
 apiProperty : API_READONLY? type identifier ;
 apiSubscript : API_READONLY? type SUBSCRIPT_OPEN type SUBSCRIPT_CLOSE ;
 apiImport : API_IMPORT LITERAL_STRING ;
