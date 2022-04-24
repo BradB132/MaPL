@@ -212,7 +212,6 @@ CONDITIONAL_ELSE: 'else' ;
 BREAK: 'break' ;
 CONTINUE: 'continue' ;
 EXIT: 'exit' ;
-LITERAL_NULL: 'NULL' ;
 DECL_CHAR: 'char' ;
 DECL_INT32: 'int32' ;
 DECL_INT64: 'int64' ;
@@ -222,8 +221,6 @@ DECL_FLOAT32: 'float32' ;
 DECL_FLOAT64: 'float64' ;
 DECL_BOOL: 'bool' ;
 DECL_STRING: 'string' ;
-LITERAL_TRUE: 'true' ;
-LITERAL_FALSE: 'false' ;
 
 // PUNCTUATION
 PAREN_OPEN: '(' ;
@@ -248,19 +245,18 @@ API_VOID: 'void' ;
 API_VARIADIC_PARAMETERS: '...' ;
 
 // LITERALS
-IDENTIFIER : [_a-zA-Z][_a-zA-Z0-9]* ;
-
+LITERAL_NULL: 'NULL' ;
+LITERAL_TRUE: 'true' ;
+LITERAL_FALSE: 'false' ;
 LITERAL_INT : DIGITS ;
-LITERAL_FLOAT
-    :    DIGITS ( '.' DIGITS )?
-    |    '.' DIGITS
-    ;
+LITERAL_FLOAT : DIGITS? '.' DIGITS ;
 fragment DIGITS : [0-9]+ ;
-
 LITERAL_STRING : '"' (STRING_ESC|.)*? '"' ;
 fragment STRING_ESC : '\\"' | '\\\\' ;
 
 METADATA : '<?' .*? '?>' ;
+
+IDENTIFIER : [_a-zA-Z][_a-zA-Z0-9]* ;
 
 BLOCK_COMMENT : '/*' .*? '*/' -> skip ;
 LINE_COMMENT : '//' .*? '\r'? '\n' -> skip ;
