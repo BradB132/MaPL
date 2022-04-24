@@ -14,7 +14,7 @@ classDefinition
     ;
 
 attribute
-    :    READONLY? type identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? STATEMENT_DELIMITER
+    :    READONLY? type identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? ATTRIBUTE_DELIMITER
     ;
 
 sequenceDescriptor
@@ -23,10 +23,14 @@ sequenceDescriptor
 sequenceLength : LITERAL_INT | SEQUENCE_WILDCARD ;
 
 enumDefinition
-    :    ENUM identifier DEFINITION_OPEN (identifier SEQUENCE_DELIMITER?)+ DEFINITION_CLOSE
+    :    ENUM enumName=identifier DEFINITION_OPEN (enumValue+=identifier SEQUENCE_DELIMITER?)+ DEFINITION_CLOSE
     ;
 
 defaultValue
+    :    literalValue (SEQUENCE_DELIMITER literalValue)*
+    ;
+    
+literalValue
     :    LITERAL_NULL
     |    LITERAL_TRUE
     |    LITERAL_FALSE
@@ -96,14 +100,14 @@ SEQUENCE_CLOSE: ']' ;
 SEQUENCE_DELIMITER: ',' ;
 SEQUENCE_WILDCARD: '*' ;
 COLON: ':' ;
-STATEMENT_DELIMITER: ';' ;
+ATTRIBUTE_DELIMITER: ';' ;
 
 // LITERALS
 LITERAL_NULL: 'NULL' ;
 LITERAL_TRUE: 'true' ;
 LITERAL_FALSE: 'false' ;
-LITERAL_INT : DIGITS ;
-LITERAL_FLOAT : DIGITS? '.' DIGITS ;
+LITERAL_INT : '-'? DIGITS ;
+LITERAL_FLOAT : '-'? DIGITS? '.' DIGITS ;
 fragment DIGITS : [0-9]+ ;
 LITERAL_STRING : '"' (STRING_ESC|.)*? '"' ;
 fragment STRING_ESC : '\\"' | '\\\\' ;

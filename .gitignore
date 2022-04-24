@@ -6,3 +6,5 @@ Runtime/MaPLRuntime.xcodeproj/project.xcworkspace/xcuserdata
 Runtime/MaPLRuntime.xcodeproj/xcuserdata
 Tests/MaPLTester.xcodeproj/project.xcworkspace/xcuserdata
 Tests/MaPLTester.xcodeproj/xcuserdata
+Generator/EaSL/c++
+Generator/EaSL/java

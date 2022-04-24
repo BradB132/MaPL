@@ -1,0 +1,8 @@
+class ExampleClass {
+    readonly int32 myInteger[*,2] = 5, -5.0;
+}
+enum TestEnum {
+    TestEnum_A,
+    TestEnum_B,
+    TestEnum_C,
+}
