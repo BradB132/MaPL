@@ -14,7 +14,7 @@ classDefinition
     ;
 
 attribute
-    :    READONLY? type identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? ATTRIBUTE_DELIMITER
+    :    READONLY? (type | REFERENCE REFERENCE_OPEN type REFERENCE_CLOSE) identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? ATTRIBUTE_DELIMITER
     ;
 
 sequenceDescriptor
@@ -50,7 +50,6 @@ type
     |    DECL_BOOL
     |    DECL_STRING
     |    DECL_UID
-    |    DECL_UID_REF
     |    identifier
     ;
 
@@ -68,9 +67,9 @@ identifier
     |    DECL_BOOL
     |    DECL_STRING
     |    DECL_UID
-    |    DECL_UID_REF
     |    LITERAL_TRUE
     |    LITERAL_FALSE
+    |    REFERENCE
     |    READONLY
     |    IDENTIFIER
     ;
@@ -86,7 +85,9 @@ DECL_FLOAT64: 'float64' ;
 DECL_BOOL: 'bool' ;
 DECL_STRING: 'string' ;
 DECL_UID: 'UID' ;
-DECL_UID_REF: 'UIDRef' ;
+REFERENCE: 'reference' ;
+REFERENCE_OPEN: '<';
+REFERENCE_CLOSE: '>';
 
 // DEFINITIONS
 CLASS: 'class' ;
