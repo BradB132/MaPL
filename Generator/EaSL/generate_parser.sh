@@ -28,23 +28,23 @@ fi
 
 ARG1=$(echo "${1}" | awk '{print tolower($0)}')
 if [ "${ARG1}" == "c++" ]; then
-    mkdir -p "./c++"
+    mkdir -p "./generated_c++"
 
     echo "Generating C++ code for the parser..."
-    java -jar "${ANTLR_PATH}" MaPL.g4 -o ./c++ -Dlanguage=Cpp -no-listener
+    java -jar "${ANTLR_PATH}" EaSL.g4 -o ./generated_c++ -Dlanguage=Cpp -no-listener
     
     # Clean up extraneous files.
-    rm ./c++/*.interp
-    rm ./c++/*.tokens
+    rm ./generated_c++/*.interp
+    rm ./generated_c++/*.tokens
     
 else
-    mkdir -p "./java"
+    mkdir -p "./generated_java"
     
     echo "Generating Java code for the parser..."
-    java -jar "${ANTLR_PATH}" MaPL.g4 -o ./java
+    java -jar "${ANTLR_PATH}" EaSL.g4 -o ./generated_java
     
     echo "Compiling parser code..."
-    cd ./java
+    cd ./generated_java
     javac *.java
     
     # Clean up extraneous files.
@@ -52,5 +52,5 @@ else
     rm *.tokens
     
     echo "Opening parser output in GUI..."
-    java org.antlr.v4.gui.TestRig MaPL program -gui ../../Tests/Scripts/TestAPI.mapl
+    java org.antlr.v4.gui.TestRig EaSL schema -gui ../exampleSchema.easl
 fi

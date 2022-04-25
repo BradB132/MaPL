@@ -1,10 +1,12 @@
-Compiler/c++
-Compiler/java
+Compiler/generated_c++
+Compiler/generated_java
 Compiler/MaPLCompiler.xcodeproj/project.xcworkspace/xcuserdata
 Compiler/MaPLCompiler.xcodeproj/xcuserdata
 Runtime/MaPLRuntime.xcodeproj/project.xcworkspace/xcuserdata
 Runtime/MaPLRuntime.xcodeproj/xcuserdata
 Tests/MaPLTester.xcodeproj/project.xcworkspace/xcuserdata
 Tests/MaPLTester.xcodeproj/xcuserdata
-Generator/EaSL/c++
-Generator/EaSL/java
+Generator/MaPLGenerator.xcodeproj/project.xcworkspace/xcuserdata
+Generator/MaPLGenerator.xcodeproj/xcuserdata
+Generator/EaSL/generated_c++
+Generator/EaSL/generated_java

@@ -192,7 +192,7 @@
 				9B8839FC260FEDDF00CFE16B /* MaPLParser.h */,
 			);
 			name = "Generated Code";
-			path = "c++";
+			path = "generated_c++";
 			sourceTree = "<group>";
 		};
 		9BE1759D2805B3C6006E427A /* Headers */ = {
@@ -346,7 +346,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Regenerate the C++ parser and lexer using ANTLR4.\n\"${SRCROOT}/build_parser.sh\" C++\n";
+			shellScript = "# Regenerate the C++ parser and lexer using ANTLR4.\n\"${SRCROOT}/generate_parser.sh\" C++\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
