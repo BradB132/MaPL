@@ -1,0 +1,94 @@
+
+// Schema.
+#global readonly Schema schema;
+
+#type Schema {
+    readonly SchemaEnums enums;
+    readonly SchemaClasses classes;
+}
+
+#type SchemaEnums {
+    readonly SchemaEnum[uint32];
+    readonly uint32 count;
+    readonly SchemaEnum[string];
+}
+
+#type SchemaEnum {
+    readonly string name;
+    readonly string[uint32];
+    readonly uint32 count;
+}
+
+#type SchemaClasses {
+    readonly SchemaClass[uint32];
+    readonly uint32 count;
+    readonly SchemaClass[string];
+}
+
+#type SchemaClass {
+    readonly string name;
+    readonly string superclass;
+    readonly SchemaAttributes attributes;
+}
+
+#type SchemaAttributes {
+    readonly SchemaAttribute[uint32];
+    readonly uint32 count;
+    readonly SchemaAttribute[string];
+}
+
+#type SchemaAttribute {
+    readonly string name;
+    readonly bool isReadonly;
+    readonly string type;
+    readonly bool typeIsUIDReference;
+    readonly string defaultValue;
+    
+    // A negative number of occurrences indicates infinity.
+    readonly int32 minOccurrences;
+    readonly int32 maxOccurrences;
+}
+
+// XML.
+#global readonly XMLFileArray xmlFiles;
+
+#type XMLFileArray {
+    readonly XMLFile[uint32];
+    readonly uint32 count;
+}
+
+#type XMLFile {
+    readonly XMLNode rootNode;
+    readonly string outputPath;
+}
+
+#type XMLNode {
+    readonly string name;
+    readonly XMLAttributeArray attributes;
+    readonly XMLNodeArray children;
+}
+
+#type XMLNodeArray {
+    readonly XMLNode[uint32];
+    readonly uint32 count;
+}
+
+#type XMLAttributeArray {
+    readonly XMLAttribute[uint32];
+    readonly uint32 count;
+}
+
+#type XMLAttribute {
+    readonly string name;
+    readonly string value;
+}
+
+// File IO.
+#global void outputToFile(string filePath);
+#global void writeToFile(...); // Writes the byte representation of the parameters to file, in parameter order.
+
+// Misc utilities.
+#global void executeMaPLScript(string filePath);
+#global bool commandLineFlagEnabled(string flagName);
+#global string pluralize(string singular);
+#global uint32 hash(string plaintext);
