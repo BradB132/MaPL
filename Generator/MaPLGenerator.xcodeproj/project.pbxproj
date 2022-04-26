@@ -1,0 +1,451 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9B7F7F8D281724E8004955D9 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F7D2817232F004955D9 /* libMaPLCompiler.a */; };
+		9B7F7F8E281724ED004955D9 /* libMaPLRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F862817233A004955D9 /* libMaPLRuntime.a */; };
+		9B7F7F9028172ADC004955D9 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F8F28172ADC004955D9 /* libxml2.tbd */; };
+		9BE3EC81281707FB00DED0C2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BE3EC80281707FB00DED0C2 /* main.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9B7F7F7A2817232F004955D9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 9B8839B5260FEACB00CFE16B;
+			remoteInfo = MaPLCompilerExecutable;
+		};
+		9B7F7F7C2817232F004955D9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 9B7AC54027FA12CB00F70849;
+			remoteInfo = MaPLCompiler;
+		};
+		9B7F7F832817233A004955D9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 9B7AC56A27FD059B00F70849;
+			remoteInfo = MaPLRuntimeExecutable;
+		};
+		9B7F7F852817233A004955D9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 9B7AC57827FD05CD00F70849;
+			remoteInfo = MaPLRuntime;
+		};
+		9B7F7F8828172422004955D9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B7AC53F27FA12CB00F70849;
+			remoteInfo = MaPLCompiler;
+		};
+		9B7F7F8A28172428004955D9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B7AC57727FD05CD00F70849;
+			remoteInfo = MaPLRuntime;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9BE3EC7B281707FB00DED0C2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLCompiler.xcodeproj; path = ../Compiler/MaPLCompiler.xcodeproj; sourceTree = "<group>"; };
+		9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLRuntime.xcodeproj; path = ../Runtime/MaPLRuntime.xcodeproj; sourceTree = "<group>"; };
+		9B7F7F8F28172ADC004955D9 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
+		9BE3EC7D281707FB00DED0C2 /* MaPLGenerator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLGenerator; sourceTree = BUILT_PRODUCTS_DIR; };
+		9BE3EC80281707FB00DED0C2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9BE3EC7A281707FB00DED0C2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B7F7F9028172ADC004955D9 /* libxml2.tbd in Frameworks */,
+				9B7F7F8E281724ED004955D9 /* libMaPLRuntime.a in Frameworks */,
+				9B7F7F8D281724E8004955D9 /* libMaPLCompiler.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9B7F7F752817232D004955D9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9B7F7F7B2817232F004955D9 /* MaPLCompilerExecutable */,
+				9B7F7F7D2817232F004955D9 /* libMaPLCompiler.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9B7F7F7F2817233A004955D9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9B7F7F842817233A004955D9 /* MaPLRuntimeExecutable */,
+				9B7F7F862817233A004955D9 /* libMaPLRuntime.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9B7F7F8C281724E8004955D9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9B7F7F8F28172ADC004955D9 /* libxml2.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		9BE3EC74281707FB00DED0C2 = {
+			isa = PBXGroup;
+			children = (
+				9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */,
+				9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */,
+				9BE3EC7F281707FB00DED0C2 /* MaPLGenerator */,
+				9BE3EC7E281707FB00DED0C2 /* Products */,
+				9B7F7F8C281724E8004955D9 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		9BE3EC7E281707FB00DED0C2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9BE3EC7D281707FB00DED0C2 /* MaPLGenerator */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9BE3EC7F281707FB00DED0C2 /* MaPLGenerator */ = {
+			isa = PBXGroup;
+			children = (
+				9BE3EC80281707FB00DED0C2 /* main.cpp */,
+			);
+			path = MaPLGenerator;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9BE3EC7C281707FB00DED0C2 /* MaPLGenerator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9BE3EC84281707FB00DED0C2 /* Build configuration list for PBXNativeTarget "MaPLGenerator" */;
+			buildPhases = (
+				9B7F7F872817235B004955D9 /* ShellScript */,
+				9BE3EC79281707FB00DED0C2 /* Sources */,
+				9BE3EC7A281707FB00DED0C2 /* Frameworks */,
+				9BE3EC7B281707FB00DED0C2 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9B7F7F8B28172428004955D9 /* PBXTargetDependency */,
+				9B7F7F8928172422004955D9 /* PBXTargetDependency */,
+			);
+			name = MaPLGenerator;
+			productName = MaPLGenerator;
+			productReference = 9BE3EC7D281707FB00DED0C2 /* MaPLGenerator */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9BE3EC75281707FB00DED0C2 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1330;
+				TargetAttributes = {
+					9BE3EC7C281707FB00DED0C2 = {
+						CreatedOnToolsVersion = 13.3.1;
+					};
+				};
+			};
+			buildConfigurationList = 9BE3EC78281707FB00DED0C2 /* Build configuration list for PBXProject "MaPLGenerator" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 9BE3EC74281707FB00DED0C2;
+			productRefGroup = 9BE3EC7E281707FB00DED0C2 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 9B7F7F752817232D004955D9 /* Products */;
+					ProjectRef = 9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */;
+				},
+				{
+					ProductGroup = 9B7F7F7F2817233A004955D9 /* Products */;
+					ProjectRef = 9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				9BE3EC7C281707FB00DED0C2 /* MaPLGenerator */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		9B7F7F7B2817232F004955D9 /* MaPLCompilerExecutable */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = MaPLCompilerExecutable;
+			remoteRef = 9B7F7F7A2817232F004955D9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		9B7F7F7D2817232F004955D9 /* libMaPLCompiler.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libMaPLCompiler.a;
+			remoteRef = 9B7F7F7C2817232F004955D9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		9B7F7F842817233A004955D9 /* MaPLRuntimeExecutable */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = MaPLRuntimeExecutable;
+			remoteRef = 9B7F7F832817233A004955D9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		9B7F7F862817233A004955D9 /* libMaPLRuntime.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libMaPLRuntime.a;
+			remoteRef = 9B7F7F852817233A004955D9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		9B7F7F872817235B004955D9 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/EaSL/EaSL.g4",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Regenerate the C++ parser and lexer using ANTLR4.\n\"${SRCROOT}/EaSL/generate_parser.sh\" C++\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9BE3EC79281707FB00DED0C2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9BE3EC81281707FB00DED0C2 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9B7F7F8928172422004955D9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MaPLCompiler;
+			targetProxy = 9B7F7F8828172422004955D9 /* PBXContainerItemProxy */;
+		};
+		9B7F7F8B28172428004955D9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = MaPLRuntime;
+			targetProxy = 9B7F7F8A28172428004955D9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		9BE3EC82281707FB00DED0C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"${SRCROOT}/../Compiler/Headers",
+					"${SRCROOT}/../Runtime/Headers",
+					"${SRCROOT}/../Shared/Headers",
+					"${SDKROOT}/usr/include/libxml2",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		9BE3EC83281707FB00DED0C2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"${SRCROOT}/../Compiler/Headers",
+					"${SRCROOT}/../Runtime/Headers",
+					"${SRCROOT}/../Shared/Headers",
+					"${SDKROOT}/usr/include/libxml2",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		9BE3EC85281707FB00DED0C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		9BE3EC86281707FB00DED0C2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9BE3EC78281707FB00DED0C2 /* Build configuration list for PBXProject "MaPLGenerator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9BE3EC82281707FB00DED0C2 /* Debug */,
+				9BE3EC83281707FB00DED0C2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9BE3EC84281707FB00DED0C2 /* Build configuration list for PBXNativeTarget "MaPLGenerator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9BE3EC85281707FB00DED0C2 /* Debug */,
+				9BE3EC86281707FB00DED0C2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9BE3EC75281707FB00DED0C2 /* Project object */;
+}
