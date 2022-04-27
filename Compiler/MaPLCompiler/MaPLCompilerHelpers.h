@@ -43,7 +43,7 @@ enum MaPLPrimitiveType {
 };
 
 /**
- * Describes the full type of any MaPL variable, parameter, or return type. This includes the name of the #type if it's not a primitive.
+ * Describes the full type of any MaPL variable, parameter, or return type.
  */
 struct MaPLType {
     // Specifies the type of primitive value. All objects are represented as "Pointer" primitives.
@@ -349,7 +349,7 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
 MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castType, MaPLFile *file, antlr4::Token *token);
 
 /**
- * @return An integer representing x, where literal.[type]Value == 1 << x. Returns @c 0 if the literal value is not a power of 2.
+ * @return An integer representing the log2 of the literal value. Returns @c 0 if the literal value is not a power of 2.
  */
 u_int8_t bitShiftForLiteral(const MaPLLiteral &literal);
 
