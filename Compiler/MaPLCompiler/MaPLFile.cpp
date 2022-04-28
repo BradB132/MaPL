@@ -880,7 +880,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // The lexer cannot have enough context to correctly distinguish between bitshift right and nested generics.
                 // This logic works around that by moving right bitshift up to the parser. Because the parser ignores whitespace,
                 // the compiler must manually check to make sure the brackets are contiguous.
-                if (rightShift->stop->getCharPositionInLine()-rightShift->start->getCharPositionInLine() != 1) {
+                if (rightShift->start->getLine() != rightShift->stop->getLine() ||
+                    rightShift->stop->getCharPositionInLine()-rightShift->start->getCharPositionInLine() != 1) {
                     logError(rightShift->start, "Extraneous input '>'. Bitshift operator must not have whitespace.");
                 }
             }
