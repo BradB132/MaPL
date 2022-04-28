@@ -230,10 +230,16 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
                 // The root-level inheritance types can only reference concrete type declarations, and cannot
                 // reference this type's generics (ie, you cannot use generics to change your superclass).
-                if (!findType(this, pointerType->identifier()->getText(), NULL)) {
+                MaPLParser::ApiDeclarationContext *declaration = findType(this, pointerType->identifier()->getText(), NULL);
+                std::vector<MaPLParser::TypeContext *> types = pointerType->type();
+                if (declaration) {
+                    if (declaration->generics.size() != types.size()) {
+                        logError(pointerType->start, "The specified number of generics does not match the number of generics on type '"+pointerType->identifier()->getText()+"'.");
+                    }
+                } else {
                     logMissingTypeError(pointerType->identifier()->start, pointerType->identifier()->getText());
                 }
-                for (MaPLParser::TypeContext *type : pointerType->type()) {
+                for (MaPLParser::TypeContext *type : types) {
                     MaPLParser::PointerTypeContext *nestedPointerType = type->pointerType();
                     if (nestedPointerType) {
                         compileNode(nestedPointerType, expectedType, currentBuffer);
