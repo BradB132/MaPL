@@ -55,7 +55,7 @@ expression
     |    expression keyToken=MOD expression
     |    expression keyToken=(MULTIPLY | DIVIDE) expression
     |    expression keyToken=(ADD | SUBTRACT) expression
-    |    expression keyToken=(BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
+    |    expression (keyToken=BITWISE_SHIFT_LEFT | bitwiseShiftRight) expression
     |    expression keyToken=(BITWISE_AND | BITWISE_XOR | BITWISE_OR) expression
     |    <assoc=right> expression keyToken=TERNARY_CONDITIONAL expression COLON expression
     |    <assoc=right> expression keyToken=NULL_COALESCING expression
@@ -99,8 +99,10 @@ type
     |    DECL_FLOAT64
     |    DECL_BOOL
     |    DECL_STRING
-    |    identifier
+    |    pointerType
     ;
+
+pointerType : identifier (LESS_THAN type (PARAM_DELIMITER type)* GREATER_THAN)? ;
 
 // CONTROL FLOW
 scope : SCOPE_OPEN statement* SCOPE_CLOSE ;
@@ -123,7 +125,7 @@ conditionalElse : CONDITIONAL_ELSE (scope | conditional) ;
 // API DECLARATIONS
 apiDeclaration
     :    keyToken=API_GLOBAL (apiFunction | apiProperty) STATEMENT_DELIMITER
-    |    keyToken=API_TYPE identifier apiInheritance? SCOPE_OPEN
+    |    keyToken=API_TYPE typeName=identifier (LESS_THAN generics+=identifier (PARAM_DELIMITER generics+=identifier)* GREATER_THAN)? apiInheritance? SCOPE_OPEN
          (
              (
                  apiFunction |
@@ -133,13 +135,14 @@ apiDeclaration
          )* SCOPE_CLOSE
     ;
 
-apiInheritance : COLON identifier (PARAM_DELIMITER identifier)* ;
+apiInheritance : COLON pointerType (PARAM_DELIMITER pointerType)* ;
 apiFunction : ( API_VOID | type ) identifier PAREN_OPEN apiFunctionParams? PAREN_CLOSE ;
 apiFunctionParams : API_VARIADIC_PARAMETERS | type identifier (PARAM_DELIMITER type identifier)* (PARAM_DELIMITER API_VARIADIC_PARAMETERS)? ;
 apiProperty : API_READONLY? type identifier ;
 apiSubscript : API_READONLY? type SUBSCRIPT_OPEN type SUBSCRIPT_CLOSE ;
 apiImport : API_IMPORT LITERAL_STRING ;
 
+// LEXER WORKAROUNDS:
 // This is a special case where a concept is encoded as both a lexer and parser rule.
 // All keywords must be also recognizable as identifiers, and the lexer doesn't have enough context to do this correctly.
 identifier
@@ -167,6 +170,12 @@ identifier
     |    LITERAL_FALSE
     |    IDENTIFIER
     ;
+// The lexer cannot have enough context to correctly distinguish between the following statements:
+//   `Array<Array<int32>> a = NULL;` vs `int32 i = 4 >> 1;`
+// The fix is to recognize this concept via a parser rule instead of a lexer rule, and confirm there's no whitespace during compilation (ie, after parsing).
+bitwiseShiftRight: GREATER_THAN GREATER_THAN;
+// This value is no longer used in the parser, but is still used in the compiler.
+BITWISE_SHIFT_RIGHT: '`';
 
 // OPERATORS
 ASSIGN: '=' ;
@@ -200,7 +209,6 @@ BITWISE_XOR: '^';
 BITWISE_XOR_ASSIGN: '^=';
 BITWISE_SHIFT_LEFT: '<<';
 BITWISE_SHIFT_LEFT_ASSIGN: '<<=';
-BITWISE_SHIFT_RIGHT: '>>';
 BITWISE_SHIFT_RIGHT_ASSIGN: '>>=';
 
 // KEYWORDS

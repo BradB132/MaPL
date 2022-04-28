@@ -50,6 +50,8 @@ struct MaPLType {
     MaPLPrimitiveType primitiveType;
     // If @c primitiveType is a pointer, this is the name of the #type that the pointer implements.
     std::string pointerType;
+    // If @c primitiveType is a pointer and has generics, this is the mapping of generic descriptors to types.
+    std::vector<MaPLType> generics;
 };
 
 /**
@@ -339,9 +341,19 @@ bool isInsideLoopScope(antlr4::tree::ParseTree *node);
 bool isTerminalImperativeObjectExpression(MaPLParser::ObjectExpressionContext *objectExpression);
 
 /**
+ * @return A @c MaPLType as described by a pointerType node in the parse tree.
+ */
+MaPLType typeForPointerType(MaPLParser::PointerTypeContext *pointerTypeContext);
+
+/**
  * @return A @c MaPLType as described by a type node in the parse tree.
  */
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext);
+
+/**
+ * @return @c true only if @c typeName exactly matches the name of a primitive type.
+ */
+bool typeNameMatchesPrimitiveType(const std::string &typeName);
 
 /**
  * @return The value of @c literal after being cast to @c castType.

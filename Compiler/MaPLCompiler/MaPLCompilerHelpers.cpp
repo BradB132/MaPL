@@ -226,7 +226,7 @@ std::string descriptorForSymbol(const std::string &typeName,
 std::string typeNameForAPI(antlr4::ParserRuleContext *api) {
     MaPLParser::ApiDeclarationContext *declaration = dynamic_cast<MaPLParser::ApiDeclarationContext *>(api->parent);
     if (declaration && declaration->API_TYPE()) {
-        return declaration->identifier()->getText();
+        return declaration->typeName->getText();
     }
     // If no API_TYPE, then this is a global.
     return "";
@@ -597,9 +597,20 @@ MaPLInstruction ternaryConditionalInstructionForPrimitive(MaPLPrimitiveType type
     }
 }
 
+MaPLType typeForPointerType(MaPLParser::PointerTypeContext *pointerTypeContext) {
+    MaPLType returnValue{ MaPLPrimitiveType_Pointer, pointerTypeContext->identifier()->getText() };
+    std::vector<MaPLParser::TypeContext *> types = pointerTypeContext->type();
+    returnValue.generics.reserve(types.size());
+    for (MaPLParser::TypeContext *type : types) {
+        returnValue.generics.push_back(typeForTypeContext(type));
+    }
+    return returnValue;
+}
+
 MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
-    if (typeContext->identifier()) {
-        return { MaPLPrimitiveType_Pointer, typeContext->identifier()->getText() };
+    MaPLParser::PointerTypeContext *pointerType = typeContext->pointerType();
+    if (pointerType) {
+        return typeForPointerType(pointerType);
     }
     switch (typeContext->start->getType()) {
         case MaPLParser::DECL_CHAR: return { MaPLPrimitiveType_Char };
@@ -613,6 +624,19 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
         case MaPLParser::DECL_STRING: return { MaPLPrimitiveType_String };
         default: return { MaPLPrimitiveType_TypeError };
     }
+}
+
+bool typeNameMatchesPrimitiveType(const std::string &typeName) {
+    return typeName == "char" ||
+        typeName == "int32" ||
+        typeName == "int64" ||
+        typeName == "uint32" ||
+        typeName == "uint64" ||
+        typeName == "float32" ||
+        typeName == "float64" ||
+        typeName == "bool" ||
+        typeName == "string" ||
+        typeName == "void";
 }
 
 void confirmSignedValueFitsInSignedBits(int64_t value, int8_t bits, MaPLFile *file, antlr4::Token *token) {
@@ -1143,8 +1167,8 @@ std::set<std::string> findAncestorTypes(MaPLFile *file, std::string type) {
     if (!inheritance) {
         return allAncestorTypes;
     }
-    for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
-        std::string parentType = identifier->getText();
+    for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
+        std::string parentType = pointerType->identifier()->getText();
         allAncestorTypes.insert(parentType);
         std::set<std::string> ancestorTypes = findAncestorTypes(file, parentType);
         allAncestorTypes.insert(ancestorTypes.begin(), ancestorTypes.end());
@@ -1170,7 +1194,7 @@ bool inheritsFromType(MaPLFile *file, const std::string &type, const std::string
 
 std::vector<std::string> findInheritanceCycle(MaPLFile *file, MaPLParser::ApiDeclarationContext *apiDeclaration, std::set<std::string> &seenTypes) {
     std::vector<std::string> cycleVector;
-    std::string typeName = apiDeclaration->identifier()->getText();
+    std::string typeName = apiDeclaration->typeName->getText();
     if (seenTypes.count(typeName) > 0) {
         // This graph contains a cycle.
         cycleVector.push_back(typeName);
@@ -1181,7 +1205,8 @@ std::vector<std::string> findInheritanceCycle(MaPLFile *file, MaPLParser::ApiDec
         return cycleVector;
     }
     seenTypes.insert(typeName);
-    for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
+    for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
+        MaPLParser::IdentifierContext *identifier = pointerType->identifier();
         MaPLParser::ApiDeclarationContext *parentDeclaration = findType(file, identifier->getText(), NULL);
         if (!parentDeclaration) {
             continue;
@@ -1217,7 +1242,7 @@ bool findInheritanceCycle(MaPLFile *file) {
                 }
             }
             cycleDescriptor += ".";
-            file->logError(apiDeclaration->identifier()->start, "Type inheritance forms a cycle: "+cycleDescriptor);
+            file->logError(apiDeclaration->typeName->start, "Type inheritance forms a cycle: "+cycleDescriptor);
             return true;
         }
         seenTypes.clear();
@@ -1255,7 +1280,7 @@ void collateSymbolsInFile(MaPLFile *file, std::map<std::string, MaPLSymbol> &sym
         MaPLParser::ApiDeclarationContext *apiDeclaration = statement->apiDeclaration();
         if (!apiDeclaration) { continue; }
         
-        std::string typeName = apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE ? apiDeclaration->identifier()->getText() : "";
+        std::string typeName = apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE ? apiDeclaration->typeName->getText() : "";
         for (MaPLParser::ApiFunctionContext *function : apiDeclaration->apiFunction()) {
             std::vector<MaPLType> parameterTypes;
             MaPLParser::ApiFunctionParamsContext *params = function->apiFunctionParams();
@@ -1336,8 +1361,7 @@ MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, const std::string &t
             apiDeclaration->keyToken->getType() != MaPLParser::API_TYPE) {
             continue;
         }
-        MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
-        if (identifier && identifier->getText() == type) {
+        if (apiDeclaration->typeName && apiDeclaration->typeName->getText() == type) {
             return apiDeclaration;
         }
     }
@@ -1432,8 +1456,7 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                 break;
             case MaPLParser::API_TYPE: {
                 if (isGlobal) { continue; }
-                MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
-                if (!identifier || identifier->getText() != type) {
+                if (!apiDeclaration->typeName || apiDeclaration->typeName->getText() != type) {
                     continue;
                 }
                 for (MaPLParser::ApiFunctionContext *function : apiDeclaration->apiFunction()) {
@@ -1446,9 +1469,9 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                 }
                 MaPLParser::ApiInheritanceContext *inheritance = apiDeclaration->apiInheritance();
                 if (inheritance) {
-                    for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
+                    for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
                         MaPLParser::ApiFunctionContext *foundFunction = findFunction(file,
-                                                                                     identifier->getText(),
+                                                                                     pointerType->identifier()->getText(),
                                                                                      name,
                                                                                      parameterTypes,
                                                                                      parameterStrategy,
@@ -1499,8 +1522,8 @@ MaPLParser::ApiSubscriptContext *findSubscript(MaPLFile *file,
     }
     MaPLParser::ApiInheritanceContext *inheritance = typeDeclaration->apiInheritance();
     if (inheritance) {
-        for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
-            MaPLParser::ApiSubscriptContext *foundSubscript = findSubscript(file, identifier->getText(), indexType, excludingSubscript);
+        for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
+            MaPLParser::ApiSubscriptContext *foundSubscript = findSubscript(file, pointerType->identifier()->getText(), indexType, excludingSubscript);
             if (foundSubscript) {
                 return foundSubscript;
             }
@@ -1534,8 +1557,7 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                 break;
             case MaPLParser::API_TYPE: {
                 if (isGlobal) { continue; }
-                MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
-                if (!identifier || identifier->getText() != type) {
+                if (!apiDeclaration->typeName || apiDeclaration->typeName->getText() != type) {
                     continue;
                 }
                 for (MaPLParser::ApiPropertyContext *property : apiDeclaration->apiProperty()) {
@@ -1549,8 +1571,8 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                 }
                 MaPLParser::ApiInheritanceContext *inheritance = apiDeclaration->apiInheritance();
                 if (inheritance) {
-                    for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
-                        MaPLParser::ApiPropertyContext *foundProperty = findProperty(file, identifier->getText(), name, excludingProperty);
+                    for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
+                        MaPLParser::ApiPropertyContext *foundProperty = findProperty(file, pointerType->identifier()->getText(), name, excludingProperty);
                         if (foundProperty) {
                             return foundProperty;
                         }

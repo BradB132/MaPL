@@ -184,26 +184,40 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
         case MaPLParser::RuleApiDeclaration: {
             MaPLParser::ApiDeclarationContext *apiDeclaration = (MaPLParser::ApiDeclarationContext *)node;
             if (apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
-                MaPLParser::IdentifierContext *identifier = apiDeclaration->identifier();
+                MaPLParser::IdentifierContext *identifier = apiDeclaration->typeName;
                 std::string typeName = identifier->getText();
+                
+                // Check to make sure this name doesn't collide with a primitive type.
+                if (typeNameMatchesPrimitiveType(typeName)) {
+                    logError(identifier->start, "Type name conflicts with a primitive type.");
+                }
                 
                 // Check for duplicate symbols.
                 if (findType(this, typeName, apiDeclaration)) {
                     logError(identifier->start, "Type name '"+typeName+"' conflicts with another type of the same name.");
                 }
                 
-                // Check to make sure this name doesn't collide with a primitive type.
-                if (typeName == "char" ||
-                    typeName == "int32" ||
-                    typeName == "int64" ||
-                    typeName == "uint32" ||
-                    typeName == "uint64" ||
-                    typeName == "float32" ||
-                    typeName == "float64" ||
-                    typeName == "bool" ||
-                    typeName == "string" ||
-                    typeName == "void") {
-                    logError(identifier->start, "Type name conflicts with a primitive type.");
+                // Check all generics descriptors.
+                std::vector<std::string> genericsDescriptors;
+                genericsDescriptors.reserve(apiDeclaration->generics.size());
+                for (MaPLParser::IdentifierContext *identifier : apiDeclaration->generics) {
+                    genericsDescriptors.push_back(identifier->getText());
+                }
+                for (size_t i = 0; i < genericsDescriptors.size(); i++) {
+                    // Check to make sure this name doesn't collide with a primitive type.
+                    if (typeNameMatchesPrimitiveType(genericsDescriptors[i])) {
+                        logError(apiDeclaration->generics[i]->start, "Generics descriptor conflicts with a primitive type.");
+                    }
+                    // Check if descriptor conflicts with an existing type.
+                    if (findType(this, genericsDescriptors[i], NULL)) {
+                        logError(apiDeclaration->generics[i]->start, "Generics descriptor '"+genericsDescriptors[i]+"' conflicts with an existing type declaration.");
+                    }
+                    // Enforce uniqueness for generics descriptors.
+                    for (size_t j = i+1; j < genericsDescriptors.size(); j++) {
+                        if (genericsDescriptors[i] == genericsDescriptors[j]) {
+                            logError(apiDeclaration->generics[i]->start, "Duplicate generics descriptor '"+genericsDescriptors[i]+"'. Descriptors must be unique.");
+                        }
+                    }
                 }
             }
             compileChildNodes(node, expectedType, currentBuffer);
@@ -213,9 +227,17 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             MaPLParser::ApiInheritanceContext *inheritance = (MaPLParser::ApiInheritanceContext *)node;
             
             // Check all the types referenced in this API to make sure they exist.
-            for (MaPLParser::IdentifierContext *identifier : inheritance->identifier()) {
-                if (!findType(this, identifier->getText(), NULL)) {
-                    logMissingTypeError(identifier->start, identifier->getText());
+            for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
+                // The root-level inheritance types can only reference concrete type declarations, and cannot
+                // reference this type's generics (ie, you cannot use generics to change your superclass).
+                if (!findType(this, pointerType->identifier()->getText(), NULL)) {
+                    logMissingTypeError(pointerType->identifier()->start, pointerType->identifier()->getText());
+                }
+                for (MaPLParser::TypeContext *type : pointerType->type()) {
+                    MaPLParser::PointerTypeContext *nestedPointerType = type->pointerType();
+                    if (nestedPointerType) {
+                        compileNode(nestedPointerType, expectedType, currentBuffer);
+                    }
                 }
             }
         }
@@ -247,7 +269,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Check for duplicate symbols.
             MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(function->parent);
             bool isGlobal = parentApi->keyToken->getType() == MaPLParser::API_GLOBAL;
-            std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
+            std::string parentTypeName = isGlobal ? "" : parentApi->typeName->getText();
             MaPLParameterStrategy strategy = params && params->API_VARIADIC_PARAMETERS() != NULL ? MaPLParameterStrategy_Exact_IncludeVariadicParams : MaPLParameterStrategy_Exact_NoVariadicParams;
             if (findFunction(this, parentTypeName, function->identifier()->getText(), parameterTypes, strategy, function)) {
                 std::string functionSignature = descriptorForFunction(function->identifier()->getText(),
@@ -274,7 +296,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Check for duplicate symbols.
             MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(property->parent);
             bool isGlobal = parentApi->keyToken->getType() == MaPLParser::API_GLOBAL;
-            std::string parentTypeName = isGlobal ? "" : parentApi->identifier()->getText();
+            std::string parentTypeName = isGlobal ? "" : parentApi->typeName->getText();
             if (findProperty(this, parentTypeName, property->identifier()->getText(), property)) {
                 if (isGlobal) {
                     logError(property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another global property with the same name.");
@@ -298,8 +320,47 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Check for duplicate symbols.
             MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(subscript->parent);
             MaPLType indexType = typeForTypeContext(subscript->type(1));
-            if (findSubscript(this, parentApi->identifier()->getText(), indexType, subscript)) {
-                logError(subscript->type(1)->start, "Subscript indexed by "+descriptorForType(indexType)+" conflicts with another subscript in type '"+parentApi->identifier()->getText()+"' or one of its parent types.");
+            if (findSubscript(this, parentApi->typeName->getText(), indexType, subscript)) {
+                logError(subscript->type(1)->start, "Subscript indexed by "+descriptorForType(indexType)+" conflicts with another subscript in type '"+parentApi->typeName->getText()+"' or one of its parent types.");
+            }
+        }
+            break;
+        case MaPLParser::RulePointerType: {
+            MaPLParser::PointerTypeContext *pointerType = (MaPLParser::PointerTypeContext *)node;
+            MaPLParser::IdentifierContext *identifier = pointerType->identifier();
+            std::string typeName = identifier->getText();
+            
+            // Check all types to make sure they either exist as an API declaration or generic on their parent type.
+            bool isGenericType = false;
+            antlr4::tree::ParseTree *parentNode = node->parent;
+            while (parentNode) {
+                MaPLParser::ApiDeclarationContext *parentDeclaration = dynamic_cast<MaPLParser::ApiDeclarationContext *>(parentNode);
+                if (parentDeclaration) {
+                    for (MaPLParser::IdentifierContext *generic : parentDeclaration->generics) {
+                        if (typeName == generic->getText()) {
+                            isGenericType = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                parentNode = parentNode->parent;
+            }
+            std::vector<MaPLParser::TypeContext *> types = pointerType->type();
+            if (isGenericType) {
+                if (types.size() > 0) {
+                    logError(pointerType->start, "Generic types such as '"+typeName+"' cannot specify their own generics.");
+                }
+            } else {
+                if (!findType(this, typeName, NULL)) {
+                    logMissingTypeError(identifier->start, typeName);
+                }
+                for (MaPLParser::TypeContext *type : types) {
+                    MaPLParser::PointerTypeContext *nestedPointerType = type->pointerType();
+                    if (nestedPointerType) {
+                        compileNode(nestedPointerType, expectedType, currentBuffer);
+                    }
+                }
             }
         }
             break;
@@ -808,6 +869,15 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             break;
         case MaPLParser::RuleExpression: {
             MaPLParser::ExpressionContext *expression = (MaPLParser::ExpressionContext *)node;
+            MaPLParser::BitwiseShiftRightContext *rightShift = expression->bitwiseShiftRight();
+            if (rightShift) {
+                // The lexer cannot have enough context to correctly distinguish between bitshift right and nested generics.
+                // This logic works around that by moving right bitshift up to the parser. Because the parser ignores whitespace,
+                // the compiler must manually check to make sure the brackets are contiguous.
+                if (rightShift->stop->getCharPositionInLine()-rightShift->start->getCharPositionInLine() != 1) {
+                    logError(rightShift->start, "Extraneous input '>'. Bitshift operator must not have whitespace.");
+                }
+            }
             if (!isConcreteType(expectedType.primitiveType)) {
                 // It's safe to assume initialized expectedType in every context in which expressions are found:
                 //   On the right side of an assignment. -> Implied by the type being assigned to.
@@ -840,8 +910,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 break;
             }
             
-            if (expression->keyToken) {
-                size_t tokenType = expression->keyToken->getType();
+            if (expression->keyToken || rightShift) {
+                size_t tokenType;
+                if (rightShift) {
+                    tokenType = MaPLParser::BITWISE_SHIFT_RIGHT;
+                } else {
+                    tokenType = expression->keyToken->getType();
+                }
                 switch (tokenType) {
                     case MaPLParser::PAREN_OPEN: { // Typecast.
                         MaPLType castType = typeForTypeContext(expression->type());
@@ -1689,8 +1764,14 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
 }
 
 MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *expression) {
-    if (expression->keyToken) {
-        size_t tokenType = expression->keyToken->getType();
+    MaPLParser::BitwiseShiftRightContext *rightShift = expression->bitwiseShiftRight();
+    if (expression->keyToken || rightShift) {
+        size_t tokenType;
+        if (rightShift) {
+            tokenType = MaPLParser::BITWISE_SHIFT_RIGHT;
+        } else {
+            tokenType = expression->keyToken->getType();
+        }
         switch (tokenType) {
             case MaPLParser::PAREN_OPEN: { // Typecast.
                 MaPLLiteral expressionLiteral = constantValueForExpression(expression->expression(0));
@@ -2318,8 +2399,15 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
 }
 
 MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expression) {
-    if (expression->keyToken) {
-        switch (expression->keyToken->getType()) {
+    MaPLParser::BitwiseShiftRightContext *rightShift = expression->bitwiseShiftRight();
+    if (expression->keyToken || rightShift) {
+        size_t tokenType;
+        if (rightShift) {
+            tokenType = MaPLParser::BITWISE_SHIFT_RIGHT;
+        } else {
+            tokenType = expression->keyToken->getType();
+        }
+        switch (tokenType) {
             case MaPLParser::PAREN_OPEN: {
                 // This is a typecast, return the type that is specified in the cast.
                 MaPLParser::TypeContext *typeContext = expression->type();
