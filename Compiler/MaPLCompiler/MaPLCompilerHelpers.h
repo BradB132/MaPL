@@ -52,6 +52,9 @@ struct MaPLType {
     std::string pointerType;
     // If @c primitiveType is a pointer and has generics, this is the mapping of generic descriptors to types.
     std::vector<MaPLType> generics;
+    
+    bool operator== (const MaPLType &otherType);
+    bool operator!= (const MaPLType &otherType);
 };
 
 /**

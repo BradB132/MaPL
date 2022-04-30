@@ -640,6 +640,27 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     }
 }
 
+bool MaPLType::operator== (const MaPLType &otherType) {
+    if (primitiveType != otherType.primitiveType) {
+        return false;
+    }
+    if (primitiveType == MaPLPrimitiveType_Pointer) {
+        if (pointerType != otherType.pointerType || generics.size() != otherType.generics.size()) {
+            return false;
+        }
+        for (size_t i = 0; i < generics.size(); i++) {
+            if (generics[i] != otherType.generics[i]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool MaPLType::operator!= (const MaPLType &otherType) {
+    return !(*this == otherType);
+}
+
 bool typeNameMatchesPrimitiveType(const std::string &typeName) {
     return typeName == "char" ||
         typeName == "int32" ||
@@ -1428,10 +1449,7 @@ bool functionIsCompatible(MaPLFile *file,
         
         // Confirm exact matching types for all parameters.
         for (int32_t i = 0; i < typeContexts.size(); i++) {
-            MaPLType searchedParamType = parameterTypes[i];
-            MaPLType declaredParamType = typeForTypeContext(typeContexts[i]);
-            if (searchedParamType.primitiveType != declaredParamType.primitiveType ||
-                (searchedParamType.primitiveType == MaPLPrimitiveType_Pointer && searchedParamType.pointerType != declaredParamType.pointerType)) { // TODO: This logic needs to be updated for generics.
+            if (typeForTypeContext(typeContexts[i]) != parameterTypes[i]) {
                 return false;
             }
         }
