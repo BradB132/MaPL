@@ -254,10 +254,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Check the return type referenced in this API to make sure it exists.
             if (!function->API_VOID()) {
                 MaPLParser::TypeContext *typeContext = function->type();
-                MaPLType returnType = typeForTypeContext(typeContext);
-                if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {// TODO: Also check generics.
-                    logMissingTypeError(typeContext->start, returnType.pointerType);
-                }
+                confirmTypesExist(typeForTypeContext(typeContext), this, typeContext->start);
             }
             MaPLParser::ApiFunctionParamsContext *params = function->apiFunctionParams();
             std::vector<MaPLType> parameterTypes;
@@ -265,10 +262,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 for (MaPLParser::TypeContext *typeContext : params->type()) {
                     MaPLType parameterType = typeForTypeContext(typeContext);
                     parameterTypes.push_back(parameterType);
-                    // Check all the types referenced in this API to make sure they exist.
-                    if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType, NULL)) {// TODO: Also check generics.
-                        logMissingTypeError(typeContext->start, parameterType.pointerType);
-                    }
+                    confirmTypesExist(parameterType, this, typeContext->start);
                 }
             }
             
@@ -294,10 +288,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             // Check the return type referenced in this API to make sure it exists.
             MaPLParser::TypeContext *typeContext = property->type();
-            MaPLType returnType = typeForTypeContext(typeContext);
-            if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {// TODO: Also check generics.
-                logMissingTypeError(typeContext->start, returnType.pointerType);
-            }
+            confirmTypesExist(typeForTypeContext(typeContext), this, typeContext->start);
             
             // Check for duplicate symbols.
             MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(property->parent);
@@ -317,10 +308,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             // Check all the types referenced in this API to make sure they exist.
             for (MaPLParser::TypeContext *typeContext : subscript->type()) {
-                MaPLType type = typeForTypeContext(typeContext);
-                if (type.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, type.pointerType, NULL)) {// TODO: Also check generics.
-                    logMissingTypeError(typeContext->start, type.pointerType);
-                }
+                confirmTypesExist(typeForTypeContext(typeContext), this, typeContext->start);
             }
             
             // Check for duplicate symbols.
@@ -433,10 +421,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             }
             
             // If this is a pointer, check to make sure the type exists.
-            MaPLType variableType = typeForTypeContext(declaration->type());
-            if (variableType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, variableType.pointerType, NULL)) {// TODO: Also check generics.
-                logMissingTypeError(declaration->type()->start, variableType.pointerType);
-            }
+            MaPLParser::TypeContext *typeContext = declaration->type();
+            MaPLType variableType = typeForTypeContext(typeContext);
+            confirmTypesExist(variableType, this, typeContext->start);
             
             // Claim a spot in memory for this variable.
             MaPLVariable variable{ variableType, this, identifier->start };
@@ -926,12 +913,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
                 switch (tokenType) {
                     case MaPLParser::PAREN_OPEN: { // Typecast.
-                        MaPLType castType = typeForTypeContext(expression->type());
+                        MaPLParser::TypeContext *typeContext = expression->type();
+                        MaPLType castType = typeForTypeContext(typeContext);
                         
                         // If this is a pointer, check to make sure the type exists.
-                        if (castType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, castType.pointerType, NULL)) {// TODO: Also check generics.
-                            logMissingTypeError(expression->type()->start, castType.pointerType);
-                        }
+                        confirmTypesExist(castType, this, typeContext->start);
 
                         MaPLType expressionType = dataTypeForExpression(expression->expression(0));
                         if (castType.primitiveType == expressionType.primitiveType) {
@@ -2659,6 +2645,17 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
     }
     logError(keyToken, "Error determining the type of this expression.");
     return { MaPLPrimitiveType_TypeError };
+}
+
+void MaPLFile::confirmTypesExist(const MaPLType &type, MaPLFile *file, antlr4::Token *token) {
+    if (type.primitiveType == MaPLPrimitiveType_Pointer) {
+        if (!findType(file, type.pointerType, NULL)) {
+            logMissingTypeError(token, type.pointerType);
+        }
+        for (const MaPLType &genericType : type.generics) {
+            confirmTypesExist(genericType, file, token);
+        }
+    }
 }
 
 void MaPLFile::syntaxError(antlr4::Recognizer *recognizer,
