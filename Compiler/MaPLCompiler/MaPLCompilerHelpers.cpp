@@ -1131,7 +1131,7 @@ MaPLParser::ObjectExpressionContext *prefixObjectExpression(MaPLParser::ObjectEx
 bool isAssignable(MaPLFile *file, const MaPLType &expressionType, const MaPLType &assignToType) {
     // Handle direct matches first.
     if (assignToType.primitiveType == expressionType.primitiveType) {
-        if (assignToType.primitiveType == MaPLPrimitiveType_Pointer) {
+        if (assignToType.primitiveType == MaPLPrimitiveType_Pointer) { // TODO: How to update this for generics?
             // Empty "pointerType" indicates a NULL literal. Nulls are assignable to any type of pointer.
             return expressionType.pointerType.empty() ||
                    assignToType.pointerType == expressionType.pointerType ||
@@ -1241,8 +1241,7 @@ std::vector<std::string> findInheritanceCycle(MaPLFile *file, MaPLParser::ApiDec
     }
     seenTypes.insert(typeName);
     for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
-        MaPLParser::IdentifierContext *identifier = pointerType->identifier();
-        MaPLParser::ApiDeclarationContext *parentDeclaration = findType(file, identifier->getText(), NULL);
+        MaPLParser::ApiDeclarationContext *parentDeclaration = findType(file, pointerType->identifier()->getText(), NULL);
         if (!parentDeclaration) {
             continue;
         }

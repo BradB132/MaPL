@@ -255,7 +255,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (!function->API_VOID()) {
                 MaPLParser::TypeContext *typeContext = function->type();
                 MaPLType returnType = typeForTypeContext(typeContext);
-                if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {
+                if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {// TODO: Also check generics.
                     logMissingTypeError(typeContext->start, returnType.pointerType);
                 }
             }
@@ -266,7 +266,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     MaPLType parameterType = typeForTypeContext(typeContext);
                     parameterTypes.push_back(parameterType);
                     // Check all the types referenced in this API to make sure they exist.
-                    if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType, NULL)) {
+                    if (parameterType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, parameterType.pointerType, NULL)) {// TODO: Also check generics.
                         logMissingTypeError(typeContext->start, parameterType.pointerType);
                     }
                 }
@@ -295,7 +295,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Check the return type referenced in this API to make sure it exists.
             MaPLParser::TypeContext *typeContext = property->type();
             MaPLType returnType = typeForTypeContext(typeContext);
-            if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {
+            if (returnType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, returnType.pointerType, NULL)) {// TODO: Also check generics.
                 logMissingTypeError(typeContext->start, returnType.pointerType);
             }
             
@@ -318,7 +318,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Check all the types referenced in this API to make sure they exist.
             for (MaPLParser::TypeContext *typeContext : subscript->type()) {
                 MaPLType type = typeForTypeContext(typeContext);
-                if (type.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, type.pointerType, NULL)) {
+                if (type.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, type.pointerType, NULL)) {// TODO: Also check generics.
                     logMissingTypeError(typeContext->start, type.pointerType);
                 }
             }
@@ -434,7 +434,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             // If this is a pointer, check to make sure the type exists.
             MaPLType variableType = typeForTypeContext(declaration->type());
-            if (variableType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, variableType.pointerType, NULL)) {
+            if (variableType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, variableType.pointerType, NULL)) {// TODO: Also check generics.
                 logMissingTypeError(declaration->type()->start, variableType.pointerType);
             }
             
@@ -929,14 +929,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         MaPLType castType = typeForTypeContext(expression->type());
                         
                         // If this is a pointer, check to make sure the type exists.
-                        if (castType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, castType.pointerType, NULL)) {
+                        if (castType.primitiveType == MaPLPrimitiveType_Pointer && !findType(this, castType.pointerType, NULL)) {// TODO: Also check generics.
                             logMissingTypeError(expression->type()->start, castType.pointerType);
                         }
 
                         MaPLType expressionType = dataTypeForExpression(expression->expression(0));
                         if (castType.primitiveType == expressionType.primitiveType) {
                             // The cast doesn't involve any casting between primitive types, and so is a no-op in terms of bytecode.
-                            if (castType.primitiveType == MaPLPrimitiveType_Pointer &&
+                            if (castType.primitiveType == MaPLPrimitiveType_Pointer &&// TODO: Update this logic for generics.
                                 !isAssignable(this, expressionType, castType) &&
                                 !inheritsFromType(this, castType.pointerType, expressionType.pointerType)) {
                                 // Cast is between two pointer types. This only makes sense if the types have some child/ancestor relationship.
@@ -1741,9 +1741,9 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
     MaPLType type1 = dataTypeForExpression(expression1);
     MaPLType type2 = dataTypeForExpression(expression2);
     MaPLPrimitiveType reconciledPrimitive = reconcileTypes(type1.primitiveType, type2.primitiveType, errorToken);
-    if (reconciledPrimitive == MaPLPrimitiveType_Pointer && type1.pointerType != type2.pointerType) {
+    if (reconciledPrimitive == MaPLPrimitiveType_Pointer && type1 != type2) {
         // The pointer types don't match. Generate an error message that gives some context.
-        std::vector<std::string> possibleMatches = mutualAncestorTypes(this, type1.pointerType, type2.pointerType);
+        std::vector<std::string> possibleMatches = mutualAncestorTypes(this, type1.pointerType, type2.pointerType); // TODO: How to do this gracefully with generics?
         size_t possibleMatchCount = possibleMatches.size();
         if (possibleMatchCount == 1) {
             // In the case where there's only one possible choice, make the inference.
@@ -1767,7 +1767,7 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
         logError(errorToken, "The return type of this operator is ambiguous and cannot be determined. Expressions in both branches of the conditional must have a matching type. "+errorSuffix);
         return { MaPLPrimitiveType_TypeError };
     }
-    return { reconciledPrimitive, type1.pointerType };
+    return { reconciledPrimitive, type1.pointerType, type1.generics };
 }
 
 MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *expression) {
@@ -2540,7 +2540,7 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
 }
 
 MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
-                                              const std::string &invokedOnType) {
+                                              const std::string &invokedOnType) {// TODO: Does "invokedOnType" need to be the full MaPLType in order to correctly infer generic types?
     antlr4::Token *keyToken = expression->keyToken;
     if (keyToken) {
         switch (keyToken->getType()) {

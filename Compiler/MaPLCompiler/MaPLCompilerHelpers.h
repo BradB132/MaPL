@@ -344,7 +344,7 @@ bool isInsideLoopScope(antlr4::tree::ParseTree *node);
 bool isTerminalImperativeObjectExpression(MaPLParser::ObjectExpressionContext *objectExpression);
 
 /**
- * @return A @c MaPLType as described by a pointerType node in the parse tree.
+ * @return A @c MaPLType as described by a @c pointerType node in the parse tree.
  */
 MaPLType typeForPointerType(MaPLParser::PointerTypeContext *pointerTypeContext);
 
