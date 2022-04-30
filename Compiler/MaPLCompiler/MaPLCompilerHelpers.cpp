@@ -1365,22 +1365,20 @@ bool isTerminalImperativeObjectExpression(MaPLParser::ObjectExpressionContext *o
     return dynamic_cast<MaPLParser::ImperativeStatementContext *>(objectExpression->parent) != NULL;
 }
 
-MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, const std::string &type, MaPLParser::ApiDeclarationContext *excludingType) {
-    MaPLParser::ProgramContext *program = file->getParseTree();
-    if (!program) { return NULL; }
-    for (MaPLParser::StatementContext *statement : program->statement()) {
+MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, const std::string &typeName, MaPLParser::ApiDeclarationContext *excludingType) {
+    for (MaPLParser::StatementContext *statement : file->getParseTree()->statement()) {
         MaPLParser::ApiDeclarationContext *apiDeclaration = statement->apiDeclaration();
         if (!apiDeclaration ||
             (excludingType && excludingType == apiDeclaration) ||
             apiDeclaration->keyToken->getType() != MaPLParser::API_TYPE) {
             continue;
         }
-        if (apiDeclaration->typeName && apiDeclaration->typeName->getText() == type) {
+        if (apiDeclaration->typeName->getText() == typeName) {
             return apiDeclaration;
         }
     }
     for (MaPLFile *dependency : file->getDependencies()) {
-        MaPLParser::ApiDeclarationContext *apiDeclaration = findType(dependency, type, excludingType);
+        MaPLParser::ApiDeclarationContext *apiDeclaration = findType(dependency, typeName, excludingType);
         if (apiDeclaration) {
             return apiDeclaration;
         }
@@ -1433,7 +1431,7 @@ bool functionIsCompatible(MaPLFile *file,
             MaPLType searchedParamType = parameterTypes[i];
             MaPLType declaredParamType = typeForTypeContext(typeContexts[i]);
             if (searchedParamType.primitiveType != declaredParamType.primitiveType ||
-                (searchedParamType.primitiveType == MaPLPrimitiveType_Pointer && searchedParamType.pointerType != declaredParamType.pointerType)) {
+                (searchedParamType.primitiveType == MaPLPrimitiveType_Pointer && searchedParamType.pointerType != declaredParamType.pointerType)) { // TODO: This logic needs to be updated for generics.
                 return false;
             }
         }
@@ -1448,12 +1446,9 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                                              const std::vector<MaPLType> &parameterTypes,
                                              MaPLParameterStrategy parameterStrategy,
                                              MaPLParser::ApiFunctionContext *excludingFunction) {
-    MaPLParser::ProgramContext *program = file->getParseTree();
-    if (!program) { return NULL; }
-    
     // Search all API function declarations in this file.
     bool isGlobal = type.empty();
-    for (MaPLParser::StatementContext *statement : program->statement()) {
+    for (MaPLParser::StatementContext *statement : file->getParseTree()->statement()) {
         MaPLParser::ApiDeclarationContext *apiDeclaration = statement->apiDeclaration();
         if (!apiDeclaration) { continue; }
         switch (apiDeclaration->keyToken->getType()) {
@@ -1470,7 +1465,7 @@ MaPLParser::ApiFunctionContext *findFunction(MaPLFile *file,
                 break;
             case MaPLParser::API_TYPE: {
                 if (isGlobal) { continue; }
-                if (!apiDeclaration->typeName || apiDeclaration->typeName->getText() != type) {
+                if (apiDeclaration->typeName->getText() != type) {
                     continue;
                 }
                 for (MaPLParser::ApiFunctionContext *function : apiDeclaration->apiFunction()) {
@@ -1550,12 +1545,9 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                                              const std::string &type,
                                              const std::string &name,
                                              MaPLParser::ApiPropertyContext *excludingProperty) {
-    MaPLParser::ProgramContext *program = file->getParseTree();
-    if (!program) { return NULL; }
-    
     // Search all API property declarations in this file.
     bool isGlobal = type.empty();
-    for (MaPLParser::StatementContext *statement : program->statement()) {
+    for (MaPLParser::StatementContext *statement : file->getParseTree()->statement()) {
         MaPLParser::ApiDeclarationContext *apiDeclaration = statement->apiDeclaration();
         if (!apiDeclaration) { continue; }
         switch (apiDeclaration->keyToken->getType()) {
@@ -1563,23 +1555,21 @@ MaPLParser::ApiPropertyContext *findProperty(MaPLFile *file,
                 if (!isGlobal) { continue; }
                 MaPLParser::ApiPropertyContext *property = apiDeclaration->apiProperty(0);
                 if (!property || (excludingProperty && excludingProperty == property)) { continue; }
-                MaPLParser::IdentifierContext *identifier = property->identifier();
-                if (identifier && identifier->getText() == name) {
+                if (property->identifier()->getText() == name) {
                     return property;
                 }
             }
                 break;
             case MaPLParser::API_TYPE: {
                 if (isGlobal) { continue; }
-                if (!apiDeclaration->typeName || apiDeclaration->typeName->getText() != type) {
+                if (apiDeclaration->typeName->getText() != type) {
                     continue;
                 }
                 for (MaPLParser::ApiPropertyContext *property : apiDeclaration->apiProperty()) {
                     if (excludingProperty && excludingProperty == property) {
                         continue;
                     }
-                    MaPLParser::IdentifierContext *identifier = property->identifier();
-                    if (identifier && identifier->getText() == name) {
+                    if (property->identifier()->getText() == name) {
                         return property;
                     }
                 }

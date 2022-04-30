@@ -377,12 +377,12 @@ MaPLParser::ObjectExpressionContext *prefixObjectExpression(MaPLParser::ObjectEx
 
 /**
  * @param file The MaPLFile to use as the root of the search.
- * @param type The string name of the #type.
+ * @param typeName The string name of the #type.
  * @param excludingType A type node to exclude from the search. This is useful when checking for duplicate symbols. Pass NULL to exclude nothing.
  *
  * @return The parse tree node which represents the API type, if a matching type exists. Otherwise @c NULL.
  */
-MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, const std::string &type, MaPLParser::ApiDeclarationContext *excludingType);
+MaPLParser::ApiDeclarationContext *findType(MaPLFile *file, const std::string &typeName, MaPLParser::ApiDeclarationContext *excludingType);
 
 /**
  * @param file The MaPLFile to use as the root of the search.
