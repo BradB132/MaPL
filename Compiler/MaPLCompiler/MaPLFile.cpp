@@ -2694,7 +2694,7 @@ void MaPLFile::logAmbiguousLiteralError(MaPLPrimitiveType type, antlr4::Token *t
         default: return;
     }
     for (size_t i = 0; i < suggestedTypes.size(); i++) {
-        message += descriptorForType({ suggestedTypes[i] });
+        message += descriptorForPrimitive(suggestedTypes[i]);
         if (i == suggestedTypes.size()-1) {
             message += ".";
         } else {

@@ -172,7 +172,21 @@ std::string descriptorForPrimitive(MaPLPrimitiveType type) {
 
 std::string descriptorForType(const MaPLType &type) {
     if (type.primitiveType == MaPLPrimitiveType_Pointer) {
-        return type.pointerType.empty() ? "NULL" : type.pointerType;
+        if (type.pointerType.empty()) {
+            return "NULL";
+        }
+        std::string descriptor = type.pointerType;
+        if (type.generics.size() > 0) {
+            descriptor += "<";
+            for (size_t i = 0; i < type.generics.size(); i++) {
+                descriptor += descriptorForType(type.generics[i]);
+                if (i < type.generics.size()-1) {
+                    descriptor += ", ";
+                }
+            }
+            descriptor += ">";
+        }
+        return descriptor;
     }
     return descriptorForPrimitive(type.primitiveType);
 }
