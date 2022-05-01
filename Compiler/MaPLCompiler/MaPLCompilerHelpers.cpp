@@ -1319,6 +1319,30 @@ std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file) {
     return findDuplicateDependencies(file, pathSet);
 }
 
+std::vector<MaPLParser::ApiDeclarationContext *> findInheritancePath(MaPLFile *file, const std::string &type, const std::string &possibleAncestorType) {
+    std::vector<MaPLParser::ApiDeclarationContext *> result;
+    MaPLParser::ApiDeclarationContext *declaration = findType(file, type, NULL);
+    if (!declaration) {
+        return result;
+    }
+    if (type == possibleAncestorType) {
+        result.push_back(declaration);
+        return result;
+    }
+    MaPLParser::ApiInheritanceContext *inheritance = declaration->apiInheritance();
+    if (inheritance) {
+        for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
+            std::vector<MaPLParser::ApiDeclarationContext *> foundPath = findInheritancePath(file, pointerType->identifier()->getText(), possibleAncestorType);
+            if (foundPath.size() > 0) {
+                result.push_back(declaration);
+                result.insert(result.end(), foundPath.begin(), foundPath.end());
+                return result;
+            }
+        }
+    }
+    return result;
+}
+
 void collateSymbolsInFile(MaPLFile *file, std::map<std::string, MaPLSymbol> &symbolTable) {
     MaPLParser::ProgramContext *program = file->getParseTree();
     if (!program) { return; }
