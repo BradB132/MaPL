@@ -640,7 +640,7 @@ MaPLType typeForTypeContext(MaPLParser::TypeContext *typeContext) {
     }
 }
 
-bool MaPLType::operator== (const MaPLType &otherType) {
+bool MaPLType::operator== (const MaPLType &otherType) const {
     if (primitiveType != otherType.primitiveType) {
         return false;
     }
@@ -657,7 +657,7 @@ bool MaPLType::operator== (const MaPLType &otherType) {
     return true;
 }
 
-bool MaPLType::operator!= (const MaPLType &otherType) {
+bool MaPLType::operator!= (const MaPLType &otherType) const {
     return !(*this == otherType);
 }
 
