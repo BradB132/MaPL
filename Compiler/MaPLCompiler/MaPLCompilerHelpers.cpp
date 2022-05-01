@@ -1227,46 +1227,59 @@ bool inheritsFromType(MaPLFile *file, const std::string &type, const std::string
     return findAncestorTypes(file, type).count(possibleAncestorType) > 0;
 }
 
-std::vector<std::string> findInheritanceCycle(MaPLFile *file, MaPLParser::ApiDeclarationContext *apiDeclaration, std::set<std::string> &seenTypes) {
+std::vector<std::string> findInheritanceCyclesAndDiamonds(MaPLFile *file,
+                                                          antlr4::Token *token,
+                                                          MaPLParser::ApiDeclarationContext *apiDeclaration,
+                                                          std::set<std::string> &cycleTypes,
+                                                          std::set<std::string> &diamondTypes) {
     std::vector<std::string> cycleVector;
     std::string typeName = apiDeclaration->typeName->getText();
-    if (seenTypes.count(typeName) > 0) {
+    if (cycleTypes.count(typeName) > 0) {
         // This graph contains a cycle.
         cycleVector.push_back(typeName);
         return cycleVector;
     }
+    if (diamondTypes.count(typeName) > 0) {
+        // This graph contains a diamond.
+        file->logError(token, "The type '"+typeName+"' is inherited more than once by the same type, forming an 'inheritance diamond'.");
+        return cycleVector;
+    }
+    diamondTypes.insert(typeName);
     MaPLParser::ApiInheritanceContext *inheritance = apiDeclaration->apiInheritance();
     if (!inheritance) {
         return cycleVector;
     }
-    seenTypes.insert(typeName);
+    cycleTypes.insert(typeName);
     for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
         MaPLParser::ApiDeclarationContext *parentDeclaration = findType(file, pointerType->identifier()->getText(), NULL);
         if (!parentDeclaration) {
             continue;
         }
-        std::vector<std::string> foundCycle = findInheritanceCycle(file, parentDeclaration, seenTypes);
+        std::vector<std::string> foundCycle = findInheritanceCyclesAndDiamonds(file, token, parentDeclaration, cycleTypes, diamondTypes);
         if (foundCycle.size() > 0) {
             cycleVector.push_back(typeName);
             cycleVector.insert(cycleVector.end(), foundCycle.begin(), foundCycle.end());
             break;
         }
     }
-    seenTypes.erase(typeName);
+    cycleTypes.erase(typeName);
     return cycleVector;
 }
 
-bool findInheritanceCycle(MaPLFile *file) {
-    MaPLParser::ProgramContext *program = file->getParseTree();
-    if (!program) { return false; }
-    std::set<std::string> seenTypes;
-    for (MaPLParser::StatementContext *statement : program->statement()) {
+void findInheritanceCyclesAndDiamonds(MaPLFile *file) {
+    std::set<std::string> cycleTypes;
+    std::set<std::string> diamondTypes;
+    for (MaPLParser::StatementContext *statement : file->getParseTree()->statement()) {
         MaPLParser::ApiDeclarationContext *apiDeclaration = statement->apiDeclaration();
         if (!apiDeclaration ||
             apiDeclaration->keyToken->getType() != MaPLParser::API_TYPE) {
             continue;
         }
-        std::vector<std::string> cycle = findInheritanceCycle(file, apiDeclaration, seenTypes);
+        std::vector<std::string> cycle = findInheritanceCyclesAndDiamonds(file,
+                                                                          apiDeclaration->start,
+                                                                          apiDeclaration,
+                                                                          cycleTypes,
+                                                                          diamondTypes);
         if (cycle.size() > 0) {
             std::string cycleDescriptor;
             for (size_t i = 0; i < cycle.size(); i++) {
@@ -1277,11 +1290,12 @@ bool findInheritanceCycle(MaPLFile *file) {
             }
             cycleDescriptor += ".";
             file->logError(apiDeclaration->typeName->start, "Type inheritance forms a cycle: "+cycleDescriptor);
-            return true;
+            return;
         }
-        seenTypes.clear();
+        cycleTypes.clear();
+        diamondTypes.clear();
     }
-    return false;
+    return;
 }
 
 std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file, std::set<std::filesystem::path> &pathSet) {

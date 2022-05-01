@@ -316,9 +316,9 @@ std::vector<std::string> mutualAncestorTypes(MaPLFile *file, const std::string &
 bool inheritsFromType(MaPLFile *file, const std::string &type, const std::string &possibleAncestorType);
 
 /**
- * @return @c true if the #type declarations in @c file contain an inheritance cycle.
+ * Logs an error if the #type declarations in @c file contain an inheritance cycle or an inheritance diamond.
  */
-bool findInheritanceCycle(MaPLFile *file);
+void findInheritanceCyclesAndDiamonds(MaPLFile *file);
 
 /**
  * A set of paths to files which appear multiple times in the dependency graph of @c file.

@@ -114,7 +114,8 @@ void MaPLFile::compileIfNeeded() {
     if (!parseRawScript()) {
         return;
     }
-    if(findInheritanceCycle(this)) {
+    findInheritanceCyclesAndDiamonds(this);
+    if(_errors.size() > 0) {
         return;
     }
     
