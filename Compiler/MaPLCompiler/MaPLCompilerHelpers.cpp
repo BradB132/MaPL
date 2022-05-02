@@ -1139,11 +1139,37 @@ MaPLParser::ObjectExpressionContext *prefixObjectExpression(MaPLParser::ObjectEx
 bool isAssignable(MaPLFile *file, const MaPLType &expressionType, const MaPLType &assignToType) {
     // Handle direct matches first.
     if (assignToType.primitiveType == expressionType.primitiveType) {
-        if (assignToType.primitiveType == MaPLPrimitiveType_Pointer) { // TODO: How to update this for generics?
-            // Empty "pointerType" indicates a NULL literal. Nulls are assignable to any type of pointer.
-            return expressionType.pointerType.empty() ||
-                   assignToType.pointerType == expressionType.pointerType ||
-                   inheritsFromType(file, expressionType.pointerType, assignToType.pointerType);
+        if (assignToType.primitiveType == MaPLPrimitiveType_Pointer) {
+            if (expressionType.pointerType.empty()) {
+                // Empty "pointerType" indicates a NULL literal. Nulls are assignable to any type of pointer.
+                return true;
+            }
+            if (expressionType.pointerType == assignToType.pointerType) {
+                // Pointer types match, the generics can do a direct comparison.
+                if (expressionType.generics.size() != assignToType.generics.size()) {
+                    return false;
+                }
+                for (size_t i = 0; i < expressionType.generics.size(); i++) {
+                    if (!isAssignable(file, expressionType.generics[i], assignToType.generics[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            // Attempt to interpret 'assignToType' as a parent type and calculate what the equivalent generics would be.
+            MaPLType mappedType = mapGenerics(file, expressionType, assignToType.pointerType);
+            if (mappedType.primitiveType == MaPLPrimitiveType_TypeError) {
+                return false;
+            }
+            if (mappedType.generics.size() != assignToType.generics.size()) {
+                return false;
+            }
+            for (size_t i = 0; i < mappedType.generics.size(); i++) {
+                if (!isAssignable(file, mappedType.generics[i], assignToType.generics[i])) {
+                    return false;
+                }
+            }
+            return true;
         }
         return true;
     }
