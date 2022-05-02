@@ -104,7 +104,7 @@ private:
                                       MaPLParser::ExpressionContext *expression2,
                                       antlr4::Token *errorToken);
     MaPLType objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
-                                        const std::string &invokedOnType);
+                                        const MaPLType &invokedOnType);
     void confirmTypesExist(const MaPLType &type, MaPLFile *file, antlr4::Token *token);
     
     virtual void syntaxError(antlr4::Recognizer *recognizer,

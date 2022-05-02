@@ -575,7 +575,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
             } else {
                 // This assignment is for an object expression.
-                MaPLType returnType = objectExpressionReturnType(objectExpression, "");
+                MaPLType returnType = objectExpressionReturnType(objectExpression, { MaPLPrimitiveType_Uninitialized });
                 if (returnType.primitiveType == MaPLPrimitiveType_TypeError) {
                     // If there was an error, the reason why was already logged.
                     break;
@@ -590,7 +590,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
                 MaPLType prefixType{ MaPLPrimitiveType_Uninitialized };
                 if (prefixExpression) {
-                    prefixType = objectExpressionReturnType(prefixExpression, "");
+                    prefixType = objectExpressionReturnType(prefixExpression, { MaPLPrimitiveType_Uninitialized });
                 }
                 if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::SUBSCRIPT_OPEN) {
                     MaPLParser::ApiSubscriptContext *subscript = findSubscript(this,
@@ -745,7 +745,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
             } else {
                 // This increment is for an object expression.
-                MaPLType returnType = objectExpressionReturnType(objectExpression, "");
+                MaPLType returnType = objectExpressionReturnType(objectExpression, { MaPLPrimitiveType_Uninitialized });
                 if (returnType.primitiveType == MaPLPrimitiveType_TypeError) {
                     // If there was an error, the reason why was already logged.
                     break;
@@ -760,7 +760,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
                 MaPLType prefixType{ MaPLPrimitiveType_Uninitialized };
                 if (prefixExpression) {
-                    prefixType = objectExpressionReturnType(prefixExpression, "");
+                    prefixType = objectExpressionReturnType(prefixExpression, { MaPLPrimitiveType_Uninitialized });
                 }
                 if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::SUBSCRIPT_OPEN) {
                     MaPLParser::ApiSubscriptContext *subscript = findSubscript(this,
@@ -845,7 +845,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             // Object expressions can appear within imperative statements, but the only type of expression that's
             // valid in that context is a function invocation. Check parent node for this type of error.
             if (dynamic_cast<MaPLParser::ImperativeStatementContext *>(expression->parent)) {
-                MaPLType returnType = objectExpressionReturnType(expression, "");
+                MaPLType returnType = objectExpressionReturnType(expression, { MaPLPrimitiveType_Uninitialized });
                 if (returnType.primitiveType == MaPLPrimitiveType_TypeError) {
                     // If there was an error, the reason why was already logged.
                     break;
@@ -923,7 +923,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         MaPLType expressionType = dataTypeForExpression(expression->expression(0));
                         if (castType.primitiveType == expressionType.primitiveType) {
                             // The cast doesn't involve any casting between primitive types, and so is a no-op in terms of bytecode.
-                            if (castType.primitiveType == MaPLPrimitiveType_Pointer &&// TODO: Update this logic for generics.
+                            // TODO: Update this logic for generics. Should only be constrained by the underlying pointer pointing to the same object, make sure it could possible be compatible.
+                            if (castType.primitiveType == MaPLPrimitiveType_Pointer &&
                                 !isAssignable(this, expressionType, castType) &&
                                 !inheritsFromType(this, castType.pointerType, expressionType.pointerType)) {
                                 // Cast is between two pointer types. This only makes sense if the types have some child/ancestor relationship.
@@ -1734,7 +1735,7 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
         size_t possibleMatchCount = possibleMatches.size();
         if (possibleMatchCount == 1) {
             // In the case where there's only one possible choice, make the inference.
-            return { MaPLPrimitiveType_Pointer, possibleMatches[0] };
+            return { MaPLPrimitiveType_Pointer, possibleMatches[0] };// TODO: This literal needs a generics field.
         }
         std::string errorSuffix;
         if (possibleMatchCount == 0) {
@@ -2520,14 +2521,14 @@ MaPLType MaPLFile::dataTypeForExpression(MaPLParser::ExpressionContext *expressi
     }
     MaPLParser::ObjectExpressionContext* objectExpression = expression->objectExpression();
     if (objectExpression) {
-        return objectExpressionReturnType(objectExpression, "");
+        return objectExpressionReturnType(objectExpression, { MaPLPrimitiveType_Uninitialized });
     }
     logError(expression->keyToken, "Error determining the type of this expression.");
     return { MaPLPrimitiveType_TypeError };
 }
 
 MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContext *expression,
-                                              const std::string &invokedOnType) {// TODO: Does "invokedOnType" need to be the full MaPLType in order to correctly infer generic types?
+                                              const MaPLType &invokedOnType) {
     antlr4::Token *keyToken = expression->keyToken;
     if (keyToken) {
         switch (keyToken->getType()) {
@@ -2541,7 +2542,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                     logError(keyToken, "The '.' operator cannot be invoked on "+descriptorForType(prefixType)+", it can only be invoked on pointers.");
                     return { MaPLPrimitiveType_TypeError };
                 }
-                return objectExpressionReturnType(childExpressions[1], prefixType.pointerType);
+                return objectExpressionReturnType(childExpressions[1], prefixType);
             }
             case MaPLParser::SUBSCRIPT_OPEN: {
                 // Subscript invocation.
@@ -2553,17 +2554,17 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 MaPLType indexType = dataTypeForExpression(expression->expression(0));
                 MaPLParser::ApiSubscriptContext *subscript = findSubscript(this, prefixType.pointerType, indexType, NULL);
                 if (!subscript) {
-                    logError(expression->keyToken, "Unable to find a subscript on type '"+prefixType.pointerType+"' with an index parameter of type "+descriptorForType(indexType)+".");
+                    logError(expression->keyToken, "Unable to find a subscript on type '"+descriptorForType(prefixType)+"' with an index parameter of type "+descriptorForType(indexType)+".");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 
                 MaPLParser::ApiSubscriptContext *conflictingSubscript = findSubscript(this, prefixType.pointerType, indexType, subscript);
                 if (conflictingSubscript) {
-                    logError(expression->keyToken, "This subscript invocation is ambiguous between index types '"+descriptorForType(typeForTypeContext(subscript->type(1)))+"' and '"+descriptorForType(typeForTypeContext(conflictingSubscript->type(1)))+"' in type '"+prefixType.pointerType+"'. This ambiguity can be resolved by adding a typecast to explicitly describe the type of the index.");
+                    logError(expression->keyToken, "This subscript invocation is ambiguous between index types '"+descriptorForType(typeForTypeContext(subscript->type(1)))+"' and '"+descriptorForType(typeForTypeContext(conflictingSubscript->type(1)))+"' in type '"+descriptorForType(prefixType)+"'. This ambiguity can be resolved by adding a typecast to explicitly describe the type of the index.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 
-                return typeForTypeContext(subscript->type(0));
+                return typeForTypeContext(subscript->type(0)); // TODO: Resolve generics.
             }
             case MaPLParser::PAREN_OPEN: {
                 // Function invocation.
@@ -2573,7 +2574,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 }
                 std::string functionName = expression->identifier()->getText();
                 MaPLParser::ApiFunctionContext *function = findFunction(this,
-                                                                        invokedOnType,
+                                                                        invokedOnType.pointerType,
                                                                         functionName,
                                                                         parameterTypes,
                                                                         MaPLParameterStrategy_Flexible,
@@ -2582,26 +2583,26 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                     std::string functionSignature = descriptorForFunction(functionName,
                                                                           parameterTypes,
                                                                           false);
-                    if (invokedOnType.empty()) {
+                    if (invokedOnType.primitiveType == MaPLPrimitiveType_Uninitialized) {
                         logError(expression->identifier()->start, "Unable to find a global '"+functionSignature+"' function.");
                     } else {
-                        logError(expression->identifier()->start, "Unable to find a '"+functionSignature+"' function on type '"+invokedOnType+"'.");
+                        logError(expression->identifier()->start, "Unable to find a '"+functionSignature+"' function on type '"+descriptorForType(invokedOnType)+"'.");
                     }
                     return { MaPLPrimitiveType_TypeError };
                 }
                 
                 MaPLParser::ApiFunctionContext *conflictingFunction = findFunction(this,
-                                                                                   invokedOnType,
+                                                                                   invokedOnType.pointerType,
                                                                                    functionName,
                                                                                    parameterTypes,
                                                                                    MaPLParameterStrategy_Flexible,
                                                                                    function);
                 if (conflictingFunction) {
                     std::string errorSuffix = "This ambiguity might be resolved by renaming these APIs, or by adding a typecast to explicitly describe the type of any literal parameters.";
-                    if (invokedOnType.empty()) {
+                    if (invokedOnType.primitiveType == MaPLPrimitiveType_Uninitialized) {
                         logError(expression->identifier()->start, "This function invocation is ambiguous between global functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"'. "+errorSuffix);
                     } else {
-                        logError(expression->identifier()->start, "This function invocation is ambiguous between functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"' in type '"+invokedOnType+"'. "+errorSuffix);
+                        logError(expression->identifier()->start, "This function invocation is ambiguous between functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"' in type '"+descriptorForType(invokedOnType)+"'. "+errorSuffix);
                     }
                     return { MaPLPrimitiveType_TypeError };
                 }
@@ -2609,7 +2610,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 if (function->API_VOID()) {
                     return { MaPLPrimitiveType_Void };
                 }
-                return typeForTypeContext(function->type());
+                return typeForTypeContext(function->type()); // TODO: Resolve generics.
             }
             default:
                 break;
@@ -2620,7 +2621,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
             std::string propertyOrVariableName = identifier->getText();
             
             // Prefer recognizing this identifier as a variable.
-            bool isInvokedOnType = !invokedOnType.empty();
+            bool isInvokedOnType = invokedOnType.primitiveType != MaPLPrimitiveType_Uninitialized;
             if (!isInvokedOnType) {
                 MaPLVariable variable = _variableStack->getVariable(propertyOrVariableName);
                 if (variable.type.primitiveType != MaPLPrimitiveType_Uninitialized) {
@@ -2630,18 +2631,18 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
             
             // The name doesn't match a variable, check if it matches a property.
             MaPLParser::ApiPropertyContext *property = findProperty(this,
-                                                                    invokedOnType,
+                                                                    invokedOnType.pointerType,
                                                                     propertyOrVariableName,
                                                                     NULL);
             if (!property) {
                 if (isInvokedOnType) {
-                    logError(identifier->start, "Unable to find a '"+propertyOrVariableName+"' property on type '"+invokedOnType+"'.");
+                    logError(identifier->start, "Unable to find a '"+propertyOrVariableName+"' property on type '"+descriptorForType(invokedOnType)+"'.");
                 } else {
                     logError(identifier->start, "Unable to find a variable or global property named '"+propertyOrVariableName+"'.");
                 }
                 return { MaPLPrimitiveType_TypeError };
             }
-            return typeForTypeContext(property->type());
+            return typeForTypeContext(property->type()); // TODO: Resolve generics.
         }
     }
     logError(keyToken, "Error determining the type of this expression.");
