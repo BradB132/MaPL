@@ -1405,6 +1405,9 @@ bool findGenericTypes(MaPLFile *file, const std::string &typeName, const std::st
 }
 
 MaPLType mapGenerics(MaPLFile *file, const MaPLType &fromType, const std::string &toParentName) {
+    if (fromType.primitiveType != MaPLPrimitiveType_Pointer || fromType.pointerType == toParentName) {
+        return fromType;
+    }
     std::vector<MaPLGenericType> foundTypes;
     if (!findGenericTypes(file, fromType.pointerType, toParentName, foundTypes)) {
         return { MaPLPrimitiveType_TypeError };
