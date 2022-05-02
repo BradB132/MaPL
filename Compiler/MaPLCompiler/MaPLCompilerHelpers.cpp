@@ -14,6 +14,14 @@
 #include "MaPLFileCache.h"
 #include "MaPLBuffer.h"
 
+/**
+ * Represents the type of a generic on a #type declaration as either a resolved type or the index of the generic.
+ */
+struct MaPLGenericType {
+    MaPLType type;
+    size_t genericIndex;
+};
+
 MaPLCompileResult compileMaPL(const std::vector<std::filesystem::path> &scriptPaths, const MaPLCompileOptions &options) {
     MaPLCompileResult compileResult;
     MaPLFileCache fileCache;
@@ -1319,28 +1327,72 @@ std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file) {
     return findDuplicateDependencies(file, pathSet);
 }
 
-std::vector<MaPLParser::ApiDeclarationContext *> findInheritancePath(MaPLFile *file, const std::string &type, const std::string &possibleAncestorType) {
-    std::vector<MaPLParser::ApiDeclarationContext *> result;
-    MaPLParser::ApiDeclarationContext *declaration = findType(file, type, NULL);
+bool findGenericTypes(MaPLFile *file, const std::string &typeName, const std::string &ancestorTypeName, std::vector<MaPLGenericType> &result) {
+    MaPLParser::ApiDeclarationContext *declaration = findType(file, typeName, NULL);
     if (!declaration) {
-        return result;
-    }
-    if (type == possibleAncestorType) {
-        result.push_back(declaration);
-        return result;
+        return false;
     }
     MaPLParser::ApiInheritanceContext *inheritance = declaration->apiInheritance();
-    if (inheritance) {
-        for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
-            std::vector<MaPLParser::ApiDeclarationContext *> foundPath = findInheritancePath(file, pointerType->identifier()->getText(), possibleAncestorType);
-            if (foundPath.size() > 0) {
-                result.push_back(declaration);
-                result.insert(result.end(), foundPath.begin(), foundPath.end());
-                return result;
+    if (!inheritance) {
+        return false;
+    }
+    for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
+        std::string parentName = pointerType->identifier()->getText();
+        if (parentName == ancestorTypeName) {
+            // The desired ancestor type has been found.
+            for (MaPLParser::TypeContext *type : pointerType->type()) {
+                MaPLGenericType genericType{ typeForTypeContext(type) };
+                if (genericType.type.primitiveType == MaPLPrimitiveType_Pointer && genericType.type.generics.size() == 0) {
+                    // This could be referencing a generic on the current class.
+                    for (size_t i = 0; i < declaration->generics.size(); i++) {
+                        if (declaration->generics[i]->getText() == genericType.type.pointerType) {
+                            genericType = { { MaPLPrimitiveType_Uninitialized }, i};
+                            break;
+                        }
+                    }
+                }
+                result.push_back(genericType);
             }
+            return true;
+        }
+        if (findGenericTypes(file, parentName, ancestorTypeName, result)) {
+            // This pointerType is along the desired inheritance path.
+            for (size_t i = 0; i < result.size(); i++) {
+                if (result[i].type.primitiveType == MaPLPrimitiveType_Uninitialized) {
+                    // This generic has not yet been resolved to a type.
+                    result[i].type = typeForTypeContext(pointerType->type(result[i].genericIndex));
+                    if (result[i].type.primitiveType == MaPLPrimitiveType_Pointer && result[i].type.generics.size() == 0) {
+                        // This could be referencing a generic on the current class.
+                        for (size_t j = 0; j < declaration->generics.size(); j++) {
+                            if (declaration->generics[j]->getText() == result[i].type.pointerType) {
+                                result[i] = { { MaPLPrimitiveType_Uninitialized }, j};
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
         }
     }
-    return result;
+    return false;
+}
+
+MaPLType mapGenerics(MaPLFile *file, const MaPLType &fromType, const std::string &toParentName) {
+    std::vector<MaPLGenericType> foundTypes;
+    if (!findGenericTypes(file, fromType.pointerType, toParentName, foundTypes)) {
+        return { MaPLPrimitiveType_TypeError };
+    }
+    std::vector<MaPLType> generics;
+    generics.reserve(foundTypes.size());
+    for (const MaPLGenericType &genericType : foundTypes) {
+        if (genericType.type.primitiveType == MaPLPrimitiveType_Uninitialized) {
+            generics.push_back(fromType.generics[genericType.genericIndex]);
+        } else {
+            generics.push_back(genericType.type);
+        }
+    }
+    return { MaPLPrimitiveType_Pointer, toParentName, generics };
 }
 
 void collateSymbolsInFile(MaPLFile *file, std::map<std::string, MaPLSymbol> &symbolTable) {

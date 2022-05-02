@@ -326,9 +326,13 @@ void findInheritanceCyclesAndDiamonds(MaPLFile *file);
 std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file);
 
 /**
- * @return A list of API declarations which trace the path of inheritance from @c type up the hierarchy to @c possibleAncestorType. Returns empty vector if no such path exists.
+ * @param file The root file.
+ * @param fromType The child type which specifies a list of generics.
+ * @param toParentName The string name for the parent type.
+ *
+ * @return A @c MaPLType representing @c toParentName which has the correct generics substituted from @c fromType.
  */
-std::vector<MaPLParser::ApiDeclarationContext *> findInheritancePath(MaPLFile *file, const std::string &type, const std::string &possibleAncestorType);
+MaPLType mapGenerics(MaPLFile *file, const MaPLType &fromType, const std::string &toParentName);
 
 /**
  * @return A mapping of all symbols names to symbol values for APIs declared within @c files.
