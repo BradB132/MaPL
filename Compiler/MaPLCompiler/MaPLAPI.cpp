@@ -33,7 +33,10 @@ MaPLGenericType MaPLGenericType::genericWithSubstitutedGenerics(const std::vecto
 }
 
 MaPLType MaPLGenericType::typeWithoutSubstitutedGenerics() const {
-    MaPLType concreteType{ primitiveType, pointerType };
+    MaPLType concreteType{
+        (primitiveType == MaPLPrimitiveType_Uninitialized) ? MaPLPrimitiveType_Pointer : primitiveType,
+        pointerType,
+    };
     for (const MaPLGenericType &genericType : generics) {
         concreteType.generics.push_back(genericType.typeWithoutSubstitutedGenerics());
     }
