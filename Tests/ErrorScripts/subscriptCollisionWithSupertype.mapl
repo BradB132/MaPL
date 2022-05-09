@@ -1,7 +1,7 @@
 #type A {
-    int32 [string s];
+    int32 [string];
 }
 
 #type B : A {
-    int32 [string s];
+    int32 [string];
 }

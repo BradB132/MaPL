@@ -1,4 +1,4 @@
 #type A {
-    int32 [string s];
-    int32 [string s];
+    int32 [string];
+    int32 [string];
 }

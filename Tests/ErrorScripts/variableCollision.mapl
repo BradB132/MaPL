@@ -1,0 +1,4 @@
+int32 myVariable = 5;
+{
+    float32 myVariable = 3.0;
+}
