@@ -374,7 +374,7 @@ void MaPLAPI::performErrorChecking() {
             if (types.count(genericDescriptor)) {
                 type.file->logError(type.node->start, "Generic descriptor '"+genericDescriptor+"' conflicts with a type of the same name.");
                 MaPLTypeAPI &conflictingType = types[genericDescriptor];
-                conflictingType.file->logError(conflictingType.node->typeName->start, "Type '"+genericDescriptor+"' later comes into cconflict with a generic descriptor of the same name.");
+                conflictingType.file->logError(conflictingType.node->typeName->start, "Type '"+genericDescriptor+"' later comes into conflict with a generic descriptor of the same name.");
             }
         }
         for (const MaPLGenericType& supertype : type.supertypes) {

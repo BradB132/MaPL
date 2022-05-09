@@ -111,10 +111,6 @@ void MaPLFile::compileIfNeeded() {
     if (!parseRawScript()) {
         return;
     }
-    _api.findInheritanceCyclesAndDiamonds();
-    if(_errors.size() > 0) {
-        return;
-    }
     
     // Check the dependency graph for duplicate includes of the same file.
     std::set<std::filesystem::path> duplicates = findDuplicateDependencies(this);
@@ -145,6 +141,10 @@ void MaPLFile::compileIfNeeded() {
     
     _api.assimilate(_program, this);
     _api.performErrorChecking();
+    _api.findInheritanceCyclesAndDiamonds();
+    if(_errors.size() > 0) {
+        return;
+    }
     
     _bytecode->zeroDebugLines();
     
