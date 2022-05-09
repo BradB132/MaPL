@@ -1,0 +1,4 @@
+#type A {}
+
+A a = NULL;
+int32 x = (int32)a;

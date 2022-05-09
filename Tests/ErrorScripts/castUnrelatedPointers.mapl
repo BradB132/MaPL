@@ -1,0 +1,5 @@
+#type A {}
+#type B {}
+
+A a = NULL;
+B b = (B)a;

@@ -1,0 +1,6 @@
+#type A {}
+#type B : A {}
+#type C : A {}
+
+B b = NULL;
+C c = (C)b;
