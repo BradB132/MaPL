@@ -1,0 +1,3 @@
+string s1 = "foo";
+string s2 = "bar";
+string s3 = s1 * s2;
