@@ -16,6 +16,7 @@
 
 // Generating the various expected files can be laborious. Enabling this option overwrites all expected files with the generated values.
 #define OUTPUT_EXPECTED_FILES 0
+#define PRINT_ERROR_OUTPUT 0
 
 struct TestDirectoryContents {
     std::filesystem::path bytecodePath;
@@ -417,6 +418,13 @@ int main(int argc, const char * argv[]) {
             }
             
             MaPLCompileResult errorResult = compileMaPL({scriptPath}, nonDebugOptions);
+#if PRINT_ERROR_OUTPUT
+            printf("Error output for '%s':\n", scriptPath.filename().c_str());
+            for (const std::string &errorMessage : errorResult.errorMessages) {
+                printf("%s", errorMessage.c_str());
+            }
+            printf("\n");
+#endif
             if (errorResult.errorMessages.size() == 0) {
                 printf("Script at path '%s' was expected to produce a compile error but produced none.\n", scriptPath.c_str());
                 return 1;
