@@ -416,8 +416,8 @@ int main(int argc, const char * argv[]) {
                 return 1;
             }
             
-            MaPLCompileResult result = compileMaPL({scriptPath}, nonDebugOptions);
-            if (result.errorMessages.size() == 0) {
+            MaPLCompileResult errorResult = compileMaPL({scriptPath}, nonDebugOptions);
+            if (errorResult.errorMessages.size() == 0) {
                 printf("Script at path '%s' was expected to produce a compile error but produced none.\n", scriptPath.c_str());
                 return 1;
             }

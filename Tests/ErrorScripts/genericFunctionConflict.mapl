@@ -1,0 +1,7 @@
+#type A<T> {
+    void foo(T bar);
+}
+
+#type B : A<char> {
+    void foo(char bar);
+}
