@@ -1584,12 +1584,14 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
         switch (tokenType) {
             case MaPLParser::PAREN_OPEN: { // Typecast.
                 MaPLLiteral expressionLiteral = constantValueForExpression(expression->expression(0));
-                if (expressionLiteral.type.primitiveType == MaPLPrimitiveType_Pointer) {
+                MaPLType castType = typeForTypeContext(expression->type());
+                if (expressionLiteral.type.primitiveType == MaPLPrimitiveType_Pointer ||
+                    castType.primitiveType == MaPLPrimitiveType_Pointer) {
                     // Pointer casts require some extra type checking. Don't try to do this as a constant.
                     return { { MaPLPrimitiveType_Uninitialized } };
                 }
                 MaPLLiteral returnLiteral = castLiteralToType(expressionLiteral,
-                                                              typeForTypeContext(expression->type()),
+                                                              castType,
                                                               this,
                                                               expression->start);
                 if (returnLiteral.type.primitiveType != MaPLPrimitiveType_TypeError) {
