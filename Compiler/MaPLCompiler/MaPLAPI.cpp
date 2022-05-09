@@ -323,7 +323,6 @@ void checkForFunctionCollisionsInList(const MaPLFunctionAPI *originalFunction, c
         }
         if (parametersAreEquivalent) {
             originalFunction->file->logError(originalFunction->node->start, "Function '"+originalFunction->signatureDescriptor()+"' is in conflict with previously declared function '"+functionAPI.signatureDescriptor()+"'.");
-            functionAPI.file->logError(functionAPI.node->start, "Function '"+functionAPI.signatureDescriptor()+"' later comes into conflict with function '"+originalFunction->signatureDescriptor()+"'.");
         }
     }
 }
