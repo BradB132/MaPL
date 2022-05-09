@@ -55,6 +55,10 @@
             argument = "&quot;${SRCROOT}/Scripts&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;${SRCROOT}/ErrorScripts&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>
    <ProfileAction

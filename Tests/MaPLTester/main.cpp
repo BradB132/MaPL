@@ -220,6 +220,14 @@ void error(MaPLRuntimeError error) {
     scriptEncounteredError = true;
 }
 
+bool pathHasExtension(const std::filesystem::path &path, const std::string &extension) {
+    std::string pathExtension = path.extension();
+    std::transform(pathExtension.begin(), pathExtension.end(), pathExtension.begin(), [](unsigned char c){
+        return std::tolower(c);
+    });
+    return pathExtension == extension;
+}
+
 MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnderTest,
                            const std::map<std::filesystem::path, TestDirectoryContents> &directoryMap,
                            const MaPLCompileOptions &compileOptions) {
@@ -336,16 +344,25 @@ MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnde
 
 int main(int argc, const char * argv[]) {
     // Get the directory which contains all test scripts.
-    if (argc != 2) {
-        printf("MaPLTester expects a single arg: an absolute path to the root test directory.\n");
+    if (argc != 3) {
+        printf("MaPLTester expects two args:\n");
+        printf("1- An absolute path to the root test directory.\n");
+        printf("2- An absolute path to the root directory of scripts with intentional compile errors.\n");
         return 1;
     }
-    std::filesystem::path rootDir = argv[1];
-    if (!rootDir.is_absolute()) {
-        printf("The root path must be an absolute path.\n");
+    std::filesystem::path testRootDirectory = argv[1];
+    if (!testRootDirectory.is_absolute()) {
+        printf("The following path must be expressed as an absolute path: '%s'.\n", argv[1]);
         return 1;
     }
-    rootDir = rootDir.lexically_normal();
+    testRootDirectory = testRootDirectory.lexically_normal();
+    
+    std::filesystem::path errorRootDirectory = argv[2];
+    if (!errorRootDirectory.is_absolute()) {
+        printf("The following path must be expressed as an absolute path: '%s'.\n", argv[2]);
+        return 1;
+    }
+    errorRootDirectory = errorRootDirectory.lexically_normal();
     
     // Each directory is expected to contain:
     // 1- script.mapl - The script under test.
@@ -357,7 +374,7 @@ int main(int argc, const char * argv[]) {
     std::vector<std::filesystem::path> scriptsUnderTest;
     std::map<std::filesystem::path, TestDirectoryContents> nonDebugDirectoryMap;
     std::map<std::filesystem::path, TestDirectoryContents> debugDirectoryMap;
-    for (const std::filesystem::directory_entry &file : std::filesystem::directory_iterator(rootDir)) {
+    for (const std::filesystem::directory_entry &file : std::filesystem::directory_iterator(testRootDirectory)) {
         if (file.is_directory()) {
             std::filesystem::path scriptPath = file.path() / "script.mapl";
             scriptsUnderTest.push_back(scriptPath);
@@ -390,5 +407,23 @@ int main(int argc, const char * argv[]) {
 #else
     printf("All tests completed successfully.\n");
 #endif
+    
+    for (const std::filesystem::directory_entry &file : std::filesystem::directory_iterator(errorRootDirectory)) {
+        if (!file.is_directory()) {
+            std::filesystem::path scriptPath = file.path();
+            if (!pathHasExtension(scriptPath, ".mapl")) {
+                printf("All files in the error directory are expected to have '.mapl' extension.\n");
+                return 1;
+            }
+            
+            MaPLCompileResult result = compileMaPL({scriptPath}, nonDebugOptions);
+            if (result.errorMessages.size() == 0) {
+                printf("Script at path '%s' was expected to produce a compile error but produced none.\n", scriptPath.c_str());
+                return 1;
+            }
+        }
+    }
+    printf("All error cases successfully logged errors.\n");
+    
     return 0;
 }
