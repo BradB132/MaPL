@@ -142,7 +142,10 @@ void MaPLFile::compileIfNeeded() {
         }
         _api.assimilate(file->getAPI());
     }
+    
     _api.assimilate(_program, this);
+    _api.performErrorChecking();
+    
     _bytecode->zeroDebugLines();
     
     // Compile the bytecode from this file.
