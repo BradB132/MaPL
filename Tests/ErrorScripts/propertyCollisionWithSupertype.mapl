@@ -1,0 +1,7 @@
+#type A {
+    char testProperty;
+}
+
+#type B : A {
+    char testProperty;
+}

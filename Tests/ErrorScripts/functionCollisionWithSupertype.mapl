@@ -1,0 +1,7 @@
+#type A {
+    char testFunction(int32 x, float64 y, string s);
+}
+
+#type B : A {
+    char testFunction(int32 x, float64 y, string s);
+}

@@ -1,0 +1,9 @@
+#type A {}
+#type B {}
+#type C : A {}
+#type D : A {}
+#type E : B, C {}
+#type F : D {}
+#type G : E, F {}
+// G->E->C->A
+// G->F->D->A

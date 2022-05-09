@@ -1,0 +1,5 @@
+#type A : E {}
+#type B : A {}
+#type C {}
+#type D : B, C {}
+#type E : D {}

@@ -1,0 +1,7 @@
+#type A {
+    int32 [string s];
+}
+
+#type B : A {
+    int32 [string s];
+}
