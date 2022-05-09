@@ -413,7 +413,7 @@ int main(int argc, const char * argv[]) {
         if (!file.is_directory()) {
             std::filesystem::path scriptPath = file.path();
             if (!pathHasExtension(scriptPath, ".mapl")) {
-                printf("All files in the error directory are expected to have '.mapl' extension.\n");
+                printf("All files in the error directory are expected to have '.mapl' extension: '%s'.\n", scriptPath.filename().c_str());
                 return 1;
             }
             
