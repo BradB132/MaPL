@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "MaPLAPI.h"
 #include "MaPLCompiler.h"
 #include "MaPLParser.h"
 #include "BaseErrorListener.h"
@@ -49,9 +50,9 @@ public:
     MaPLVariableStack *getVariableStack();
     
     /**
-     * @return The parse tree that represents the script in this file. Does not include nodes from dependent files. NULL if error.
+     * @return A pointer to the API declared within this file.
      */
-    MaPLParser::ProgramContext *getParseTree();
+    MaPLAPI *getAPI();
     
     /**
      * @return A list of files that were included in this file's script via #import statements. List is empty if error.
@@ -67,6 +68,11 @@ public:
      * Logs an error that is then retrievable via @c getErrors().
      */
     void logError(antlr4::Token *token, const std::string &msg);
+    
+    /**
+     * Logs an error that describes a missing type with the name @c typeName.
+     */
+    void logMissingTypeError(antlr4::Token *errorToken, const std::string &typeName);
     
     /**
      * @return A list of all errors logged via @c logError().
@@ -116,7 +122,6 @@ private:
                                                  MaPLPrimitiveType right,
                                                  antlr4::Token *errorToken);
     void logAmbiguousLiteralError(MaPLPrimitiveType type, antlr4::Token *token);
-    void logMissingTypeError(antlr4::Token *errorToken, const std::string &typeName);
     void logNonNumericOperandsError(antlr4::Token *token);
     void logNotAssignableError(antlr4::Token *token);
     
@@ -133,6 +138,8 @@ private:
     antlr4::CommonTokenStream *_tokenStream;
     MaPLParser *_parser;
     MaPLParser::ProgramContext *_program;
+    
+    MaPLAPI _api;
 };
 
 #endif /* MaPLFile_h */

@@ -91,11 +91,8 @@ bool MaPLFile::parseRawScript() {
     return true;
 }
 
-MaPLParser::ProgramContext *MaPLFile::getParseTree() {
-    if (!parseRawScript()) {
-        return NULL;
-    }
-    return _program;
+MaPLAPI *MaPLFile::getAPI() {
+    return &_api;
 }
 
 std::vector<MaPLFile *> MaPLFile::getDependencies() {
@@ -114,7 +111,7 @@ void MaPLFile::compileIfNeeded() {
     if (!parseRawScript()) {
         return;
     }
-    findInheritanceCyclesAndDiamonds(this);
+    _api.findInheritanceCyclesAndDiamonds();
     if(_errors.size() > 0) {
         return;
     }
@@ -143,7 +140,9 @@ void MaPLFile::compileIfNeeded() {
         if (dependencyStack) {
             _variableStack->appendVariableStack(dependencyStack);
         }
+        _api.assimilate(file->getAPI());
     }
+    _api.assimilate(_program, this);
     _bytecode->zeroDebugLines();
     
     // Compile the bytecode from this file.
@@ -182,183 +181,6 @@ void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, const MaPLType
 
 void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer) {
     switch (node->getRuleIndex()) {
-        case MaPLParser::RuleApiDeclaration: {
-            MaPLParser::ApiDeclarationContext *apiDeclaration = (MaPLParser::ApiDeclarationContext *)node;
-            if (apiDeclaration->keyToken->getType() == MaPLParser::API_TYPE) {
-                MaPLParser::IdentifierContext *identifier = apiDeclaration->typeName;
-                std::string typeName = identifier->getText();
-                
-                // Check to make sure this name doesn't collide with a primitive type.
-                if (typeNameMatchesPrimitiveType(typeName)) {
-                    logError(identifier->start, "Type name conflicts with a primitive type.");
-                }
-                
-                // Check for duplicate symbols.
-                if (findType(this, typeName, apiDeclaration)) {
-                    logError(identifier->start, "Type name '"+typeName+"' conflicts with another type of the same name.");
-                }
-                
-                // Check all generics descriptors.
-                std::vector<std::string> genericsDescriptors;
-                genericsDescriptors.reserve(apiDeclaration->generics.size());
-                for (MaPLParser::IdentifierContext *identifier : apiDeclaration->generics) {
-                    genericsDescriptors.push_back(identifier->getText());
-                }
-                for (size_t i = 0; i < genericsDescriptors.size(); i++) {
-                    // Check to make sure this name doesn't collide with a primitive type.
-                    if (typeNameMatchesPrimitiveType(genericsDescriptors[i])) {
-                        logError(apiDeclaration->generics[i]->start, "Generics descriptor conflicts with a primitive type.");
-                    }
-                    // Check if descriptor conflicts with an existing type.
-                    if (findType(this, genericsDescriptors[i], NULL)) {
-                        logError(apiDeclaration->generics[i]->start, "Generics descriptor '"+genericsDescriptors[i]+"' conflicts with an existing type declaration.");
-                    }
-                    // Enforce uniqueness for generics descriptors.
-                    for (size_t j = i+1; j < genericsDescriptors.size(); j++) {
-                        if (genericsDescriptors[i] == genericsDescriptors[j]) {
-                            logError(apiDeclaration->generics[i]->start, "Duplicate generics descriptor '"+genericsDescriptors[i]+"'. Descriptors must be unique.");
-                        }
-                    }
-                }
-            }
-            compileChildNodes(node, expectedType, currentBuffer);
-        }
-            break;
-        case MaPLParser::RuleApiInheritance: {
-            MaPLParser::ApiInheritanceContext *inheritance = (MaPLParser::ApiInheritanceContext *)node;
-            
-            // Check all the types referenced in this API to make sure they exist.
-            for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
-                // The root-level inheritance types can only reference concrete type declarations, and cannot
-                // reference this type's generics (ie, you cannot use generics to change your superclass).
-                MaPLParser::ApiDeclarationContext *declaration = findType(this, pointerType->identifier()->getText(), NULL);
-                std::vector<MaPLParser::TypeContext *> types = pointerType->type();
-                if (declaration) {
-                    if (declaration->generics.size() != types.size()) {
-                        logError(pointerType->start, "The specified number of generics does not match the number of generics on type '"+pointerType->identifier()->getText()+"'.");
-                    }
-                } else {
-                    logMissingTypeError(pointerType->identifier()->start, pointerType->identifier()->getText());
-                }
-                for (MaPLParser::TypeContext *type : types) {
-                    MaPLParser::PointerTypeContext *nestedPointerType = type->pointerType();
-                    if (nestedPointerType) {
-                        compileNode(nestedPointerType, expectedType, currentBuffer);
-                    }
-                }
-            }
-        }
-            break;
-        case MaPLParser::RuleApiFunction: {
-            MaPLParser::ApiFunctionContext *function = (MaPLParser::ApiFunctionContext *)node;
-            
-            // Check the return type referenced in this API to make sure it exists.
-            if (!function->API_VOID()) {
-                MaPLParser::TypeContext *typeContext = function->type();
-                confirmTypesExist(typeForTypeContext(typeContext), this, typeContext->start);
-            }
-            MaPLParser::ApiFunctionParamsContext *params = function->apiFunctionParams();
-            std::vector<MaPLType> parameterTypes;
-            if (params) {
-                for (MaPLParser::TypeContext *typeContext : params->type()) {
-                    MaPLType parameterType = typeForTypeContext(typeContext);
-                    parameterTypes.push_back(parameterType);
-                    confirmTypesExist(parameterType, this, typeContext->start);
-                }
-            }
-            
-            // Check for duplicate symbols.
-            MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(function->parent);
-            bool isGlobal = parentApi->keyToken->getType() == MaPLParser::API_GLOBAL;
-            std::string parentTypeName = isGlobal ? "" : parentApi->typeName->getText();
-            MaPLParameterStrategy strategy = params && params->API_VARIADIC_PARAMETERS() != NULL ? MaPLParameterStrategy_Exact_IncludeVariadicParams : MaPLParameterStrategy_Exact_NoVariadicParams;
-            if (findFunction(this, parentTypeName, function->identifier()->getText(), parameterTypes, strategy, function)) {
-                std::string functionSignature = descriptorForFunction(function->identifier()->getText(),
-                                                                      parameterTypes,
-                                                                      strategy == MaPLParameterStrategy_Exact_IncludeVariadicParams);
-                if (isGlobal) {
-                    logError(function->identifier()->start, "Function '"+functionSignature+"' conflicts with another global function with the same name and parameters.");
-                } else {
-                    logError(function->identifier()->start, "Function '"+functionSignature+"' conflicts with another function with the same name and parameters in type '"+parentTypeName+"' or one of its parent types.");
-                }
-            }
-        }
-            break;
-        case MaPLParser::RuleApiProperty: {
-            MaPLParser::ApiPropertyContext *property = (MaPLParser::ApiPropertyContext *)node;
-            
-            // Check the return type referenced in this API to make sure it exists.
-            MaPLParser::TypeContext *typeContext = property->type();
-            confirmTypesExist(typeForTypeContext(typeContext), this, typeContext->start);
-            
-            // Check for duplicate symbols.
-            MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(property->parent);
-            bool isGlobal = parentApi->keyToken->getType() == MaPLParser::API_GLOBAL;
-            std::string parentTypeName = isGlobal ? "" : parentApi->typeName->getText();
-            if (findProperty(this, parentTypeName, property->identifier()->getText(), property)) {
-                if (isGlobal) {
-                    logError(property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another global property with the same name.");
-                } else {
-                    logError(property->identifier()->start, "Property name '"+property->identifier()->getText()+"' conflicts with another property with the same name in type '"+parentTypeName+"' or one of its parent types.");
-                }
-            }
-        }
-            break;
-        case MaPLParser::RuleApiSubscript: {
-            MaPLParser::ApiSubscriptContext *subscript = (MaPLParser::ApiSubscriptContext *)node;
-            
-            // Check all the types referenced in this API to make sure they exist.
-            for (MaPLParser::TypeContext *typeContext : subscript->type()) {
-                confirmTypesExist(typeForTypeContext(typeContext), this, typeContext->start);
-            }
-            
-            // Check for duplicate symbols.
-            MaPLParser::ApiDeclarationContext *parentApi = dynamic_cast<MaPLParser::ApiDeclarationContext *>(subscript->parent);
-            MaPLType indexType = typeForTypeContext(subscript->type(1));
-            if (findSubscript(this, parentApi->typeName->getText(), indexType, subscript)) {
-                logError(subscript->type(1)->start, "Subscript indexed by "+descriptorForType(indexType)+" conflicts with another subscript in type '"+parentApi->typeName->getText()+"' or one of its parent types.");
-            }
-        }
-            break;
-        case MaPLParser::RulePointerType: {
-            MaPLParser::PointerTypeContext *pointerType = (MaPLParser::PointerTypeContext *)node;
-            MaPLParser::IdentifierContext *identifier = pointerType->identifier();
-            std::string typeName = identifier->getText();
-            
-            // Check all types to make sure they either exist as an API declaration or generic on their parent type.
-            bool isGenericType = false;
-            antlr4::tree::ParseTree *parentNode = node->parent;
-            while (parentNode) {
-                MaPLParser::ApiDeclarationContext *parentDeclaration = dynamic_cast<MaPLParser::ApiDeclarationContext *>(parentNode);
-                if (parentDeclaration) {
-                    for (MaPLParser::IdentifierContext *generic : parentDeclaration->generics) {
-                        if (typeName == generic->getText()) {
-                            isGenericType = true;
-                            break;
-                        }
-                    }
-                    break;
-                }
-                parentNode = parentNode->parent;
-            }
-            std::vector<MaPLParser::TypeContext *> types = pointerType->type();
-            if (isGenericType) {
-                if (types.size() > 0) {
-                    logError(pointerType->start, "Generic types such as '"+typeName+"' cannot specify their own generics.");
-                }
-            } else {
-                if (!findType(this, typeName, NULL)) {
-                    logMissingTypeError(identifier->start, typeName);
-                }
-                for (MaPLParser::TypeContext *type : types) {
-                    MaPLParser::PointerTypeContext *nestedPointerType = type->pointerType();
-                    if (nestedPointerType) {
-                        compileNode(nestedPointerType, expectedType, currentBuffer);
-                    }
-                }
-            }
-        }
-            break;
         case MaPLParser::RuleStatement: {
             MaPLParser::StatementContext *statement = (MaPLParser::StatementContext *)node;
             antlr4::tree::TerminalNode *metadata = statement->METADATA();
@@ -417,7 +239,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             std::string variableName = identifier->getText();
             
             // Check if this variable name conflicts with any global property.
-            if (findProperty(this, "", variableName, NULL)) {
+            if (_api.findGlobalProperty(variableName)) {
                 logError(identifier->start, "Variable with name '"+variableName+"' conflicts with global property of the same name.");
             }
             
@@ -496,7 +318,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 if (tokenType == MaPLParser::DIVIDE_ASSIGN) {
                     if (isConcreteFloat(assignedVariable.type.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
-                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, assignedVariable.type)) {
+                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, assignedVariable.type)) {
                             // Rewrite this as a multiply. For example, "x /= 5.0" becomes "x = x * 0.2".
                             currentBuffer->appendInstruction(multiplicationInstructionForPrimitive(assignedVariable.type.primitiveType));
                             currentBuffer->appendInstruction(variableInstructionForPrimitive(assignedVariable.type.primitiveType));
@@ -518,7 +340,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         };
                     } else if (isConcreteUnsignedInt(assignedVariable.type.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
-                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, assignedVariable.type)) {
+                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, assignedVariable.type)) {
                             u_int8_t shift = bitShiftForLiteral(literal);
                             if (shift) {
                                 // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
@@ -541,7 +363,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                 } else if (tokenType == MaPLParser::MULTIPLY_ASSIGN && isIntegral(assignedVariable.type.primitiveType)) {
                     MaPLLiteral literal = constantValueForExpression(assignment->expression());
-                    if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, assignedVariable.type)) {
+                    if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, assignedVariable.type)) {
                         u_int8_t shift = bitShiftForLiteral(literal);
                         if (shift) {
                             // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
@@ -593,11 +415,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     prefixType = objectExpressionReturnType(prefixExpression, { MaPLPrimitiveType_Uninitialized });
                 }
                 if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::SUBSCRIPT_OPEN) {
-                    MaPLParser::ApiSubscriptContext *subscript = findSubscript(this,
-                                                                               prefixType.pointerType,
-                                                                               dataTypeForExpression(terminalExpression->expression(0)),
-                                                                               NULL);
-                    if (subscript->API_READONLY()) {
+                    const MaPLSubscriptAPI *subscriptAPI = _api.findSubscript(prefixType.pointerType,
+                                                                              dataTypeForExpression(terminalExpression->expression(0)),
+                                                                              prefixType.generics,
+                                                                              NULL);
+                    if (subscriptAPI->isReadonly) {
                         logNotAssignableError(assignment->keyToken);
                         break;
                     }
@@ -611,15 +433,19 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     currentBuffer->appendInstruction(MaPLInstruction_assign_subscript);
                     compileObjectExpression(prefixExpression, NULL, currentBuffer);
                     
-                    MaPLType indexType = typeForTypeContext(subscript->type(1));
+                    MaPLType equivalentPrefixType = _api.findEquivalentGenerics(prefixType, subscriptAPI->typeAPIName);
+                    MaPLType indexType = subscriptAPI->indexType.typeWithSubstitutedGenerics(equivalentPrefixType.generics);
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
                 } else {
                     std::string propertyName = terminalExpression->identifier()->getText();
-                    MaPLParser::ApiPropertyContext *property = findProperty(this,
-                                                                            prefixType.pointerType,
-                                                                            propertyName,
-                                                                            NULL);
-                    if (property->API_READONLY()) {
+                    const MaPLPropertyAPI *propertyAPI;
+                    if (prefixType.primitiveType == MaPLPrimitiveType_Uninitialized) {
+                        propertyAPI = _api.findGlobalProperty(propertyName);
+                    } else {
+                        propertyAPI = _api.findTypeProperty(prefixType.pointerType, propertyName, NULL);
+                    }
+                    
+                    if (propertyAPI->isReadonly) {
                         logNotAssignableError(assignment->keyToken);
                         break;
                     }
@@ -639,8 +465,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
-                    std::vector<MaPLType> emptyParameterList;
-                    std::string symbolName = descriptorForSymbol(typeNameForAPI(property), propertyName, emptyParameterList, false);
+                    std::string symbolName = propertyAPI->symbolDescriptor();
                     currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, symbolName);
                     MaPLSymbol symbol = 0;
                     currentBuffer->appendBytes(&symbol, sizeof(symbol));
@@ -657,7 +482,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 if (assignTokenType == MaPLParser::DIVIDE_ASSIGN) {
                     if (isConcreteFloat(returnType.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
-                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, returnType)) {
+                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, returnType)) {
                             // Rewrite this as a multiply. For example, "x /= 5.0" becomes "x = x * 0.2".
                             currentBuffer->appendInstruction(multiplicationInstructionForPrimitive(returnType.primitiveType));
                             
@@ -672,7 +497,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         };
                     } else if (isConcreteUnsignedInt(returnType.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
-                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, returnType)) {
+                        if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, returnType)) {
                             u_int8_t shift = bitShiftForLiteral(literal);
                             if (shift) {
                                 // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
@@ -688,7 +513,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     }
                 } else if (assignTokenType == MaPLParser::MULTIPLY_ASSIGN && isIntegral(returnType.primitiveType)) {
                     MaPLLiteral literal = constantValueForExpression(assignment->expression());
-                    if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && isAssignable(this, literal.type, returnType)) {
+                    if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, returnType)) {
                         u_int8_t shift = bitShiftForLiteral(literal);
                         if (shift) {
                             // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
@@ -763,11 +588,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     prefixType = objectExpressionReturnType(prefixExpression, { MaPLPrimitiveType_Uninitialized });
                 }
                 if (terminalExpression->keyToken && terminalExpression->keyToken->getType() == MaPLParser::SUBSCRIPT_OPEN) {
-                    MaPLParser::ApiSubscriptContext *subscript = findSubscript(this,
-                                                                               prefixType.pointerType,
-                                                                               dataTypeForExpression(terminalExpression->expression(0)),
-                                                                               NULL);
-                    if (subscript->API_READONLY()) {
+                    const MaPLSubscriptAPI *subscriptAPI = _api.findSubscript(prefixType.pointerType,
+                                                                              dataTypeForExpression(terminalExpression->expression(0)),
+                                                                              prefixType.generics,
+                                                                              NULL);
+                    if (subscriptAPI->isReadonly) {
                         logNotAssignableError(statement->keyToken);
                         break;
                     }
@@ -787,15 +612,21 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         currentBuffer->appendInstruction(MaPLInstruction_no_op);
                     }
                     
-                    MaPLType indexType = typeForTypeContext(subscript->type(1));
+                    MaPLType equivalentPrefixType = _api.findEquivalentGenerics(prefixType, subscriptAPI->typeAPIName);
+                    MaPLType indexType = subscriptAPI->indexType.typeWithSubstitutedGenerics(equivalentPrefixType.generics);
                     compileNode(terminalExpression->expression(0), indexType, currentBuffer);
                 } else {
                     std::string propertyName = terminalExpression->identifier()->getText();
-                    MaPLParser::ApiPropertyContext *property = findProperty(this,
-                                                                            prefixType.pointerType,
-                                                                            propertyName,
-                                                                            NULL);
-                    if (property->API_READONLY()) {
+                    const MaPLPropertyAPI *propertyAPI;
+                    if (prefixType.primitiveType == MaPLPrimitiveType_Uninitialized) {
+                        propertyAPI = _api.findGlobalProperty(propertyName);
+                    } else {
+                        propertyAPI = _api.findTypeProperty(prefixType.pointerType,
+                                                            propertyName,
+                                                            NULL);
+                    }
+                    
+                    if (propertyAPI->isReadonly) {
                         logNotAssignableError(statement->keyToken);
                         break;
                     }
@@ -817,8 +648,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     
                     // The eventual value for this symbol is set after compilation is completed
                     // and symbol values can be calculated. Add a placeholder 0 for now.
-                    std::vector<MaPLType> emptyParameterList;
-                    std::string symbolName = descriptorForSymbol(typeNameForAPI(property), propertyName, emptyParameterList, false);
+                    std::string symbolName = propertyAPI->symbolDescriptor();
                     currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, symbolName);
                     MaPLSymbol symbol = 0;
                     currentBuffer->appendBytes(&symbol, sizeof(symbol));
@@ -888,7 +718,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 // If expressionType is "TypeError", an error describing why was already logged.
                 break;
             }
-            if(!isAssignable(this, expressionType, expectedType)) {
+            if(!_api.isAssignable(expressionType, expectedType)) {
                 std::string error = "Expression is required to be of type "+descriptorForType(expectedType)+", but was "+descriptorForType(expressionType)+" instead.";
                 logError(expression->start, error);
                 break;
@@ -923,10 +753,11 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         MaPLType expressionType = dataTypeForExpression(expression->expression(0));
                         if (castType.primitiveType == expressionType.primitiveType) {
                             // The cast doesn't involve any casting between primitive types, and so is a no-op in terms of bytecode.
-                            // TODO: Update this logic for generics. Should only be constrained by the underlying pointer pointing to the same object, make sure it could possible be compatible.
+                            // For pointers, make sure that there is some assignable relationship between the two types, otherwise it's
+                            // not guaranteed that the underlying object is related in any way.
                             if (castType.primitiveType == MaPLPrimitiveType_Pointer &&
-                                !isAssignable(this, expressionType, castType) &&
-                                !inheritsFromType(this, castType.pointerType, expressionType.pointerType)) {
+                                !_api.isAssignable(expressionType, castType) &&
+                                !_api.isAssignable(castType, expressionType)) {
                                 // Cast is between two pointer types. This only makes sense if the types have some child/ancestor relationship.
                                 logError(expression->type()->start, "Cast attempted between incompatible pointers. The types '"+descriptorForType(castType)+"' and '"+descriptorForType(expressionType)+"' have no child/ancestor relationship.");
                             }
@@ -945,7 +776,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             break;
                         }
                         if (isAmbiguousNumericType(expressionType.primitiveType)) {
-                            if (isAssignable(this, expressionType, castType)) {
+                            if (_api.isAssignable(expressionType, castType)) {
                                 // This cast doesn't change types. Instead it's clarifying what to use as the expected type for an ambiguous literal.
                                 compileNode(expression->expression(0), castType, currentBuffer);
                             } else {
@@ -1467,14 +1298,18 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 // Find the API that's being referenced to help infer the type of the parameter.
                 MaPLParser::ExpressionContext *indexExpression = expression->expression(0);
                 MaPLType indexType = dataTypeForExpression(indexExpression);
-                MaPLParser::ApiSubscriptContext *subscriptApi = findSubscript(this, invokedReturnType.pointerType, indexType, NULL);
+                const MaPLSubscriptAPI *subscriptAPI = _api.findSubscript(invokedReturnType.pointerType,
+                                                                          indexType,
+                                                                          invokedReturnType.generics,
+                                                                          NULL);
                 
                 // The type could still be ambiguous, so get the type from the API itself.
-                indexType = typeForTypeContext(subscriptApi->type(1));
+                MaPLType equivalentInvokedType = _api.findEquivalentGenerics(invokedReturnType, subscriptAPI->typeAPIName);
+                indexType = subscriptAPI->indexType.typeWithSubstitutedGenerics(equivalentInvokedType.generics);
                 compileNode(indexExpression, indexType, currentBuffer);
                 
                 // Overwrite the placeholder with the instruction that matches the return value.
-                MaPLType returnType = typeForTypeContext(subscriptApi->type(0));
+                MaPLType returnType = subscriptAPI->returnType.typeWithSubstitutedGenerics(equivalentInvokedType.generics);
                 MaPLInstruction subscriptInvocationInstruction = subscriptInvocationInstructionForPrimitive(returnType.primitiveType);
                 currentBuffer->overwriteBytes(&subscriptInvocationInstruction, sizeof(subscriptInvocationInstruction), instructionPosition);
                 
@@ -1493,11 +1328,9 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                 currentBuffer->appendInstruction(MaPLInstruction_placeholder);
                 
                 std::string functionName = expression->identifier()->getText();
-                std::string invokedOnType;
-                MaPLType invokedReturnType{ MaPLPrimitiveType_Uninitialized };
+                MaPLType invokedOnType{ MaPLPrimitiveType_Uninitialized };
                 if (invokedOnExpression) {
-                    invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
-                    invokedOnType = invokedReturnType.pointerType;
+                    invokedOnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
                 } else {
                     currentBuffer->appendInstruction(MaPLInstruction_no_op);
                 }
@@ -1508,26 +1341,27 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                     expressionParameterTypes.push_back(dataTypeForExpression(parameterExpression));
                 }
                 
-                MaPLParser::ApiFunctionContext *functionApi = findFunction(this,
-                                                                           invokedOnType,
-                                                                           functionName,
-                                                                           expressionParameterTypes,
-                                                                           MaPLParameterStrategy_Flexible,
-                                                                           NULL);
+                const MaPLFunctionAPI *functionApi;
+                if (invokedOnType.primitiveType == MaPLPrimitiveType_Uninitialized) {
+                    functionApi = _api.findGlobalFunction(functionName, expressionParameterTypes, NULL);
+                } else {
+                    functionApi = _api.findTypeFunction(invokedOnType.pointerType,
+                                                        functionName,
+                                                        expressionParameterTypes,
+                                                        invokedOnType.generics,
+                                                        NULL);
+                }
+                
+                MaPLType equivalentInvokedType = _api.findEquivalentGenerics(invokedOnType, functionApi->typeAPIName);
+                
                 std::vector<MaPLType> apiParameterTypes;
-                MaPLParser::ApiFunctionParamsContext *params = functionApi->apiFunctionParams();
-                bool hasVariadicParams = false;
-                if (params) {
-                    for (MaPLParser::TypeContext *typeContext : params->type()) {
-                        apiParameterTypes.push_back(typeForTypeContext(typeContext));
-                    }
-                    hasVariadicParams = params->API_VARIADIC_PARAMETERS() != NULL;
+                for (const MaPLGenericType &genericParam : functionApi->parameterTypes) {
+                    apiParameterTypes.push_back(genericParam.typeWithSubstitutedGenerics(equivalentInvokedType.generics));
                 }
                 
                 // The eventual value for this symbol is set after compilation is completed
                 // and symbol values can be calculated. Add a placeholder 0 for now.
-                std::string symbolName = descriptorForSymbol(typeNameForAPI(functionApi), functionName, apiParameterTypes, hasVariadicParams);
-                currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, symbolName);
+                currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, functionApi->symbolDescriptor());
                 MaPLSymbol symbol = 0;
                 currentBuffer->appendBytes(&symbol, sizeof(symbol));
                 
@@ -1555,12 +1389,7 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
                     compileNode(parameterExpressions[i], expectedType, currentBuffer);
                 }
                 
-                MaPLType returnType;
-                if (functionApi->API_VOID()) {
-                    returnType = { MaPLPrimitiveType_Void };
-                } else {
-                    returnType = typeForTypeContext(functionApi->type());
-                }
+                MaPLType returnType = functionApi->returnType.typeWithSubstitutedGenerics(equivalentInvokedType.generics);
                 
                 // Overwrite the placeholder with the instruction that matches the return value.
                 MaPLInstruction functionInvocationInstruction;
@@ -1602,32 +1431,31 @@ MaPLType MaPLFile::compileObjectExpression(MaPLParser::ObjectExpressionContext *
         size_t instructionPosition = currentBuffer->getByteCount();
         currentBuffer->appendInstruction(MaPLInstruction_placeholder);
         
-        std::string invokedOnType;
-        MaPLType invokedReturnType{ MaPLPrimitiveType_Uninitialized };
+        MaPLType invokedOnType{ MaPLPrimitiveType_Uninitialized };
         if (invokedOnExpression) {
-            invokedReturnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
-            invokedOnType = invokedReturnType.pointerType;
+            invokedOnType = compileObjectExpression(invokedOnExpression, NULL, currentBuffer);
         } else {
             currentBuffer->appendInstruction(MaPLInstruction_no_op);
         }
         
-        MaPLParser::ApiPropertyContext *propertyApi = findProperty(this,
-                                                                   invokedOnType,
-                                                                   propertyOrVariableName,
-                                                                   NULL);
+        const MaPLPropertyAPI *propertyApi;
+        if (invokedOnType.primitiveType == MaPLPrimitiveType_Uninitialized) {
+            propertyApi = _api.findGlobalProperty(propertyOrVariableName);
+        } else {
+            propertyApi = _api.findTypeProperty(invokedOnType.pointerType, propertyOrVariableName, NULL);
+        }
         
         // The eventual value for this symbol is set after compilation is completed
         // and symbol values can be calculated. Add a placeholder 0 for now.
-        std::vector<MaPLType> emptyParameterList;
-        std::string symbolName = descriptorForSymbol(typeNameForAPI(propertyApi), propertyOrVariableName, emptyParameterList, false);
-        currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, symbolName);
+        currentBuffer->addAnnotation(MaPLBufferAnnotationType_FunctionSymbol, propertyApi->symbolDescriptor());
         MaPLSymbol symbol = 0;
         currentBuffer->appendBytes(&symbol, sizeof(symbol));
         MaPLParameterCount parameterCount = 0;
         currentBuffer->appendBytes(&parameterCount, sizeof(parameterCount));
         
         // Overwrite the placeholder with the instruction that matches the return value.
-        MaPLType returnType = typeForTypeContext(propertyApi->type());
+        MaPLType equivalentInvokedType = _api.findEquivalentGenerics(invokedOnType, propertyApi->typeAPIName);
+        MaPLType returnType = propertyApi->returnType.typeWithSubstitutedGenerics(equivalentInvokedType.generics);
         MaPLInstruction functionInvocationInstruction = functionInvocationInstructionForPrimitive(returnType.primitiveType);
         currentBuffer->overwriteBytes(&functionInvocationInstruction, sizeof(functionInvocationInstruction), instructionPosition);
         
@@ -1730,29 +1558,12 @@ MaPLType MaPLFile::reconcileExpressionTypes(MaPLParser::ExpressionContext *expre
     MaPLType type2 = dataTypeForExpression(expression2);
     MaPLPrimitiveType reconciledPrimitive = reconcileTypes(type1.primitiveType, type2.primitiveType, errorToken);
     if (reconciledPrimitive == MaPLPrimitiveType_Pointer && type1 != type2) {
-        // The pointer types don't match. Generate an error message that gives some context.
-        std::vector<std::string> possibleMatches = mutualAncestorTypes(this, type1.pointerType, type2.pointerType); // TODO: How to do this gracefully with generics?
-        size_t possibleMatchCount = possibleMatches.size();
-        if (possibleMatchCount == 1) {
-            // In the case where there's only one possible choice, make the inference.
-            return { MaPLPrimitiveType_Pointer, possibleMatches[0] };// TODO: This literal needs a generics field.
-        }
-        std::string errorSuffix;
-        if (possibleMatchCount == 0) {
-            errorSuffix = "There are no common ancestors for the types '"+type1.pointerType+"' and '"+type2.pointerType+"'.";
-        } else {
-            errorSuffix = "The possible ancestor types for '"+type1.pointerType+"' and '"+type2.pointerType+"' are ";
-            for (size_t i = 0; i < possibleMatchCount; i++) {
-                std::string possibleMatch = possibleMatches[i];
-                errorSuffix += "'"+possibleMatch+"'";
-                if (i == (possibleMatchCount-1)) {
-                    errorSuffix += ".";
-                } else {
-                    errorSuffix += ", ";
-                }
-            }
-        }
-        logError(errorToken, "The return type of this operator is ambiguous and cannot be determined. Expressions in both branches of the conditional must have a matching type. "+errorSuffix);
+        // The pointer types don't match. Attempt to determine if one type is a superset of the other.
+        if (_api.isAssignable(type1, type2)) { return type2; }
+        if (_api.isAssignable(type2, type1)) { return type1; }
+        
+        // Types are not interoperable in any way, log an error.
+        logError(errorToken, "Expressions in both branches of the conditional must have compatible types. Types '"+descriptorForType(type1)+"' and '"+descriptorForType(type2)+"' are not interoperable.");
         return { MaPLPrimitiveType_TypeError };
     }
     return { reconciledPrimitive, type1.pointerType, type1.generics };
@@ -2552,19 +2363,22 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                     return { MaPLPrimitiveType_TypeError };
                 }
                 MaPLType indexType = dataTypeForExpression(expression->expression(0));
-                MaPLParser::ApiSubscriptContext *subscript = findSubscript(this, prefixType.pointerType, indexType, NULL);
-                if (!subscript) {
+                const MaPLSubscriptAPI *subscriptAPI = _api.findSubscript(prefixType.pointerType, indexType, prefixType.generics, NULL);
+                if (!subscriptAPI) {
                     logError(expression->keyToken, "Unable to find a subscript on type '"+descriptorForType(prefixType)+"' with an index parameter of type "+descriptorForType(indexType)+".");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 
-                MaPLParser::ApiSubscriptContext *conflictingSubscript = findSubscript(this, prefixType.pointerType, indexType, subscript);
-                if (conflictingSubscript) {
-                    logError(expression->keyToken, "This subscript invocation is ambiguous between index types '"+descriptorForType(typeForTypeContext(subscript->type(1)))+"' and '"+descriptorForType(typeForTypeContext(conflictingSubscript->type(1)))+"' in type '"+descriptorForType(prefixType)+"'. This ambiguity can be resolved by adding a typecast to explicitly describe the type of the index.");
+                const MaPLSubscriptAPI *conflictingSubscriptAPI = _api.findSubscript(prefixType.pointerType, indexType, prefixType.generics, subscriptAPI);
+                if (conflictingSubscriptAPI) {
+                    MaPLType indexType = subscriptAPI->indexType.typeWithoutSubstitutedGenerics();
+                    MaPLType conflictingIndexType = conflictingSubscriptAPI->indexType.typeWithoutSubstitutedGenerics();
+                    logError(expression->keyToken, "This subscript invocation on a pointer of type '"+descriptorForType(prefixType)+"' is ambiguous between index types '"+descriptorForType(indexType)+"' (declared in '"+subscriptAPI->typeAPIName+"') and '"+descriptorForType(conflictingIndexType)+"' (declared in '"+conflictingSubscriptAPI->typeAPIName+"').");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 
-                return typeForTypeContext(subscript->type(0)); // TODO: Resolve generics.
+                MaPLType equivalentPrefixType = _api.findEquivalentGenerics(prefixType, subscriptAPI->typeAPIName);
+                return subscriptAPI->returnType.typeWithSubstitutedGenerics(equivalentPrefixType.generics);
             }
             case MaPLParser::PAREN_OPEN: {
                 // Function invocation.
@@ -2573,16 +2387,15 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                     parameterTypes.push_back(dataTypeForExpression(parameterExpression));
                 }
                 std::string functionName = expression->identifier()->getText();
-                MaPLParser::ApiFunctionContext *function = findFunction(this,
-                                                                        invokedOnType.pointerType,
-                                                                        functionName,
-                                                                        parameterTypes,
-                                                                        MaPLParameterStrategy_Flexible,
-                                                                        NULL);
-                if (!function) {
-                    std::string functionSignature = descriptorForFunction(functionName,
-                                                                          parameterTypes,
-                                                                          false);
+                bool isGlobal = invokedOnType.primitiveType == MaPLPrimitiveType_Uninitialized;
+                const MaPLFunctionAPI *functionAPI;
+                if (isGlobal) {
+                    functionAPI = _api.findGlobalFunction(functionName, parameterTypes, NULL);
+                } else {
+                    functionAPI = _api.findTypeFunction(invokedOnType.pointerType, functionName, parameterTypes, invokedOnType.generics, NULL);
+                }
+                if (!functionAPI) {
+                    std::string functionSignature = descriptorForFunction(invokedOnType.pointerType, functionName, parameterTypes, false);
                     if (invokedOnType.primitiveType == MaPLPrimitiveType_Uninitialized) {
                         logError(expression->identifier()->start, "Unable to find a global '"+functionSignature+"' function.");
                     } else {
@@ -2590,27 +2403,15 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                     }
                     return { MaPLPrimitiveType_TypeError };
                 }
-                
-                MaPLParser::ApiFunctionContext *conflictingFunction = findFunction(this,
-                                                                                   invokedOnType.pointerType,
-                                                                                   functionName,
-                                                                                   parameterTypes,
-                                                                                   MaPLParameterStrategy_Flexible,
-                                                                                   function);
-                if (conflictingFunction) {
-                    std::string errorSuffix = "This ambiguity might be resolved by renaming these APIs, or by adding a typecast to explicitly describe the type of any literal parameters.";
-                    if (invokedOnType.primitiveType == MaPLPrimitiveType_Uninitialized) {
-                        logError(expression->identifier()->start, "This function invocation is ambiguous between global functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"'. "+errorSuffix);
-                    } else {
-                        logError(expression->identifier()->start, "This function invocation is ambiguous between functions '"+descriptorForFunction(function)+"' and '"+descriptorForFunction(conflictingFunction)+"' in type '"+descriptorForType(invokedOnType)+"'. "+errorSuffix);
-                    }
+
+                const MaPLFunctionAPI *conflictingFunctionAPI = _api.findTypeFunction(invokedOnType.pointerType, functionName, parameterTypes, invokedOnType.generics, functionAPI);
+                if (conflictingFunctionAPI) {
+                    logError(expression->identifier()->start, "This function invocation is ambiguous between functions '"+functionAPI->signatureDescriptor()+"' and '"+conflictingFunctionAPI->signatureDescriptor()+"'. This ambiguity might be resolved by renaming these APIs, or by adding a typecast to explicitly describe the type of any literal parameters.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 
-                if (function->API_VOID()) {
-                    return { MaPLPrimitiveType_Void };
-                }
-                return typeForTypeContext(function->type()); // TODO: Resolve generics.
+                MaPLType equivalentInvokedOnType = _api.findEquivalentGenerics(invokedOnType, functionAPI->typeAPIName);
+                return functionAPI->returnType.typeWithSubstitutedGenerics(equivalentInvokedOnType.generics);
             }
             default:
                 break;
@@ -2630,11 +2431,14 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
             }
             
             // The name doesn't match a variable, check if it matches a property.
-            MaPLParser::ApiPropertyContext *property = findProperty(this,
-                                                                    invokedOnType.pointerType,
-                                                                    propertyOrVariableName,
-                                                                    NULL);
-            if (!property) {
+            const MaPLPropertyAPI *propertyAPI;
+            if (isInvokedOnType) {
+                propertyAPI = _api.findTypeProperty(invokedOnType.pointerType, propertyOrVariableName, NULL);
+            } else {
+                propertyAPI = _api.findGlobalProperty(propertyOrVariableName);
+            }
+            
+            if (!propertyAPI) {
                 if (isInvokedOnType) {
                     logError(identifier->start, "Unable to find a '"+propertyOrVariableName+"' property on type '"+descriptorForType(invokedOnType)+"'.");
                 } else {
@@ -2642,7 +2446,9 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 }
                 return { MaPLPrimitiveType_TypeError };
             }
-            return typeForTypeContext(property->type()); // TODO: Resolve generics.
+            
+            MaPLType equivalentInvokedOnType = _api.findEquivalentGenerics(invokedOnType, propertyAPI->typeAPIName);
+            return propertyAPI->returnType.typeWithSubstitutedGenerics(equivalentInvokedOnType.generics);
         }
     }
     logError(keyToken, "Error determining the type of this expression.");
@@ -2651,7 +2457,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
 
 void MaPLFile::confirmTypesExist(const MaPLType &type, MaPLFile *file, antlr4::Token *token) {
     if (type.primitiveType == MaPLPrimitiveType_Pointer) {
-        if (!findType(file, type.pointerType, NULL)) {
+        if (!_api.findType(type.pointerType)) {
             logMissingTypeError(token, type.pointerType);
         }
         for (const MaPLType &genericType : type.generics) {

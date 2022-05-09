@@ -10,7 +10,8 @@ statement
     |    forLoop
     |    doWhileLoop
     |    conditional
-    |    apiDeclaration
+    |    apiGlobal
+    |    apiType
     |    apiImport
     |    METADATA
     |    scope
@@ -123,9 +124,9 @@ conditional : CONDITIONAL expression scope conditionalElse? ;
 conditionalElse : CONDITIONAL_ELSE (scope | conditional) ;
 
 // API DECLARATIONS
-apiDeclaration
-    :    keyToken=API_GLOBAL (apiFunction | apiProperty) STATEMENT_DELIMITER
-    |    keyToken=API_TYPE typeName=identifier (LESS_THAN generics+=identifier (PARAM_DELIMITER generics+=identifier)* GREATER_THAN)? apiInheritance? SCOPE_OPEN
+apiGlobal : API_GLOBAL (apiFunction | apiProperty) STATEMENT_DELIMITER;
+apiType
+    :    API_TYPE typeName=identifier (LESS_THAN generics+=identifier (PARAM_DELIMITER generics+=identifier)* GREATER_THAN)? apiInheritance? SCOPE_OPEN
          (
              (
                  apiFunction |
