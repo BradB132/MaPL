@@ -401,7 +401,7 @@ int main(int argc, const char * argv[]) {
     
 #if OUTPUT_EXPECTED_FILES
     if (result.symbolTable.size() > 0) {
-        std::ofstream symbolOutputStream(rootDir / "../MaPLTester/TestSymbols.h");
+        std::ofstream symbolOutputStream(testRootDirectory / "../MaPLTester/TestSymbols.h");
         symbolOutputStream << result.symbolTable;
     }
     printf("All expected files formatted.\n");
