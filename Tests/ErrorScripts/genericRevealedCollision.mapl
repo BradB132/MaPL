@@ -1,0 +1,8 @@
+// The collision is only revealed when this API is called with int32 generic.
+#type MyType<T> {
+    char [T];
+    char [int32];
+}
+
+MyType<int32> t = NULL;
+char c = t[5];
