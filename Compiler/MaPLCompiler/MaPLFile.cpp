@@ -1588,8 +1588,9 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
                 MaPLLiteral expressionLiteral = constantValueForExpression(expression->expression(0));
                 MaPLType castType = typeForTypeContext(expression->type());
                 if (expressionLiteral.type.primitiveType == MaPLPrimitiveType_Pointer ||
-                    castType.primitiveType == MaPLPrimitiveType_Pointer) {
-                    // Pointer casts require some extra type checking. Don't try to do this as a constant.
+                    castType.primitiveType == MaPLPrimitiveType_Pointer ||
+                    isAmbiguousNumericType(expressionLiteral.type.primitiveType)) {
+                    // Pointer casts and ambiguous numeric expressions require some extra type checking.
                     return { { MaPLPrimitiveType_Uninitialized } };
                 }
                 MaPLLiteral returnLiteral = castLiteralToType(expressionLiteral,
