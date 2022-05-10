@@ -1,0 +1,11 @@
+#type A {}
+#type B : A {}
+
+#type C {
+    int32 [A];
+    int32 [B];
+}
+
+B b = NULL;
+C c = NULL;
+int32 x = c[b];

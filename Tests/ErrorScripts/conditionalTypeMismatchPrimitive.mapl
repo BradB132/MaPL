@@ -1,0 +1,4 @@
+int32 a = 5;
+float32 b = 3.0;
+bool condition = true;
+int32 c = condition ? a : b;

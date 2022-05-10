@@ -1,0 +1,11 @@
+#type A {}
+#type B : A {}
+
+#type C {
+    int32 testFunction(A param);
+    int32 testFunction(B param);
+}
+
+B b = NULL;
+C c = NULL;
+int32 x = c.testFunction(b);

@@ -1,0 +1,7 @@
+#type A {}
+#type B {}
+
+A a = NULL;
+B b = NULL;
+bool condition = true;
+A x = condition ? a : b;

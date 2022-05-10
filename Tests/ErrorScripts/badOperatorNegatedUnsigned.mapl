@@ -1,0 +1,2 @@
+uint32 x = 4;
+uint32 y = -x;

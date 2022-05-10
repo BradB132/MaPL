@@ -1,0 +1,6 @@
+#type Array<T> {
+    void insert(T entity);
+}
+#type Array2D<T> : Array<Array<T>> {
+    void insert(Array<T> arr);
+}
