@@ -410,25 +410,31 @@ int main(int argc, const char * argv[]) {
 #endif
     
     for (const std::filesystem::directory_entry &file : std::filesystem::directory_iterator(errorRootDirectory)) {
-        if (!file.is_directory()) {
-            std::filesystem::path scriptPath = file.path();
-            if (!pathHasExtension(scriptPath, ".mapl")) {
-                printf("All files in the error directory are expected to have '.mapl' extension: '%s'.\n", scriptPath.filename().c_str());
-                return 1;
-            }
-            
-            MaPLCompileResult errorResult = compileMaPL({scriptPath}, nonDebugOptions);
+        if (file.is_directory()) {
+            continue;
+        }
+        std::filesystem::path scriptPath = file.path();
+        std::string fileName = scriptPath.filename();
+        if (fileName[0] == '.') {
+            // MacOS is, annoyingly, always creating ".DS_Store".
+            continue;
+        }
+        if (!pathHasExtension(scriptPath, ".mapl")) {
+            printf("All files in the error directory are expected to have '.mapl' extension: '%s'.\n", fileName.c_str());
+            return 1;
+        }
+        
+        MaPLCompileResult errorResult = compileMaPL({scriptPath}, nonDebugOptions);
 #if PRINT_ERROR_OUTPUT
-            printf("Error output for '%s':\n", scriptPath.filename().c_str());
-            for (const std::string &errorMessage : errorResult.errorMessages) {
-                printf("%s", errorMessage.c_str());
-            }
-            printf("\n");
+        printf("Error output for '%s':\n", fileName.c_str());
+        for (const std::string &errorMessage : errorResult.errorMessages) {
+            printf("%s", errorMessage.c_str());
+        }
+        printf("\n");
 #endif
-            if (errorResult.errorMessages.size() == 0) {
-                printf("Script at path '%s' was expected to produce a compile error but produced none.\n", scriptPath.c_str());
-                return 1;
-            }
+        if (errorResult.errorMessages.size() == 0) {
+            printf("Script at path '%s' was expected to produce a compile error but produced none.\n", fileName.c_str());
+            return 1;
         }
     }
     printf("All error cases successfully logged errors.\n");
