@@ -5,42 +5,42 @@ Debug variable update: 'b' = (int32)3
 Debug line: 5
 Debug variable update: 'c' = (int32)5
 Debug line: 8
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9*3+5", parameter #1=(int32)32
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9*3+5", parameter #1=(int32)32
 Debug line: 9
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9*3-5", parameter #1=(int32)22
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9*3-5", parameter #1=(int32)22
 Debug line: 10
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9/3+5", parameter #1=(int32)8
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9/3+5", parameter #1=(int32)8
 Debug line: 11
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9/3-5", parameter #1=(int32)-2
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9/3-5", parameter #1=(int32)-2
 Debug line: 12
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9*(3+5)", parameter #1=(int32)72
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9*(3+5)", parameter #1=(int32)72
 Debug line: 13
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9*(3-5)", parameter #1=(int32)-18
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9*(3-5)", parameter #1=(int32)-18
 Debug line: 14
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9/(3+5)", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9/(3+5)", parameter #1=(int32)1
 Debug line: 15
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9/(3-5)", parameter #1=(int32)-4
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9/(3-5)", parameter #1=(int32)-4
 Debug line: 18
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9+3<<1", parameter #1=(int32)24
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9+3<<1", parameter #1=(int32)24
 Debug line: 19
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9-3<<1", parameter #1=(int32)12
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9-3<<1", parameter #1=(int32)12
 Debug line: 20
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9*3<<1", parameter #1=(int32)54
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9*3<<1", parameter #1=(int32)54
 Debug line: 21
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9/3<<1", parameter #1=(int32)6
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9/3<<1", parameter #1=(int32)6
 Debug line: 23
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9+3|5", parameter #1=(int32)13
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9+3|5", parameter #1=(int32)13
 Debug line: 24
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9-3|1", parameter #1=(int32)7
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9-3|1", parameter #1=(int32)7
 Debug line: 25
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9*3|1", parameter #1=(int32)31
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9*3|1", parameter #1=(int32)31
 Debug line: 26
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"9/3|1", parameter #1=(int32)7
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9/3|1", parameter #1=(int32)7
 Debug line: 29
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"5%3*9", parameter #1=(int32)18
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"5%3*9", parameter #1=(int32)18
 Debug line: 32
 Debug variable update: 'b1' = (bool)false
 Debug line: 33
 Debug variable update: 'b2' = (bool)true
 Debug line: 34
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"!false || true", parameter #1=(bool)false
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"!false || true", parameter #1=(bool)false

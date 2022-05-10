@@ -4,7 +4,7 @@ Debug line: 8
 Debug line: 9
 Debug variable update: 'declaredChar' = (char)77
 Debug line: 11
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(char)99, parameter #1=(char)77
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(char)99, parameter #1=(char)77
 Debug line: 14
 Debug variable update: 'positiveAssignedInt32' = (int32)1234
 Debug line: 15
@@ -16,7 +16,7 @@ Debug line: 19
 Debug line: 20
 Debug variable update: 'negativeDeclaredInt32' = (int32)-4567
 Debug line: 22
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(int32)1234, parameter #1=(int32)-1234, parameter #2=(int32)4567, parameter #3=(int32)-4567
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(int32)1234, parameter #1=(int32)-1234, parameter #2=(int32)4567, parameter #3=(int32)-4567
 Debug line: 25
 Debug variable update: 'positiveAssignedInt64' = (int64)678
 Debug line: 26
@@ -28,21 +28,21 @@ Debug line: 30
 Debug line: 31
 Debug variable update: 'negativeDeclaredInt64' = (int64)-789
 Debug line: 33
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(int64)678, parameter #1=(int64)-678, parameter #2=(int64)789, parameter #3=(int64)-789
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(int64)678, parameter #1=(int64)-678, parameter #2=(int64)789, parameter #3=(int64)-789
 Debug line: 36
 Debug variable update: 'assignedUint32' = (uint32)4321
 Debug line: 38
 Debug line: 39
 Debug variable update: 'declaredUint32' = (uint32)5432
 Debug line: 41
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(uint32)4321, parameter #1=(uint32)5432
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(uint32)4321, parameter #1=(uint32)5432
 Debug line: 44
 Debug variable update: 'assignedUint64' = (uint64)9876
 Debug line: 46
 Debug line: 47
 Debug variable update: 'declaredUint64' = (uint64)3456
 Debug line: 49
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(uint64)9876, parameter #1=(uint64)3456
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(uint64)9876, parameter #1=(uint64)3456
 Debug line: 52
 Debug variable update: 'positiveAssignedFloat32' = (float32)1.230000
 Debug line: 53
@@ -54,7 +54,7 @@ Debug line: 57
 Debug line: 58
 Debug variable update: 'negativeDeclaredFloat32' = (float32)-4.560000
 Debug line: 60
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(float32)1.230000, parameter #1=(float32)-1.230000, parameter #2=(float32)4.560000, parameter #3=(float32)-4.560000
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(float32)1.230000, parameter #1=(float32)-1.230000, parameter #2=(float32)4.560000, parameter #3=(float32)-4.560000
 Debug line: 63
 Debug variable update: 'positiveAssignedFloat64' = (float64)6.540000
 Debug line: 64
@@ -66,18 +66,18 @@ Debug line: 68
 Debug line: 69
 Debug variable update: 'negativeDeclaredFloat64' = (float64)-9.870000
 Debug line: 71
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(float64)6.540000, parameter #1=(float64)-6.540000, parameter #2=(float64)9.870000, parameter #3=(float64)-9.870000
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(float64)6.540000, parameter #1=(float64)-6.540000, parameter #2=(float64)9.870000, parameter #3=(float64)-9.870000
 Debug line: 74
 Debug variable update: 'assignedString' = (string)"asdf"
 Debug line: 76
 Debug line: 77
 Debug variable update: 'declaredString' = (string)"zxcv"
 Debug line: 79
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"asdf", parameter #1=(string)"zxcv"
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"asdf", parameter #1=(string)"zxcv"
 Debug line: 82
 Debug variable update: 'assignedBool' = (bool)true
 Debug line: 84
 Debug line: 85
 Debug variable update: 'declaredBool' = (bool)false
 Debug line: 87
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(bool)true, parameter #1=(bool)false
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(bool)true, parameter #1=(bool)false

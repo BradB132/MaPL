@@ -1,24 +1,24 @@
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"For continue", parameter #1=(int32)0
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End for loop body", parameter #1=(int32)1
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"For continue", parameter #1=(int32)2
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End for loop body", parameter #1=(int32)3
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End for loop body", parameter #1=(int32)0
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End for loop body", parameter #1=(int32)1
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"For break", parameter #1=(int32)2
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End while loop body", parameter #1=(int32)1
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"While continue", parameter #1=(int32)2
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End while loop body", parameter #1=(int32)3
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"While continue", parameter #1=(int32)4
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End while loop body", parameter #1=(int32)5
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End while loop body", parameter #1=(int32)1
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End while loop body", parameter #1=(int32)2
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"While break", parameter #1=(int32)3
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End do-while loop body", parameter #1=(int32)1
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Do-while continue", parameter #1=(int32)2
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End do-while loop body", parameter #1=(int32)3
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Do-while continue", parameter #1=(int32)4
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End do-while loop body", parameter #1=(int32)5
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End do-while loop body", parameter #1=(int32)1
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"End do-while loop body", parameter #1=(int32)2
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Do-while break", parameter #1=(int32)3
-Invoke function: pointer=(pointer)NULL, symbol=5, parameter #0=(string)"Right before exit"
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"For continue", parameter #1=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End for loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"For continue", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End for loop body", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End for loop body", parameter #1=(int32)0
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End for loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"For break", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End while loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"While continue", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End while loop body", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"While continue", parameter #1=(int32)4
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End while loop body", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End while loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End while loop body", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"While break", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End do-while loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Do-while continue", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End do-while loop body", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Do-while continue", parameter #1=(int32)4
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End do-while loop body", parameter #1=(int32)5
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End do-while loop body", parameter #1=(int32)1
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"End do-while loop body", parameter #1=(int32)2
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Do-while break", parameter #1=(int32)3
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Right before exit"

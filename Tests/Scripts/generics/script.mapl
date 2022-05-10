@@ -1,0 +1,12 @@
+#import "../TestAPI.mapl"
+
+#type A <X, Y, Z> : Object {
+    void testFunction(X param1, Y param2, Z param3);
+}
+#type B <I, J> : A <J, int32, I> {}
+#type C <L, M, N> : B <N, string> {}
+
+// If generics are working correctly, the compiler should correctly
+// propagate the generics from type C up to the function in type A.
+C<char, string, bool> myVar = (C<char, string, bool>)globalObject;
+myVar.testFunction("", 4, true);

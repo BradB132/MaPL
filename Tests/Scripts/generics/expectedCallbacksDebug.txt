@@ -1,0 +1,5 @@
+Debug line: 11
+Invoke function: pointer=(pointer)NULL, symbol=5, 
+Debug variable update: 'myVar' = (Object)globalObject
+Debug line: 12
+Invoke function: pointer=(Object)globalObject, symbol=1, parameter #0=(string)"", parameter #1=(int32)4, parameter #2=(bool)true
