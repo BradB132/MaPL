@@ -1,16 +1,21 @@
 
+// Data Structures.
+
+#type Array<T> {
+    readonly T[uint32];
+    readonly uint32 count;
+}
+
+#type ArrayMap<T> : Array<T> {
+    readonly T[string];
+}
+
 // Schema.
 #global readonly Schema schema;
 
 #type Schema {
-    readonly SchemaEnums enums;
-    readonly SchemaClasses classes;
-}
-
-#type SchemaEnums {
-    readonly SchemaEnum[uint32];
-    readonly uint32 count;
-    readonly SchemaEnum[string];
+    readonly ArrayMap<SchemaEnum> enums;
+    readonly ArrayMap<SchemaClass> classes;
 }
 
 #type SchemaEnum {
@@ -19,22 +24,10 @@
     readonly uint32 count;
 }
 
-#type SchemaClasses {
-    readonly SchemaClass[uint32];
-    readonly uint32 count;
-    readonly SchemaClass[string];
-}
-
 #type SchemaClass {
     readonly string name;
     readonly string superclass;
-    readonly SchemaAttributes attributes;
-}
-
-#type SchemaAttributes {
-    readonly SchemaAttribute[uint32];
-    readonly uint32 count;
-    readonly SchemaAttribute[string];
+    readonly ArrayMap<SchemaAttribute> attributes;
 }
 
 #type SchemaAttribute {
@@ -50,12 +43,7 @@
 }
 
 // XML.
-#global readonly XMLFileArray xmlFiles;
-
-#type XMLFileArray {
-    readonly XMLFile[uint32];
-    readonly uint32 count;
-}
+#global readonly Array<XMLFile> xmlFiles;
 
 #type XMLFile {
     readonly XMLNode rootNode;
@@ -64,18 +52,8 @@
 
 #type XMLNode {
     readonly string name;
-    readonly XMLAttributeArray attributes;
-    readonly XMLNodeArray children;
-}
-
-#type XMLNodeArray {
-    readonly XMLNode[uint32];
-    readonly uint32 count;
-}
-
-#type XMLAttributeArray {
-    readonly XMLAttribute[uint32];
-    readonly uint32 count;
+    readonly Array<XMLAttribute> attributes;
+    readonly Array<XMLNode> children;
 }
 
 #type XMLAttribute {
