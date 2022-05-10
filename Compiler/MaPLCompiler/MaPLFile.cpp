@@ -59,7 +59,9 @@ bool MaPLFile::parseRawScript() {
     _tokenStream = new antlr4::CommonTokenStream(_lexer);
     _parser = new MaPLParser(_tokenStream);
     
+    _lexer->getErrorListenerDispatch().removeErrorListeners();
     _parser->getErrorListenerDispatch().removeErrorListeners();
+    _lexer->addErrorListener(this);
     _parser->addErrorListener(this);
     
     _program = _parser->program();
