@@ -2404,7 +2404,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                     if (invokedOnType.primitiveType == MaPLPrimitiveType_Uninitialized) {
                         logError(expression->identifier()->start, "Unable to find a global '"+functionSignature+"' function.");
                     } else {
-                        logError(expression->identifier()->start, "Unable to find a '"+functionSignature+"' function on type '"+descriptorForType(invokedOnType)+"'.");
+                        logError(expression->identifier()->start, "Unable to find function '"+functionSignature+"'.");
                     }
                     return { MaPLPrimitiveType_TypeError };
                 }

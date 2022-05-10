@@ -237,8 +237,8 @@ void MaPLTypeAPI::assimilate(const MaPLFunctionAPI &function) {
 }
 
 void logPropertyCollision(const MaPLPropertyAPI &newProperty, const MaPLPropertyAPI &existingProperty) {
-    newProperty.file->logError(newProperty.node->start, "Property '"+newProperty.name+"' in type '"+newProperty.typeAPIName+"' is in conflict with a previously declared property of the same name in type '"+existingProperty.typeAPIName+"'.");
-    existingProperty.file->logError(existingProperty.node->start, "Property '"+existingProperty.name+"' in type '"+existingProperty.typeAPIName+"' later comes into conflict with a property of the same name in type '"+newProperty.typeAPIName+"'.");
+    newProperty.file->logError(newProperty.node->start, "Property '"+newProperty.name+"' in type '"+newProperty.typeAPIName+"' conflicts with a property of the same name in type '"+existingProperty.typeAPIName+"'.");
+    existingProperty.file->logError(existingProperty.node->start, "Property '"+existingProperty.name+"' in type '"+existingProperty.typeAPIName+"' conflicts with a property of the same name in type '"+newProperty.typeAPIName+"'.");
 }
 
 void MaPLTypeAPI::assimilate(const MaPLPropertyAPI &property) {
@@ -267,7 +267,7 @@ void MaPLAPI::assimilate(const MaPLPropertyAPI &globalProperty) {
 
 void MaPLAPI::assimilate(const MaPLTypeAPI &type) {
     if (types.count(type.name)) {
-        type.file->logError(type.node->typeName->start, "Type '"+type.name+"' is in conflict with a previously declared type of the same name.");
+        type.file->logError(type.node->typeName->start, "Type '"+type.name+"' conflicts with another type of the same name.");
         MaPLTypeAPI &conflictingType = types[type.name];
         conflictingType.file->logError(conflictingType.node->typeName->start, "Type '"+type.name+"' later comes into conflict with a type of the same name.");
     }
@@ -322,7 +322,7 @@ void checkForFunctionCollisionsInList(const MaPLFunctionAPI *originalFunction, c
             }
         }
         if (parametersAreEquivalent) {
-            originalFunction->file->logError(originalFunction->node->start, "Function '"+originalFunction->signatureDescriptor()+"' is in conflict with previously declared function '"+functionAPI.signatureDescriptor()+"'.");
+            originalFunction->file->logError(originalFunction->node->start, "Function '"+originalFunction->signatureDescriptor()+"' is in conflict with function '"+functionAPI.signatureDescriptor()+"'.");
         }
     }
 }
@@ -373,7 +373,7 @@ void MaPLAPI::performErrorChecking() {
             if (types.count(genericDescriptor)) {
                 type.file->logError(type.node->start, "Generic descriptor '"+genericDescriptor+"' conflicts with a type of the same name.");
                 MaPLTypeAPI &conflictingType = types[genericDescriptor];
-                conflictingType.file->logError(conflictingType.node->typeName->start, "Type '"+genericDescriptor+"' later comes into conflict with a generic descriptor of the same name.");
+                conflictingType.file->logError(conflictingType.node->typeName->start, "Type '"+genericDescriptor+"' conflicts with a generic descriptor of the same name.");
             }
         }
         for (const MaPLGenericType& supertype : type.supertypes) {
