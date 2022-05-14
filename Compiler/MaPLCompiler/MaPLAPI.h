@@ -24,9 +24,21 @@ struct MaPLGenericType {
     size_t genericIndex;
     std::vector<MaPLGenericType> generics;
     
+    /**
+     * @return A @c MaPLType that is equivalent to this generic type, if each generic type was substituted with the corresponding element from @c genericsSubstitutions.
+     */
     MaPLType typeWithSubstitutedGenerics(const std::vector<MaPLType> &genericsSubstitutions) const;
+    
+    /**
+     * @return A @c MaPLGenericType that is equivalent to this generic type, if each generic type was substituted with the corresponding element from @c genericsSubstitutions.
+     */
     MaPLGenericType genericWithSubstitutedGenerics(const std::vector<MaPLGenericType> &genericsSubstitutions) const;
+    
+    /**
+     * @return A @c MaPLType that is equivalent to this generic type, if all generic types are interpreted as pointers with a @c pointerType matching the generic descriptor.
+     */
     MaPLType typeWithoutSubstitutedGenerics() const;
+    
     bool operator== (const MaPLGenericType &otherType) const;
     bool operator!= (const MaPLGenericType &otherType) const;
 };
@@ -40,7 +52,14 @@ struct MaPLFunctionAPI {
     std::vector<MaPLGenericType> parameterTypes;
     bool isVariadic;
     
+    /**
+     * @return The symbol representation of this function. This is used in the symbol table.
+     */
     std::string symbolDescriptor() const;
+    
+    /**
+     * @return The signature representation of this function. This can be useful for error logging.
+     */
     std::string signatureDescriptor() const;
 };
 
@@ -52,6 +71,9 @@ struct MaPLPropertyAPI {
     MaPLGenericType returnType;
     bool isReadonly;
     
+    /**
+     * @return The symbol representation of this property. This is used in the symbol table.
+     */
     std::string symbolDescriptor() const;
 };
 
