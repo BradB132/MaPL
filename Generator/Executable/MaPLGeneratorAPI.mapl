@@ -1,6 +1,5 @@
 
 // Data Structures.
-
 #type Array<T> {
     readonly T[uint32];
     readonly uint32 count;
@@ -33,13 +32,12 @@
 #type SchemaAttribute {
     readonly string name;
     readonly bool isReadonly;
-    readonly string type;
+    readonly string typeName;
     readonly bool typeIsUIDReference;
-    readonly string defaultValue;
-    
-    // A negative number of occurrences indicates infinity.
-    readonly int32 minOccurrences;
-    readonly int32 maxOccurrences;
+    readonly bool isPrimitiveType;
+    readonly Array<string> defaultValues;
+    readonly uint32 minOccurrences;
+    readonly uint32 maxOccurrences;
 }
 
 // XML.
