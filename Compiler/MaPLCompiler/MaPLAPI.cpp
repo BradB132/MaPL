@@ -180,7 +180,11 @@ MaPLTypeAPI typeAPIForNode(MaPLParser::ApiTypeContext *node, MaPLFile *file) {
     MaPLParser::ApiInheritanceContext *inheritance = node->apiInheritance();
     if (inheritance) {
         for (MaPLParser::PointerTypeContext *pointerType : inheritance->pointerType()) {
-            typeAPI.supertypes.push_back(genericTypeForPointerType(pointerType, typeAPI.generics, file));
+            MaPLGenericType supertype = genericTypeForPointerType(pointerType, typeAPI.generics, file);
+            if (supertype.primitiveType == MaPLPrimitiveType_Uninitialized) {
+                file->logError(pointerType->start, "Generic type '"+supertype.pointerType+"' cannot be used as a supertype.");
+            }
+            typeAPI.supertypes.push_back(supertype);
         }
     }
     for (MaPLParser::ApiFunctionContext *function : node->apiFunction()) {

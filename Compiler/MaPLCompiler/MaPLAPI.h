@@ -119,12 +119,29 @@ public:
      */
     MaPLType findEquivalentGenerics(const MaPLType &fromType, const std::string &toAncestorName) const;
     
+    /**
+     * Populates @c symbolTable with all symbols that appear in this API.
+     */
     void collateSymbolsInAPI(std::map<std::string, MaPLSymbol> &symbolTable);
     
+    /**
+     * Some types of errors can only be detected once all APIs are assimilated. Call this after adding / assimilating all APIs.
+     */
     void performErrorChecking();
+    
+    /**
+     * Detects the presence of invalid inheritance patterns.
+     */
     void findInheritanceCyclesAndDiamonds();
     
+    /**
+     * Assimilate the contents of @c otherAPI with this one.
+     */
     void assimilate(const MaPLAPI *otherAPI);
+    
+    /**
+     * Traverse @c program and assimilate all APIs.
+     */
     void assimilate(MaPLParser::ProgramContext *program, MaPLFile *file);
     
 private:
