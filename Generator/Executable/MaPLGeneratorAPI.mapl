@@ -31,10 +31,14 @@
 
 #type SchemaAttribute {
     readonly string name;
-    readonly bool isReadonly;
+    
     readonly string typeName;
     readonly bool typeIsUIDReference;
     readonly bool isPrimitiveType;
+    
+    readonly Array<string> annotations;
+    bool containsAnnotation(string annotation);
+    
     readonly Array<string> defaultValues;
     readonly uint32 minOccurrences;
     readonly uint32 maxOccurrences;

@@ -14,7 +14,7 @@ classDefinition
     ;
 
 attribute
-    :    READONLY? (type | REFERENCE REFERENCE_OPEN type REFERENCE_CLOSE) identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? ATTRIBUTE_DELIMITER
+    :    ANNOTATION* (type | REFERENCE REFERENCE_OPEN type REFERENCE_CLOSE) identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? ATTRIBUTE_DELIMITER
     ;
 
 sequenceDescriptor
@@ -70,7 +70,6 @@ identifier
     |    LITERAL_TRUE
     |    LITERAL_FALSE
     |    REFERENCE
-    |    READONLY
     |    IDENTIFIER
     ;
 
@@ -92,7 +91,6 @@ REFERENCE_CLOSE: '>';
 // DEFINITIONS
 CLASS: 'class' ;
 ENUM: 'enum' ;
-READONLY: 'readonly' ;
 DEFAULTS_TO: '=' ;
 DEFINITION_OPEN: '{' ;
 DEFINITION_CLOSE: '}' ;
@@ -102,6 +100,7 @@ SEQUENCE_DELIMITER: ',' ;
 SEQUENCE_WILDCARD: '*' ;
 COLON: ':' ;
 ATTRIBUTE_DELIMITER: ';' ;
+ANNOTATION: '@' IDENTIFIER_FRAGMENT;
 
 // LITERALS
 LITERAL_NULL: 'NULL' ;
@@ -113,7 +112,8 @@ fragment DIGITS : [0-9]+ ;
 LITERAL_STRING : '"' (STRING_ESC|.)*? '"' ;
 fragment STRING_ESC : '\\"' | '\\\\' ;
 
-IDENTIFIER : [_a-zA-Z][_a-zA-Z0-9]* ;
+IDENTIFIER: IDENTIFIER_FRAGMENT;
+fragment IDENTIFIER_FRAGMENT : [_a-zA-Z][_a-zA-Z0-9]* ;
 
 BLOCK_COMMENT : '/*' .*? '*/' -> skip ;
 LINE_COMMENT : '//' .*? '\r'? '\n' -> skip ;
