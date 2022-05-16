@@ -7,6 +7,7 @@
 
 #type ArrayMap<T> : Array<T> {
     readonly T[string];
+    bool contains(string);
 }
 
 // Schema.
@@ -21,24 +22,22 @@
     readonly string name;
     readonly string[uint32];
     readonly uint32 count;
+    readonly ArrayMap<string> annotations;
 }
 
 #type SchemaClass {
     readonly string name;
     readonly string superclass;
     readonly ArrayMap<SchemaAttribute> attributes;
+    readonly ArrayMap<string> annotations;
 }
 
 #type SchemaAttribute {
     readonly string name;
-    
     readonly string typeName;
     readonly bool typeIsUIDReference;
     readonly bool isPrimitiveType;
-    
-    readonly Array<string> annotations;
-    bool containsAnnotation(string annotation);
-    
+    readonly ArrayMap<string> annotations;
     readonly Array<string> defaultValues;
     readonly uint32 minOccurrences;
     readonly uint32 maxOccurrences;

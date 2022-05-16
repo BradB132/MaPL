@@ -10,7 +10,7 @@ definition
     ;
 
 classDefinition
-    :    CLASS identifier (COLON identifier)? DEFINITION_OPEN attribute* DEFINITION_CLOSE
+    :    ANNOTATION* CLASS identifier (COLON identifier)? DEFINITION_OPEN attribute* DEFINITION_CLOSE
     ;
 
 attribute
@@ -23,7 +23,7 @@ sequenceDescriptor
 sequenceLength : LITERAL_INT | SEQUENCE_WILDCARD ;
 
 enumDefinition
-    :    ENUM enumName=identifier DEFINITION_OPEN (enumValue+=identifier SEQUENCE_DELIMITER?)+ DEFINITION_CLOSE
+    :    ANNOTATION* ENUM enumName=identifier DEFINITION_OPEN (enumValue+=identifier SEQUENCE_DELIMITER?)+ DEFINITION_CLOSE
     ;
 
 defaultValue
