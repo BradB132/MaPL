@@ -119,7 +119,7 @@ typedef struct {
     void (*debugVariableDelete)(const char *variableName);
     
     /// Optional. Error callback is invoked when the script has encountered an error and cannot continue. If callback is NULL, script will fail silently.
-    void (*error)(MaPLRuntimeError);
+    void (*error)(MaPLRuntimeError error);
 } MaPLCallbacks;
 
 /**
