@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9B16A6E62833F54300E5071C /* MaPLHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A6E42833F54300E5071C /* MaPLHandler.cpp */; };
 		9B7F7F8D281724E8004955D9 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F7D2817232F004955D9 /* libMaPLCompiler.a */; };
 		9B7F7F8E281724ED004955D9 /* libMaPLRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F862817233A004955D9 /* libMaPLRuntime.a */; };
 		9B7F7F9028172ADC004955D9 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F8F28172ADC004955D9 /* libxml2.tbd */; };
@@ -71,6 +72,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9B16A6E42833F54300E5071C /* MaPLHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLHandler.cpp; sourceTree = "<group>"; };
+		9B16A6E52833F54300E5071C /* MaPLHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLHandler.h; sourceTree = "<group>"; };
 		9B16A6E9283411F900E5071C /* MaPLSymbols.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLSymbols.h; sourceTree = "<group>"; };
 		9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLCompiler.xcodeproj; path = ../Compiler/MaPLCompiler.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLRuntime.xcodeproj; path = ../Runtime/MaPLRuntime.xcodeproj; sourceTree = "<group>"; };
@@ -142,6 +145,8 @@
 			isa = PBXGroup;
 			children = (
 				9BE3EC80281707FB00DED0C2 /* main.cpp */,
+				9B16A6E42833F54300E5071C /* MaPLHandler.cpp */,
+				9B16A6E52833F54300E5071C /* MaPLHandler.h */,
 				9B16A6E9283411F900E5071C /* MaPLSymbols.h */,
 			);
 			path = MaPLGenerator;
@@ -269,6 +274,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B16A6E62833F54300E5071C /* MaPLHandler.cpp in Sources */,
 				9BE3EC81281707FB00DED0C2 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
