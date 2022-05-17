@@ -1765,7 +1765,14 @@ void evaluateStatement(MaPLExecutionContext *context) {
             const char *variableName = readString(context);
             MaPLParameter variableValue = evaluateParameter(context);
             if (context->callbacks->debugVariableUpdate) {
+                char *taggedString = NULL;
+                if (variableValue.dataType == MaPLDataType_string) {
+                    // Untag the string and store the tagged pointer for later release.
+                    taggedString = (char *)variableValue.stringValue;
+                    variableValue.stringValue = untagString((char *)variableValue.stringValue);
+                }
                 context->callbacks->debugVariableUpdate(variableName, variableValue);
+                freeStringIfNeeded(taggedString);
             }
         }
             break;
