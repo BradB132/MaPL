@@ -71,6 +71,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9B16A6E9283411F900E5071C /* MaPLSymbols.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLSymbols.h; sourceTree = "<group>"; };
 		9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLCompiler.xcodeproj; path = ../Compiler/MaPLCompiler.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLRuntime.xcodeproj; path = ../Runtime/MaPLRuntime.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F8F28172ADC004955D9 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
@@ -141,6 +142,7 @@
 			isa = PBXGroup;
 			children = (
 				9BE3EC80281707FB00DED0C2 /* main.cpp */,
+				9B16A6E9283411F900E5071C /* MaPLSymbols.h */,
 			);
 			path = MaPLGenerator;
 			sourceTree = "<group>";

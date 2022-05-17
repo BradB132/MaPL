@@ -20,8 +20,7 @@
 
 #type SchemaEnum {
     readonly string name;
-    readonly string[uint32];
-    readonly uint32 count;
+    readonly Array<string> cases;
     readonly ArrayMap<string> annotations;
 }
 
