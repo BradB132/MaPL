@@ -7,7 +7,7 @@
 
 #type ArrayMap<T> : Array<T> {
     readonly T[string];
-    bool contains(string);
+    bool contains(string key);
 }
 
 // Schema.
