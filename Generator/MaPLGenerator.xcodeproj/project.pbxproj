@@ -163,6 +163,7 @@
 				9BE3EC79281707FB00DED0C2 /* Sources */,
 				9BE3EC7A281707FB00DED0C2 /* Frameworks */,
 				9BE3EC7B281707FB00DED0C2 /* CopyFiles */,
+				9B16A6F02835491000E5071C /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -249,6 +250,24 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		9B16A6F02835491000E5071C /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 12;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# After each build, create a symbolic link to the product in the 'Executable' directory.\nln -sf ${BUILT_PRODUCTS_DIR}/MaPLGenerator ${SRCROOT}/Executable/MaPLGenerator\n";
+		};
 		9B7F7F872817235B004955D9 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
