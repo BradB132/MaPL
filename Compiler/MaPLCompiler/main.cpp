@@ -26,7 +26,7 @@ bool pathHasExtension(const std::filesystem::path &path, const std::string &exte
 int main(int argc, const char ** argv) {
     if (argc < 2) {
         printf("No arguments specified. Specify one or more file paths along with an output path for the symbol table.\n");
-        printf("Example usage: MaPLCompiler /absolute/path/to/file.mapl -o /absolute/path/to/output.maplb -s /absolute/path/to/symbol/table.h\n");
+        printf("Example usage: MaPLCompiler /path/to/file.mapl -o /path/to/output.maplb -s /path/to/symbol/table.h\n");
         printf("Specify the --debug flag to include debug info in the bytecode. This option increases bloat for bytecode size and runtime speed.\n");
         return 1;
     }
@@ -64,12 +64,8 @@ int main(int argc, const char ** argv) {
         }
         
         // Safe to assume this arg is a file path. Normalize the path.
-        std::filesystem::path argPath = arg;
-        if (!argPath.is_absolute()) {
-            printf("Path '%s' must be specified as an absolute path.\n", argv[i]);
-            return 1;
-        }
-        argPath = argPath.lexically_normal();
+        std::filesystem::path argPath(arg);
+        argPath = std::filesystem::absolute(argPath).lexically_normal();
         
         // Store this path as whatever type of information is expected based on previous flags.
         switch (expectation) {
