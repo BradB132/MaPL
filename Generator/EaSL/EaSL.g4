@@ -55,8 +55,12 @@ type
     |    typeToken=DECL_BOOL
     |    typeToken=DECL_STRING
     |    typeToken=DECL_UID
-    |    typeToken=REFERENCE REFERENCE_OPEN identifier REFERENCE_CLOSE
-    |    identifier
+    |    typeToken=REFERENCE REFERENCE_OPEN classType REFERENCE_CLOSE
+    |    classType
+    ;
+
+classType
+    :    (namespace=identifier NAMESPACE_DELIMITER)? classIdentifier=identifier
     ;
 
 // This is a special case where a concept is encoded as both a lexer and parser rule.
@@ -109,6 +113,7 @@ SEQUENCE_CLOSE: ']' ;
 SEQUENCE_DELIMITER: ',' ;
 SEQUENCE_WILDCARD: '*' ;
 COLON: ':' ;
+NAMESPACE_DELIMITER: '::' ;
 STATEMENT_END: ';' ;
 ANNOTATION: '@' IDENTIFIER_FRAGMENT;
 
