@@ -72,7 +72,7 @@ int main(int argc, const char * argv[]) {
         argPath = std::filesystem::absolute(argPath).lexically_normal();
         if (expectation != ArgumentExpectation_None) {
             if (!argPath.extension().empty()) {
-                printf("Path '%s' follows flag '%s' and must point to an output directory.\n", argString.c_str(), argv[i-1]);
+                printf("Path '%s' follows flag '%s' and must point to an output directory.\n", argv[i], argv[i-1]);
                 printUsage();
                 return 1;
             }
@@ -97,7 +97,7 @@ int main(int argc, const char * argv[]) {
         } else if (pathExtension == ".xml") {
             xmlPaths.push_back(argPath);
         } else {
-            printf("File '%s' is unexpected type.\n", argPath.c_str());
+            printf("File '%s' is unexpected type.\n", argv[i]);
             printUsage();
             return 1;
         }
