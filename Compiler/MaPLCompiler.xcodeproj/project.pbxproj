@@ -7,13 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9B16A7002836627400E5071C /* MaPLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B16A6FA2836627400E5071C /* MaPLParser.h */; };
+		9B16A7012836627400E5071C /* MaPLLexer.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B16A6FC2836627400E5071C /* MaPLLexer.h */; };
+		9B16A7022836627400E5071C /* MaPLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A6FD2836627400E5071C /* MaPLLexer.cpp */; };
+		9B16A7032836627400E5071C /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A6FE2836627400E5071C /* MaPLParser.cpp */; };
 		9B7AC54C27FA188F00F70849 /* MaPLFileCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BC8F09927A9E22E00C57FC7 /* MaPLFileCache.cpp */; };
 		9B7AC54D27FA188F00F70849 /* MaPLFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B883A0926102B9E00CFE16B /* MaPLFile.cpp */; };
 		9B7AC54E27FA188F00F70849 /* MaPLBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BC8F09627A9A40C00C57FC7 /* MaPLBuffer.cpp */; };
 		9B7AC54F27FA188F00F70849 /* MaPLVariableStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B76DBF727D1B4CF00362D4F /* MaPLVariableStack.cpp */; };
 		9B7AC55027FA188F00F70849 /* MaPLCompilerHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */; };
-		9B7AC55127FA188F00F70849 /* MaPLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */; };
-		9B7AC55227FA188F00F70849 /* MaPLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */; };
 		9B7AC55527FA28B100F70849 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */; };
 		9B7AC56027FCD6A400F70849 /* MaPLBytecodeConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B7AC55E27FCD6A400F70849 /* MaPLBytecodeConstants.h */; };
 		9B7F7F6D28171704004955D9 /* libantlr4-runtime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F55281712D3004955D9 /* libantlr4-runtime.a */; };
@@ -77,6 +79,10 @@
 /* Begin PBXFileReference section */
 		9B0ED97C27BAA81400BE2857 /* MaPLCompilerHelpers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLCompilerHelpers.cpp; sourceTree = "<group>"; };
 		9B0ED97D27BAA81400BE2857 /* MaPLCompilerHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLCompilerHelpers.h; sourceTree = "<group>"; };
+		9B16A6FA2836627400E5071C /* MaPLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLParser.h; sourceTree = "<group>"; };
+		9B16A6FC2836627400E5071C /* MaPLLexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLLexer.h; sourceTree = "<group>"; };
+		9B16A6FD2836627400E5071C /* MaPLLexer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLLexer.cpp; sourceTree = "<group>"; };
+		9B16A6FE2836627400E5071C /* MaPLParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLParser.cpp; sourceTree = "<group>"; };
 		9B76DBF727D1B4CF00362D4F /* MaPLVariableStack.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLVariableStack.cpp; sourceTree = "<group>"; };
 		9B76DBF827D1B4CF00362D4F /* MaPLVariableStack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLVariableStack.h; sourceTree = "<group>"; };
 		9B7AC54027FA12CB00F70849 /* libMaPLCompiler.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMaPLCompiler.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -84,10 +90,6 @@
 		9B8839B5260FEACB00CFE16B /* MaPLCompilerExecutable */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLCompilerExecutable; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B8839B8260FEACB00CFE16B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = antlrcpp.xcodeproj; path = ANTLR4/runtime/Cpp/runtime/antlrcpp.xcodeproj; sourceTree = "<group>"; };
-		9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLParser.cpp; sourceTree = "<group>"; };
-		9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLLexer.cpp; sourceTree = "<group>"; };
-		9B8839FB260FEDDF00CFE16B /* MaPLLexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLLexer.h; sourceTree = "<group>"; };
-		9B8839FC260FEDDF00CFE16B /* MaPLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLParser.h; sourceTree = "<group>"; };
 		9B883A0926102B9E00CFE16B /* MaPLFile.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLFile.cpp; sourceTree = "<group>"; };
 		9B883A0A26102B9E00CFE16B /* MaPLFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLFile.h; sourceTree = "<group>"; };
 		9BAA36B128217F9000709327 /* MaPLAPI.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLAPI.cpp; sourceTree = "<group>"; };
@@ -120,6 +122,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9B16A6F92836627400E5071C /* generated_c++ */ = {
+			isa = PBXGroup;
+			children = (
+				9B16A6FA2836627400E5071C /* MaPLParser.h */,
+				9B16A6FC2836627400E5071C /* MaPLLexer.h */,
+				9B16A6FD2836627400E5071C /* MaPLLexer.cpp */,
+				9B16A6FE2836627400E5071C /* MaPLParser.cpp */,
+			);
+			path = "generated_c++";
+			sourceTree = "<group>";
+		};
 		9B7AC55C27FCD6A400F70849 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
@@ -146,8 +159,8 @@
 				9B8839CB260FEBF700CFE16B /* antlrcpp.xcodeproj */,
 				9B8839B7260FEACB00CFE16B /* MaPLCompiler */,
 				9BE1759D2805B3C6006E427A /* Headers */,
+				9B16A6F92836627400E5071C /* generated_c++ */,
 				9B7AC55C27FCD6A400F70849 /* Shared */,
-				9B8839DF260FECBD00CFE16B /* Generated Code */,
 				9B8839B6260FEACB00CFE16B /* Products */,
 				9B8839DB260FEC0A00CFE16B /* Frameworks */,
 			);
@@ -189,18 +202,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		9B8839DF260FECBD00CFE16B /* Generated Code */ = {
-			isa = PBXGroup;
-			children = (
-				9B8839FA260FEDDF00CFE16B /* MaPLLexer.cpp */,
-				9B8839FB260FEDDF00CFE16B /* MaPLLexer.h */,
-				9B8839F9260FEDDF00CFE16B /* MaPLParser.cpp */,
-				9B8839FC260FEDDF00CFE16B /* MaPLParser.h */,
-			);
-			name = "Generated Code";
-			path = "generated_c++";
-			sourceTree = "<group>";
-		};
 		9BE1759D2805B3C6006E427A /* Headers */ = {
 			isa = PBXGroup;
 			children = (
@@ -224,10 +225,12 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B16A7002836627400E5071C /* MaPLParser.h in Headers */,
 				9BE175A12805B3C6006E427A /* MaPLCompiler.h in Headers */,
 				9BAA36B428217F9000709327 /* MaPLAPI.h in Headers */,
 				9BE175A42805B3FE006E427A /* MaPLTypedefs.h in Headers */,
 				9B7AC56027FCD6A400F70849 /* MaPLBytecodeConstants.h in Headers */,
+				9B16A7012836627400E5071C /* MaPLLexer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -364,12 +367,12 @@
 			files = (
 				9BAA36B328217F9000709327 /* MaPLAPI.cpp in Sources */,
 				9B7AC54C27FA188F00F70849 /* MaPLFileCache.cpp in Sources */,
+				9B16A7022836627400E5071C /* MaPLLexer.cpp in Sources */,
 				9B7AC54D27FA188F00F70849 /* MaPLFile.cpp in Sources */,
 				9B7AC54E27FA188F00F70849 /* MaPLBuffer.cpp in Sources */,
 				9B7AC54F27FA188F00F70849 /* MaPLVariableStack.cpp in Sources */,
+				9B16A7032836627400E5071C /* MaPLParser.cpp in Sources */,
 				9B7AC55027FA188F00F70849 /* MaPLCompilerHelpers.cpp in Sources */,
-				9B7AC55127FA188F00F70849 /* MaPLLexer.cpp in Sources */,
-				9B7AC55227FA188F00F70849 /* MaPLParser.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
