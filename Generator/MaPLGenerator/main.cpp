@@ -13,7 +13,7 @@
 #include <libxml/parser.h>
 
 void printUsage() {
-    printf("Usage: MaPLGenerator [paths] or [flags]\nPaths are expected to contain:\n- At least one '.easl' schema file.\n- At least one '.mapl' script file.\n- Optional '.xml' data file(s).\nFlags are prepended with '--' and contain a mapping from name to value. For example, '--myVar=myValue'.");
+    printf("Usage: MaPLGenerator [paths] and [flags]\n  Paths are expected to contain:\n    - At least one '.easl' schema file.\n    - At least one '.mapl' script file.\n    - Optional '.xml' data file(s).\n  Flags are prepended with '--' and contain a mapping from name to value. For example, '--myVar=myValue'.\n");
 }
 
 int main(int argc, const char * argv[]) {
