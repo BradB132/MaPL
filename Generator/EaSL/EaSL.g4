@@ -1,10 +1,11 @@
 grammar EaSL;  // EaSL is short for 'Easy Schema Language'
 
 schema
-    :    namespace definition* EOF
+    :    namespace_ definition* EOF
     ;
 
-namespace
+// Underscore used because the name 'namespace' causes a compile error in C++.
+namespace_
     :    NAMESPACE identifier STATEMENT_END
     ;
 
