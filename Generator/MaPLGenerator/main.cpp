@@ -74,9 +74,13 @@ int main(int argc, const char * argv[]) {
     
     context.schemas = schemasForPaths(schemaPaths);
     
+    // TODO: Validate schema against itself.
+    // TODO: Parse with libxml. http://www.xmlsoft.org/examples/parse1.c
+    // TODO: Validate XML against schema.
     
-    // TODO: Parse with libxml.
-    // TODO: Invoke MaPLHandler.
+    for (const std::filesystem::path &scriptPath : scriptPaths) {
+        invokeScript(scriptPath, context);
+    }
     
     return 0;
 }
