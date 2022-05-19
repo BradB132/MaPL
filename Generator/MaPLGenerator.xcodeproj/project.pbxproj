@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		9B16A6E62833F54300E5071C /* MaPLHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A6E42833F54300E5071C /* MaPLHandler.cpp */; };
+		9B16A72D283663EB00E5071C /* EaSLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A70E283663EA00E5071C /* EaSLParser.cpp */; };
+		9B16A72E283663EB00E5071C /* EaSLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A70F283663EA00E5071C /* EaSLLexer.cpp */; };
+		9B16A73528366B6400E5071C /* EaSLHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A73328366B6400E5071C /* EaSLHandler.cpp */; };
 		9B7F7F8D281724E8004955D9 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F7D2817232F004955D9 /* libMaPLCompiler.a */; };
 		9B7F7F8E281724ED004955D9 /* libMaPLRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F862817233A004955D9 /* libMaPLRuntime.a */; };
 		9B7F7F9028172ADC004955D9 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F8F28172ADC004955D9 /* libxml2.tbd */; };
@@ -75,6 +78,12 @@
 		9B16A6E42833F54300E5071C /* MaPLHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLHandler.cpp; sourceTree = "<group>"; };
 		9B16A6E52833F54300E5071C /* MaPLHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLHandler.h; sourceTree = "<group>"; };
 		9B16A6E9283411F900E5071C /* MaPLSymbols.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaPLSymbols.h; sourceTree = "<group>"; };
+		9B16A70D283663EA00E5071C /* EaSLLexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EaSLLexer.h; sourceTree = "<group>"; };
+		9B16A70E283663EA00E5071C /* EaSLParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EaSLParser.cpp; sourceTree = "<group>"; };
+		9B16A70F283663EA00E5071C /* EaSLLexer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EaSLLexer.cpp; sourceTree = "<group>"; };
+		9B16A710283663EA00E5071C /* EaSLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EaSLParser.h; sourceTree = "<group>"; };
+		9B16A73328366B6400E5071C /* EaSLHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = EaSLHandler.cpp; sourceTree = "<group>"; };
+		9B16A73428366B6400E5071C /* EaSLHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EaSLHandler.h; sourceTree = "<group>"; };
 		9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLCompiler.xcodeproj; path = ../Compiler/MaPLCompiler.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLRuntime.xcodeproj; path = ../Runtime/MaPLRuntime.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F8F28172ADC004955D9 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
@@ -96,6 +105,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9B16A70B283663EA00E5071C /* EaSL */ = {
+			isa = PBXGroup;
+			children = (
+				9B16A70C283663EA00E5071C /* generated_c++ */,
+			);
+			path = EaSL;
+			sourceTree = "<group>";
+		};
+		9B16A70C283663EA00E5071C /* generated_c++ */ = {
+			isa = PBXGroup;
+			children = (
+				9B16A70D283663EA00E5071C /* EaSLLexer.h */,
+				9B16A70E283663EA00E5071C /* EaSLParser.cpp */,
+				9B16A70F283663EA00E5071C /* EaSLLexer.cpp */,
+				9B16A710283663EA00E5071C /* EaSLParser.h */,
+			);
+			path = "generated_c++";
+			sourceTree = "<group>";
+		};
 		9B7F7F752817232D004955D9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -128,6 +156,7 @@
 				9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */,
 				9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */,
 				9BE3EC7F281707FB00DED0C2 /* MaPLGenerator */,
+				9B16A70B283663EA00E5071C /* EaSL */,
 				9BE3EC7E281707FB00DED0C2 /* Products */,
 				9B7F7F8C281724E8004955D9 /* Frameworks */,
 			);
@@ -148,6 +177,8 @@
 				9B16A6E42833F54300E5071C /* MaPLHandler.cpp */,
 				9B16A6E52833F54300E5071C /* MaPLHandler.h */,
 				9B16A6E9283411F900E5071C /* MaPLSymbols.h */,
+				9B16A73328366B6400E5071C /* EaSLHandler.cpp */,
+				9B16A73428366B6400E5071C /* EaSLHandler.h */,
 			);
 			path = MaPLGenerator;
 			sourceTree = "<group>";
@@ -294,7 +325,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B16A6E62833F54300E5071C /* MaPLHandler.cpp in Sources */,
+				9B16A73528366B6400E5071C /* EaSLHandler.cpp in Sources */,
+				9B16A72D283663EB00E5071C /* EaSLParser.cpp in Sources */,
 				9BE3EC81281707FB00DED0C2 /* main.cpp in Sources */,
+				9B16A72E283663EB00E5071C /* EaSLLexer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -369,6 +403,7 @@
 					"${SRCROOT}/../Runtime/Headers",
 					"${SRCROOT}/../Shared/Headers",
 					"${SDKROOT}/usr/include/libxml2",
+					"\"$(SRCROOT)/../Compiler/ANTLR4/runtime/Cpp/runtime/src\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -427,6 +462,7 @@
 					"${SRCROOT}/../Runtime/Headers",
 					"${SRCROOT}/../Shared/Headers",
 					"${SDKROOT}/usr/include/libxml2",
+					"\"$(SRCROOT)/../Compiler/ANTLR4/runtime/Cpp/runtime/src\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				MTL_ENABLE_DEBUG_INFO = NO;

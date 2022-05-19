@@ -5,13 +5,12 @@
 //  Created by Brad Bambara on 4/25/22.
 //
 
-#include <iostream>
-#include "MaPLCompiler.h"
-#include <libxml/parser.h>
-
 #include <filesystem>
 #include <string>
 #include <vector>
+
+#include "EaSLHandler.h"
+#include <libxml/parser.h>
 
 enum ArgumentExpectation {
     ArgumentExpectation_None,
@@ -124,8 +123,11 @@ int main(int argc, const char * argv[]) {
         return 1;
     }
     
-    // TODO: Init an EaSL parser.
-    // TODO: Parse with libxml?
+    std::vector<EaSLParser::SchemaContext *> schemas = schemasForPaths(schemaPaths);
+    
+    
+    // TODO: Parse with libxml.
+    // TODO: Invoke MaPLHandler.
     
     return 0;
 }
