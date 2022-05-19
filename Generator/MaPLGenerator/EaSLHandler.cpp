@@ -32,7 +32,7 @@ std::vector<EaSLParser::SchemaContext *> schemasForPaths(const std::vector<std::
         // Read the raw schema from the file system.
         std::ifstream inputStream(schemaPath);
         if (!inputStream) {
-            printf("Unable to read schema file at path '%s'.\n", schemaPath.c_str());
+            fprintf(stderr, "Unable to read schema file at path '%s'.\n", schemaPath.c_str());
             exit(1);
         }
         std::stringstream stringBuffer;
