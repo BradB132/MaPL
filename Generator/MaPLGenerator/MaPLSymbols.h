@@ -3,7 +3,7 @@
 enum MaPLSymbols {
     MaPLSymbols_ArrayMap_contains_string = 1,
     MaPLSymbols_Array_count = 2,
-    MaPLSymbols_GLOBAL_commandLineFlagEnabled_string = 3,
+    MaPLSymbols_GLOBAL_commandLineFlag_string = 3,
     MaPLSymbols_GLOBAL_executeMaPLScript_string = 4,
     MaPLSymbols_GLOBAL_hash_string = 5,
     MaPLSymbols_GLOBAL_outputToFile_string = 6,

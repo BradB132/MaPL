@@ -67,6 +67,6 @@
 
 // Misc utilities.
 #global void executeMaPLScript(string filePath);
-#global bool commandLineFlagEnabled(string flagName);
+#global string commandLineFlag(string flagName);
 #global string pluralize(string singular);
 #global uint32 hash(string plaintext);

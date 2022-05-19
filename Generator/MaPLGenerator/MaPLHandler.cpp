@@ -31,7 +31,7 @@ static MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol fun
         case MaPLSymbols_Array_count:
             
             break;
-        case MaPLSymbols_GLOBAL_commandLineFlagEnabled_string:
+        case MaPLSymbols_GLOBAL_commandLineFlag_string:
             
             break;
         case MaPLSymbols_GLOBAL_executeMaPLScript_string:
