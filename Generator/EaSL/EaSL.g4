@@ -1,7 +1,11 @@
 grammar EaSL;  // EaSL is short for 'Easy Schema Language'
 
 schema
-    :    definition* EOF
+    :    namespace definition* EOF
+    ;
+
+namespace
+    :    NAMESPACE identifier STATEMENT_END
     ;
 
 definition
@@ -14,7 +18,7 @@ classDefinition
     ;
 
 attribute
-    :    ANNOTATION* (type | REFERENCE REFERENCE_OPEN type REFERENCE_CLOSE) identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? ATTRIBUTE_DELIMITER
+    :    ANNOTATION* type identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? STATEMENT_END
     ;
 
 sequenceDescriptor
@@ -31,15 +35,32 @@ defaultValue
     ;
     
 literalValue
-    :    LITERAL_NULL
-    |    LITERAL_TRUE
-    |    LITERAL_FALSE
-    |    LITERAL_STRING
-    |    LITERAL_INT
-    |    LITERAL_FLOAT
+    :    literalToken=LITERAL_NULL
+    |    literalToken=LITERAL_TRUE
+    |    literalToken=LITERAL_FALSE
+    |    literalToken=LITERAL_STRING
+    |    literalToken=LITERAL_INT
+    |    literalToken=LITERAL_FLOAT
     ;
 
 type
+    :    typeToken=DECL_CHAR
+    |    typeToken=DECL_INT32
+    |    typeToken=DECL_INT64
+    |    typeToken=DECL_UINT32
+    |    typeToken=DECL_UINT64
+    |    typeToken=DECL_FLOAT32
+    |    typeToken=DECL_FLOAT64
+    |    typeToken=DECL_BOOL
+    |    typeToken=DECL_STRING
+    |    typeToken=DECL_UID
+    |    typeToken=REFERENCE REFERENCE_OPEN identifier REFERENCE_CLOSE
+    |    identifier
+    ;
+
+// This is a special case where a concept is encoded as both a lexer and parser rule.
+// All keywords must be also recognizable as identifiers, and the lexer doesn't have enough context to do this correctly.
+identifier
     :    DECL_CHAR
     |    DECL_INT32
     |    DECL_INT64
@@ -50,26 +71,13 @@ type
     |    DECL_BOOL
     |    DECL_STRING
     |    DECL_UID
-    |    identifier
-    ;
-
-// This is a special case where a concept is encoded as both a lexer and parser rule.
-// All keywords must be also recognizable as identifiers, and the lexer doesn't have enough context to do this correctly.
-identifier
-    :    LITERAL_NULL
-    |    DECL_CHAR
-    |    DECL_INT32
-    |    DECL_INT64
-    |    DECL_UINT32
-    |    DECL_UINT64
-    |    DECL_FLOAT32
-    |    DECL_FLOAT64
-    |    DECL_BOOL
-    |    DECL_STRING
-    |    DECL_UID
+    |    REFERENCE
+    |    NAMESPACE
+    |    CLASS
+    |    ENUM
+    |    LITERAL_NULL
     |    LITERAL_TRUE
     |    LITERAL_FALSE
-    |    REFERENCE
     |    IDENTIFIER
     ;
 
@@ -89,6 +97,7 @@ REFERENCE_OPEN: '<';
 REFERENCE_CLOSE: '>';
 
 // DEFINITIONS
+NAMESPACE: 'namespace' ;
 CLASS: 'class' ;
 ENUM: 'enum' ;
 DEFAULTS_TO: '=' ;
@@ -99,7 +108,7 @@ SEQUENCE_CLOSE: ']' ;
 SEQUENCE_DELIMITER: ',' ;
 SEQUENCE_WILDCARD: '*' ;
 COLON: ':' ;
-ATTRIBUTE_DELIMITER: ';' ;
+STATEMENT_END: ';' ;
 ANNOTATION: '@' IDENTIFIER_FRAGMENT;
 
 // LITERALS
