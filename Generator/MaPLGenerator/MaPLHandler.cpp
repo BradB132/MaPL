@@ -5,13 +5,14 @@
 //  Created by Brad Bambara on 5/17/22.
 //
 
+#include "MaPLHandler.h"
+
 #include <stdlib.h>
-#include <filesystem>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "MaPLHandler.h"
+#include "MaPLCompiler.h"
 #include "MaPLSymbols.h"
 
 // One of the MaPL APIs allows it to invoke another script.
@@ -19,9 +20,10 @@
 struct MaPLStackFrame {
     std::filesystem::path path;
     std::unordered_map<std::string, MaPLParameter> variables;
-    MaPLLineNumber currentLineNumber;
+    MaPLLineNumber currentLineNumber = 0;
 };
 static std::vector<MaPLStackFrame> stackFrames;
+static MaPLGeneratorContext currentContext;
 
 static MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
     switch (functionSymbol) { // TODO: Implement cases.
@@ -185,8 +187,17 @@ static void error(MaPLRuntimeError error) {
     exit(1);
 }
 
-MaPLCallbacks getMaPLCallbacks() {
-    return {
+void invokeScript(const std::filesystem::path &scriptPath, const MaPLGeneratorContext &context) {
+    currentContext = context;
+    stackFrames.push_back({ scriptPath });
+    
+    MaPLCompileOptions options{ true };
+    MaPLCompileResult result = compileMaPL({ scriptPath }, options);
+    
+    // There should be only one compiled file, grab the first one.
+    std::vector<u_int8_t> bytecode = result.compiledFiles.begin()->second;
+    
+    MaPLCallbacks callbacks{
         invokeFunction,
         invokeSubscript,
         assignProperty,
@@ -197,4 +208,7 @@ MaPLCallbacks getMaPLCallbacks() {
         debugVariableDelete,
         error,
     };
+    executeMaPLScript(&(bytecode[0]), bytecode.size(), &callbacks);
+    
+    stackFrames.pop_back();
 }
