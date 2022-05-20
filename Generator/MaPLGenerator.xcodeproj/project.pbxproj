@@ -84,6 +84,8 @@
 		9B16A710283663EA00E5071C /* EaSLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EaSLParser.h; sourceTree = "<group>"; };
 		9B16A73328366B6400E5071C /* EaSLHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = EaSLHandler.cpp; sourceTree = "<group>"; };
 		9B16A73428366B6400E5071C /* EaSLHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EaSLHandler.h; sourceTree = "<group>"; };
+		9B16A73A2837060F00E5071C /* MaPLInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLInterface.h; sourceTree = "<group>"; };
+		9B16A73D2837079300E5071C /* MaPLGeneratorCollections.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLGeneratorCollections.h; sourceTree = "<group>"; };
 		9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLCompiler.xcodeproj; path = ../Compiler/MaPLCompiler.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLRuntime.xcodeproj; path = ../Runtime/MaPLRuntime.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F8F28172ADC004955D9 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
@@ -179,6 +181,8 @@
 				9B16A6E9283411F900E5071C /* MaPLSymbols.h */,
 				9B16A73328366B6400E5071C /* EaSLHandler.cpp */,
 				9B16A73428366B6400E5071C /* EaSLHandler.h */,
+				9B16A73A2837060F00E5071C /* MaPLInterface.h */,
+				9B16A73D2837079300E5071C /* MaPLGeneratorCollections.h */,
 			);
 			path = MaPLGenerator;
 			sourceTree = "<group>";
