@@ -251,11 +251,14 @@ MaPLParameter Schema::invokeSubscript(MaPLParameter index) {
 class EaSLErrorListener : public antlr4::BaseErrorListener {
 public:
     unsigned int errorCount = 0;
+    const std::filesystem::path *currentPath;
     virtual void syntaxError(antlr4::Recognizer *recognizer,
                              antlr4::Token * offendingSymbol,
-                             size_t line, size_t charPositionInLine,
+                             size_t line,
+                             size_t charPositionInLine,
                              const std::string &msg,
                              std::exception_ptr e) override {
+        fprintf(stderr, "%s:%lu:%lu: error: %s.\n", currentPath->c_str(), line, charPositionInLine, msg.c_str());
         errorCount++;
     }
 };
@@ -283,6 +286,9 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
         antlr4::CommonTokenStream tokenStream(&lexer);
         EaSLParser parser(&tokenStream);
         
+        errListener.currentPath = &schemaPath;
+        lexer.getErrorListenerDispatch().removeErrorListeners();
+        parser.getErrorListenerDispatch().removeErrorListeners();
         lexer.addErrorListener(&errListener);
         parser.addErrorListener(&errListener);
         
