@@ -1,7 +1,7 @@
 namespace Example;
 
 class ExampleClass {
-    @readonly int32 myInteger[*,2] = 5, -5.0;
+    @readonly int32 myInteger[*,2] = 5, -5;
 }
 
 enum TestEnum {

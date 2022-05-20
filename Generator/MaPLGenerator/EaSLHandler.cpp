@@ -13,8 +13,26 @@
 #include "antlr4-runtime.h"
 #include "EaSLLexer.h"
 
-SchemaEnum::SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext) {
-    // TODO: Init with context.
+MaPLArrayMap<std::string> *parseAnnotations(const std::vector<antlr4::tree::TerminalNode *> &annotationNodes) {
+    std::vector<std::string> backingVector;
+    std::unordered_map<std::string, std::string> backingMap;
+    for (antlr4::tree::TerminalNode *annotationNode : annotationNodes) {
+        std::string tokenText = annotationNode->getText();
+        std::string annotationString = tokenText.substr(1);
+        backingVector.push_back(annotationString);
+        backingMap[annotationString] = annotationString;
+    }
+    return new MaPLArrayMap<std::string>(backingVector, backingMap);
+}
+
+SchemaEnum::SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext) :
+_name(enumContext->enumName->getText()),
+_annotations(parseAnnotations(enumContext->ANNOTATION())) {
+    std::vector<std::string> cases;
+    for (EaSLParser::IdentifierContext *caseNode : enumContext->enumValue) {
+        cases.push_back(caseNode->getText());
+    }
+    _cases = new MaPLArray<std::string>(cases);
 }
 
 MaPLParameter SchemaEnum::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -34,8 +52,99 @@ MaPLParameter SchemaEnum::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext) {
-    // TODO: Init with context.
+uint32_t uintForSequenceLength(EaSLParser::SequenceDescriptorContext *sequenceDescriptor, EaSLParser::SequenceLengthContext *lengthContext) {
+    std::string lengthText = lengthContext->getText();
+    if (lengthText[0] == '-') {
+        fprintf(stderr, "Error in sequence '%s': sequence string '%s' cannot be negative.\n", sequenceDescriptor->getText().c_str(), lengthText.c_str());
+        exit(1);
+    }
+    return (uint32_t)std::stoul(lengthText);
+}
+
+SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext) :
+_name(attributeContext->identifier()->getText()),
+_annotations(parseAnnotations(attributeContext->ANNOTATION())) {
+    EaSLParser::TypeContext *typeContext = attributeContext->type();
+    _typeIsUIDReference = typeContext->typeToken->getType() == EaSLParser::REFERENCE;
+    
+    EaSLParser::ClassTypeContext *classType = typeContext->classType();
+    if (classType) {
+        _typeName = classType->classIdentifier->getText();
+        _typeNamespace = classType->namespaceIdentifier->getText();
+        _isPrimitiveType = !_typeIsUIDReference;
+    } else {
+        _typeName = typeContext->getText();
+        _isPrimitiveType = true;
+    }
+    
+    EaSLParser::SequenceDescriptorContext *sequenceDescriptor = attributeContext->sequenceDescriptor();
+    if (sequenceDescriptor) {
+        std::vector<EaSLParser::SequenceLengthContext *> lengths = sequenceDescriptor->sequenceLength();
+        EaSLParser::SequenceLengthContext *minLength = lengths[0];
+        EaSLParser::SequenceLengthContext *maxLength = (lengths.size() > 1) ? lengths[1] : lengths[0];
+        if (minLength->SEQUENCE_WILDCARD()) {
+            _minOccurrences = 0;
+        } else {
+            _minOccurrences = uintForSequenceLength(sequenceDescriptor, minLength);
+        }
+        if (maxLength->SEQUENCE_WILDCARD()) {
+            _maxOccurrences = UINT32_MAX;
+        } else {
+            _maxOccurrences = uintForSequenceLength(sequenceDescriptor, maxLength);
+        }
+    } else {
+        _minOccurrences = 1;
+        _maxOccurrences = 1;
+    }
+    
+    std::vector<std::string> defaultValues;
+    EaSLParser::DefaultValueContext *defaultContext = attributeContext->defaultValue();
+    if (defaultContext) {
+        for (EaSLParser::LiteralValueContext *literalContext : defaultContext->literalValue()) {
+            size_t literalType = literalContext->literalToken->getType();
+            std::string literalText = literalContext->getText();
+            
+            // Check the type of this literal to make sure it matches.
+            bool valueMatchesType;
+            if (_isPrimitiveType) {
+                switch (typeContext->typeToken->getType()) {
+                    case EaSLParser::DECL_CHAR: // Intentional fallthrough.
+                    case EaSLParser::DECL_UINT32: // Intentional fallthrough.
+                    case EaSLParser::DECL_UINT64:
+                        // Number cannot be negative.
+                        valueMatchesType = literalType == EaSLParser::LITERAL_INT && literalText[0] != '-';
+                        break;
+                    case EaSLParser::DECL_INT32: // Intentional fallthrough.
+                    case EaSLParser::DECL_INT64:
+                        valueMatchesType = literalType == EaSLParser::LITERAL_INT;
+                        break;
+                    case EaSLParser::DECL_FLOAT32: // Intentional fallthrough.
+                    case EaSLParser::DECL_FLOAT64:
+                        valueMatchesType = literalType == EaSLParser::LITERAL_INT || literalType == EaSLParser::LITERAL_FLOAT;
+                        break;
+                    case EaSLParser::DECL_BOOL:
+                        valueMatchesType = literalType == EaSLParser::LITERAL_TRUE || literalType == EaSLParser::LITERAL_FALSE;
+                        break;
+                    case EaSLParser::DECL_STRING: // Intentional fallthrough.
+                    case EaSLParser::DECL_UID: // Intentional fallthrough.
+                    case EaSLParser::REFERENCE:
+                        valueMatchesType = literalType == EaSLParser::LITERAL_STRING;
+                        break;
+                    default:
+                        valueMatchesType = false;
+                        break;
+                }
+            } else {
+                valueMatchesType = literalType == EaSLParser::LITERAL_NULL;
+            }
+            if (!valueMatchesType) {
+                fprintf(stderr, "Default value '%s' in attribute '%s' doesn't match the attribute's type '%s'.\n", literalText.c_str(), _name.c_str(), typeContext->getText().c_str());
+                exit(1);
+            }
+            defaultValues.push_back(literalText);
+        }
+    }
+    _defaultValues = new MaPLArray<std::string>(defaultValues);
 }
 
 MaPLParameter SchemaAttribute::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -56,6 +165,8 @@ MaPLParameter SchemaAttribute::invokeFunction(MaPLSymbol functionSymbol, const M
             return MaPLBool(_typeIsUIDReference);
         case MaPLSymbols_SchemaAttribute_typeName:
             return MaPLStringByReference(_typeName.c_str());
+        case MaPLSymbols_SchemaAttribute_typeNamespace:
+            return MaPLStringByReference(_typeNamespace.c_str());
         default:
             return MaPLUninitialized();
     }
@@ -65,8 +176,18 @@ MaPLParameter SchemaAttribute::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext) {
-    // TODO: Init with context.
+SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext) :
+_name(classContext->name->getText()),
+_superclass(classContext->superclass ? classContext->superclass->getText() : ""),
+_annotations(parseAnnotations(classContext->ANNOTATION())) {
+    std::vector<SchemaAttribute *> attributes;
+    std::unordered_map<std::string, SchemaAttribute *> attributeMap;
+    for (EaSLParser::AttributeContext *attributeContext : classContext->attribute()) {
+        SchemaAttribute *attribute = new SchemaAttribute(attributeContext);
+        attributes.push_back(attribute);
+        attributeMap[attribute->_name] = attribute;
+    }
+    _attributes = new MaPLArrayMap<SchemaAttribute *>(attributes, attributeMap);
 }
 
 MaPLParameter SchemaClass::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -88,8 +209,25 @@ MaPLParameter SchemaClass::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-Schema::Schema(EaSLParser::SchemaContext *schemaContext) {
-    // TODO: Init with context.
+Schema::Schema(EaSLParser::SchemaContext *schemaContext) :
+_namespace(schemaContext->namespace_()->identifier()->getText()) {
+    std::vector<SchemaEnum *> enums;
+    std::unordered_map<std::string, SchemaEnum *> enumMap;
+    for (EaSLParser::EnumDefinitionContext *enumContext : schemaContext->enumDefinition()) {
+        SchemaEnum *enumObj = new SchemaEnum(enumContext);
+        enums.push_back(enumObj);
+        enumMap[enumObj->_name] = enumObj;
+    }
+    _enums = new MaPLArrayMap<SchemaEnum *>(enums, enumMap);
+    
+    std::vector<SchemaClass *> classes;
+    std::unordered_map<std::string, SchemaClass *> classMap;
+    for (EaSLParser::ClassDefinitionContext *classContext : schemaContext->classDefinition()) {
+        SchemaClass *classObj = new SchemaClass(classContext);
+        classes.push_back(classObj);
+        classMap[classObj->_name] = classObj;
+    }
+    _classes = new MaPLArrayMap<SchemaClass *>(classes, classMap);
 }
 
 MaPLParameter Schema::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {

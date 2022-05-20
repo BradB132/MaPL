@@ -1,7 +1,7 @@
 grammar EaSL;  // EaSL is short for 'Easy Schema Language'
 
 schema
-    :    namespace_ definition* EOF
+    :    namespace_ (classDefinition | enumDefinition)* EOF
     ;
 
 // Underscore used because the name 'namespace' causes a compile error in C++.
@@ -9,13 +9,8 @@ namespace_
     :    NAMESPACE identifier STATEMENT_END
     ;
 
-definition
-    :    classDefinition
-    |    enumDefinition
-    ;
-
 classDefinition
-    :    ANNOTATION* CLASS identifier (COLON identifier)? DEFINITION_OPEN attribute* DEFINITION_CLOSE
+    :    ANNOTATION* CLASS name=identifier (COLON superclass=identifier)? DEFINITION_OPEN attribute* DEFINITION_CLOSE
     ;
 
 attribute

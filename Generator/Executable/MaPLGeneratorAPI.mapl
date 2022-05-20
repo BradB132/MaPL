@@ -35,6 +35,7 @@
 #type SchemaAttribute {
     readonly string name;
     readonly string typeName;
+    readonly string typeNamespace;
     readonly bool typeIsUIDReference;
     readonly bool isPrimitiveType;
     readonly ArrayMap<string> annotations;

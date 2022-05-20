@@ -34,6 +34,7 @@ public:
     
     std::string _name;
     std::string _typeName;
+    std::string _typeNamespace;
     bool _typeIsUIDReference;
     bool _isPrimitiveType;
     MaPLArrayMap<std::string> *_annotations;
