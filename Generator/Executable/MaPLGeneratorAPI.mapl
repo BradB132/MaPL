@@ -11,9 +11,10 @@
 }
 
 // Schema.
-#global readonly Array<Schema> schemas;
+#global readonly ArrayMap<Schema> schemas;
 
 #type Schema {
+    readonly string namespace;
     readonly ArrayMap<SchemaEnum> enums;
     readonly ArrayMap<SchemaClass> classes;
 }
