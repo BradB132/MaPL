@@ -14,6 +14,7 @@
 #include <unordered_map>
 
 #include "MaPLSymbols.h"
+#include "MaPLRuntime.h"
 
 template <typename T>
 class MaPLArray : public MaPLInterface {
@@ -23,7 +24,7 @@ public:
     
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
         if (functionSymbol == MaPLSymbols_Array_count) {
-            return MaPLUint32(_backingVector.size());
+            return MaPLUint32((uint32_t)_backingVector.size());
         }
         return MaPLUninitialized();
     }
@@ -32,12 +33,14 @@ public:
         return parameterForTemplate(_backingVector[index.uint32Value]);
     }
     
-    static MaPLParameter parameterForTemplate(T value) {
+    static MaPLParameter parameterForTemplate(const T &value) {
         if constexpr (std::is_same_v<T, std::string>) {
             return MaPLStringByValue(value.c_str());
-        } else {
+        }
+        if constexpr (std::is_pointer_v<T>) {
             return MaPLPointer(value);
         }
+        return MaPLUninitialized();
     }
 private:
     std::vector<T> _backingVector;
@@ -59,7 +62,7 @@ public:
     
     virtual MaPLParameter invokeSubscript(MaPLParameter index) {
         if (index.dataType == MaPLDataType_string) {
-            return parameterForTemplate(_backingMap[index.stringValue]);
+            return MaPLArray<T>::parameterForTemplate(_backingMap[index.stringValue]);
         }
         return MaPLArray<T>::invokeSubscript(index);
     }
