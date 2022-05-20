@@ -19,10 +19,10 @@ void printUsage() {
 
 int main(int argc, const char * argv[]) {
     
-    MaPLGeneratorContext context;
     std::vector<std::filesystem::path> schemaPaths;
     std::vector<std::filesystem::path> scriptPaths;
     std::vector<std::filesystem::path> xmlPaths;
+    std::vector<std::pair<std::string, std::string>> flags;
     
     for (int i = 1; i < argc; i++) {
         std::string argString = argv[i];
@@ -31,7 +31,7 @@ int main(int argc, const char * argv[]) {
             std::string keyAndValue = argString.substr(2);
             size_t equalsIndex = keyAndValue.find("=");
             std::pair<std::string, std::string> flag = { keyAndValue.substr(0,equalsIndex), keyAndValue.substr(equalsIndex+1) };
-            context.flags.push_back(flag);
+            flags.push_back(flag);
             continue;
         }
         
@@ -66,14 +66,13 @@ int main(int argc, const char * argv[]) {
         return 1;
     }
     
-    context.schemas = schemasForPaths(schemaPaths);
+    MaPLArrayMap<Schema *> *schemas = schemasForPaths(schemaPaths);// TODO: Pass this to 'invokeScript' below.
     
-    // TODO: Validate schema against itself.
     // TODO: Parse with libxml. http://www.xmlsoft.org/examples/parse1.c
     // TODO: Validate XML against schema.
     
     for (const std::filesystem::path &scriptPath : scriptPaths) {
-        invokeScript(scriptPath, context);
+        invokeScript(scriptPath);
     }
     
     return 0;

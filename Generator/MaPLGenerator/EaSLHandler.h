@@ -65,8 +65,6 @@ public:
     MaPLArrayMap<SchemaClass *> *_classes;
 };
 
-std::vector<Schema *> schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths);
-
-void validateSchemas(const std::vector<Schema *> &schemas);
+MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths);
 
 #endif /* EaSLHandler_h */

@@ -12,13 +12,9 @@
 
 #include "MaPLRuntime.h"
 #include "EaSLParser.h"
+#include "EaSLHandler.h"
+#include "MaPLGeneratorCollections.h"
 
-struct MaPLGeneratorContext {
-    std::vector<EaSLParser::SchemaContext *> schemas;
-    // TODO: XML files.
-    std::vector<std::pair<std::string, std::string>> flags;
-};
-
-void invokeScript(const std::filesystem::path &scriptPath, const MaPLGeneratorContext &context);
+void invokeScript(const std::filesystem::path &scriptPath);
 
 #endif /* MaPLHandler_h */

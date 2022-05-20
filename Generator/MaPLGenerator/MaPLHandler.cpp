@@ -23,112 +23,9 @@ struct MaPLStackFrame {
     MaPLLineNumber currentLineNumber = 0;
 };
 static std::vector<MaPLStackFrame> stackFrames;
-static MaPLGeneratorContext currentContext;
 
 static MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
     switch (functionSymbol) { // TODO: Implement cases.
-        case MaPLSymbols_ArrayMap_contains_string:
-            
-            break;
-        case MaPLSymbols_Array_count:
-            
-            break;
-        case MaPLSymbols_GLOBAL_commandLineFlag_string:
-            
-            break;
-        case MaPLSymbols_GLOBAL_executeMaPLScript_string:
-            
-            break;
-        case MaPLSymbols_GLOBAL_hash_string:
-            
-            break;
-        case MaPLSymbols_GLOBAL_outputToFile_string:
-            
-            break;
-        case MaPLSymbols_GLOBAL_pluralize_string:
-            
-            break;
-        case MaPLSymbols_GLOBAL_schema:
-            
-            break;
-        case MaPLSymbols_GLOBAL_writeToFile_VARIADIC:
-            
-            break;
-        case MaPLSymbols_GLOBAL_xmlFiles:
-            
-            break;
-        case MaPLSymbols_SchemaAttribute_annotations:
-            
-            break;
-        case MaPLSymbols_SchemaAttribute_defaultValues:
-            
-            break;
-        case MaPLSymbols_SchemaAttribute_isPrimitiveType:
-            
-            break;
-        case MaPLSymbols_SchemaAttribute_maxOccurrences:
-            
-            break;
-        case MaPLSymbols_SchemaAttribute_minOccurrences:
-            
-            break;
-        case MaPLSymbols_SchemaAttribute_name:
-            
-            break;
-        case MaPLSymbols_SchemaAttribute_typeIsUIDReference:
-            
-            break;
-        case MaPLSymbols_SchemaAttribute_typeName:
-            
-            break;
-        case MaPLSymbols_SchemaClass_annotations:
-            
-            break;
-        case MaPLSymbols_SchemaClass_attributes:
-            
-            break;
-        case MaPLSymbols_SchemaClass_name:
-            
-            break;
-        case MaPLSymbols_SchemaClass_superclass:
-            
-            break;
-        case MaPLSymbols_SchemaEnum_annotations:
-            
-            break;
-        case MaPLSymbols_SchemaEnum_cases:
-            
-            break;
-        case MaPLSymbols_SchemaEnum_name:
-            
-            break;
-        case MaPLSymbols_Schema_classes:
-            
-            break;
-        case MaPLSymbols_Schema_enums:
-            
-            break;
-        case MaPLSymbols_XMLAttribute_name:
-            
-            break;
-        case MaPLSymbols_XMLAttribute_value:
-            
-            break;
-        case MaPLSymbols_XMLFile_outputPath:
-            
-            break;
-        case MaPLSymbols_XMLFile_rootNode:
-            
-            break;
-        case MaPLSymbols_XMLNode_attributes:
-            
-            break;
-        case MaPLSymbols_XMLNode_children:
-            
-            break;
-        case MaPLSymbols_XMLNode_name:
-            
-            break;
         default: break;
     }
     return MaPLUninitialized();
@@ -187,8 +84,7 @@ static void error(MaPLRuntimeError error) {
     exit(1);
 }
 
-void invokeScript(const std::filesystem::path &scriptPath, const MaPLGeneratorContext &context) {
-    currentContext = context;
+void invokeScript(const std::filesystem::path &scriptPath) {
     stackFrames.push_back({ scriptPath });
     
     MaPLCompileOptions options{ true };

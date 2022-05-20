@@ -122,8 +122,12 @@ public:
     }
 };
 
-std::vector<Schema *> schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths) {
-    std::vector<Schema *> parsedSchemas;
+void validateSchemas(const std::vector<Schema *> &schemas, const std::unordered_map<std::string, Schema *> &schemasMap) {
+    // TODO: Validate schema against itself.
+}
+
+MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths) {
+    std::vector<Schema *> schemasVector;
     EaSLErrorListener errListener;
     for (const std::filesystem::path &schemaPath : schemaPaths) {
         // Read the raw schema from the file system.
@@ -150,11 +154,15 @@ std::vector<Schema *> schemasForPaths(const std::vector<std::filesystem::path> &
             exit(1);
         }
         
-        parsedSchemas.push_back(new Schema(schemaContext));
+        schemasVector.push_back(new Schema(schemaContext));
     }
-    return parsedSchemas;
-}
-
-void validateSchemas(const std::vector<Schema *> &schemas) {
     
+    std::unordered_map<std::string, Schema *> schemasMap;
+    for (Schema *schema : schemasVector) {
+        schemasMap[schema->_namespace] = schema;
+    }
+    
+    validateSchemas(schemasVector, schemasMap);
+    
+    return new MaPLArrayMap<Schema *>(schemasVector, schemasMap);
 }
