@@ -19,12 +19,6 @@ void printUsage() {
 
 int main(int argc, const char * argv[]) {
     
-    // TODO: Delete this once API is settled.
-//    MaPLCompileOptions options;
-//    MaPLCompileResult result = compileMaPL({ "" }, options);
-//    printf("%s\n", result.symbolTable.c_str());
-//    return 1;
-    
     MaPLGeneratorContext context;
     std::vector<std::filesystem::path> schemaPaths;
     std::vector<std::filesystem::path> scriptPaths;
