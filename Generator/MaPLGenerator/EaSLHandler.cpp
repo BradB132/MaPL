@@ -17,11 +17,6 @@ SchemaEnum::SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext) {
     // TODO: Init with context.
 }
 
-SchemaEnum::~SchemaEnum() {
-    delete _cases;
-    delete _annotations;
-}
-
 MaPLParameter SchemaEnum::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
     switch (functionSymbol) {
         case MaPLSymbols_SchemaEnum_annotations:
@@ -41,11 +36,6 @@ MaPLParameter SchemaEnum::invokeSubscript(MaPLParameter index) {
 
 SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext) {
     // TODO: Init with context.
-}
-
-SchemaAttribute::~SchemaAttribute() {
-    delete _annotations;
-    delete _defaultValues;
 }
 
 MaPLParameter SchemaAttribute::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -79,11 +69,6 @@ SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext) {
     // TODO: Init with context.
 }
 
-SchemaClass::~SchemaClass() {
-    delete _attributes;
-    delete _annotations;
-}
-
 MaPLParameter SchemaClass::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
     switch (functionSymbol) {
         case MaPLSymbols_SchemaClass_annotations:
@@ -105,11 +90,6 @@ MaPLParameter SchemaClass::invokeSubscript(MaPLParameter index) {
 
 Schema::Schema(EaSLParser::SchemaContext *schemaContext) {
     // TODO: Init with context.
-}
-
-Schema::~Schema() {
-    delete _enums;
-    delete _classes;
 }
 
 MaPLParameter Schema::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -142,8 +122,8 @@ public:
     }
 };
 
-std::vector<EaSLParser::SchemaContext *> schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths) {
-    std::vector<EaSLParser::SchemaContext *> parsedSchemas;
+std::vector<Schema *> schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths) {
+    std::vector<Schema *> parsedSchemas;
     EaSLErrorListener errListener;
     for (const std::filesystem::path &schemaPath : schemaPaths) {
         // Read the raw schema from the file system.
@@ -156,28 +136,25 @@ std::vector<EaSLParser::SchemaContext *> schemasForPaths(const std::vector<std::
         stringBuffer << inputStream.rdbuf();
         std::string rawSchemaText = stringBuffer.str();
         
-        // These objects will leak, but that's OK. All objects within the schema are deleted when
-        // the parser is deleted, so the parser must be kept alive. This is a short-lived program,
-        // so it's not worth the extra bookkeeping to track these objects and delete them later.
-        antlr4::ANTLRInputStream *antlrInputStream = new antlr4::ANTLRInputStream(rawSchemaText);
-        EaSLLexer *lexer = new EaSLLexer(antlrInputStream);
-        antlr4::CommonTokenStream *tokenStream = new antlr4::CommonTokenStream(lexer);
-        EaSLParser *parser = new EaSLParser(tokenStream);
+        antlr4::ANTLRInputStream antlrInputStream(rawSchemaText);
+        EaSLLexer lexer(&antlrInputStream);
+        antlr4::CommonTokenStream tokenStream(&lexer);
+        EaSLParser parser(&tokenStream);
         
-        lexer->addErrorListener(&errListener);
-        parser->addErrorListener(&errListener);
+        lexer.addErrorListener(&errListener);
+        parser.addErrorListener(&errListener);
         
-        EaSLParser::SchemaContext *schema = parser->schema();
+        EaSLParser::SchemaContext *schemaContext = parser.schema();
         if (errListener.errorCount > 0) {
             // If we're inside this conditional, the error has already been logged via the default listener.
             exit(1);
         }
         
-        parsedSchemas.push_back(schema);
+        parsedSchemas.push_back(new Schema(schemaContext));
     }
     return parsedSchemas;
 }
 
-void validateSchemas(const std::vector<EaSLParser::SchemaContext *> &schemas) {
+void validateSchemas(const std::vector<Schema *> &schemas) {
     
 }

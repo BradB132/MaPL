@@ -18,7 +18,6 @@
 class SchemaEnum : public MaPLInterface {
 public:
     SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext);
-    ~SchemaEnum();
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
@@ -30,7 +29,6 @@ public:
 class SchemaAttribute : public MaPLInterface {
 public:
     SchemaAttribute(EaSLParser::AttributeContext *attributeContext);
-    ~SchemaAttribute();
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
@@ -47,7 +45,6 @@ public:
 class SchemaClass : public MaPLInterface {
 public:
     SchemaClass(EaSLParser::ClassDefinitionContext *classContext);
-    ~SchemaClass();
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
@@ -60,7 +57,6 @@ public:
 class Schema : public MaPLInterface {
 public:
     Schema(EaSLParser::SchemaContext *schemaContext);
-    ~Schema();
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
 
@@ -69,8 +65,8 @@ public:
     MaPLArrayMap<SchemaClass *> *_classes;
 };
 
-std::vector<EaSLParser::SchemaContext *> schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths);
+std::vector<Schema *> schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths);
 
-void validateSchemas(const std::vector<EaSLParser::SchemaContext *> &schemas);
+void validateSchemas(const std::vector<Schema *> &schemas);
 
 #endif /* EaSLHandler_h */
