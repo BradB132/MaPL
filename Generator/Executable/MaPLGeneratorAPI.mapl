@@ -11,7 +11,7 @@
 }
 
 // Schema.
-#global readonly Schema schema;
+#global readonly Array<Schema> schemas;
 
 #type Schema {
     readonly ArrayMap<SchemaEnum> enums;
@@ -43,15 +43,11 @@
 }
 
 // XML.
-#global readonly Array<XMLFile> xmlFiles;
-
-#type XMLFile {
-    readonly XMLNode rootNode;
-    readonly string outputPath;
-}
+#global readonly Array<XMLNode> xmlFiles;
 
 #type XMLNode {
     readonly string name;
+    readonly string namespace;
     readonly Array<XMLAttribute> attributes;
     readonly Array<XMLNode> children;
 }

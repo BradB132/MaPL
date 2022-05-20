@@ -60,7 +60,7 @@ type
     ;
 
 classType
-    :    (namespace=identifier NAMESPACE_DELIMITER)? classIdentifier=identifier
+    :    (namespaceIdentifier=identifier NAMESPACE_DELIMITER)? classIdentifier=identifier
     ;
 
 // This is a special case where a concept is encoded as both a lexer and parser rule.
