@@ -29,8 +29,15 @@ SchemaEnum::SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext) :
 _name(enumContext->enumName->getText()),
 _annotations(parseAnnotations(enumContext->ANNOTATION())) {
     std::vector<std::string> cases;
+    std::set<std::string> caseSet;
     for (EaSLParser::IdentifierContext *caseNode : enumContext->enumValue) {
-        cases.push_back(caseNode->getText());
+        std::string caseText = caseNode->getText();
+        cases.push_back(caseText);
+        if (caseSet.count(caseText)) {
+            fprintf(stderr, "Case '%s' exists more than once in enum '%s'.\n", caseText.c_str(), _name.c_str());
+            exit(1);
+        }
+        caseSet.insert(caseText);
     }
     _cases = new MaPLArray<std::string>(cases);
 }
@@ -92,6 +99,10 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
         } else {
             _maxOccurrences = uintForSequenceLength(sequenceDescriptor, maxLength);
         }
+        if (_maxOccurrences < _minOccurrences) {
+            fprintf(stderr, "Invalid range: '%s' Minimum must be less than the maximum.", sequenceDescriptor->getText().c_str());
+            exit(1);
+        }
     } else {
         _minOccurrences = 1;
         _maxOccurrences = 1;
@@ -142,6 +153,14 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
                 exit(1);
             }
             defaultValues.push_back(literalText);
+        }
+        if (defaultValues.size() < _minOccurrences) {
+            fprintf(stderr, "Number of default values '%s' is less than the minimum required number of values (%u).", defaultContext->getText().c_str(), _minOccurrences);
+            exit(1);
+        }
+        if (defaultValues.size() > _minOccurrences) {
+            fprintf(stderr, "Number of default values '%s' is greater than the maximum required number of values (%u).", defaultContext->getText().c_str(), _maxOccurrences);
+            exit(1);
         }
     }
     _defaultValues = new MaPLArray<std::string>(defaultValues);
