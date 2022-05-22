@@ -42,7 +42,7 @@ public:
         }
         return MaPLUninitialized();
     }
-private:
+    
     std::vector<T> _backingVector;
 };
 
@@ -66,7 +66,7 @@ public:
         }
         return MaPLArray<T>::invokeSubscript(index);
     }
-private:
+    
     std::unordered_map<std::string, T> _backingMap;
 };
 

@@ -94,7 +94,9 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
     EaSLParser::ClassTypeContext *classType = typeContext->classType();
     if (classType) {
         _typeName = classType->classIdentifier->getText();
-        _typeNamespace = classType->namespaceIdentifier->getText();
+        if (classType->namespaceIdentifier) {
+            _typeNamespace = classType->namespaceIdentifier->getText();
+        }
         _isPrimitiveType = !_typeIsUIDReference;
     } else {
         _typeName = typeContext->getText();
@@ -213,18 +215,28 @@ MaPLParameter SchemaAttribute::invokeSubscript(MaPLParameter index) {
 }
 
 SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext) :
-_name(classContext->name->getText()),
-_superclass(classContext->superclass ? classContext->superclass->getText() : ""),
+_name(classContext->identifier()->getText()),
 _annotations(parseAnnotations(classContext->ANNOTATION())) {
     if (conflictsWithPrimitiveName(_name)) {
         fprintf(stderr, "Class name '%s' conflicts with the name of a primitive type.\n", _name.c_str());
         exit(1);
+    }
+    EaSLParser::ClassTypeContext *superClass = classContext->classType();
+    if (superClass) {
+        _superclass = superClass->classIdentifier->getText();
+        if (superClass->namespaceIdentifier) {
+            _superclassNamespace = superClass->namespaceIdentifier->getText();
+        }
     }
     std::vector<SchemaAttribute *> attributes;
     std::unordered_map<std::string, SchemaAttribute *> attributeMap;
     for (EaSLParser::AttributeContext *attributeContext : classContext->attribute()) {
         SchemaAttribute *attribute = new SchemaAttribute(attributeContext);
         attributes.push_back(attribute);
+        if (attributeMap.count(attribute->_name)) {
+            fprintf(stderr, "Attribute name '%s' conflicts with another attribute in class '%s'.\n", attribute->_name.c_str(), _name.c_str());
+            exit(1);
+        }
         attributeMap[attribute->_name] = attribute;
     }
     _attributes = new MaPLArrayMap<SchemaAttribute *>(attributes, attributeMap);
@@ -240,6 +252,8 @@ MaPLParameter SchemaClass::invokeFunction(MaPLSymbol functionSymbol, const MaPLP
             return MaPLStringByReference(_name.c_str());
         case MaPLSymbols_SchemaClass_superclass:
             return MaPLStringByReference(_superclass.c_str());
+        case MaPLSymbols_SchemaClass_superclassNamespace:
+            return MaPLStringByReference(_superclassNamespace.c_str());
         default:
             return MaPLUninitialized();
     }
@@ -303,8 +317,32 @@ public:
     }
 };
 
-void validateSchemas(const std::vector<Schema *> &schemas, const std::unordered_map<std::string, Schema *> &schemasMap) {
-    // TODO: Validate schema against itself.
+void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
+    std::set<std::string> topLevelNames;
+    for (Schema *schema : schemas->_backingVector) {
+        for (SchemaClass *schemaClass : schema->_classes->_backingVector) {
+            if (topLevelNames.count(schemaClass->_name)) {
+                fprintf(stderr, "Class named '%s' conflicts with another declaration of the same name.\n", schemaClass->_name.c_str());
+                exit(1);
+            }
+            if (!schemaClass->_superclass.empty()) {
+                Schema *superclassSchema = schemaClass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(schemaClass->_superclassNamespace);
+                if (!superclassSchema->_classes->_backingMap.at(schemaClass->_superclass)) {
+                    fprintf(stderr, "Class '%s' references a superclass '%s::%s' which doesn't exist.\n", schemaClass->_name.c_str(), superclassSchema->_namespace.c_str(), schemaClass->_superclass.c_str());
+                    exit(1);
+                }
+            }
+        }
+        for (SchemaEnum *schemaEnum : schema->_enums->_backingVector) {
+            if (topLevelNames.count(schemaEnum->_name)) {
+                fprintf(stderr, "Enum named '%s' conflicts with another declaration of the same name.\n", schemaEnum->_name.c_str());
+                exit(1);
+            }
+        }
+        // Clear because you can use namespaces to distinguish between objects from different schemas.
+        topLevelNames.clear();
+    }
+    
 }
 
 MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths) {
@@ -346,7 +384,8 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
         schemasMap[schema->_namespace] = schema;
     }
     
-    validateSchemas(schemasVector, schemasMap);
+    MaPLArrayMap<Schema *> *schemas = new MaPLArrayMap<Schema *>(schemasVector, schemasMap);
+    validateSchemas(schemas);
     
-    return new MaPLArrayMap<Schema *>(schemasVector, schemasMap);
+    return schemas;
 }
