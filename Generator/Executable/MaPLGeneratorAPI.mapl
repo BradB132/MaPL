@@ -28,6 +28,7 @@
 #type SchemaClass {
     readonly string name;
     readonly string superclass;
+    readonly string superclassNamespace;
     readonly ArrayMap<SchemaAttribute> attributes;
     readonly ArrayMap<string> annotations;
 }

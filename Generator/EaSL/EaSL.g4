@@ -10,7 +10,7 @@ namespace_
     ;
 
 classDefinition
-    :    ANNOTATION* CLASS name=identifier (COLON superclass=identifier)? DEFINITION_OPEN attribute* DEFINITION_CLOSE
+    :    ANNOTATION* CLASS identifier (COLON classType)? DEFINITION_OPEN attribute* DEFINITION_CLOSE
     ;
 
 attribute

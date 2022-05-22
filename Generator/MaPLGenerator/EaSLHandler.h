@@ -51,6 +51,7 @@ public:
     
     std::string _name;
     std::string _superclass;
+    std::string _superclassNamespace;
     MaPLArrayMap<SchemaAttribute *> *_attributes;
     MaPLArrayMap<std::string> *_annotations;
 };
