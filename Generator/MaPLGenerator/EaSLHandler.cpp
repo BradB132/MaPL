@@ -234,7 +234,7 @@ _annotations(parseAnnotations(classContext->ANNOTATION())) {
         SchemaAttribute *attribute = new SchemaAttribute(attributeContext);
         attributes.push_back(attribute);
         if (attributeMap.count(attribute->_name)) {
-            fprintf(stderr, "Attribute name '%s' conflicts with another attribute in class '%s'.\n", attribute->_name.c_str(), _name.c_str());
+            fprintf(stderr, "Attribute name '%s' conflicts with a attribute of the same name in class '%s'.\n", attribute->_name.c_str(), _name.c_str());
             exit(1);
         }
         attributeMap[attribute->_name] = attribute;
@@ -322,24 +322,41 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
     for (Schema *schema : schemas->_backingVector) {
         for (SchemaClass *schemaClass : schema->_classes->_backingVector) {
             if (topLevelNames.count(schemaClass->_name)) {
-                fprintf(stderr, "Class named '%s' conflicts with another declaration of the same name.\n", schemaClass->_name.c_str());
+                fprintf(stderr, "Class '%s::%s' conflicts with another declaration of the same name.\n", schema->_namespace.c_str(), schemaClass->_name.c_str());
                 exit(1);
             }
             if (!schemaClass->_superclass.empty()) {
                 Schema *superclassSchema = schemaClass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(schemaClass->_superclassNamespace);
                 if (!superclassSchema->_classes->_backingMap.at(schemaClass->_superclass)) {
-                    fprintf(stderr, "Class '%s' references a superclass '%s::%s' which doesn't exist.\n", schemaClass->_name.c_str(), superclassSchema->_namespace.c_str(), schemaClass->_superclass.c_str());
+                    fprintf(stderr, "Class '%s::%s' references a superclass '%s::%s' which doesn't exist.\n", schema->_namespace.c_str(), schemaClass->_name.c_str(), superclassSchema->_namespace.c_str(), schemaClass->_superclass.c_str());
                     exit(1);
+                }
+            }
+            for (SchemaAttribute *attribute : schemaClass->_attributes->_backingVector) {
+                // Iterate through all super classes to confirm that there are no attribute collisions.
+                SchemaClass *superclass = schemaClass;
+                while (superclass) {
+                    if (superclass->_superclass.empty()) {
+                        break;
+                    }
+                    Schema *superclassSchema = superclass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(superclass->_superclassNamespace);
+                    superclass = superclassSchema->_classes->_backingMap.at(superclass->_superclass);
+                    if (superclass->_attributes->_backingMap.at(attribute->_name)) {
+                        fprintf(stderr, "Attribute '%s::%s::%s' conflicts with attribute '%s::%s::%s'.\n",
+                                schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str(),
+                                superclassSchema->_namespace.c_str(), superclass->_name.c_str(), attribute->_name.c_str());
+                        exit(1);
+                    }
                 }
             }
         }
         for (SchemaEnum *schemaEnum : schema->_enums->_backingVector) {
             if (topLevelNames.count(schemaEnum->_name)) {
-                fprintf(stderr, "Enum named '%s' conflicts with another declaration of the same name.\n", schemaEnum->_name.c_str());
+                fprintf(stderr, "Enum '%s::%s' conflicts with another declaration of the same name.\n", schema->_namespace.c_str(), schemaEnum->_name.c_str());
                 exit(1);
             }
         }
-        // Clear because you can use namespaces to distinguish between objects from different schemas.
+        // EaSL uses namespaces to distinguish between objects from different schemas.
         topLevelNames.clear();
     }
     
