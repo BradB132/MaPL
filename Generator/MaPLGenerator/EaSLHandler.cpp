@@ -89,7 +89,7 @@ SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext)
 _name(attributeContext->identifier()->getText()),
 _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
     EaSLParser::TypeContext *typeContext = attributeContext->type();
-    _typeIsUIDReference = typeContext->typeToken->getType() == EaSLParser::REFERENCE;
+    _typeIsUIDReference = typeContext->typeToken && typeContext->typeToken->getType() == EaSLParser::REFERENCE;
     
     EaSLParser::ClassTypeContext *classType = typeContext->classType();
     if (classType) {
@@ -97,7 +97,7 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
         if (classType->namespaceIdentifier) {
             _typeNamespace = classType->namespaceIdentifier->getText();
         }
-        _isPrimitiveType = !_typeIsUIDReference;
+        _isPrimitiveType = _typeIsUIDReference;
     } else {
         _typeName = typeContext->getText();
         _isPrimitiveType = true;
@@ -326,9 +326,11 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                 exit(1);
             }
             if (!schemaClass->_superclass.empty()) {
-                Schema *superclassSchema = schemaClass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(schemaClass->_superclassNamespace);
-                if (!superclassSchema->_classes->_backingMap.at(schemaClass->_superclass)) {
-                    fprintf(stderr, "Class '%s::%s' references a superclass '%s::%s' which doesn't exist.\n", schema->_namespace.c_str(), schemaClass->_name.c_str(), superclassSchema->_namespace.c_str(), schemaClass->_superclass.c_str());
+                Schema *superclassSchema = schemaClass->_superclassNamespace.empty() ? schema : schemas->_backingMap[schemaClass->_superclassNamespace];
+                if (!superclassSchema || !superclassSchema->_classes->_backingMap[schemaClass->_superclass]) {
+                    fprintf(stderr, "Class '%s::%s' references a superclass '%s::%s' which doesn't exist.\n",
+                            schema->_namespace.c_str(), schemaClass->_name.c_str(),
+                            schemaClass->_superclassNamespace.c_str(), schemaClass->_superclass.c_str());
                     exit(1);
                 }
             }
@@ -336,15 +338,26 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                 // Iterate through all super classes to confirm that there are no attribute collisions.
                 SchemaClass *superclass = schemaClass;
                 while (superclass) {
-                    if (superclass->_superclass.empty()) {
-                        break;
-                    }
-                    Schema *superclassSchema = superclass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(superclass->_superclassNamespace);
-                    superclass = superclassSchema->_classes->_backingMap.at(superclass->_superclass);
-                    if (superclass->_attributes->_backingMap.at(attribute->_name)) {
+                    if (superclass->_superclass.empty()) { break; }
+                    Schema *superclassSchema = superclass->_superclassNamespace.empty() ? schema : schemas->_backingMap[superclass->_superclassNamespace];
+                    if (!superclassSchema) { break; }
+                    superclass = superclassSchema->_classes->_backingMap[superclass->_superclass];
+                    if (!superclass) { break; }
+                    if (superclass->_attributes->_backingMap[attribute->_name]) {
                         fprintf(stderr, "Attribute '%s::%s::%s' conflicts with attribute '%s::%s::%s'.\n",
                                 schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str(),
                                 superclassSchema->_namespace.c_str(), superclass->_name.c_str(), attribute->_name.c_str());
+                        exit(1);
+                    }
+                }
+                if (!attribute->_isPrimitiveType) {
+                    Schema *typeSchema = attribute->_typeNamespace.empty() ? schema : schemas->_backingMap[attribute->_typeNamespace];
+                    if (!typeSchema ||
+                        (!typeSchema->_classes->_backingMap[attribute->_typeName] &&
+                        !typeSchema->_enums->_backingMap[attribute->_typeName])) {
+                        fprintf(stderr, "Can't find type '%s::%s' referenced by '%s::%s::%s'.\n",
+                                attribute->_typeNamespace.c_str(), attribute->_typeName.c_str(),
+                                schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str());
                         exit(1);
                     }
                 }
