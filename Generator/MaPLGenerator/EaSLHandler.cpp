@@ -25,9 +25,26 @@ MaPLArrayMap<std::string> *parseAnnotations(const std::vector<antlr4::tree::Term
     return new MaPLArrayMap<std::string>(backingVector, backingMap);
 }
 
+bool conflictsWithPrimitiveName(const std::string &typeName) {
+    return typeName == "char" ||
+        typeName == "int32" ||
+        typeName == "int64" ||
+        typeName == "uint32" ||
+        typeName == "uint64" ||
+        typeName == "float32" ||
+        typeName == "float64" ||
+        typeName == "bool" ||
+        typeName == "string" ||
+        typeName == "UID";
+}
+
 SchemaEnum::SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext) :
 _name(enumContext->enumName->getText()),
 _annotations(parseAnnotations(enumContext->ANNOTATION())) {
+    if (conflictsWithPrimitiveName(_name)) {
+        fprintf(stderr, "Enum name '%s' conflicts with the name of a primitive type.\n", _name.c_str());
+        exit(1);
+    }
     std::vector<std::string> cases;
     std::set<std::string> caseSet;
     for (EaSLParser::IdentifierContext *caseNode : enumContext->enumValue) {
@@ -199,6 +216,10 @@ SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext) :
 _name(classContext->name->getText()),
 _superclass(classContext->superclass ? classContext->superclass->getText() : ""),
 _annotations(parseAnnotations(classContext->ANNOTATION())) {
+    if (conflictsWithPrimitiveName(_name)) {
+        fprintf(stderr, "Class name '%s' conflicts with the name of a primitive type.\n", _name.c_str());
+        exit(1);
+    }
     std::vector<SchemaAttribute *> attributes;
     std::unordered_map<std::string, SchemaAttribute *> attributeMap;
     for (EaSLParser::AttributeContext *attributeContext : classContext->attribute()) {
