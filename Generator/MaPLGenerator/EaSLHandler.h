@@ -49,6 +49,8 @@ public:
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
+    bool hasUID();
+    
     std::string _name;
     std::string _superclass;
     std::string _superclassNamespace;

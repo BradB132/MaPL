@@ -263,6 +263,15 @@ MaPLParameter SchemaClass::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
+bool SchemaClass::hasUID() {
+    for (SchemaAttribute *attribute : _attributes->_backingVector) {
+        if (attribute->_typeName == "UID") {
+            return true;
+        }
+    }
+    return false;
+}
+
 Schema::Schema(EaSLParser::SchemaContext *schemaContext) :
 _namespace(schemaContext->namespace_()->identifier()->getText()) {
     std::vector<SchemaEnum *> enums;
@@ -355,9 +364,37 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                     if (!typeSchema ||
                         (!typeSchema->_classes->_backingMap[attribute->_typeName] &&
                         !typeSchema->_enums->_backingMap[attribute->_typeName])) {
-                        fprintf(stderr, "Can't find type '%s::%s' referenced by '%s::%s::%s'.\n",
-                                attribute->_typeNamespace.c_str(), attribute->_typeName.c_str(),
+                        fprintf(stderr, "Can't find class or enum '%s::%s' referenced by '%s::%s::%s'.\n",
+                                attribute->_typeNamespace.empty() ? schema->_namespace.c_str() : attribute->_typeNamespace.c_str(), attribute->_typeName.c_str(),
                                 schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str());
+                        exit(1);
+                    }
+                }
+                if (attribute->_typeIsUIDReference) {
+                    Schema *typeSchema = attribute->_typeNamespace.empty() ? schema : schemas->_backingMap[attribute->_typeNamespace];
+                    SchemaClass *typeClass = typeSchema ? typeSchema->_classes->_backingMap[attribute->_typeName] : NULL;
+                    if (!typeClass) {
+                        fprintf(stderr, "Can't find class '%s::%s' referenced by '%s::%s::%s'.\n",
+                                attribute->_typeNamespace.empty() ? schema->_namespace.c_str() : attribute->_typeNamespace.c_str(), attribute->_typeName.c_str(),
+                                schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str());
+                        exit(1);
+                    }
+                    bool typeClassHasUID = false;
+                    SchemaClass *typeSuperclass = typeClass;
+                    while (typeSuperclass) {
+                        if (typeSuperclass->hasUID()) {
+                            typeClassHasUID = true;
+                            break;
+                        }
+                        if (typeSuperclass->_superclass.empty()) { break; }
+                        Schema *typeSuperclassSchema = typeSuperclass->_superclassNamespace.empty() ? schema : schemas->_backingMap[typeSuperclass->_superclassNamespace];
+                        if (!typeSuperclassSchema) { break; }
+                        typeSuperclass = typeSuperclassSchema->_classes->_backingMap[typeSuperclass->_superclass];
+                    }
+                    if (!typeClassHasUID) {
+                        fprintf(stderr, "Attribute '%s::%s::%s' references class '%s::%s', but that class has no UID attribute that could match this reference.\n",
+                                schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str(),
+                                attribute->_typeNamespace.empty() ? schema->_namespace.c_str() : attribute->_typeNamespace.c_str(), attribute->_typeName.c_str());
                         exit(1);
                     }
                 }
@@ -372,7 +409,6 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
         // EaSL uses namespaces to distinguish between objects from different schemas.
         topLevelNames.clear();
     }
-    
 }
 
 MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths) {
