@@ -174,11 +174,11 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
             defaultValues.push_back(literalText);
         }
         if (defaultValues.size() < _minOccurrences) {
-            fprintf(stderr, "Number of default values '%s' is less than the minimum required number of values (%u).", defaultContext->getText().c_str(), _minOccurrences);
+            fprintf(stderr, "Number of default values '%s' is less than the minimum required number of values (%u).\n", defaultContext->getText().c_str(), _minOccurrences);
             exit(1);
         }
-        if (defaultValues.size() > _minOccurrences) {
-            fprintf(stderr, "Number of default values '%s' is greater than the maximum required number of values (%u).", defaultContext->getText().c_str(), _maxOccurrences);
+        if (defaultValues.size() > _maxOccurrences) {
+            fprintf(stderr, "Number of default values '%s' is greater than the maximum required number of values (%u).\n", defaultContext->getText().c_str(), _maxOccurrences);
             exit(1);
         }
     }
