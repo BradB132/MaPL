@@ -453,7 +453,11 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
     MaPLArrayMap<Schema *> *schemas = new MaPLArrayMap<Schema *>(schemasVector, schemasMap);
     validateSchemas(schemas);
     
-    // TODO: Exit on error.
+    for (Schema *schema : schemasVector) {
+        if (schema->_errorLogger._hasLoggedError) {
+            exit(1);
+        }
+    }
     
     return schemas;
 }
