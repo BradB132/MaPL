@@ -10,17 +10,28 @@
 
 #include <filesystem>
 #include <vector>
+#include <libxml/tree.h>
 
 #include "EaSLParser.h"
 #include "MaPLInterface.h"
 #include "MaPLGeneratorCollections.h"
 
+class ErrorLogger {
+public:
+    ErrorLogger(const std::filesystem::path &filePath);
+    void logError(antlr4::Token *token, const std::string &errorMessage);
+
+    const std::filesystem::path _filePath;
+    bool _hasLoggedError;
+};
+
 class SchemaEnum : public MaPLInterface {
 public:
-    SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext);
+    SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext, ErrorLogger *errorLogger);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
+    EaSLParser::EnumDefinitionContext *_enumContext;
     std::string _name;
     MaPLArray<std::string> *_cases;
     MaPLArrayMap<std::string> *_annotations;
@@ -28,10 +39,11 @@ public:
 
 class SchemaAttribute : public MaPLInterface {
 public:
-    SchemaAttribute(EaSLParser::AttributeContext *attributeContext);
+    SchemaAttribute(EaSLParser::AttributeContext *attributeContext, ErrorLogger *errorLogger);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
+    EaSLParser::AttributeContext *_attributeContext;
     std::string _name;
     std::string _typeName;
     std::string _typeNamespace;
@@ -45,12 +57,13 @@ public:
 
 class SchemaClass : public MaPLInterface {
 public:
-    SchemaClass(EaSLParser::ClassDefinitionContext *classContext);
+    SchemaClass(EaSLParser::ClassDefinitionContext *classContext, ErrorLogger *errorLogger);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
     bool hasUID();
     
+    EaSLParser::ClassDefinitionContext *_classContext;
     std::string _name;
     std::string _superclass;
     std::string _superclassNamespace;
@@ -60,15 +73,19 @@ public:
 
 class Schema : public MaPLInterface {
 public:
-    Schema(EaSLParser::SchemaContext *schemaContext);
+    Schema(const std::filesystem::path &filePath, EaSLParser::SchemaContext *schemaContext);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
-
+    
+    EaSLParser::SchemaContext *_schemaContext;
+    ErrorLogger _errorLogger;
     std::string _namespace;
     MaPLArrayMap<SchemaEnum *> *_enums;
     MaPLArrayMap<SchemaClass *> *_classes;
 };
 
 MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths);
+
+void validateXML(MaPLArray<xmlNode *> *xml, MaPLArrayMap<Schema *> *schemas);
 
 #endif /* EaSLHandler_h */

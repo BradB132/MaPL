@@ -38,12 +38,26 @@ bool conflictsWithPrimitiveName(const std::string &typeName) {
         typeName == "UID";
 }
 
-SchemaEnum::SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext) :
+ErrorLogger::ErrorLogger(const std::filesystem::path &filePath) :
+_filePath(filePath),
+_hasLoggedError(false) {
+}
+
+void ErrorLogger::logError(antlr4::Token *token, const std::string &errorMessage) {
+    if (token) {
+        fprintf(stderr, "%s:%lu:%lu: error: %s\n", _filePath.c_str(), token->getLine(), token->getCharPositionInLine(), errorMessage.c_str());
+    } else {
+        fprintf(stderr, "%s:1:1: error: %s\n", _filePath.c_str(), errorMessage.c_str());
+    }
+    _hasLoggedError = true;
+}
+
+SchemaEnum::SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext, ErrorLogger *errorLogger) :
+_enumContext(enumContext),
 _name(enumContext->enumName->getText()),
 _annotations(parseAnnotations(enumContext->ANNOTATION())) {
     if (conflictsWithPrimitiveName(_name)) {
-        fprintf(stderr, "Enum name '%s' conflicts with the name of a primitive type.\n", _name.c_str());
-        exit(1);
+        errorLogger->logError(enumContext->enumName->start, "Enum name '"+_name+"' conflicts with the name of a primitive type.");
     }
     std::vector<std::string> cases;
     std::set<std::string> caseSet;
@@ -51,8 +65,7 @@ _annotations(parseAnnotations(enumContext->ANNOTATION())) {
         std::string caseText = caseNode->getText();
         cases.push_back(caseText);
         if (caseSet.count(caseText)) {
-            fprintf(stderr, "Case '%s' exists more than once in enum '%s'.\n", caseText.c_str(), _name.c_str());
-            exit(1);
+            errorLogger->logError(caseNode->start, "Case '"+caseText+"' exists more than once in enum '"+_name+"'.");
         }
         caseSet.insert(caseText);
     }
@@ -76,16 +89,16 @@ MaPLParameter SchemaEnum::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-uint32_t uintForSequenceLength(EaSLParser::SequenceDescriptorContext *sequenceDescriptor, EaSLParser::SequenceLengthContext *lengthContext) {
+uint32_t uintForSequenceLength(EaSLParser::SequenceDescriptorContext *sequenceDescriptor, EaSLParser::SequenceLengthContext *lengthContext, ErrorLogger *errorLogger) {
     std::string lengthText = lengthContext->getText();
     if (lengthText[0] == '-') {
-        fprintf(stderr, "Error in sequence '%s': sequence string '%s' cannot be negative.\n", sequenceDescriptor->getText().c_str(), lengthText.c_str());
-        exit(1);
+        errorLogger->logError(sequenceDescriptor->start, "Error in sequence '"+sequenceDescriptor->getText()+"': sequence string '"+lengthText+"' cannot be negative.");
     }
     return (uint32_t)std::stoul(lengthText);
 }
 
-SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext) :
+SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext, ErrorLogger *errorLogger) :
+_attributeContext(attributeContext),
 _name(attributeContext->identifier()->getText()),
 _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
     EaSLParser::TypeContext *typeContext = attributeContext->type();
@@ -111,16 +124,15 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
         if (minLength->SEQUENCE_WILDCARD()) {
             _minOccurrences = 0;
         } else {
-            _minOccurrences = uintForSequenceLength(sequenceDescriptor, minLength);
+            _minOccurrences = uintForSequenceLength(sequenceDescriptor, minLength, errorLogger);
         }
         if (maxLength->SEQUENCE_WILDCARD()) {
             _maxOccurrences = UINT32_MAX;
         } else {
-            _maxOccurrences = uintForSequenceLength(sequenceDescriptor, maxLength);
+            _maxOccurrences = uintForSequenceLength(sequenceDescriptor, maxLength, errorLogger);
         }
         if (_maxOccurrences < _minOccurrences) {
-            fprintf(stderr, "Invalid range: '%s' Minimum must be less than the maximum.", sequenceDescriptor->getText().c_str());
-            exit(1);
+            errorLogger->logError(minLength->start, "Invalid range: '"+sequenceDescriptor->getText()+"' Minimum must be less than the maximum.");
         }
     } else {
         _minOccurrences = 1;
@@ -168,18 +180,15 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
                 valueMatchesType = literalType == EaSLParser::LITERAL_NULL;
             }
             if (!valueMatchesType) {
-                fprintf(stderr, "Default value '%s' in attribute '%s' doesn't match the attribute's type '%s'.\n", literalText.c_str(), _name.c_str(), typeContext->getText().c_str());
-                exit(1);
+                errorLogger->logError(typeContext->typeToken, "Default value '"+literalText+"' in attribute '"+_name+"' doesn't match the attribute's type '"+typeContext->getText()+"'.");
             }
             defaultValues.push_back(literalText);
         }
         if (defaultValues.size() < _minOccurrences) {
-            fprintf(stderr, "Number of default values in '%s' is less than the required minimum of %u.\n", defaultContext->getText().c_str(), _minOccurrences);
-            exit(1);
+            errorLogger->logError(defaultContext->start, "Number of default values in '"+defaultContext->getText()+"' is less than the required minimum of "+std::to_string(_minOccurrences)+".");
         }
         if (defaultValues.size() > _maxOccurrences) {
-            fprintf(stderr, "Number of default values in '%s' is greater than the allowed maximum of %u.\n", defaultContext->getText().c_str(), _maxOccurrences);
-            exit(1);
+            errorLogger->logError(defaultContext->start, "Number of default values in '"+defaultContext->getText()+"' is greater than the allowed maximum of "+std::to_string(_maxOccurrences)+".");
         }
     }
     _defaultValues = new MaPLArray<std::string>(defaultValues);
@@ -214,12 +223,12 @@ MaPLParameter SchemaAttribute::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext) :
+SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext, ErrorLogger *errorLogger) :
+_classContext(classContext),
 _name(classContext->identifier()->getText()),
 _annotations(parseAnnotations(classContext->ANNOTATION())) {
     if (conflictsWithPrimitiveName(_name)) {
-        fprintf(stderr, "Class name '%s' conflicts with the name of a primitive type.\n", _name.c_str());
-        exit(1);
+        errorLogger->logError(classContext->identifier()->start, "Class name '"+_name+"' conflicts with the name of a primitive type.");
     }
     EaSLParser::ClassTypeContext *superClass = classContext->classType();
     if (superClass) {
@@ -231,11 +240,10 @@ _annotations(parseAnnotations(classContext->ANNOTATION())) {
     std::vector<SchemaAttribute *> attributes;
     std::unordered_map<std::string, SchemaAttribute *> attributeMap;
     for (EaSLParser::AttributeContext *attributeContext : classContext->attribute()) {
-        SchemaAttribute *attribute = new SchemaAttribute(attributeContext);
+        SchemaAttribute *attribute = new SchemaAttribute(attributeContext, errorLogger);
         attributes.push_back(attribute);
         if (attributeMap.count(attribute->_name)) {
-            fprintf(stderr, "Attribute name '%s' conflicts with a attribute of the same name in class '%s'.\n", attribute->_name.c_str(), _name.c_str());
-            exit(1);
+            errorLogger->logError(attributeContext->start, "Attribute name '"+attribute->_name+"' conflicts with a attribute of the same name in class '"+_name+"'.");
         }
         attributeMap[attribute->_name] = attribute;
     }
@@ -272,12 +280,14 @@ bool SchemaClass::hasUID() {
     return false;
 }
 
-Schema::Schema(EaSLParser::SchemaContext *schemaContext) :
-_namespace(schemaContext->namespace_()->identifier()->getText()) {
+Schema::Schema(const std::filesystem::path &filePath, EaSLParser::SchemaContext *schemaContext) :
+_schemaContext(schemaContext),
+_namespace(schemaContext->namespace_()->identifier()->getText()),
+_errorLogger(filePath) {
     std::vector<SchemaEnum *> enums;
     std::unordered_map<std::string, SchemaEnum *> enumMap;
     for (EaSLParser::EnumDefinitionContext *enumContext : schemaContext->enumDefinition()) {
-        SchemaEnum *enumObj = new SchemaEnum(enumContext);
+        SchemaEnum *enumObj = new SchemaEnum(enumContext, &_errorLogger);
         enums.push_back(enumObj);
         enumMap[enumObj->_name] = enumObj;
     }
@@ -286,7 +296,7 @@ _namespace(schemaContext->namespace_()->identifier()->getText()) {
     std::vector<SchemaClass *> classes;
     std::unordered_map<std::string, SchemaClass *> classMap;
     for (EaSLParser::ClassDefinitionContext *classContext : schemaContext->classDefinition()) {
-        SchemaClass *classObj = new SchemaClass(classContext);
+        SchemaClass *classObj = new SchemaClass(classContext, &_errorLogger);
         classes.push_back(classObj);
         classMap[classObj->_name] = classObj;
     }
@@ -311,36 +321,18 @@ MaPLParameter Schema::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-class EaSLErrorListener : public antlr4::BaseErrorListener {
-public:
-    unsigned int errorCount = 0;
-    const std::filesystem::path *currentPath;
-    virtual void syntaxError(antlr4::Recognizer *recognizer,
-                             antlr4::Token * offendingSymbol,
-                             size_t line,
-                             size_t charPositionInLine,
-                             const std::string &msg,
-                             std::exception_ptr e) override {
-        fprintf(stderr, "%s:%lu:%lu: error: %s.\n", currentPath->c_str(), line, charPositionInLine, msg.c_str());
-        errorCount++;
-    }
-};
-
 void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
     std::set<std::string> topLevelNames;
     for (Schema *schema : schemas->_backingVector) {
         for (SchemaClass *schemaClass : schema->_classes->_backingVector) {
             if (topLevelNames.count(schemaClass->_name)) {
-                fprintf(stderr, "Class '%s::%s' conflicts with another declaration of the same name.\n", schema->_namespace.c_str(), schemaClass->_name.c_str());
-                exit(1);
+                schema->_errorLogger.logError(schemaClass->_classContext->identifier()->start, "Class '"+schema->_namespace+"::"+schemaClass->_name+"' conflicts with another declaration of the same name.");
             }
             if (!schemaClass->_superclass.empty()) {
                 Schema *superclassSchema = schemaClass->_superclassNamespace.empty() ? schema : schemas->_backingMap[schemaClass->_superclassNamespace];
                 if (!superclassSchema || !superclassSchema->_classes->_backingMap[schemaClass->_superclass]) {
-                    fprintf(stderr, "Class '%s::%s' references a superclass '%s::%s' which doesn't exist.\n",
-                            schema->_namespace.c_str(), schemaClass->_name.c_str(),
-                            schemaClass->_superclassNamespace.c_str(), schemaClass->_superclass.c_str());
-                    exit(1);
+                    schema->_errorLogger.logError(schemaClass->_classContext->classType()->start,
+                                                  "Class '"+schema->_namespace+"::"+schemaClass->_name+"' references a superclass '"+schemaClass->_superclassNamespace+"::"+schemaClass->_superclass+"' which doesn't exist.");
                 }
             }
             for (SchemaAttribute *attribute : schemaClass->_attributes->_backingVector) {
@@ -353,10 +345,8 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                     superclass = superclassSchema->_classes->_backingMap[superclass->_superclass];
                     if (!superclass) { break; }
                     if (superclass->_attributes->_backingMap[attribute->_name]) {
-                        fprintf(stderr, "Attribute '%s::%s::%s' conflicts with attribute '%s::%s::%s'.\n",
-                                schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str(),
-                                superclassSchema->_namespace.c_str(), superclass->_name.c_str(), attribute->_name.c_str());
-                        exit(1);
+                        schema->_errorLogger.logError(attribute->_attributeContext->start,
+                                                      "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' conflicts with attribute '"+superclassSchema->_namespace+"::"+superclass->_name+"::"+attribute->_name+"'.");
                     }
                 }
                 if (!attribute->_isPrimitiveType) {
@@ -364,20 +354,18 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                     if (!typeSchema ||
                         (!typeSchema->_classes->_backingMap[attribute->_typeName] &&
                         !typeSchema->_enums->_backingMap[attribute->_typeName])) {
-                        fprintf(stderr, "Can't find class or enum '%s::%s' referenced by '%s::%s::%s'.\n",
-                                attribute->_typeNamespace.empty() ? schema->_namespace.c_str() : attribute->_typeNamespace.c_str(), attribute->_typeName.c_str(),
-                                schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str());
-                        exit(1);
+                        std::string typeNamespace = attribute->_typeNamespace.empty() ? schema->_namespace : attribute->_typeNamespace;
+                        schema->_errorLogger.logError(attribute->_attributeContext->start,
+                                                      "Can't find class or enum '"+typeNamespace+"::"+attribute->_typeName+"' referenced by '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
                     }
                 }
                 if (attribute->_typeIsUIDReference) {
                     Schema *typeSchema = attribute->_typeNamespace.empty() ? schema : schemas->_backingMap[attribute->_typeNamespace];
                     SchemaClass *typeClass = typeSchema ? typeSchema->_classes->_backingMap[attribute->_typeName] : NULL;
                     if (!typeClass) {
-                        fprintf(stderr, "Can't find class '%s::%s' referenced by '%s::%s::%s'.\n",
-                                attribute->_typeNamespace.empty() ? schema->_namespace.c_str() : attribute->_typeNamespace.c_str(), attribute->_typeName.c_str(),
-                                schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str());
-                        exit(1);
+                        std::string typeNamespace = attribute->_typeNamespace.empty() ? schema->_namespace : attribute->_typeNamespace;
+                        schema->_errorLogger.logError(attribute->_attributeContext->start,
+                                                      "Can't find class '"+typeNamespace+"::"+attribute->_typeName+"' referenced by '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
                     }
                     bool typeClassHasUID = false;
                     SchemaClass *typeSuperclass = typeClass;
@@ -392,24 +380,35 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                         typeSuperclass = typeSuperclassSchema->_classes->_backingMap[typeSuperclass->_superclass];
                     }
                     if (!typeClassHasUID) {
-                        fprintf(stderr, "Attribute '%s::%s::%s' references class '%s::%s', but that class has no UID attribute that could match this reference.\n",
-                                schema->_namespace.c_str(), schemaClass->_name.c_str(), attribute->_name.c_str(),
-                                attribute->_typeNamespace.empty() ? schema->_namespace.c_str() : attribute->_typeNamespace.c_str(), attribute->_typeName.c_str());
-                        exit(1);
+                        std::string typeNamespace = attribute->_typeNamespace.empty() ? schema->_namespace : attribute->_typeNamespace;
+                        schema->_errorLogger.logError(attribute->_attributeContext->start,
+                                                      "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' references class '"+typeNamespace+"::"+attribute->_typeName+"', but that class has no UID attribute that could match this reference.");
                     }
                 }
             }
         }
         for (SchemaEnum *schemaEnum : schema->_enums->_backingVector) {
             if (topLevelNames.count(schemaEnum->_name)) {
-                fprintf(stderr, "Enum '%s::%s' conflicts with another declaration of the same name.\n", schema->_namespace.c_str(), schemaEnum->_name.c_str());
-                exit(1);
+                schema->_errorLogger.logError(schemaEnum->_enumContext->start, "Enum '"+schema->_namespace+"::"+schemaEnum->_name+"' conflicts with another declaration of the same name.");
             }
         }
         // EaSL uses namespaces to distinguish between objects from different schemas.
         topLevelNames.clear();
     }
 }
+
+class EaSLErrorListener : public antlr4::BaseErrorListener {
+public:
+    ErrorLogger *_errorLogger;
+    virtual void syntaxError(antlr4::Recognizer *recognizer,
+                             antlr4::Token * offendingSymbol,
+                             size_t line,
+                             size_t charPositionInLine,
+                             const std::string &msg,
+                             std::exception_ptr e) override {
+        _errorLogger->logError(offendingSymbol, msg);
+    }
+};
 
 MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths) {
     std::vector<Schema *> schemasVector;
@@ -430,19 +429,20 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
         antlr4::CommonTokenStream tokenStream(&lexer);
         EaSLParser parser(&tokenStream);
         
-        errListener.currentPath = &schemaPath;
+        ErrorLogger errLogger{ schemaPath };
+        errListener._errorLogger = &errLogger;
         lexer.getErrorListenerDispatch().removeErrorListeners();
         parser.getErrorListenerDispatch().removeErrorListeners();
         lexer.addErrorListener(&errListener);
         parser.addErrorListener(&errListener);
         
         EaSLParser::SchemaContext *schemaContext = parser.schema();
-        if (errListener.errorCount > 0) {
-            // If we're inside this conditional, the error has already been logged via the default listener.
+        if (errListener._errorLogger->_hasLoggedError) {
+            // If we're inside this conditional, the error has already been logged via the error listener.
             exit(1);
         }
         
-        schemasVector.push_back(new Schema(schemaContext));
+        schemasVector.push_back(new Schema(schemaPath, schemaContext));
     }
     
     std::unordered_map<std::string, Schema *> schemasMap;
@@ -453,5 +453,11 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
     MaPLArrayMap<Schema *> *schemas = new MaPLArrayMap<Schema *>(schemasVector, schemasMap);
     validateSchemas(schemas);
     
+    // TODO: Exit on error.
+    
     return schemas;
+}
+
+void validateXML(MaPLArray<xmlNode *> *xml, MaPLArrayMap<Schema *> *schemas) {
+    // TODO: Validate XML against schema.
 }

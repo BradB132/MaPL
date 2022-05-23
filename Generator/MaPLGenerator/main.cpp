@@ -69,7 +69,6 @@ int main(int argc, const char * argv[]) {
     MaPLArrayMap<Schema *> *schemas = schemasForPaths(schemaPaths);// TODO: Pass this to 'invokeScript' below.
     
     // TODO: Parse with libxml. http://www.xmlsoft.org/examples/parse1.c
-    // TODO: Validate XML against schema.
     
     for (const std::filesystem::path &scriptPath : scriptPaths) {
         invokeScript(scriptPath);
