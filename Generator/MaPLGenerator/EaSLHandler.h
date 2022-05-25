@@ -15,15 +15,7 @@
 #include "EaSLParser.h"
 #include "MaPLInterface.h"
 #include "MaPLGeneratorCollections.h"
-
-class ErrorLogger {
-public:
-    ErrorLogger(const std::filesystem::path &filePath);
-    void logError(antlr4::Token *token, const std::string &errorMessage);
-
-    const std::filesystem::path _filePath;
-    bool _hasLoggedError;
-};
+#include "ErrorLogger.h"
 
 class SchemaEnum : public MaPLInterface {
 public:
@@ -86,6 +78,6 @@ public:
 
 MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths);
 
-void validateXML(MaPLArray<xmlNode *> *xml, MaPLArrayMap<Schema *> *schemas);
+void validateXML(MaPLArray<xmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas);
 
 #endif /* EaSLHandler_h */

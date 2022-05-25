@@ -38,20 +38,6 @@ bool conflictsWithPrimitiveName(const std::string &typeName) {
         typeName == "UID";
 }
 
-ErrorLogger::ErrorLogger(const std::filesystem::path &filePath) :
-_filePath(filePath),
-_hasLoggedError(false) {
-}
-
-void ErrorLogger::logError(antlr4::Token *token, const std::string &errorMessage) {
-    if (token) {
-        fprintf(stderr, "%s:%lu:%lu: error: %s\n", _filePath.c_str(), token->getLine(), token->getCharPositionInLine(), errorMessage.c_str());
-    } else {
-        fprintf(stderr, "%s:1:1: error: %s\n", _filePath.c_str(), errorMessage.c_str());
-    }
-    _hasLoggedError = true;
-}
-
 SchemaEnum::SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext, ErrorLogger *errorLogger) :
 _enumContext(enumContext),
 _name(enumContext->enumName->getText()),
@@ -438,7 +424,6 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
         
         EaSLParser::SchemaContext *schemaContext = parser.schema();
         if (errListener._errorLogger->_hasLoggedError) {
-            // If we're inside this conditional, the error has already been logged via the error listener.
             exit(1);
         }
         
@@ -462,6 +447,6 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
     return schemas;
 }
 
-void validateXML(MaPLArray<xmlNode *> *xml, MaPLArrayMap<Schema *> *schemas) {
+void validateXML(MaPLArray<xmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas) {
     // TODO: Validate XML against schema.
 }

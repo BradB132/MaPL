@@ -11,6 +11,8 @@
 		9B16A72D283663EB00E5071C /* EaSLParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A70E283663EA00E5071C /* EaSLParser.cpp */; };
 		9B16A72E283663EB00E5071C /* EaSLLexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A70F283663EA00E5071C /* EaSLLexer.cpp */; };
 		9B16A73528366B6400E5071C /* EaSLHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A73328366B6400E5071C /* EaSLHandler.cpp */; };
+		9B16A746283EA74600E5071C /* XmlHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A744283EA74600E5071C /* XmlHandler.cpp */; };
+		9B16A749283EA9AE00E5071C /* ErrorLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A747283EA9AE00E5071C /* ErrorLogger.cpp */; };
 		9B7F7F8D281724E8004955D9 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F7D2817232F004955D9 /* libMaPLCompiler.a */; };
 		9B7F7F8E281724ED004955D9 /* libMaPLRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F862817233A004955D9 /* libMaPLRuntime.a */; };
 		9B7F7F9028172ADC004955D9 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F8F28172ADC004955D9 /* libxml2.tbd */; };
@@ -86,6 +88,10 @@
 		9B16A73428366B6400E5071C /* EaSLHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EaSLHandler.h; sourceTree = "<group>"; };
 		9B16A73A2837060F00E5071C /* MaPLInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLInterface.h; sourceTree = "<group>"; };
 		9B16A73D2837079300E5071C /* MaPLGeneratorCollections.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLGeneratorCollections.h; sourceTree = "<group>"; };
+		9B16A744283EA74600E5071C /* XmlHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = XmlHandler.cpp; sourceTree = "<group>"; };
+		9B16A745283EA74600E5071C /* XmlHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XmlHandler.h; sourceTree = "<group>"; };
+		9B16A747283EA9AE00E5071C /* ErrorLogger.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ErrorLogger.cpp; sourceTree = "<group>"; };
+		9B16A748283EA9AE00E5071C /* ErrorLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ErrorLogger.h; sourceTree = "<group>"; };
 		9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLCompiler.xcodeproj; path = ../Compiler/MaPLCompiler.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLRuntime.xcodeproj; path = ../Runtime/MaPLRuntime.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F8F28172ADC004955D9 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
@@ -181,6 +187,10 @@
 				9B16A6E9283411F900E5071C /* MaPLSymbols.h */,
 				9B16A73328366B6400E5071C /* EaSLHandler.cpp */,
 				9B16A73428366B6400E5071C /* EaSLHandler.h */,
+				9B16A744283EA74600E5071C /* XmlHandler.cpp */,
+				9B16A745283EA74600E5071C /* XmlHandler.h */,
+				9B16A747283EA9AE00E5071C /* ErrorLogger.cpp */,
+				9B16A748283EA9AE00E5071C /* ErrorLogger.h */,
 				9B16A73A2837060F00E5071C /* MaPLInterface.h */,
 				9B16A73D2837079300E5071C /* MaPLGeneratorCollections.h */,
 			);
@@ -330,8 +340,10 @@
 			files = (
 				9B16A6E62833F54300E5071C /* MaPLHandler.cpp in Sources */,
 				9B16A73528366B6400E5071C /* EaSLHandler.cpp in Sources */,
+				9B16A746283EA74600E5071C /* XmlHandler.cpp in Sources */,
 				9B16A72D283663EB00E5071C /* EaSLParser.cpp in Sources */,
 				9BE3EC81281707FB00DED0C2 /* main.cpp in Sources */,
+				9B16A749283EA9AE00E5071C /* ErrorLogger.cpp in Sources */,
 				9B16A72E283663EB00E5071C /* EaSLLexer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
