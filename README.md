@@ -82,11 +82,11 @@ MaPL requires explicit declarations for the entire API surface of the host progr
     float32 speed;
 }
 #type Car : Vehicle {
-    readonly WheelArray wheels;
+    readonly Array<Wheel> wheels;
 }
-#type WheelArray {
-    Wheel [int32];
-    readonly int32 count;
+#type Array<T> {
+    T [uint32];
+    readonly uint32 count;
 }
 #type Wheel {
     float32 radius;
@@ -96,7 +96,7 @@ MaPL requires explicit declarations for the entire API surface of the host progr
 The above API would allow a subsequent script write logic like:
 ```
 Car myCar = getCar();
-for int32 i = 0; i < myCar.wheels.count; i++) {
+for uint32 i = 0; i < myCar.wheels.count; i++) {
     myCar.wheels[i].radius += 2;
 }
 myCar.speed = 45;
