@@ -448,6 +448,60 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
     return schemas;
 }
 
+void validateXMLNode(XmlNode *xmlNode,
+                     MaPLArrayMap<Schema *> *schemas,
+                     std::unordered_set<std::string> &uidSet,
+                     ErrorLogger &errorLogger) {
+    Schema *schema = schemas->_backingMap[xmlNode->_namespace];
+    if (!schema) {
+        errorLogger.logError(xmlNode->_node, "Unable to find schema with namespace '"+xmlNode->_namespace+"'.");
+        return;
+    }
+    SchemaClass *schemaClass = schema->_classes->_backingMap[xmlNode->_name];
+    if (!schemaClass) {
+        errorLogger.logError(xmlNode->_node, "Unable to find schema class '"+xmlNode->_name+"' in namespace '"+xmlNode->_namespace+"'.");
+        return;
+    }
+    
+    for (XmlAttribute *xmlAttribute : xmlNode->_attributes->_backingVector) {
+        // Search the inhertiance graph for the schema attribute.
+        SchemaClass *attributeParentClass = schemaClass;
+        SchemaAttribute *schemaAttribute = NULL;
+        while (attributeParentClass) {
+            schemaAttribute = attributeParentClass->_attributes->_backingMap[xmlAttribute->_name];
+            if (schemaAttribute || attributeParentClass->_superclass.empty()) {
+                break;
+            }
+            Schema *attributeParentSchema = schemas->_backingMap[attributeParentClass->_superclassNamespace];
+            if (!attributeParentSchema) {
+                break;
+            }
+            attributeParentClass = attributeParentSchema->_classes->_backingMap[attributeParentClass->_superclass];
+        }
+        if (!schemaAttribute) {
+            errorLogger.logError(xmlNode->_node, "XML node specifies attribute '"+xmlAttribute->_name+"' which does not appear in schema class '"+schema->_namespace+"::"+schemaClass->_name+"' or any superclasses.");
+            continue;
+        }
+        
+        // TODO: Make sure types of xml and schema attributes match.
+    }
+    
+    for (XmlNode *child : xmlNode->_children->_backingVector) {
+        validateXMLNode(child, schemas, uidSet, errorLogger);
+    }
+}
+
 void validateXML(MaPLArray<XmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas) {
-    // TODO: Validate XML against schema.
+    bool hasLoggedError = false;
+    std::unordered_set<std::string> uidSet;
+    for (XmlNode *xmlNode : xmlNodes->_backingVector) {
+        ErrorLogger errorLogger((char *)xmlNode->_node->doc->URL);
+        validateXMLNode(xmlNode, schemas, uidSet, errorLogger);
+        if (errorLogger._hasLoggedError) {
+            hasLoggedError = true;
+        }
+    }
+    if (hasLoggedError) {
+        exit(1);
+    }
 }
