@@ -105,20 +105,20 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
     EaSLParser::SequenceDescriptorContext *sequenceDescriptor = attributeContext->sequenceDescriptor();
     if (sequenceDescriptor) {
         std::vector<EaSLParser::SequenceLengthContext *> lengths = sequenceDescriptor->sequenceLength();
-        EaSLParser::SequenceLengthContext *minLength = lengths[0];
-        EaSLParser::SequenceLengthContext *maxLength = (lengths.size() > 1) ? lengths[1] : lengths[0];
-        if (minLength->SEQUENCE_WILDCARD()) {
-            _minOccurrences = 0;
-        } else {
-            _minOccurrences = uintForSequenceLength(sequenceDescriptor, minLength, errorLogger);
-        }
-        if (maxLength->SEQUENCE_WILDCARD()) {
-            _maxOccurrences = UINT32_MAX;
-        } else {
-            _maxOccurrences = uintForSequenceLength(sequenceDescriptor, maxLength, errorLogger);
-        }
-        if (_maxOccurrences < _minOccurrences) {
-            errorLogger->logError(minLength->start, "Invalid range: '"+sequenceDescriptor->getText()+"' Minimum must be less than the maximum.");
+        _minOccurrences = 0;
+        _maxOccurrences = UINT32_MAX;
+        if (lengths.size() > 0) {
+            EaSLParser::SequenceLengthContext *minLength = lengths[0];
+            EaSLParser::SequenceLengthContext *maxLength = (lengths.size() > 1) ? lengths[1] : lengths[0];
+            if (!minLength->SEQUENCE_WILDCARD()) {
+                _minOccurrences = uintForSequenceLength(sequenceDescriptor, minLength, errorLogger);
+            }
+            if (!maxLength->SEQUENCE_WILDCARD()) {
+                _maxOccurrences = uintForSequenceLength(sequenceDescriptor, maxLength, errorLogger);
+            }
+            if (_maxOccurrences < _minOccurrences) {
+                errorLogger->logError(minLength->start, "Invalid range: '"+sequenceDescriptor->getText()+"' Minimum must be less than the maximum.");
+            }
         }
     } else {
         _minOccurrences = 1;
