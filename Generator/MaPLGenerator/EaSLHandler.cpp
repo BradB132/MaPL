@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <unordered_set>
 
 #include "antlr4-runtime.h"
 #include "EaSLLexer.h"
@@ -46,7 +47,7 @@ _annotations(parseAnnotations(enumContext->ANNOTATION())) {
         errorLogger->logError(enumContext->enumName->start, "Enum name '"+_name+"' conflicts with the name of a primitive type.");
     }
     std::vector<std::string> cases;
-    std::set<std::string> caseSet;
+    std::unordered_set<std::string> caseSet;
     for (EaSLParser::IdentifierContext *caseNode : enumContext->enumValue) {
         std::string caseText = caseNode->getText();
         cases.push_back(caseText);
@@ -308,7 +309,7 @@ MaPLParameter Schema::invokeSubscript(MaPLParameter index) {
 }
 
 void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
-    std::set<std::string> topLevelNames;
+    std::unordered_set<std::string> topLevelNames;
     for (Schema *schema : schemas->_backingVector) {
         for (SchemaClass *schemaClass : schema->_classes->_backingVector) {
             if (topLevelNames.count(schemaClass->_name)) {

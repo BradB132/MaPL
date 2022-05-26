@@ -635,8 +635,8 @@ bool MaPLAPI::inheritsFromType(const std::string &typeName, const std::string &a
 
 std::vector<std::string> findInheritanceCyclesAndDiamonds(const MaPLAPI *api,
                                                           const MaPLTypeAPI *type,
-                                                          std::set<std::string> &cycleTypes,
-                                                          std::set<std::string> &diamondTypes) {
+                                                          std::unordered_set<std::string> &cycleTypes,
+                                                          std::unordered_set<std::string> &diamondTypes) {
     std::vector<std::string> cycleVector;
     if (cycleTypes.count(type->name) > 0) {
         // This graph contains a cycle.
@@ -669,8 +669,8 @@ std::vector<std::string> findInheritanceCyclesAndDiamonds(const MaPLAPI *api,
 }
 
 void MaPLAPI::findInheritanceCyclesAndDiamonds() {
-    std::set<std::string> cycleTypes;
-    std::set<std::string> diamondTypes;
+    std::unordered_set<std::string> cycleTypes;
+    std::unordered_set<std::string> diamondTypes;
     for (const auto&[key, type] : types) {
         std::vector<std::string> cycle = ::findInheritanceCyclesAndDiamonds(this, &type, cycleTypes, diamondTypes);
         if (cycle.size() > 0) {
