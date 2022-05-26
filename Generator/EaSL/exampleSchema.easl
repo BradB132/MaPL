@@ -1,7 +1,13 @@
 namespace Example;
 
-class ExampleClass {
-    @readonly int32 myInteger[*,2] = 5, -5;
+class Container {
+    Content contents[];
+}
+
+class Content {
+    int32 x = 1;
+    int32 y = 2;
+    int32 z = 3;
 }
 
 enum TestEnum {
