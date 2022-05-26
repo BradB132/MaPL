@@ -53,6 +53,7 @@ MaPLParameter XmlNode::invokeSubscript(MaPLParameter index) {
 }
 
 XmlAttribute::XmlAttribute(xmlAttr *attribute) :
+_attribute(attribute),
 _name((char *)attribute->name),
 _value((char *)xmlGetProp(attribute->parent, attribute->name)) {
 }
