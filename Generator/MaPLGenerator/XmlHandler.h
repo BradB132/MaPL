@@ -26,7 +26,7 @@ public:
     xmlNode *_node;
     std::string _name;
     std::string _namespace;
-    MaPLArray<XmlAttribute *> *_attributes;
+    MaPLArrayMap<XmlAttribute *> *_attributes;
     MaPLArray<XmlNode *> *_children;
 };
 

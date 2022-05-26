@@ -8,6 +8,7 @@
 #include "XmlHandler.h"
 
 #include <libxml/parser.h>
+#include <unordered_map>
 
 #include "ErrorLogger.h"
 
@@ -27,10 +28,13 @@ _name((char *)node->name) {
     _children = new MaPLArray<XmlNode *>(children);
     
     std::vector<XmlAttribute *> attributes;
-    for (xmlAttr *attribute = node->properties; attribute; attribute = attribute->next) {
-        attributes.push_back(new XmlAttribute(attribute));
+    std::unordered_map<std::string, XmlAttribute *> attributeMap;
+    for (xmlAttr *xmlAttribute = node->properties; xmlAttribute; xmlAttribute = xmlAttribute->next) {
+        XmlAttribute *attribute = new XmlAttribute(xmlAttribute);
+        attributes.push_back(attribute);
+        attributeMap[attribute->_name] = attribute;
     }
-    _attributes = new MaPLArray<XmlAttribute *>(attributes);
+    _attributes = new MaPLArrayMap<XmlAttribute *>(attributes, attributeMap);
 }
 
 MaPLParameter XmlNode::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {

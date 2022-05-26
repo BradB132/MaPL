@@ -51,7 +51,7 @@
 #type XMLNode {
     readonly string name;
     readonly string namespace;
-    readonly Array<XMLAttribute> attributes;
+    readonly ArrayMap<XMLAttribute> attributes;
     readonly Array<XMLNode> children;
 }
 
