@@ -16,6 +16,7 @@
 #include "MaPLInterface.h"
 #include "MaPLGeneratorCollections.h"
 #include "ErrorLogger.h"
+#include "XmlHandler.h"
 
 class SchemaEnum : public MaPLInterface {
 public:
@@ -78,6 +79,6 @@ public:
 
 MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path> &schemaPaths);
 
-void validateXML(MaPLArray<xmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas);
+void validateXML(MaPLArray<XmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas);
 
 #endif /* EaSLHandler_h */

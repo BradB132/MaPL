@@ -447,6 +447,6 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
     return schemas;
 }
 
-void validateXML(MaPLArray<xmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas) {
+void validateXML(MaPLArray<XmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas) {
     // TODO: Validate XML against schema.
 }

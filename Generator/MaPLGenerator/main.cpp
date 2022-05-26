@@ -11,6 +11,7 @@
 
 #include "EaSLHandler.h"
 #include "MaPLHandler.h"
+#include "XmlHandler.h"
 #include <libxml/parser.h>
 
 void printUsage() {
@@ -67,7 +68,7 @@ int main(int argc, const char * argv[]) {
     }
     
     MaPLArrayMap<Schema *> *schemas = schemasForPaths(schemaPaths);
-    MaPLArray<xmlNode *> *xmlNodes = xmlNodesForPaths(xmlPaths);
+    MaPLArray<XmlNode *> *xmlNodes = xmlNodesForPaths(xmlPaths);
     validateXML(xmlNodes, schemas);
     
     for (const std::filesystem::path &scriptPath : scriptPaths) {

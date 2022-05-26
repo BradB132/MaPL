@@ -66,7 +66,7 @@ MaPLArray<XmlNode *> *xmlNodesForPaths(const std::vector<std::filesystem::path> 
             exit(1);
         }
         xmlNode *node = xmlDocGetRootElement(doc);
-        // TODO: Initialize xmlNodesVector.
+        xmlNodesVector.push_back(new XmlNode(node));
     }
     
     return new MaPLArray<XmlNode *>(xmlNodesVector);
