@@ -32,7 +32,7 @@ public:
 
 class XmlAttribute : public MaPLInterface {
 public:
-    XmlAttribute(xmlNode *node);
+    XmlAttribute(xmlAttr *attribute);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     

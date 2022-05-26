@@ -12,8 +12,25 @@
 #include "ErrorLogger.h"
 
 XmlNode::XmlNode(xmlNode *node) :
-_node(node) {
-    // TODO: Initialization.
+_node(node),
+_name((char *)node->name) {
+    // XML requires that namespaces be articulated as URLs. MaPLGenerator expects that
+    // the string after the URL's scheme matches the namespace in the EaSL schema.
+    std::string href = (char *)node->ns->href;
+    _namespace = href.substr(href.find("://") + 3);
+    
+    std::vector<XmlNode *> children;
+    for (xmlNode *child = node->children; child; child = child->next) {
+        if (child->type != XML_ELEMENT_NODE) { continue; }
+        children.push_back(new XmlNode(child));
+    }
+    _children = new MaPLArray<XmlNode *>(children);
+    
+    std::vector<XmlAttribute *> attributes;
+    for (xmlAttr *attribute = node->properties; attribute; attribute = attribute->next) {
+        attributes.push_back(new XmlAttribute(attribute));
+    }
+    _attributes = new MaPLArray<XmlAttribute *>(attributes);
 }
 
 MaPLParameter XmlNode::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -35,8 +52,9 @@ MaPLParameter XmlNode::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-XmlAttribute::XmlAttribute(xmlNode *node) {
-    // TODO: Initialization.
+XmlAttribute::XmlAttribute(xmlAttr *attribute) :
+_name((char *)attribute->name),
+_value((char *)xmlGetProp(attribute->parent, attribute->name)) {
 }
 
 MaPLParameter XmlAttribute::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -58,7 +76,6 @@ MaPLArray<XmlNode *> *xmlNodesForPaths(const std::vector<std::filesystem::path> 
     std::vector<XmlNode *> xmlNodesVector;
     
     for (const std::filesystem::path &xmlPath : xmlPaths) {
-        // TODO: Parse with libxml. http://www.xmlsoft.org/examples/parse1.c
         xmlDoc *doc = xmlReadFile(xmlPath.c_str(), NULL, 0);
         if (doc == NULL) {
             ErrorLogger logger(xmlPath);
