@@ -93,7 +93,7 @@ MaPL requires explicit declarations for the entire API surface of the host progr
 }
 #global Car getCar();
 ```
-The above API would allow a subsequent script write logic like:
+The above API would allow a subsequent script to write logic like:
 ```
 Car myCar = getCar();
 for uint32 i = 0; i < myCar.wheels.count; i++) {

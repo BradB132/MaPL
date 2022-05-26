@@ -15,14 +15,14 @@ The translation from human-readable MaPL scripts to machine-runnable bytecode ha
 
 MaPL's compiler relies on [ANTLR](https://www.antlr.org/)-generated code for the first 2 steps of the translation. To build the compiler, the ANTLR lexer and parser first need to be generated. Generate it with the following:
 ```
-./build_parser.sh C++
+./generate_parser.sh C++
 ```
 Make sure you include the `C++` argument, or the script will build the Java version of the parser that is used for testing. The script should output the C++ code for the lexer and parser:
 
-* `./c++/MaPLLexer.h`
-* `./c++/MaPLLexer.cpp`
-* `./c++/MaPLParser.h`
-* `./c++/MaPLParser.cpp`
+* `./generated_c++/MaPLLexer.h`
+* `./generated_c++/MaPLLexer.cpp`
+* `./generated_c++/MaPLParser.h`
+* `./generated_c++/MaPLParser.cpp`
 
 ### Optimizations
 
