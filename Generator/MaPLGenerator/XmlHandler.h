@@ -39,6 +39,7 @@ public:
     xmlAttr *_attribute;
     std::string _name;
     std::string _value;
+    MaPLArray<std::string> *_values;
 };
 
 MaPLArray<XmlNode *> *xmlNodesForPaths(const std::vector<std::filesystem::path> &xmlPaths);

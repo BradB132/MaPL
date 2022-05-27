@@ -9,6 +9,7 @@
 
 #include <libxml/parser.h>
 #include <unordered_map>
+#include <sstream>
 
 #include "ErrorLogger.h"
 
@@ -60,6 +61,17 @@ XmlAttribute::XmlAttribute(xmlAttr *attribute) :
 _attribute(attribute),
 _name((char *)attribute->name),
 _value((char *)xmlGetProp(attribute->parent, attribute->name)) {
+    std::vector<std::string> commaDelimitedValues;
+    std::stringstream stringStream(_value);
+    const char* whitespaceCharset = " \f\n\r\t\v";
+    while (stringStream.good()) {
+        std::string splitValue;
+        std::getline(stringStream, splitValue, ',');
+        splitValue.erase(splitValue.find_last_not_of(whitespaceCharset)+1);
+        splitValue.erase(0,splitValue.find_first_not_of(whitespaceCharset));
+        commaDelimitedValues.push_back(splitValue);
+    }
+    _values = new MaPLArray<std::string>(commaDelimitedValues);
 }
 
 MaPLParameter XmlAttribute::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {

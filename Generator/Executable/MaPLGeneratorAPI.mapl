@@ -58,6 +58,10 @@
 #type XMLAttribute {
     readonly string name;
     readonly string value;
+    
+    // Some attributes can be interpreted as a list of values.
+    // `values` is the comma-delimited representation of `value`.
+    readonly Array<string> values;
 }
 
 // File IO.
