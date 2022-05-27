@@ -502,11 +502,50 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
     Schema *schema = schemas->_backingMap[xmlNode->_namespace];
     SchemaClass *schemaClass = schema->_classes->_backingMap[xmlNode->_name];
     
-    // TODO: Implement remaining node checks.
+    // TODO: Confirm count of children matches sequence ranges.
+    
+    // Check all schema attributes in this class to make sure required attributes exist in the XML.
+    SchemaClass *parentSchemaClass = schemaClass;
+    Schema *parentSchema = schema;
+    while (parentSchemaClass) {
+        for (SchemaAttribute *schemaAttribute : parentSchemaClass->_attributes->_backingVector) {
+            bool isRequired = schemaAttribute->_defaultValues->_backingVector.size() == 0;
+            if (isRequired && !xmlNode->_attributes->_backingMap.count(schemaAttribute->_name)) {
+                std::string subclassDescriptor;
+                if (schemaClass == parentSchemaClass) {
+                    subclassDescriptor = "";
+                } else {
+                    subclassDescriptor = " (a superclass of '"+schema->_namespace+"::"+schemaClass->_name+"')";
+                }
+                errorLogger.logError(xmlNode->_node, "Attribute '"+schemaAttribute->_name+"' was not specified, but is required by schema class '"+parentSchema->_namespace+"::"+parentSchemaClass->_name+"'"+subclassDescriptor+".");
+            }
+        }
+        if (parentSchemaClass->_superclass.empty()) { break; }
+        parentSchema = schemas->_backingMap[parentSchemaClass->_superclassNamespace];
+        if (!parentSchemaClass) { break; }
+        parentSchemaClass = parentSchema->_classes->_backingMap[parentSchemaClass->_superclass];
+    }
     
     for (XmlAttribute *xmlAttribute : xmlNode->_attributes->_backingVector) {
         SchemaAttribute *schemaAttribute = schemaAttributeForXmlAttribute(xmlAttribute, schemas, schemaClass);
-        // TODO: Implement remaining attribute checks.
+        
+        // TODO: Attempt to confirm that attribute values match the schema type.
+        // TODO: Confirm count of values matches sequence range.
+        
+        // If this attribute references another node, make sure that node is what we expect.
+        if (schemaAttribute->_typeIsUIDReference) {
+            for (const std::string &referenceKey : xmlAttribute->_values->_backingVector) {
+                if (!uidMap.count(referenceKey)) {
+                    errorLogger.logError(xmlNode->_node, "UID '"+referenceKey+"' refers to an object that does not exist in the dataset.");
+                    continue;
+                }
+                XmlNode *referencedNode = uidMap.at(referenceKey);
+                if (referencedNode->_name != schemaAttribute->_typeName ||
+                    referencedNode->_namespace != schemaAttribute->_typeNamespace) {
+                    errorLogger.logError(xmlNode->_node, "UID '"+referenceKey+"' was expected to refer to a node of type '"+schemaAttribute->_typeNamespace+"::"+schemaAttribute->_typeName+"', but matched a node of type '"+referencedNode->_namespace+"::"+referencedNode->_name+"' instead.");
+                }
+            }
+        }
     }
     for (XmlNode *childNode : xmlNode->_children->_backingVector) {
         secondPassXMLValidation(childNode, schemas, uidMap, errorLogger);
