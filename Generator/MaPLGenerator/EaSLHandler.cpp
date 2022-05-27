@@ -448,10 +448,27 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
     return schemas;
 }
 
-void visitXMLNodes(XmlNode *xmlNode,
-                   MaPLArrayMap<Schema *> *schemas,
-                   ErrorLogger &errorLogger,
-                   const std::function<void(XmlNode *, Schema *, SchemaClass *)> &visitor) {
+SchemaAttribute *schemaAttributeForXmlAttribute(XmlAttribute *xmlAttribute, MaPLArrayMap<Schema *> *schemas, SchemaClass *schemaClass) {
+    SchemaClass *attributeParentClass = schemaClass;
+    SchemaAttribute *schemaAttribute = NULL;
+    while (attributeParentClass) {
+        schemaAttribute = attributeParentClass->_attributes->_backingMap[xmlAttribute->_name];
+        if (schemaAttribute || attributeParentClass->_superclass.empty()) {
+            break;
+        }
+        Schema *attributeParentSchema = schemas->_backingMap[attributeParentClass->_superclassNamespace];
+        if (!attributeParentSchema) {
+            break;
+        }
+        attributeParentClass = attributeParentSchema->_classes->_backingMap[attributeParentClass->_superclass];
+    }
+    return schemaAttribute;
+}
+
+void firstPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, std::unordered_map<std::string, XmlNode *> &uidMap, ErrorLogger &errorLogger) {
+    // Do an initial pass over all nodes and attributes in the dataset:
+    //  - Confirm all namespaces, classes, and attributes exist in the schema.
+    //  - Collect the UIDs, confirm uniqueness, and make a mapping of objects they point to.
     Schema *schema = schemas->_backingMap[xmlNode->_namespace];
     if (!schema) {
         errorLogger.logError(xmlNode->_node, "Unable to find schema with namespace '"+xmlNode->_namespace+"'.");
@@ -462,66 +479,57 @@ void visitXMLNodes(XmlNode *xmlNode,
         errorLogger.logError(xmlNode->_node, "Unable to find schema class '"+xmlNode->_name+"' in namespace '"+xmlNode->_namespace+"'.");
         return;
     }
-    
-    visitor(xmlNode, schema, schemaClass);
-    
-    for (XmlNode *child : xmlNode->_children->_backingVector) {
-        visitXMLNodes(child, schemas, errorLogger, visitor);
+    for (XmlAttribute *xmlAttribute : xmlNode->_attributes->_backingVector) {
+        SchemaAttribute *schemaAttribute = schemaAttributeForXmlAttribute(xmlAttribute, schemas, schemaClass);
+        if (!schemaAttribute) {
+            errorLogger.logError(xmlNode->_node, "XML node specifies attribute '"+xmlAttribute->_name+"' which does not appear in schema class '"+schema->_namespace+"::"+schemaClass->_name+"' or any superclasses.");
+            continue;
+        }
+        if (schemaAttribute->_typeName != "UID") { continue; }
+        for (const std::string &value : xmlAttribute->_values->_backingVector) {
+            if (uidMap.count(value) > 0) {
+                errorLogger.logError(xmlNode->_node, "UID '"+value+"' must be unique, but it used elsewhere in the dataset.");
+            }
+            uidMap[value] = xmlNode;
+        }
+    }
+    for (XmlNode *childNode : xmlNode->_children->_backingVector) {
+        firstPassXMLValidation(childNode, schemas, uidMap, errorLogger);
     }
 }
 
-void visitXMLAttributes(XmlNode *xmlNode,
-                        MaPLArrayMap<Schema *> *schemas,
-                        ErrorLogger &errorLogger,
-                        const std::function<void(XmlNode *, XmlAttribute *, Schema *, SchemaClass *, SchemaAttribute *)> &visitor) {
-    visitXMLNodes(xmlNode, schemas, errorLogger, [schemas, &errorLogger, &visitor](XmlNode *visitedNode,
-                                                                                   Schema *visitedSchema,
-                                                                                   SchemaClass *visitedSchemaClass) {
-        for (XmlAttribute *xmlAttribute : visitedNode->_attributes->_backingVector) {
-            // Search the inhertiance graph for the schema attribute.
-            SchemaClass *attributeParentClass = visitedSchemaClass;
-            SchemaAttribute *schemaAttribute = NULL;
-            while (attributeParentClass) {
-                schemaAttribute = attributeParentClass->_attributes->_backingMap[xmlAttribute->_name];
-                if (schemaAttribute || attributeParentClass->_superclass.empty()) {
-                    break;
-                }
-                Schema *attributeParentSchema = schemas->_backingMap[attributeParentClass->_superclassNamespace];
-                if (!attributeParentSchema) {
-                    break;
-                }
-                attributeParentClass = attributeParentSchema->_classes->_backingMap[attributeParentClass->_superclass];
-            }
-            if (!schemaAttribute) {
-                errorLogger.logError(visitedNode->_node, "XML node specifies attribute '"+xmlAttribute->_name+"' which does not appear in schema class '"+visitedSchema->_namespace+"::"+visitedSchemaClass->_name+"' or any superclasses.");
-                continue;
-            }
-            visitor(visitedNode, xmlAttribute, visitedSchema, visitedSchemaClass, schemaAttribute);
-        }
-    });
+void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, const std::unordered_map<std::string, XmlNode *> &uidMap, ErrorLogger &errorLogger) {
+    Schema *schema = schemas->_backingMap[xmlNode->_namespace];
+    SchemaClass *schemaClass = schema->_classes->_backingMap[xmlNode->_name];
+    
+    // TODO: Implement remaining node checks.
+    
+    for (XmlAttribute *xmlAttribute : xmlNode->_attributes->_backingVector) {
+        SchemaAttribute *schemaAttribute = schemaAttributeForXmlAttribute(xmlAttribute, schemas, schemaClass);
+        // TODO: Implement remaining attribute checks.
+    }
+    for (XmlNode *childNode : xmlNode->_children->_backingVector) {
+        secondPassXMLValidation(childNode, schemas, uidMap, errorLogger);
+    }
 }
 
 void validateXML(MaPLArray<XmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas) {
     bool hasLoggedError = false;
     
-    // Do a pass over all attributes in the dataset to collect the UIDs,
-    // check uniqueness, and make a mapping of objects they point to.
     std::unordered_map<std::string, XmlNode *> uidMap;
     for (XmlNode *xmlNode : xmlNodes->_backingVector) {
         ErrorLogger errorLogger((char *)xmlNode->_node->doc->URL);
-        visitXMLAttributes(xmlNode, schemas, errorLogger, [&uidMap, &errorLogger](XmlNode *visitedNode,
-                                                                                  XmlAttribute *visitedAttribute,
-                                                                                  Schema *visitedSchema,
-                                                                                  SchemaClass *visitedSchemaClass,
-                                                                                  SchemaAttribute *visitedSchemaAttribute) {
-            if (visitedSchemaAttribute->_typeName != "UID") { return; }
-            for (const std::string &value : visitedAttribute->_values->_backingVector) {
-                if (uidMap.count(value) > 0) {
-                    errorLogger.logError(visitedNode->_node, "UID '"+value+"' must be unique, but it used elsewhere in the dataset.");
-                }
-                uidMap[value] = visitedNode;
-            }
-        });
+        firstPassXMLValidation(xmlNode, schemas, uidMap, errorLogger);
+        if (errorLogger._hasLoggedError) {
+            hasLoggedError = true;
+        }
+    }
+    if (hasLoggedError) {
+        exit(1);
+    }
+    for (XmlNode *xmlNode : xmlNodes->_backingVector) {
+        ErrorLogger errorLogger((char *)xmlNode->_node->doc->URL);
+        secondPassXMLValidation(xmlNode, schemas, uidMap, errorLogger);
         if (errorLogger._hasLoggedError) {
             hasLoggedError = true;
         }
