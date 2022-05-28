@@ -21,7 +21,7 @@
 
 #type SchemaEnum {
     readonly string name;
-    readonly Array<string> cases;
+    readonly ArrayMap<string> cases;
     readonly ArrayMap<string> annotations;
 }
 

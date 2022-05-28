@@ -47,16 +47,16 @@ _annotations(parseAnnotations(enumContext->ANNOTATION())) {
         errorLogger->logError(enumContext->enumName->start, "Enum name '"+_name+"' conflicts with the name of a primitive type.");
     }
     std::vector<std::string> cases;
-    std::unordered_set<std::string> caseSet;
+    std::unordered_map<std::string, std::string> caseMap;
     for (EaSLParser::IdentifierContext *caseNode : enumContext->enumValue) {
         std::string caseText = caseNode->getText();
         cases.push_back(caseText);
-        if (caseSet.count(caseText)) {
+        if (caseMap.count(caseText)) {
             errorLogger->logError(caseNode->start, "Case '"+caseText+"' exists more than once in enum '"+_name+"'.");
         }
-        caseSet.insert(caseText);
+        caseMap[caseText] = caseText;
     }
-    _cases = new MaPLArray<std::string>(cases);
+    _cases = new MaPLArrayMap<std::string>(cases, caseMap);
 }
 
 MaPLParameter SchemaEnum::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {

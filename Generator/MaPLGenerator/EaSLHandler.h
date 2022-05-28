@@ -26,7 +26,7 @@ public:
     
     EaSLParser::EnumDefinitionContext *_enumContext;
     std::string _name;
-    MaPLArray<std::string> *_cases;
+    MaPLArrayMap<std::string> *_cases;
     MaPLArrayMap<std::string> *_annotations;
 };
 
