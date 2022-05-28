@@ -60,7 +60,7 @@
     readonly string value;
     
     // Some attributes can be interpreted as a list of values.
-    // `values` is the comma-delimited representation of `value`.
+    // `values` is the list representation of a comma-delimited `value`.
     readonly Array<string> values;
 }
 
