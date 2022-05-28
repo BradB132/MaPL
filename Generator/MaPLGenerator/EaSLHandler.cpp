@@ -515,11 +515,12 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
     
     // TODO: Confirm count of children matches sequence ranges.
     
-    // Check all schema attributes in this class to make sure required attributes exist in the XML.
+    // Check all primitive schema attributes in this class to make sure required attributes exist in the XML.
     SchemaClass *parentSchemaClass = schemaClass;
     Schema *parentSchema = schema;
     while (parentSchemaClass) {
         for (SchemaAttribute *schemaAttribute : parentSchemaClass->_attributes->_backingVector) {
+            if (!schemaAttribute->_isPrimitiveType) { continue; }
             bool isRequired = schemaAttribute->_defaultValues->_backingVector.size() == 0;
             if (isRequired && !xmlNode->_attributes->_backingMap.count(schemaAttribute->_name)) {
                 std::string subclassDescriptor;
@@ -553,7 +554,7 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
             } else {
                 sequenceDescriptor = "between "+std::to_string(schemaAttribute->_minOccurrences)+" and "+std::to_string(schemaAttribute->_maxOccurrences);
             }
-            errorLogger.logError(xmlNode->_node, "The number of values specified by '"+xmlAttribute->_name+"' is "+std::to_string(xmlAttribute->_values->_backingVector.size())+", but was expected to be "+sequenceDescriptor+".");
+            errorLogger.logError(xmlNode->_node, "The number of values specified by '"+xmlAttribute->_name+"' is "+std::to_string(xmlAttribute->_values->_backingVector.size())+", but was expecting "+sequenceDescriptor+".");
         }
         
         for (const std::string &attributeValue : xmlAttribute->_values->_backingVector) {
