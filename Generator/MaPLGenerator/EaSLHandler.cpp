@@ -116,6 +116,9 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
             }
             if (!maxLength->SEQUENCE_WILDCARD()) {
                 _maxOccurrences = uintForSequenceLength(sequenceDescriptor, maxLength, errorLogger);
+                if (_maxOccurrences < 1) {
+                    errorLogger->logError(maxLength->start, "The maximum length for a sequence must be at least 1.");
+                }
             }
             if (_maxOccurrences < _minOccurrences) {
                 errorLogger->logError(minLength->start, "Invalid range: '"+sequenceDescriptor->getText()+"' Minimum must be less than the maximum.");
@@ -485,7 +488,7 @@ void firstPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, s
             errorLogger.logError(xmlNode->_node, "XML node specifies attribute '"+xmlAttribute->_name+"' which does not appear in schema class '"+schema->_namespace+"::"+schemaClass->_name+"' or any superclasses.");
             continue;
         }
-        if (schemaAttribute->_typeName != "UID") { continue; }
+        if (schemaAttribute->_typeName != "UID" || xmlAttribute->_value.empty()) { continue; }
         for (const std::string &value : xmlAttribute->_values->_backingVector) {
             if (uidMap.count(value) > 0) {
                 errorLogger.logError(xmlNode->_node, "UID '"+value+"' must be unique, but it used elsewhere in the dataset.");
@@ -530,10 +533,24 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
         SchemaAttribute *schemaAttribute = schemaAttributeForXmlAttribute(xmlAttribute, schemas, schemaClass);
         
         // TODO: Attempt to confirm that attribute values match the schema type.
-        // TODO: Confirm count of values matches sequence range.
+        
+        // If this is a single string, then commas are part of the content.
+        // Otherwise, interpret commas as the delimiter for a list of values.
+        bool expectCommasAsContent = schemaAttribute->_typeName == "string" && schemaAttribute->_maxOccurrences == 1;
+        if (!expectCommasAsContent &&
+            (xmlAttribute->_values->_backingVector.size() < schemaAttribute->_minOccurrences ||
+            xmlAttribute->_values->_backingVector.size() > schemaAttribute->_maxOccurrences)) {
+            std::string sequenceDescriptor;
+            if (schemaAttribute->_minOccurrences == schemaAttribute->_maxOccurrences) {
+                sequenceDescriptor = std::to_string(schemaAttribute->_minOccurrences);
+            } else {
+                sequenceDescriptor = "between "+std::to_string(schemaAttribute->_minOccurrences)+" and "+std::to_string(schemaAttribute->_maxOccurrences);
+            }
+            errorLogger.logError(xmlNode->_node, "The number of values specified by '"+xmlAttribute->_name+"' is "+std::to_string(xmlAttribute->_values->_backingVector.size())+", but was expected to be "+sequenceDescriptor+".");
+        }
         
         // If this attribute references another node, make sure that node is what we expect.
-        if (schemaAttribute->_typeIsUIDReference) {
+        if (schemaAttribute->_typeIsUIDReference && !xmlAttribute->_value.empty()) {
             for (const std::string &referenceKey : xmlAttribute->_values->_backingVector) {
                 if (!uidMap.count(referenceKey)) {
                     errorLogger.logError(xmlNode->_node, "UID '"+referenceKey+"' refers to an object that does not exist in the dataset.");
