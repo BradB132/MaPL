@@ -468,6 +468,14 @@ SchemaAttribute *schemaAttributeForXmlAttribute(XmlAttribute *xmlAttribute, MaPL
     return schemaAttribute;
 }
 
+bool confirmStringUnsigned(const std::string &numericString, XmlNode *node, XmlAttribute *xmlAttribute, ErrorLogger &errorLogger) {
+    if (numericString.find('-') != std::string::npos) {
+        errorLogger.logError(node->_node, "Value '"+numericString+"' in attribute '"+xmlAttribute->_name+"' cannot be negative.");
+        return false;
+    }
+    return true;
+}
+
 void firstPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, std::unordered_map<std::string, XmlNode *> &uidMap, ErrorLogger &errorLogger) {
     // Do an initial pass over all nodes and attributes in the dataset:
     //  - Confirm all namespaces, classes, and attributes exist in the schema.
@@ -532,14 +540,13 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
     for (XmlAttribute *xmlAttribute : xmlNode->_attributes->_backingVector) {
         SchemaAttribute *schemaAttribute = schemaAttributeForXmlAttribute(xmlAttribute, schemas, schemaClass);
         
-        // TODO: Attempt to confirm that attribute values match the schema type.
+        // If this is a single string, then commas are part of the content and no meaningful validation of sequence length is possible.
+        if (schemaAttribute->_typeName == "string" && schemaAttribute->_maxOccurrences == 1) {
+            continue;
+        }
         
-        // If this is a single string, then commas are part of the content.
-        // Otherwise, interpret commas as the delimiter for a list of values.
-        bool expectCommasAsContent = schemaAttribute->_typeName == "string" && schemaAttribute->_maxOccurrences == 1;
-        if (!expectCommasAsContent &&
-            (xmlAttribute->_values->_backingVector.size() < schemaAttribute->_minOccurrences ||
-            xmlAttribute->_values->_backingVector.size() > schemaAttribute->_maxOccurrences)) {
+        if (xmlAttribute->_values->_backingVector.size() < schemaAttribute->_minOccurrences ||
+            xmlAttribute->_values->_backingVector.size() > schemaAttribute->_maxOccurrences) {
             std::string sequenceDescriptor;
             if (schemaAttribute->_minOccurrences == schemaAttribute->_maxOccurrences) {
                 sequenceDescriptor = std::to_string(schemaAttribute->_minOccurrences);
@@ -549,18 +556,82 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
             errorLogger.logError(xmlNode->_node, "The number of values specified by '"+xmlAttribute->_name+"' is "+std::to_string(xmlAttribute->_values->_backingVector.size())+", but was expected to be "+sequenceDescriptor+".");
         }
         
-        // If this attribute references another node, make sure that node is what we expect.
-        if (schemaAttribute->_typeIsUIDReference && !xmlAttribute->_value.empty()) {
-            for (const std::string &referenceKey : xmlAttribute->_values->_backingVector) {
-                if (!uidMap.count(referenceKey)) {
-                    errorLogger.logError(xmlNode->_node, "UID '"+referenceKey+"' refers to an object that does not exist in the dataset.");
+        for (const std::string &attributeValue : xmlAttribute->_values->_backingVector) {
+            if (schemaAttribute->_typeIsUIDReference) {
+                // If this attribute references another node, make sure that node is what we expect.
+                if (!uidMap.count(attributeValue)) {
+                    errorLogger.logError(xmlNode->_node, "UID '"+attributeValue+"' refers to an object that does not exist in the dataset.");
                     continue;
                 }
-                XmlNode *referencedNode = uidMap.at(referenceKey);
+                XmlNode *referencedNode = uidMap.at(attributeValue);
                 if (referencedNode->_name != schemaAttribute->_typeName ||
                     referencedNode->_namespace != schemaAttribute->_typeNamespace) {
-                    errorLogger.logError(xmlNode->_node, "UID '"+referenceKey+"' was expected to refer to a node of type '"+schemaAttribute->_typeNamespace+"::"+schemaAttribute->_typeName+"', but matched a node of type '"+referencedNode->_namespace+"::"+referencedNode->_name+"' instead.");
+                    errorLogger.logError(xmlNode->_node, "UID '"+attributeValue+"' was expected to refer to a node of type '"+schemaAttribute->_typeNamespace+"::"+schemaAttribute->_typeName+"', but matched a node of type '"+referencedNode->_namespace+"::"+referencedNode->_name+"' instead.");
                 }
+            } else if (schemaAttribute->_typeName == "char") {
+                if (!confirmStringUnsigned(attributeValue, xmlNode, xmlAttribute, errorLogger)) {
+                    continue;
+                }
+                char *endPointer;
+                uint64_t longValue = strtoul(attributeValue.c_str(), &endPointer, 10);
+                if (*endPointer) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is not a valid char.");
+                }
+                if (longValue > UINT8_MAX) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is too large to store in a char.");
+                }
+            } else if (schemaAttribute->_typeName == "int32") {
+                char *endPointer;
+                int64_t longValue = strtol(attributeValue.c_str(), &endPointer, 10);
+                if (*endPointer) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is not a valid int32.");
+                }
+                if (longValue > INT32_MAX || longValue < INT32_MIN) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is too large to store in a int32.");
+                }
+            } else if (schemaAttribute->_typeName == "int64") {
+                char *endPointer;
+                strtol(attributeValue.c_str(), &endPointer, 10);
+                if (*endPointer) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is not a valid int64.");
+                }
+            } else if (schemaAttribute->_typeName == "uint32") {
+                if (!confirmStringUnsigned(attributeValue, xmlNode, xmlAttribute, errorLogger)) {
+                    continue;
+                }
+                char *endPointer;
+                uint64_t longValue = strtoul(attributeValue.c_str(), &endPointer, 10);
+                if (*endPointer) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is not a valid uint32.");
+                }
+                if (longValue > UINT32_MAX) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is too large to store in a uint32.");
+                }
+            } else if (schemaAttribute->_typeName == "uint64") {
+                if (!confirmStringUnsigned(attributeValue, xmlNode, xmlAttribute, errorLogger)) {
+                    continue;
+                }
+                char *endPointer;
+                strtoul(attributeValue.c_str(), &endPointer, 10);
+                if (*endPointer) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is not a valid uint64.");
+                }
+            } else if (schemaAttribute->_typeName == "float32") {
+                char *endPointer;
+                strtof(attributeValue.c_str(), &endPointer);
+                if (*endPointer) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is not a valid float32.");
+                }
+            } else if (schemaAttribute->_typeName == "float64") {
+                char *endPointer;
+                strtod(attributeValue.c_str(), &endPointer);
+                if (*endPointer) {
+                    errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is not a valid float64.");
+                }
+            } else if (schemaAttribute->_typeName == "bool" &&
+                       attributeValue != "true" &&
+                       attributeValue != "false") {
+                errorLogger.logError(xmlNode->_node, "Boolean attribute '"+xmlAttribute->_name+"' must have a value that is either 'true' or 'false'.");
             }
         }
     }
