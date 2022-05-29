@@ -32,7 +32,7 @@ public:
 
 class SchemaAttribute : public MaPLInterface {
 public:
-    SchemaAttribute(EaSLParser::AttributeContext *attributeContext, ErrorLogger *errorLogger);
+    SchemaAttribute(EaSLParser::AttributeContext *attributeContext, const std::string &defaultNamespace, ErrorLogger *errorLogger);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
@@ -50,7 +50,7 @@ public:
 
 class SchemaClass : public MaPLInterface {
 public:
-    SchemaClass(EaSLParser::ClassDefinitionContext *classContext, ErrorLogger *errorLogger);
+    SchemaClass(EaSLParser::ClassDefinitionContext *classContext, const std::string &defaultNamespace, ErrorLogger *errorLogger);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     

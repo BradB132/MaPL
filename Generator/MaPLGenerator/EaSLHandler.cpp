@@ -84,7 +84,7 @@ uint32_t uintForSequenceLength(EaSLParser::SequenceDescriptorContext *sequenceDe
     return (uint32_t)std::stoul(lengthText);
 }
 
-SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext, ErrorLogger *errorLogger) :
+SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext, const std::string &defaultNamespace, ErrorLogger *errorLogger) :
 _attributeContext(attributeContext),
 _name(attributeContext->identifier()->getText()),
 _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
@@ -96,6 +96,8 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
         _typeName = classType->classIdentifier->getText();
         if (classType->namespaceIdentifier) {
             _typeNamespace = classType->namespaceIdentifier->getText();
+        } else {
+            _typeNamespace = defaultNamespace;
         }
         _isPrimitiveType = _typeIsUIDReference;
     } else {
@@ -213,7 +215,7 @@ MaPLParameter SchemaAttribute::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext, ErrorLogger *errorLogger) :
+SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext, const std::string &defaultNamespace, ErrorLogger *errorLogger) :
 _classContext(classContext),
 _name(classContext->identifier()->getText()),
 _annotations(parseAnnotations(classContext->ANNOTATION())) {
@@ -225,12 +227,14 @@ _annotations(parseAnnotations(classContext->ANNOTATION())) {
         _superclass = superClass->classIdentifier->getText();
         if (superClass->namespaceIdentifier) {
             _superclassNamespace = superClass->namespaceIdentifier->getText();
+        } else {
+            _superclassNamespace = defaultNamespace;
         }
     }
     std::vector<SchemaAttribute *> attributes;
     std::unordered_map<std::string, SchemaAttribute *> attributeMap;
     for (EaSLParser::AttributeContext *attributeContext : classContext->attribute()) {
-        SchemaAttribute *attribute = new SchemaAttribute(attributeContext, errorLogger);
+        SchemaAttribute *attribute = new SchemaAttribute(attributeContext, defaultNamespace, errorLogger);
         attributes.push_back(attribute);
         if (attributeMap.count(attribute->_name)) {
             errorLogger->logError(attributeContext->start, "Attribute name '"+attribute->_name+"' conflicts with a attribute of the same name in class '"+_name+"'.");
@@ -286,7 +290,7 @@ _errorLogger(filePath) {
     std::vector<SchemaClass *> classes;
     std::unordered_map<std::string, SchemaClass *> classMap;
     for (EaSLParser::ClassDefinitionContext *classContext : schemaContext->classDefinition()) {
-        SchemaClass *classObj = new SchemaClass(classContext, &_errorLogger);
+        SchemaClass *classObj = new SchemaClass(classContext, _namespace, &_errorLogger);
         classes.push_back(classObj);
         classMap[classObj->_name] = classObj;
     }
@@ -468,6 +472,19 @@ SchemaAttribute *schemaAttributeForXmlAttribute(XmlAttribute *xmlAttribute, MaPL
     return schemaAttribute;
 }
 
+bool isKindOfClass(const std::string &subclassName, const std::string &subclassNamespace,
+                   const std::string &superclassName, const std::string &superclassNamespace,
+                   MaPLArrayMap<Schema *> *schemas) {
+    if (subclassName == superclassName && subclassNamespace == superclassNamespace) {
+        return true;
+    }
+    SchemaClass *schemaClass = schemas->_backingMap[subclassNamespace]->_classes->_backingMap[subclassName];
+    if (!schemaClass->_superclass.empty() && !schemaClass->_superclassNamespace.empty()) {
+        return isKindOfClass(schemaClass->_superclass, schemaClass->_superclassNamespace, superclassName, superclassNamespace, schemas);
+    }
+    return false;
+}
+
 bool confirmStringUnsigned(const std::string &numericString, XmlNode *node, XmlAttribute *xmlAttribute, ErrorLogger &errorLogger) {
     if (numericString.find('-') != std::string::npos) {
         errorLogger.logError(node->_node, "Value '"+numericString+"' in attribute '"+xmlAttribute->_name+"' cannot be negative.");
@@ -513,25 +530,40 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
     Schema *schema = schemas->_backingMap[xmlNode->_namespace];
     SchemaClass *schemaClass = schema->_classes->_backingMap[xmlNode->_name];
     
-    // TODO: Confirm count of children matches sequence ranges.
+    struct AttributeCount {
+        Schema *schema;
+        SchemaClass *schemaClass;
+        SchemaAttribute *schemaAttribute;
+        uint32_t childCount;
+    };
+    std::vector<AttributeCount> attributeCounts;
     
     // Check all primitive schema attributes in this class to make sure required attributes exist in the XML.
     SchemaClass *parentSchemaClass = schemaClass;
     Schema *parentSchema = schema;
     while (parentSchemaClass) {
+        std::vector<AttributeCount> attributeCountsForClass;
         for (SchemaAttribute *schemaAttribute : parentSchemaClass->_attributes->_backingVector) {
-            if (!schemaAttribute->_isPrimitiveType) { continue; }
-            bool isRequired = schemaAttribute->_defaultValues->_backingVector.size() == 0;
-            if (isRequired && !xmlNode->_attributes->_backingMap.count(schemaAttribute->_name)) {
-                std::string subclassDescriptor;
-                if (schemaClass == parentSchemaClass) {
-                    subclassDescriptor = "";
-                } else {
-                    subclassDescriptor = " (a superclass of '"+schema->_namespace+"::"+schemaClass->_name+"')";
+            if (schemaAttribute->_isPrimitiveType) {
+                bool isRequired = schemaAttribute->_defaultValues->_backingVector.size() == 0;
+                if (isRequired && !xmlNode->_attributes->_backingMap.count(schemaAttribute->_name)) {
+                    std::string subclassDescriptor;
+                    if (schemaClass == parentSchemaClass) {
+                        subclassDescriptor = "";
+                    } else {
+                        subclassDescriptor = " (a superclass of '"+schema->_namespace+"::"+schemaClass->_name+"')";
+                    }
+                    errorLogger.logError(xmlNode->_node, "Attribute '"+schemaAttribute->_name+"' was not specified, but is required by schema class '"+parentSchema->_namespace+"::"+parentSchemaClass->_name+"'"+subclassDescriptor+".");
                 }
-                errorLogger.logError(xmlNode->_node, "Attribute '"+schemaAttribute->_name+"' was not specified, but is required by schema class '"+parentSchema->_namespace+"::"+parentSchemaClass->_name+"'"+subclassDescriptor+".");
+            } else {
+                // This is not a primitive, record this attribute so the number of child nodes can later be validated.
+                attributeCountsForClass.push_back({ parentSchema, parentSchemaClass, schemaAttribute, 0 });
             }
         }
+        
+        // Prepend the counts for this class onto the list of all attributes for this type.
+        attributeCounts.insert(attributeCounts.begin(), attributeCountsForClass.begin(), attributeCountsForClass.end());
+        
         if (parentSchemaClass->_superclass.empty()) { break; }
         parentSchema = schemas->_backingMap[parentSchemaClass->_superclassNamespace];
         if (!parentSchemaClass) { break; }
@@ -561,7 +593,7 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
             if (schemaAttribute->_typeIsUIDReference) {
                 // If this attribute references another node, make sure that node is what we expect.
                 if (!uidMap.count(attributeValue)) {
-                    errorLogger.logError(xmlNode->_node, "UID '"+attributeValue+"' refers to an object that does not exist in the dataset.");
+                    errorLogger.logError(xmlNode->_node, "UID '"+attributeValue+"' does not refer to any object that exists in the dataset.");
                     continue;
                 }
                 XmlNode *referencedNode = uidMap.at(attributeValue);
@@ -637,7 +669,38 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
         }
     }
     for (XmlNode *childNode : xmlNode->_children->_backingVector) {
+        // Slot this child into the first entry in the attributeCounts list where it fits.
+        bool didMatchAttribute = false;
+        AttributeCount *potentialMatch = NULL;
+        for (AttributeCount &attributeCount : attributeCounts) {
+            if (isKindOfClass(childNode->_name, childNode->_namespace,
+                              attributeCount.schemaAttribute->_typeName, attributeCount.schemaAttribute->_typeNamespace,
+                              schemas)) {
+                potentialMatch = &attributeCount;
+                if (attributeCount.childCount < attributeCount.schemaAttribute->_maxOccurrences) {
+                    attributeCount.childCount++;
+                    didMatchAttribute = true;
+                    break;
+                }
+            }
+        }
+        if (!didMatchAttribute) {
+            if (potentialMatch) {
+                errorLogger.logError(childNode->_node, "Attempted to match child node of type '"+childNode->_namespace+"::"+childNode->_name+"' to attribute '"+potentialMatch->schema->_namespace+"::"+potentialMatch->schemaClass->_name+"::"+potentialMatch->schemaAttribute->_name+"', but the limit of "+std::to_string(potentialMatch->schemaAttribute->_maxOccurrences)+" occurrences was exceeded.");
+            } else {
+                errorLogger.logError(childNode->_node, "Child node of type '"+childNode->_namespace+"::"+childNode->_name+"' does not match any attribute on parent type '"+xmlNode->_namespace+"::"+xmlNode->_name+"'.");
+            }
+        }
+        
         secondPassXMLValidation(childNode, schemas, uidMap, errorLogger);
+    }
+    
+    // The above logic will ensure no schema attribute exceeds its maximum occurrences.
+    // Check each attribute count to ensure the minimums were met.
+    for (const AttributeCount &attributeCount : attributeCounts) {
+        if (attributeCount.childCount < attributeCount.schemaAttribute->_minOccurrences) {
+            errorLogger.logError(xmlNode->_node, "Node of type '"+xmlNode->_namespace+"::"+xmlNode->_name+"' expects at least "+std::to_string(attributeCount.schemaAttribute->_minOccurrences)+" children of type '"+attributeCount.schemaAttribute->_typeNamespace+"::"+attributeCount.schemaAttribute->_typeName+"', but found "+std::to_string(attributeCount.childCount)+".");
+        }
     }
 }
 
