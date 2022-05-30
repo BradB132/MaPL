@@ -325,6 +325,7 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
             if (topLevelNames.count(schemaClass->_name)) {
                 schema->_errorLogger.logError(schemaClass->_classContext->identifier()->start, "Class '"+schema->_namespace+"::"+schemaClass->_name+"' conflicts with another declaration of the same name.");
             }
+            topLevelNames.insert(schemaClass->_name);
             if (!schemaClass->_superclass.empty()) {
                 Schema *superclassSchema = schemaClass->_superclassNamespace.empty() ? schema : schemas->_backingMap[schemaClass->_superclassNamespace];
                 if (!superclassSchema || !superclassSchema->_classes->_backingMap[schemaClass->_superclass]) {
@@ -390,6 +391,7 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
             if (topLevelNames.count(schemaEnum->_name)) {
                 schema->_errorLogger.logError(schemaEnum->_enumContext->start, "Enum '"+schema->_namespace+"::"+schemaEnum->_name+"' conflicts with another declaration of the same name.");
             }
+            topLevelNames.insert(schemaEnum->_name);
         }
         // EaSL uses namespaces to distinguish between objects from different schemas.
         topLevelNames.clear();
@@ -423,19 +425,19 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
         stringBuffer << inputStream.rdbuf();
         std::string rawSchemaText = stringBuffer.str();
         
-        antlr4::ANTLRInputStream antlrInputStream(rawSchemaText);
-        EaSLLexer lexer(&antlrInputStream);
-        antlr4::CommonTokenStream tokenStream(&lexer);
-        EaSLParser parser(&tokenStream);
+        antlr4::ANTLRInputStream *antlrInputStream = new antlr4::ANTLRInputStream(rawSchemaText);
+        EaSLLexer *lexer = new EaSLLexer(antlrInputStream);
+        antlr4::CommonTokenStream *tokenStream = new antlr4::CommonTokenStream(lexer);
+        EaSLParser *parser = new EaSLParser(tokenStream);
         
         ErrorLogger errLogger{ schemaPath };
         errListener._errorLogger = &errLogger;
-        lexer.getErrorListenerDispatch().removeErrorListeners();
-        parser.getErrorListenerDispatch().removeErrorListeners();
-        lexer.addErrorListener(&errListener);
-        parser.addErrorListener(&errListener);
+        lexer->getErrorListenerDispatch().removeErrorListeners();
+        parser->getErrorListenerDispatch().removeErrorListeners();
+        lexer->addErrorListener(&errListener);
+        parser->addErrorListener(&errListener);
         
-        EaSLParser::SchemaContext *schemaContext = parser.schema();
+        EaSLParser::SchemaContext *schemaContext = parser->schema();
         if (errListener._errorLogger->_hasLoggedError) {
             exit(1);
         }
