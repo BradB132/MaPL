@@ -609,6 +609,9 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
                     referencedNode->_namespace != schemaAttribute->_typeNamespace) {
                     errorLogger.logError(xmlNode->_node, "UID '"+attributeValue+"' was expected to refer to a node of type '"+schemaAttribute->_typeNamespace+"::"+schemaAttribute->_typeName+"', but matched a node of type '"+referencedNode->_namespace+"::"+referencedNode->_name+"' instead.");
                 }
+            } else if (schemaAttribute->_typeIsEnum &&
+                       !schemas->_backingMap[schemaAttribute->_typeNamespace]->_enums->_backingMap[schemaAttribute->_typeName]->_cases->_backingMap.count(attributeValue)) {
+                errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is not one of the cases in the '"+schemaAttribute->_typeNamespace+"::"+schemaAttribute->_typeName+"' enum.");
             } else if (schemaAttribute->_typeName == "char") {
                 if (!confirmStringUnsigned(attributeValue, xmlNode, xmlAttribute, errorLogger)) {
                     continue;
