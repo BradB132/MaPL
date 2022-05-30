@@ -41,7 +41,8 @@ public:
     std::string _typeName;
     std::string _typeNamespace;
     bool _typeIsUIDReference;
-    bool _isPrimitiveType;
+    bool _typeIsClass;
+    bool _typeIsEnum;
     MaPLArrayMap<std::string> *_annotations;
     MaPLArray<std::string> *_defaultValues;
     uint32_t _minOccurrences;

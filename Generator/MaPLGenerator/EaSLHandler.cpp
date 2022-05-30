@@ -92,6 +92,7 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
     _typeIsUIDReference = typeContext->typeToken && typeContext->typeToken->getType() == EaSLParser::REFERENCE;
     
     EaSLParser::ClassTypeContext *classType = typeContext->classType();
+    bool isPrimitiveType;
     if (classType) {
         _typeName = classType->classIdentifier->getText();
         if (classType->namespaceIdentifier) {
@@ -99,10 +100,10 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
         } else {
             _typeNamespace = defaultNamespace;
         }
-        _isPrimitiveType = _typeIsUIDReference;
+        isPrimitiveType = _typeIsUIDReference;
     } else {
         _typeName = typeContext->getText();
-        _isPrimitiveType = true;
+        isPrimitiveType = true;
     }
     
     EaSLParser::SequenceDescriptorContext *sequenceDescriptor = attributeContext->sequenceDescriptor();
@@ -138,9 +139,11 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
             size_t literalType = literalContext->literalToken->getType();
             std::string literalText = literalContext->getText();
             
-            // Check the type of this literal to make sure it matches.
-            bool valueMatchesType;
-            if (_isPrimitiveType) {
+            if (isPrimitiveType) {
+                // We only have enough information in this context to judge for primitives whether the
+                // literal type matches the declared type. For complex types (class and enum) the equivalent
+                // check must be performed after we've built up a mapping of all types in the schema.
+                bool valueMatchesType;
                 switch (typeContext->typeToken->getType()) {
                     case EaSLParser::DECL_CHAR: // Intentional fallthrough.
                     case EaSLParser::DECL_UINT32: // Intentional fallthrough.
@@ -168,11 +171,9 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
                         valueMatchesType = false;
                         break;
                 }
-            } else {
-                valueMatchesType = literalType == EaSLParser::LITERAL_NULL;
-            }
-            if (!valueMatchesType) {
-                errorLogger->logError(typeContext->typeToken, "Default value '"+literalText+"' in attribute '"+_name+"' doesn't match the attribute's type '"+typeContext->getText()+"'.");
+                if (!valueMatchesType) {
+                    errorLogger->logError(typeContext->typeToken, "Default value '"+literalText+"' in attribute '"+_name+"' doesn't match the attribute's type '"+typeContext->getText()+"'.");
+                }
             }
             defaultValues.push_back(literalText);
         }
@@ -192,14 +193,16 @@ MaPLParameter SchemaAttribute::invokeFunction(MaPLSymbol functionSymbol, const M
             return MaPLPointer(_annotations);
         case MaPLSymbols_SchemaAttribute_defaultValues:
             return MaPLPointer(_defaultValues);
-        case MaPLSymbols_SchemaAttribute_isPrimitiveType:
-            return MaPLBool(_isPrimitiveType);
         case MaPLSymbols_SchemaAttribute_maxOccurrences:
             return MaPLUint32(_maxOccurrences);
         case MaPLSymbols_SchemaAttribute_minOccurrences:
             return MaPLUint32(_minOccurrences);
         case MaPLSymbols_SchemaAttribute_name:
             return MaPLStringByReference(_name.c_str());
+        case MaPLSymbols_SchemaAttribute_typeIsClass:
+            return MaPLBool(_typeIsClass);
+        case MaPLSymbols_SchemaAttribute_typeIsEnum:
+            return MaPLBool(_typeIsEnum);
         case MaPLSymbols_SchemaAttribute_typeIsUIDReference:
             return MaPLBool(_typeIsUIDReference);
         case MaPLSymbols_SchemaAttribute_typeName:
@@ -343,23 +346,25 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                                                       "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' conflicts with attribute '"+superclassSchema->_namespace+"::"+superclass->_name+"::"+attribute->_name+"'.");
                     }
                 }
-                if (!attribute->_isPrimitiveType) {
-                    Schema *typeSchema = attribute->_typeNamespace.empty() ? schema : schemas->_backingMap[attribute->_typeNamespace];
-                    if (!typeSchema ||
-                        (!typeSchema->_classes->_backingMap[attribute->_typeName] &&
-                        !typeSchema->_enums->_backingMap[attribute->_typeName])) {
-                        std::string typeNamespace = attribute->_typeNamespace.empty() ? schema->_namespace : attribute->_typeNamespace;
+                if (!attribute->_typeNamespace.empty() && !attribute->_typeIsUIDReference) {
+                    // Now that all schema objects are allocated, we have enough context to determine if this is a class or enum.
+                    Schema *typeSchema = schemas->_backingMap[attribute->_typeNamespace];
+                    if (typeSchema) {
+                        attribute->_typeIsClass = typeSchema->_classes->_backingMap.count(attribute->_typeName) > 0;
+                        attribute->_typeIsEnum = typeSchema->_enums->_backingMap.count(attribute->_typeName) > 0;
+                    }
+                    if (!typeSchema || (!attribute->_typeIsClass && !attribute->_typeIsEnum)) {
+                        std::string typeNamespace = attribute->_typeNamespace;
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
                                                       "Can't find class or enum '"+typeNamespace+"::"+attribute->_typeName+"' referenced by '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
                     }
                 }
                 if (attribute->_typeIsUIDReference) {
-                    Schema *typeSchema = attribute->_typeNamespace.empty() ? schema : schemas->_backingMap[attribute->_typeNamespace];
+                    Schema *typeSchema = schemas->_backingMap[attribute->_typeNamespace];
                     SchemaClass *typeClass = typeSchema ? typeSchema->_classes->_backingMap[attribute->_typeName] : NULL;
                     if (!typeClass) {
-                        std::string typeNamespace = attribute->_typeNamespace.empty() ? schema->_namespace : attribute->_typeNamespace;
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
-                                                      "Can't find class '"+typeNamespace+"::"+attribute->_typeName+"' referenced by '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
+                                                      "Can't find class '"+attribute->_typeNamespace+"::"+attribute->_typeName+"' referenced by '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
                     }
                     bool typeClassHasUID = false;
                     SchemaClass *typeSuperclass = typeClass;
@@ -544,7 +549,11 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
     while (parentSchemaClass) {
         std::vector<AttributeCount> attributeCountsForClass;
         for (SchemaAttribute *schemaAttribute : parentSchemaClass->_attributes->_backingVector) {
-            if (schemaAttribute->_isPrimitiveType) {
+            if (schemaAttribute->_typeIsClass) {
+                // Record this attribute so the number of child nodes can later be validated.
+                attributeCountsForClass.push_back({ parentSchema, parentSchemaClass, schemaAttribute, 0 });
+            } else {
+                // This attribute is a primitive or enum, so its value is specified inline.
                 bool isRequired = schemaAttribute->_defaultValues->_backingVector.size() == 0;
                 if (isRequired && !xmlNode->_attributes->_backingMap.count(schemaAttribute->_name)) {
                     std::string subclassDescriptor;
@@ -555,9 +564,6 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
                     }
                     errorLogger.logError(xmlNode->_node, "Attribute '"+schemaAttribute->_name+"' was not specified, but is required by schema class '"+parentSchema->_namespace+"::"+parentSchemaClass->_name+"'"+subclassDescriptor+".");
                 }
-            } else {
-                // This is not a primitive, record this attribute so the number of child nodes can later be validated.
-                attributeCountsForClass.push_back({ parentSchema, parentSchemaClass, schemaAttribute, 0 });
             }
         }
         

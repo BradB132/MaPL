@@ -38,7 +38,8 @@
     readonly string typeName;
     readonly string typeNamespace;
     readonly bool typeIsUIDReference;
-    readonly bool isPrimitiveType;
+    readonly bool typeIsClass;
+    readonly bool typeIsEnum;
     readonly ArrayMap<string> annotations;
     readonly Array<string> defaultValues;
     readonly uint32 minOccurrences;
