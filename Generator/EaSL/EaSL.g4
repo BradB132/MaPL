@@ -23,7 +23,7 @@ sequenceDescriptor
 sequenceLength : LITERAL_INT | SEQUENCE_WILDCARD ;
 
 enumDefinition
-    :    ANNOTATION* ENUM enumName=identifier DEFINITION_OPEN (enumValue+=identifier SEQUENCE_DELIMITER?)+ DEFINITION_CLOSE
+    :    ANNOTATION* ENUM enumName=identifier DEFINITION_OPEN (enumValue+=identifier SEQUENCE_DELIMITER)* enumValue+=identifier SEQUENCE_DELIMITER? DEFINITION_CLOSE
     ;
 
 defaultValue
