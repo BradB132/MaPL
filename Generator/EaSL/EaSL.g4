@@ -37,6 +37,7 @@ literalValue
     |    literalToken=LITERAL_STRING
     |    literalToken=LITERAL_INT
     |    literalToken=LITERAL_FLOAT
+    |    identifier
     ;
 
 type

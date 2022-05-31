@@ -137,7 +137,7 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
     EaSLParser::DefaultValueContext *defaultContext = attributeContext->defaultValue();
     if (defaultContext) {
         for (EaSLParser::LiteralValueContext *literalContext : defaultContext->literalValue()) {
-            size_t literalType = literalContext->literalToken->getType();
+            size_t literalType = literalContext->literalToken ? literalContext->literalToken->getType() : EaSLParser::IDENTIFIER;
             std::string literalText = literalContext->getText();
             
             if (isPrimitiveType) {
@@ -172,7 +172,6 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
                         valueMatchesType = false;
                         break;
                 }
-                // TODO: Confirm that class defaults are only NULL, and enums are valid enum values.
                 if (!valueMatchesType) {
                     errorLogger->logError(typeContext->typeToken, "Default value '"+literalText+"' in attribute '"+_name+"' doesn't match the attribute's type '"+typeContext->getText()+"'.");
                 }
@@ -360,6 +359,21 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                         std::string typeNamespace = attribute->_typeNamespace;
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
                                                       "Can't find class or enum '"+typeNamespace+"::"+attribute->_typeName+"' referenced by '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
+                    }
+                    if (attribute->_typeIsClass) {
+                        for (const std::string &defaultValue : attribute->_defaultValues->_backingVector) {
+                            if (defaultValue != "NULL") {
+                                SchemaClass *errClass = typeSchema->_classes->_backingMap[attribute->_typeName];
+                                schema->_errorLogger.logError(attribute->_attributeContext->defaultValue()->start, "Default value of '"+defaultValue+"' was specified for an attribute of type '"+typeSchema->_namespace+"::"+errClass->_name+"'. Default values for classes can only be 'NULL'.");
+                            }
+                        }
+                    } else if (attribute->_typeIsEnum) {
+                        SchemaEnum *defaultsEnum = typeSchema->_enums->_backingMap[attribute->_typeName];
+                        for (const std::string &defaultValue : attribute->_defaultValues->_backingVector) {
+                            if (!defaultsEnum->_cases->_backingMap.count(defaultValue)) {
+                                schema->_errorLogger.logError(attribute->_attributeContext->defaultValue()->start, "Default value of '"+defaultValue+"' does not appear in enum '"+typeSchema->_namespace+"::"+defaultsEnum->_name+"'.");
+                            }
+                        }
                     }
                 }
                 if (attribute->_typeIsUIDReference) {
