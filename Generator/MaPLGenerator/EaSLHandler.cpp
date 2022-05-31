@@ -78,7 +78,8 @@ MaPLParameter SchemaEnum::invokeSubscript(MaPLParameter index) {
 
 uint32_t uintForSequenceLength(EaSLParser::SequenceDescriptorContext *sequenceDescriptor, EaSLParser::SequenceLengthContext *lengthContext, ErrorLogger *errorLogger) {
     std::string lengthText = lengthContext->getText();
-    if (lengthText[0] == '-') {
+    // Check if already 'hasLoggedError' because we tend to do this same check for identical min and max values.
+    if (lengthText[0] == '-' && !errorLogger->_hasLoggedError) {
         errorLogger->logError(sequenceDescriptor->start, "Error in sequence '"+sequenceDescriptor->getText()+"': sequence string '"+lengthText+"' cannot be negative.");
     }
     return (uint32_t)std::stoul(lengthText);
@@ -171,6 +172,7 @@ _annotations(parseAnnotations(attributeContext->ANNOTATION())) {
                         valueMatchesType = false;
                         break;
                 }
+                // TODO: Confirm that class defaults are only NULL, and enums are valid enum values.
                 if (!valueMatchesType) {
                     errorLogger->logError(typeContext->typeToken, "Default value '"+literalText+"' in attribute '"+_name+"' doesn't match the attribute's type '"+typeContext->getText()+"'.");
                 }
@@ -240,7 +242,7 @@ _annotations(parseAnnotations(classContext->ANNOTATION())) {
         SchemaAttribute *attribute = new SchemaAttribute(attributeContext, defaultNamespace, errorLogger);
         attributes.push_back(attribute);
         if (attributeMap.count(attribute->_name)) {
-            errorLogger->logError(attributeContext->start, "Attribute name '"+attribute->_name+"' conflicts with a attribute of the same name in class '"+_name+"'.");
+            errorLogger->logError(attributeContext->start, "Attribute name '"+attribute->_name+"' conflicts with an attribute of the same name in class '"+_name+"'.");
         }
         attributeMap[attribute->_name] = attribute;
     }
@@ -523,7 +525,7 @@ void firstPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, s
         if (schemaAttribute->_typeName != "UID" || xmlAttribute->_value.empty()) { continue; }
         for (const std::string &value : xmlAttribute->_values->_backingVector) {
             if (uidMap.count(value) > 0) {
-                errorLogger.logError(xmlNode->_node, "UID '"+value+"' must be unique, but it used elsewhere in the dataset.");
+                errorLogger.logError(xmlNode->_node, "UID '"+value+"' must be unique, but it is used elsewhere in the dataset.");
             }
             uidMap[value] = xmlNode;
         }
