@@ -91,14 +91,20 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         case MaPLSymbols_GLOBAL_xmlFiles:
             return MaPLPointer(_xmlNodes);
         default:
-            // TODO: Check if invokedOnPointer is a MaPLInterface.
+            if (invokedOnPointer) {
+                MaPLInterface *maPLInterface = static_cast<MaPLInterface *>(invokedOnPointer);
+                return maPLInterface->invokeFunction(functionSymbol, argv, argc);
+            }
             break;
     }
     return MaPLUninitialized();
 }
 
-    // TODO: Check if invokedOnPointer is a MaPLInterface.
 static MaPLParameter invokeSubscript(void *invokedOnPointer, MaPLParameter index) {
+    if (invokedOnPointer) {
+        MaPLInterface *maPLInterface = static_cast<MaPLInterface *>(invokedOnPointer);
+        return maPLInterface->invokeSubscript(index);
+    }
     return MaPLUninitialized();
 }
 
