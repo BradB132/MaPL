@@ -56,7 +56,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;${SRCROOT}/Executable/MaPLGeneratorAPI.mapl&quot;"
+            argument = "&quot;${SRCROOT}/EaSL/exampleScript.mapl&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

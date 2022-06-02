@@ -8,6 +8,7 @@
 #include "MaPLHandler.h"
 
 #include <fstream>
+#include <regex>
 #include <stdlib.h>
 #include <string>
 #include <unordered_map>
@@ -181,7 +182,52 @@ static void metadata(const char* metadataString) {
         fprintf(stderr, "%s:%d: error: Attempted to write metadata to file before any output file was specified.\n", frame.path.c_str(), frame.currentLineNumber);
         exit(1);
     }
-    // TODO: Make a regex and replace all occurrences of character names.
+    std::string outputString = metadataString;
+    std::smatch match;
+    std::regex variableSubstitutionRegex("\\$\\{([_a-zA-Z][_a-zA-Z0-9]*)\\}");
+    auto searchStart = cbegin(outputString);
+    while (std::regex_search(searchStart, cend(outputString), match, variableSubstitutionRegex)) {
+        std::string variableName = match[1].str();
+        MaPLParameter matchedVariable = frame.variables.at(variableName);
+        std::string variableValue;
+        switch (matchedVariable.dataType) {
+            case MaPLDataType_char:
+                variableValue = std::to_string(matchedVariable.charValue);
+                break;
+            case MaPLDataType_int32:
+                variableValue = std::to_string(matchedVariable.int32Value);
+                break;
+            case MaPLDataType_int64:
+                variableValue = std::to_string(matchedVariable.int64Value);
+                break;
+            case MaPLDataType_uint32:
+                variableValue = std::to_string(matchedVariable.uint32Value);
+                break;
+            case MaPLDataType_uint64:
+                variableValue = std::to_string(matchedVariable.uint64Value);
+                break;
+            case MaPLDataType_float32:
+                variableValue = std::to_string(matchedVariable.float32Value);
+                break;
+            case MaPLDataType_float64:
+                variableValue = std::to_string(matchedVariable.float64Value);
+                break;
+            case MaPLDataType_string:
+                variableValue = matchedVariable.stringValue;
+                break;
+            case MaPLDataType_boolean:
+                variableValue = std::to_string(matchedVariable.booleanValue);
+                break;
+            default:
+                fprintf(stderr, "%s:%d: error: Variable '%s' is not a printable data type.\n", frame.path.c_str(), frame.currentLineNumber, variableName.c_str());
+                exit(1);
+                break;
+        }
+        
+        outputString.replace(match[0].first, match[0].second, variableValue);
+        searchStart = match[0].first;
+    }
+    *frame.outputStream << outputString;
 }
 
 static void debugLine(MaPLLineNumber lineNumber) {
