@@ -50,7 +50,7 @@ typedef struct {
         double float64Value;
         const char* stringValue;
         bool booleanValue;
-        void* pointerValue;
+        const void* pointerValue;
     };
 } MaPLParameter;
 
@@ -72,7 +72,7 @@ MaPLParameter MaPLBool(bool booleanValue);
  * MaPL may reference this object throughout script execution, so the object referenced by this pointer must not be
  * freed before the completion of the MaPL script execution.
  */
-MaPLParameter MaPLPointer(void *pointerValue);
+MaPLParameter MaPLPointer(const void *pointerValue);
 /**
  * Only passes the string pointer, and does not copy the string contents. MaPL will make no attempt to free the string.
  * MaPL may reference this string throughout script execution, so the string referenced by this pointer must not be
