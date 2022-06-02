@@ -7,6 +7,7 @@
 
 #include "MaPLHandler.h"
 
+#include <fstream>
 #include <stdlib.h>
 #include <string>
 #include <unordered_map>
@@ -15,13 +16,15 @@
 #include "MaPLCompiler.h"
 #include "MaPLSymbols.h"
 
+void invokeScript(const std::filesystem::path &scriptPath);
+
 // One of the MaPL APIs allows it to invoke another script.
 // Create a stack of metadata about the scripts that are currently running.
 struct MaPLStackFrame {
     std::filesystem::path path;
     std::unordered_map<std::string, MaPLParameter> variables;
     MaPLLineNumber currentLineNumber = 0;
-    // TODO: Add ofstream object.
+    std::ofstream *outputStream = NULL;
 };
 static std::vector<MaPLStackFrame> _stackFrames;
 static MaPLArray<XmlNode *> *_xmlNodes;
@@ -37,19 +40,30 @@ bool pluralize(const std::string &singular, std::string &plural, const std::stri
     return true;
 }
 
+std::filesystem::path normalizedParamPath(const char *pathParam) {
+    std::filesystem::path path = pathParam;
+    if (path.is_relative()) {
+        MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+        path = frame.path.parent_path() / path;
+    }
+    return path.lexically_normal();
+}
+
 static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
     switch (functionSymbol) {
         case MaPLSymbols_GLOBAL_commandLineFlag_string: {
             const std::string &argString = argv[0].stringValue;
             if (!_flags->count(argString)) {
-                MaPLStackFrame frame = _stackFrames[_stackFrames.size()-1];
+                MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
                 fprintf(stderr, "%s:%d: error: Attempted to reference missing flag '%s'.\n", frame.path.c_str(), frame.currentLineNumber, argv[0].stringValue);
                 exit(1);
             }
             return MaPLStringByReference(_flags->at(argString).c_str());
         }
-        case MaPLSymbols_GLOBAL_executeMaPLScript_string:
-            // TODO: Resolve relative path to absolute path relative to the current file (on top of stack).
+        case MaPLSymbols_GLOBAL_executeMaPLScript_string: {
+            std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
+            invokeScript(normalizedPath);
+        }
             break;
         case MaPLSymbols_GLOBAL_hash_string: {
             // sdbm algorithm.
@@ -62,15 +76,20 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             return MaPLUint64(hash);
         }
             break;
-        case MaPLSymbols_GLOBAL_outputToFile_string:
-            // TODO: Resolve relative path to absolute path relative to the current file (on top of stack).
-            // TODO: set ofstream to new object.
+        case MaPLSymbols_GLOBAL_outputToFile_string: {
+            MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+            delete frame.outputStream;
+            std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
+            frame.outputStream = new std::ofstream(normalizedPath);
+        }
             break;
         case MaPLSymbols_GLOBAL_pluralize_string: {
             std::string singular = argv[0].stringValue;
             std::string plural;
             
             // Attempt a list of irregular english language singular->plural substitutions.
+            // There are more types of irregular plurals in English, but these patterns seem
+            // the most reliable.
             if (pluralize(singular, plural, "us", "i")) { // Cactus -> Cacti
             } else if (pluralize(singular, plural, "is", "es")) { // Crisis -> Crises
             } else if (pluralize(singular, plural, "ix", "ices")) { // Matrix -> Matrices
@@ -85,8 +104,48 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             break;
         case MaPLSymbols_GLOBAL_schemas:
             return MaPLPointer(_schemas);
-        case MaPLSymbols_GLOBAL_writeToFile_VARIADIC:
-            // TODO: Output values to ofstream.
+        case MaPLSymbols_GLOBAL_writeToFile_VARIADIC: {
+            MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+            if (!frame.outputStream) {
+                fprintf(stderr, "%s:%d: error: Attempted to write to file before any output file was specified.\n", frame.path.c_str(), frame.currentLineNumber);
+                exit(1);
+            }
+            for (MaPLParameterCount i = 0; i < argc; i++) {
+                switch (argv[i].dataType) {
+                    case MaPLDataType_char:
+                        frame.outputStream->write((char *)&(argv[i].charValue), sizeof(argv[i].charValue));
+                        break;
+                    case MaPLDataType_int32:
+                        frame.outputStream->write((char *)&(argv[i].int32Value), sizeof(argv[i].int32Value));
+                        break;
+                    case MaPLDataType_int64:
+                        frame.outputStream->write((char *)&(argv[i].int64Value), sizeof(argv[i].int64Value));
+                        break;
+                    case MaPLDataType_uint32:
+                        frame.outputStream->write((char *)&(argv[i].uint32Value), sizeof(argv[i].uint32Value));
+                        break;
+                    case MaPLDataType_uint64:
+                        frame.outputStream->write((char *)&(argv[i].uint64Value), sizeof(argv[i].uint64Value));
+                        break;
+                    case MaPLDataType_float32:
+                        frame.outputStream->write((char *)&(argv[i].float32Value), sizeof(argv[i].float32Value));
+                        break;
+                    case MaPLDataType_float64:
+                        frame.outputStream->write((char *)&(argv[i].float64Value), sizeof(argv[i].float64Value));
+                        break;
+                    case MaPLDataType_string:
+                        frame.outputStream->write(argv[i].stringValue, strlen(argv[i].stringValue)+1);
+                        break;
+                    case MaPLDataType_boolean:
+                        frame.outputStream->write((char *)&(argv[i].booleanValue), sizeof(argv[i].booleanValue));
+                        break;
+                    default:
+                        fprintf(stderr, "%s:%d: error: MaPL argument at index %d was invalid type.\n", frame.path.c_str(), frame.currentLineNumber, i);
+                        exit(1);
+                        break;
+                }
+            }
+        }
             break;
         case MaPLSymbols_GLOBAL_xmlFiles:
             return MaPLPointer(_xmlNodes);
@@ -117,8 +176,12 @@ static void assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLPar
 }
 
 static void metadata(const char* metadataString) {
+    MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+    if (!frame.outputStream) {
+        fprintf(stderr, "%s:%d: error: Attempted to write metadata to file before any output file was specified.\n", frame.path.c_str(), frame.currentLineNumber);
+        exit(1);
+    }
     // TODO: Make a regex and replace all occurrences of character names.
-    // TODO: Output to ofstream.
 }
 
 static void debugLine(MaPLLineNumber lineNumber) {
@@ -152,18 +215,12 @@ static void error(MaPLRuntimeError error) {
             errString = "Unknown MaPL error.";
             break;
     }
-    MaPLStackFrame frame = _stackFrames[_stackFrames.size()-1];
+    MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
     fprintf(stderr, "%s:%d: error: %s\n", frame.path.c_str(), frame.currentLineNumber, errString);
     exit(1);
 }
 
-void invokeScript(const std::filesystem::path &scriptPath,
-                  MaPLArray<XmlNode *> *xmlNodes,
-                  MaPLArrayMap<Schema *> *schemas,
-                  const std::unordered_map<std::string, std::string> &flags) {
-    _xmlNodes = xmlNodes;
-    _schemas = schemas;
-    _flags = &flags;
+void invokeScript(const std::filesystem::path &scriptPath) {
     _stackFrames.push_back({ scriptPath });
     
     MaPLCompileOptions options{ true };
@@ -185,5 +242,17 @@ void invokeScript(const std::filesystem::path &scriptPath,
     };
     executeMaPLScript(&(bytecode[0]), bytecode.size(), &callbacks);
     
+    MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+    delete frame.outputStream;
     _stackFrames.pop_back();
+}
+
+void invokeScript(const std::filesystem::path &scriptPath,
+                  MaPLArray<XmlNode *> *xmlNodes,
+                  MaPLArrayMap<Schema *> *schemas,
+                  const std::unordered_map<std::string, std::string> &flags) {
+    _xmlNodes = xmlNodes;
+    _schemas = schemas;
+    _flags = &flags;
+    invokeScript(scriptPath);
 }
