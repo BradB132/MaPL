@@ -137,7 +137,7 @@ MaPLParameter MaPLBool(bool booleanValue) {
     parameter.booleanValue = booleanValue;
     return parameter;
 }
-MaPLParameter MaPLPointer(const void *pointerValue) {
+MaPLParameter MaPLPointer(void *pointerValue) {
     MaPLParameter parameter = { MaPLDataType_pointer };
     parameter.pointerValue = pointerValue;
     return parameter;
