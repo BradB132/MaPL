@@ -23,7 +23,7 @@ int main(int argc, const char * argv[]) {
     std::vector<std::filesystem::path> schemaPaths;
     std::vector<std::filesystem::path> scriptPaths;
     std::vector<std::filesystem::path> xmlPaths;
-    std::vector<std::pair<std::string, std::string>> flags;
+    std::unordered_map<std::string, std::string> flags;
     
     for (int i = 1; i < argc; i++) {
         std::string argString = argv[i];
@@ -32,7 +32,12 @@ int main(int argc, const char * argv[]) {
             std::string keyAndValue = argString.substr(2);
             size_t equalsIndex = keyAndValue.find("=");
             std::pair<std::string, std::string> flag = { keyAndValue.substr(0,equalsIndex), keyAndValue.substr(equalsIndex+1) };
-            flags.push_back(flag);
+            if (flags.count(flag.first) > 0) {
+                fprintf(stderr, "Flag '%s' is specified more than once.\n", flag.first.c_str());
+                printUsage();
+                return 1;
+            }
+            flags.insert(flag);
             continue;
         }
         
