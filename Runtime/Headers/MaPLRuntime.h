@@ -99,16 +99,16 @@ typedef enum {
  */
 typedef struct {
     /// Required. Invoked whenever a MaPL script invokes a function or property.
-    MaPLParameter (*invokeFunction)(const void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
+    MaPLParameter (*invokeFunction)(void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     
     /// Required. Invoked whenever a MaPL script invokes a subscript.
-    MaPLParameter (*invokeSubscript)(const void *invokedOnPointer, MaPLParameter index);
+    MaPLParameter (*invokeSubscript)(void *invokedOnPointer, MaPLParameter index);
     
     /// Required. Invoked whenever a MaPL script assigns to a function or property.
-    void (*assignProperty)(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue);
+    void (*assignProperty)(void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue);
     
     /// Required. Invoked whenever a MaPL script assigns to a subscript.
-    void (*assignSubscript)(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue);
+    void (*assignSubscript)(void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue);
     
     /// Optional. Useful only when metadata feature is used (typically for code generation / templating).
     void (*metadata)(const char* metadataString);

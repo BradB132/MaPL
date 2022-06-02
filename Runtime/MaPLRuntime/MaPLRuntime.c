@@ -253,7 +253,7 @@ MaPLParameter evaluateParameter(MaPLExecutionContext *context) {
 
 MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     // This function assumes that we've already advanced past the initial "function_invocation" byte.
-    const void *invokedOnPointer = NULL;
+    void *invokedOnPointer = NULL;
     if (context->scriptBuffer[context->cursorPosition] == MaPLInstruction_no_op) {
         // This function is not invoked on another pointer, it's a global call.
         context->cursorPosition++;
@@ -305,7 +305,7 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
 
 MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
     // This function assumes that we've already advanced past the initial "subscript_invocation" byte.
-    const void *invokedOnPointer = evaluatePointer(context);
+    void *invokedOnPointer = evaluatePointer(context);
     if (!invokedOnPointer) {
         context->executionState = MaPLExecutionState_error;
         context->errorType = MaPLRuntimeError_invocationOnNullPointer;
@@ -1618,7 +1618,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
         }
             break;
         case MaPLInstruction_assign_subscript: {
-            const void *invokedOnPointer = evaluatePointer(context);
+            void *invokedOnPointer = evaluatePointer(context);
             if (!invokedOnPointer) {
                 context->executionState = MaPLExecutionState_error;
                 context->errorType = MaPLRuntimeError_invocationOnNullPointer;
@@ -1673,7 +1673,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
         }
             break;
         case MaPLInstruction_assign_property: {
-            const void *invokedOnPointer = NULL;
+            void *invokedOnPointer = NULL;
             if (context->scriptBuffer[context->cursorPosition] == MaPLInstruction_no_op) {
                 // This property is not invoked on another pointer, it's a global call.
                 context->cursorPosition++;

@@ -24,8 +24,8 @@ struct MaPLStackFrame {
     // TODO: Add ofstream object.
 };
 static std::vector<MaPLStackFrame> _stackFrames;
-static const MaPLArray<XmlNode *> *_xmlNodes;
-static const MaPLArrayMap<Schema *> *_schemas;
+static MaPLArray<XmlNode *> *_xmlNodes;
+static MaPLArrayMap<Schema *> *_schemas;
 static const std::unordered_map<std::string, std::string> *_flags;
 
 bool pluralize(const std::string &singular, std::string &plural, const std::string &singularSuffix, const std::string &pluralSuffix) {
@@ -37,7 +37,7 @@ bool pluralize(const std::string &singular, std::string &plural, const std::stri
     return true;
 }
 
-static MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
+static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
     switch (functionSymbol) {
         case MaPLSymbols_GLOBAL_commandLineFlag_string: {
             const std::string &argString = argv[0].stringValue;
@@ -97,16 +97,16 @@ static MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol fun
     return MaPLUninitialized();
 }
 
-static MaPLParameter invokeSubscript(const void *invokedOnPointer, MaPLParameter index) {
     // TODO: Check if invokedOnPointer is a MaPLInterface.
+static MaPLParameter invokeSubscript(void *invokedOnPointer, MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-static void assignProperty(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
+static void assignProperty(void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
     // No-op. API contains no write-able properties.
 }
 
-static void assignSubscript(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
+static void assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
     // No-op. API contains no write-able subscripts.
 }
 
@@ -152,8 +152,8 @@ static void error(MaPLRuntimeError error) {
 }
 
 void invokeScript(const std::filesystem::path &scriptPath,
-                  const MaPLArray<XmlNode *> *xmlNodes,
-                  const MaPLArrayMap<Schema *> *schemas,
+                  MaPLArray<XmlNode *> *xmlNodes,
+                  MaPLArrayMap<Schema *> *schemas,
                   const std::unordered_map<std::string, std::string> &flags) {
     _xmlNodes = xmlNodes;
     _schemas = schemas;

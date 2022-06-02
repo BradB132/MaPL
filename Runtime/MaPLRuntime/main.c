@@ -15,7 +15,7 @@ enum MaPLFunction {
 
 static char dummyPointer;
 
-MaPLParameter testInvokeFunction(const void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
+MaPLParameter testInvokeFunction(void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
     switch (functionSymbol) {
         case MaPLFunction_GLOBAL_global:
             return MaPLPointer(&dummyPointer);
@@ -26,18 +26,18 @@ MaPLParameter testInvokeFunction(const void *invokedOnPointer, MaPLSymbol functi
     }
 }
 
-MaPLParameter testInvokeSubscript(const void *invokedOnPointer, MaPLParameter index) {
+MaPLParameter testInvokeSubscript(void *invokedOnPointer, MaPLParameter index) {
     if (invokedOnPointer == &dummyPointer) {
         return MaPLStringByReference("World!");
     }
     return MaPLUninitialized();
 }
 
-void testAssignProperty(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
+void testAssignProperty(void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
     // Unused.
 }
 
-void testAssignSubscript(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
+void testAssignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
     // Unused.
 }
 
