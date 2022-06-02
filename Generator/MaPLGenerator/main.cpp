@@ -77,7 +77,7 @@ int main(int argc, const char * argv[]) {
     validateXML(xmlNodes, schemas);
     
     for (const std::filesystem::path &scriptPath : scriptPaths) {
-        invokeScript(scriptPath);// TODO: Add schemas and xmlNodes as params.
+        invokeScript(scriptPath, xmlNodes, schemas, flags);
     }
     
     return 0;

@@ -15,6 +15,9 @@
 #include "EaSLHandler.h"
 #include "MaPLGeneratorCollections.h"
 
-void invokeScript(const std::filesystem::path &scriptPath);
+void invokeScript(const std::filesystem::path &scriptPath,
+                  const MaPLArray<XmlNode *> *xmlNodes,
+                  const MaPLArrayMap<Schema *> *schemas,
+                  const std::unordered_map<std::string, std::string> &flags);
 
 #endif /* MaPLHandler_h */
