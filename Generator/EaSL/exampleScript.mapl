@@ -1,5 +1,0 @@
-#import "../Executable/MaPLGeneratorAPI.mapl"
-
-int32 myInt = 5;
-
-<?Hello world! - ${myInt} - Foo bar.?>

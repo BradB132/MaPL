@@ -197,7 +197,7 @@ static void metadata(const char* metadataString) {
         }
         
         outputString.replace(match[0].first, match[0].second, variableValue);
-        searchStart = match[0].first;
+        searchStart = cbegin(outputString);
     }
     *frame.outputStream << outputString;
 }

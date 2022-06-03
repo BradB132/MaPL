@@ -56,11 +56,23 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;${SRCROOT}/EaSL/exampleScript.mapl&quot;"
+            argument = "&quot;${SRCROOT}/EaSL/exampleXML.xml&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;${SRCROOT}/EaSL/exampleXML.xml&quot;"
+            argument = "&quot;${SRCROOT}/Templates/C++/main.mapl&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;${SRCROOT}/Templates/MaPL/main.mapl&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;--scriptOutputDir=${SRCROOT}/EaSL/generated_c++&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;${SRCROOT}/Templates/XMLtoBinary/main.mapl&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
