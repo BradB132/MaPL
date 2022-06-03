@@ -244,6 +244,13 @@ void invokeScript(const std::filesystem::path &scriptPath) {
     MaPLCompileOptions options{ true };
     MaPLCompileResult result = compileMaPL({ scriptPath }, options);
     
+    if (result.errorMessages.size()) {
+        for (const std::string &errorMessage : result.errorMessages) {
+            fputs(errorMessage.c_str(), stderr);
+        }
+        exit(1);
+    }
+    
     // There should be only one compiled file, grab the first one.
     std::vector<u_int8_t> bytecode = result.compiledFiles.begin()->second;
     
