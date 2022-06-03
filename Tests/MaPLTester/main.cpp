@@ -78,7 +78,7 @@ std::string parameterToString(const MaPLParameter &parameter) {
     }
 }
 
-MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
+MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
     scriptCallbacksString += "Invoke function: pointer="+pointerToString(invokedOnPointer)+", symbol="+std::to_string(functionSymbol)+", ";
     for (MaPLParameterCount i = 0; i < argc; i++) {
         scriptCallbacksString += "parameter #"+std::to_string(i)+"="+parameterToString(argv[i]);
@@ -134,7 +134,7 @@ MaPLParameter invokeFunction(const void *invokedOnPointer, MaPLSymbol functionSy
     return MaPLUninitialized();
 }
 
-MaPLParameter invokeSubscript(const void *invokedOnPointer, MaPLParameter index) {
+MaPLParameter invokeSubscript(void *invokedOnPointer, MaPLParameter index) {
     scriptCallbacksString += "Invoke subscript: pointer="+pointerToString(invokedOnPointer)+", index="+parameterToString(index)+"\n";
     if (invokedOnPointer == &fakeGlobalObject) {
         switch (index.dataType) {
@@ -159,7 +159,7 @@ MaPLParameter invokeSubscript(const void *invokedOnPointer, MaPLParameter index)
     return MaPLUninitialized();
 }
 
-void assignProperty(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
+void assignProperty(void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
     scriptCallbacksString += "Assign property: pointer="+pointerToString(invokedOnPointer)+", symbol="+std::to_string(propertySymbol)+", value="+parameterToString(assignedValue)+"\n";
     if (invokedOnPointer == &fakeGlobalObject) {
         switch (propertySymbol) {
@@ -177,7 +177,7 @@ void assignProperty(const void *invokedOnPointer, MaPLSymbol propertySymbol, MaP
     }
 }
 
-void assignSubscript(const void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
+void assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
     scriptCallbacksString += "Assign subscript: pointer="+pointerToString(invokedOnPointer)+", index="+parameterToString(index)+", value="+parameterToString(assignedValue)+"\n";
     if (invokedOnPointer == &fakeGlobalObject) {
         switch (index.dataType) {
