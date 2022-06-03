@@ -32,15 +32,6 @@ static MaPLArray<XmlNode *> *_xmlNodes;
 static MaPLArrayMap<Schema *> *_schemas;
 static const std::unordered_map<std::string, std::string> *_flags;
 
-bool pluralize(const std::string &singular, std::string &plural, const std::string &singularSuffix, const std::string &pluralSuffix) {
-    if (singular.length() < singularSuffix.length() ||
-        singular.compare(singular.length()-singularSuffix.length(), singularSuffix.length(), singularSuffix)) {
-        return false;
-    }
-    plural = singular.substr(0, singular.length() - singularSuffix.length()) + pluralSuffix;
-    return true;
-}
-
 std::filesystem::path normalizedParamPath(const char *pathParam) {
     std::filesystem::path path = pathParam;
     if (path.is_relative()) {
@@ -82,25 +73,6 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             delete frame.outputStream;
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
             frame.outputStream = new std::ofstream(normalizedPath);
-        }
-            break;
-        case MaPLSymbols_GLOBAL_pluralize_string: {
-            std::string singular = argv[0].stringValue;
-            std::string plural;
-            
-            // Attempt a list of irregular english language singular->plural substitutions.
-            // There are more types of irregular plurals in English, but these patterns seem
-            // the most reliable.
-            if (pluralize(singular, plural, "us", "i")) { // Cactus -> Cacti
-            } else if (pluralize(singular, plural, "is", "es")) { // Crisis -> Crises
-            } else if (pluralize(singular, plural, "ix", "ices")) { // Matrix -> Matrices
-            } else if (pluralize(singular, plural, "y", "ies")) { // Tally -> Tallies
-            } else if (pluralize(singular, plural, "ss", "sses")) { // Pass -> Passes
-            } else {
-                // If by process of elimination the string appears to be regular, just add 's'.
-                plural = singular + "s";
-            }
-            return MaPLStringByValue(plural.c_str());
         }
             break;
         case MaPLSymbols_GLOBAL_schemas:
