@@ -44,3 +44,5 @@ Debug line: 33
 Debug variable update: 'b2' = (bool)true
 Debug line: 34
 Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"!false || true", parameter #1=(bool)false
+Debug line: 36
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9 < 1 || 3 > 1", parameter #1=(bool)true

@@ -51,8 +51,6 @@ unaryStatement
 // EXPRESSIONS
 expression
     :    keyToken=PAREN_OPEN type PAREN_CLOSE expression
-    |    expression keyToken=(LOGICAL_AND | LOGICAL_OR) expression
-    |    keyToken=(LOGICAL_NEGATION | SUBTRACT | BITWISE_NEGATION) expression
     |    expression keyToken=MOD expression
     |    expression keyToken=(MULTIPLY | DIVIDE) expression
     |    expression keyToken=(ADD | SUBTRACT) expression
@@ -69,6 +67,8 @@ expression
             GREATER_THAN |
             GREATER_THAN_EQUAL
          ) expression
+    |    expression keyToken=(LOGICAL_AND | LOGICAL_OR) expression
+    |    keyToken=(LOGICAL_NEGATION | SUBTRACT | BITWISE_NEGATION) expression
     |    PAREN_OPEN expression keyToken=PAREN_CLOSE
     |    keyToken=LITERAL_TRUE
     |    keyToken=LITERAL_FALSE
