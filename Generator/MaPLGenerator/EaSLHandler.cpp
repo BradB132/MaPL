@@ -328,8 +328,8 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
             }
             topLevelNames.insert(schemaClass->_name);
             if (!schemaClass->_superclass.empty()) {
-                Schema *superclassSchema = schemaClass->_superclassNamespace.empty() ? schema : schemas->_backingMap[schemaClass->_superclassNamespace];
-                if (!superclassSchema || !superclassSchema->_classes->_backingMap[schemaClass->_superclass]) {
+                Schema *superclassSchema = schemaClass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(schemaClass->_superclassNamespace);
+                if (!superclassSchema || !superclassSchema->_classes->_backingMap.at(schemaClass->_superclass)) {
                     schema->_errorLogger.logError(schemaClass->_classContext->classType()->start,
                                                   "Class '"+schema->_namespace+"::"+schemaClass->_name+"' references a superclass '"+schemaClass->_superclassNamespace+"::"+schemaClass->_superclass+"' which doesn't exist.");
                 }
@@ -339,30 +339,30 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                 SchemaClass *superclass = schemaClass;
                 while (superclass) {
                     if (superclass->_superclass.empty()) { break; }
-                    Schema *superclassSchema = superclass->_superclassNamespace.empty() ? schema : schemas->_backingMap[superclass->_superclassNamespace];
+                    Schema *superclassSchema = superclass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(superclass->_superclassNamespace);
                     if (!superclassSchema) { break; }
-                    superclass = superclassSchema->_classes->_backingMap[superclass->_superclass];
+                    superclass = superclassSchema->_classes->_backingMap.at(superclass->_superclass);
                     if (!superclass) { break; }
-                    if (superclass->_attributes->_backingMap[attribute->_name]) {
+                    if (superclass->_attributes->_backingMap.at(attribute->_name)) {
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
                                                       "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' conflicts with attribute '"+superclassSchema->_namespace+"::"+superclass->_name+"::"+attribute->_name+"'.");
                     }
                 }
                 if (!attribute->_typeNamespace.empty() && !attribute->_typeIsUIDReference) {
                     // Now that all schema objects are allocated, we have enough context to determine if this is a class or enum.
-                    Schema *typeSchema = schemas->_backingMap[attribute->_typeNamespace];
+                    Schema *typeSchema = schemas->_backingMap.at(attribute->_typeNamespace);
                     if (typeSchema) {
                         attribute->_typeIsClass = typeSchema->_classes->_backingMap.count(attribute->_typeName) > 0;
                         attribute->_typeIsEnum = typeSchema->_enums->_backingMap.count(attribute->_typeName) > 0;
                         if (attribute->_typeIsClass) {
                             for (const std::string &defaultValue : attribute->_defaultValues->_backingVector) {
                                 if (defaultValue != "NULL") {
-                                    SchemaClass *errClass = typeSchema->_classes->_backingMap[attribute->_typeName];
+                                    SchemaClass *errClass = typeSchema->_classes->_backingMap.at(attribute->_typeName);
                                     schema->_errorLogger.logError(attribute->_attributeContext->defaultValue()->start, "Default value of '"+defaultValue+"' was specified for an attribute of type '"+typeSchema->_namespace+"::"+errClass->_name+"'. Default values for classes can only be 'NULL'.");
                                 }
                             }
                         } else if (attribute->_typeIsEnum) {
-                            SchemaEnum *defaultsEnum = typeSchema->_enums->_backingMap[attribute->_typeName];
+                            SchemaEnum *defaultsEnum = typeSchema->_enums->_backingMap.at(attribute->_typeName);
                             for (const std::string &defaultValue : attribute->_defaultValues->_backingVector) {
                                 if (!defaultsEnum->_cases->_backingMap.count(defaultValue)) {
                                     schema->_errorLogger.logError(attribute->_attributeContext->defaultValue()->start, "Default value of '"+defaultValue+"' does not appear in enum '"+typeSchema->_namespace+"::"+defaultsEnum->_name+"'.");
@@ -377,8 +377,8 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                     }
                 }
                 if (attribute->_typeIsUIDReference) {
-                    Schema *typeSchema = schemas->_backingMap[attribute->_typeNamespace];
-                    SchemaClass *typeClass = typeSchema ? typeSchema->_classes->_backingMap[attribute->_typeName] : NULL;
+                    Schema *typeSchema = schemas->_backingMap.at(attribute->_typeNamespace);
+                    SchemaClass *typeClass = typeSchema ? typeSchema->_classes->_backingMap.at(attribute->_typeName) : NULL;
                     if (!typeClass) {
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
                                                       "Can't find class '"+attribute->_typeNamespace+"::"+attribute->_typeName+"' referenced by '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
@@ -391,9 +391,9 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                             break;
                         }
                         if (typeSuperclass->_superclass.empty()) { break; }
-                        Schema *typeSuperclassSchema = typeSuperclass->_superclassNamespace.empty() ? schema : schemas->_backingMap[typeSuperclass->_superclassNamespace];
+                        Schema *typeSuperclassSchema = typeSuperclass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(typeSuperclass->_superclassNamespace);
                         if (!typeSuperclassSchema) { break; }
-                        typeSuperclass = typeSuperclassSchema->_classes->_backingMap[typeSuperclass->_superclass];
+                        typeSuperclass = typeSuperclassSchema->_classes->_backingMap.at(typeSuperclass->_superclass);
                     }
                     if (!typeClassHasUID) {
                         std::string typeNamespace = attribute->_typeNamespace.empty() ? schema->_namespace : attribute->_typeNamespace;
@@ -482,15 +482,15 @@ SchemaAttribute *schemaAttributeForXmlAttribute(XmlAttribute *xmlAttribute, MaPL
     SchemaClass *attributeParentClass = schemaClass;
     SchemaAttribute *schemaAttribute = NULL;
     while (attributeParentClass) {
-        schemaAttribute = attributeParentClass->_attributes->_backingMap[xmlAttribute->_name];
+        schemaAttribute = attributeParentClass->_attributes->_backingMap.at(xmlAttribute->_name);
         if (schemaAttribute || attributeParentClass->_superclass.empty()) {
             break;
         }
-        Schema *attributeParentSchema = schemas->_backingMap[attributeParentClass->_superclassNamespace];
+        Schema *attributeParentSchema = schemas->_backingMap.at(attributeParentClass->_superclassNamespace);
         if (!attributeParentSchema) {
             break;
         }
-        attributeParentClass = attributeParentSchema->_classes->_backingMap[attributeParentClass->_superclass];
+        attributeParentClass = attributeParentSchema->_classes->_backingMap.at(attributeParentClass->_superclass);
     }
     return schemaAttribute;
 }
@@ -501,7 +501,7 @@ bool isKindOfClass(const std::string &subclassName, const std::string &subclassN
     if (subclassName == superclassName && subclassNamespace == superclassNamespace) {
         return true;
     }
-    SchemaClass *schemaClass = schemas->_backingMap[subclassNamespace]->_classes->_backingMap[subclassName];
+    SchemaClass *schemaClass = schemas->_backingMap.at(subclassNamespace)->_classes->_backingMap.at(subclassName);
     if (!schemaClass->_superclass.empty() && !schemaClass->_superclassNamespace.empty()) {
         return isKindOfClass(schemaClass->_superclass, schemaClass->_superclassNamespace, superclassName, superclassNamespace, schemas);
     }
@@ -520,12 +520,12 @@ void firstPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, s
     // Do an initial pass over all nodes and attributes in the dataset:
     //  - Confirm all namespaces, classes, and attributes exist in the schema.
     //  - Collect the UIDs, confirm uniqueness, and make a mapping of objects they point to.
-    Schema *schema = schemas->_backingMap[xmlNode->_namespace];
+    Schema *schema = schemas->_backingMap.at(xmlNode->_namespace);
     if (!schema) {
         errorLogger.logError(xmlNode->_node, "Unable to find schema with namespace '"+xmlNode->_namespace+"'.");
         return;
     }
-    SchemaClass *schemaClass = schema->_classes->_backingMap[xmlNode->_name];
+    SchemaClass *schemaClass = schema->_classes->_backingMap.at(xmlNode->_name);
     if (!schemaClass) {
         errorLogger.logError(xmlNode->_node, "Unable to find schema class '"+xmlNode->_name+"' in namespace '"+xmlNode->_namespace+"'.");
         return;
@@ -550,8 +550,8 @@ void firstPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, s
 }
 
 void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, const std::unordered_map<std::string, XmlNode *> &uidMap, ErrorLogger &errorLogger) {
-    Schema *schema = schemas->_backingMap[xmlNode->_namespace];
-    SchemaClass *schemaClass = schema->_classes->_backingMap[xmlNode->_name];
+    Schema *schema = schemas->_backingMap.at(xmlNode->_namespace);
+    SchemaClass *schemaClass = schema->_classes->_backingMap.at(xmlNode->_name);
     
     struct AttributeCount {
         Schema *schema;
@@ -589,9 +589,9 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
         attributeCounts.insert(attributeCounts.begin(), attributeCountsForClass.begin(), attributeCountsForClass.end());
         
         if (parentSchemaClass->_superclass.empty()) { break; }
-        parentSchema = schemas->_backingMap[parentSchemaClass->_superclassNamespace];
+        parentSchema = schemas->_backingMap.at(parentSchemaClass->_superclassNamespace);
         if (!parentSchemaClass) { break; }
-        parentSchemaClass = parentSchema->_classes->_backingMap[parentSchemaClass->_superclass];
+        parentSchemaClass = parentSchema->_classes->_backingMap.at(parentSchemaClass->_superclass);
     }
     
     for (XmlAttribute *xmlAttribute : xmlNode->_attributes->_backingVector) {
@@ -626,7 +626,7 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
                     errorLogger.logError(xmlNode->_node, "UID '"+attributeValue+"' was expected to refer to a node of type '"+schemaAttribute->_typeNamespace+"::"+schemaAttribute->_typeName+"', but matched a node of type '"+referencedNode->_namespace+"::"+referencedNode->_name+"' instead.");
                 }
             } else if (schemaAttribute->_typeIsEnum &&
-                       !schemas->_backingMap[schemaAttribute->_typeNamespace]->_enums->_backingMap[schemaAttribute->_typeName]->_cases->_backingMap.count(attributeValue)) {
+                       !schemas->_backingMap.at(schemaAttribute->_typeNamespace)->_enums->_backingMap.at(schemaAttribute->_typeName)->_cases->_backingMap.count(attributeValue)) {
                 errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' is not one of the cases in the '"+schemaAttribute->_typeNamespace+"::"+schemaAttribute->_typeName+"' enum.");
             } else if (schemaAttribute->_typeName == "char") {
                 if (!confirmStringUnsigned(attributeValue, xmlNode, xmlAttribute, errorLogger)) {
