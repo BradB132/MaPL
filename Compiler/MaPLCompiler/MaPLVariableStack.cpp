@@ -116,10 +116,8 @@ bool MaPLVariableStack::appendVariableStack(MaPLVariableStack *otherStack) {
 
 MaPLVariable MaPLVariableStack::getVariable(const std::string &variableName) {
     for (const std::unordered_map<std::string, MaPLVariable> &frame : _stack) {
-        for (const auto&[name, variable] : frame) {
-            if (name == variableName) {
-                return variable;
-            }
+        if (frame.count(variableName)) {
+            return frame.at(variableName);
         }
     }
     return { { MaPLPrimitiveType_Uninitialized } };
