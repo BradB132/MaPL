@@ -32,10 +32,7 @@ void MaPLBuffer::prependBytes(const void *bytes, size_t byteSize) {
 }
 
 void MaPLBuffer::overwriteBytes(const void *bytes, size_t byteSize, size_t overwriteLocation) {
-    const uint8_t *copyPointer = (const uint8_t *)bytes;
-    for (size_t i = 0; i < byteSize; i++) {
-        _bytes[overwriteLocation+i] = *(copyPointer+i);
-    }
+    memcpy((&_bytes[0])+overwriteLocation, bytes, byteSize);
 }
 
 void MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
