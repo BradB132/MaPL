@@ -86,15 +86,19 @@ public:
      * Appends the literal value onto the buffer.
      *
      * @param literal The literal value that will be appended onto the buffer.
+     * @param file A file used for logging errors.
+     * @param errToken A token used for logging errors.
      */
-    void appendLiteral(const MaPLLiteral &literal);
+    void appendLiteral(const MaPLLiteral &literal, MaPLFile *file, antlr4::Token *errToken);
     
     /**
      * Appends the bytes from a string onto the buffer.
      *
      * @param string The string value that will be appended onto the buffer.
+     * @param file A file used for logging errors.
+     * @param errToken A token used for logging errors.
      */
-    void appendString(std::string string);
+    void appendString(std::string string, MaPLFile *file, antlr4::Token *errToken);
     
     /**
      * @return The bytes stored in this buffer.

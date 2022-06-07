@@ -192,7 +192,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             if (metadata) {
                 currentBuffer->appendInstruction(MaPLInstruction_metadata);
                 std::string metadataString = metadata->getText();
-                currentBuffer->appendString(metadataString.substr(2, metadataString.length()-4));
+                currentBuffer->appendString(metadataString.substr(2, metadataString.length()-4), this, statement->start);
             } else {
                 compileChildNodes(node, expectedType, currentBuffer);
             }
@@ -336,7 +336,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             } else {
                                 literal.float64Value = 1.0 / literal.float64Value;
                             }
-                            currentBuffer->appendLiteral(literal);
+                            currentBuffer->appendLiteral(literal, this, NULL);
                             
                             if (_options.includeDebugBytes) {
                                 compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
@@ -357,7 +357,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
                                 shiftLiteral.charValue = shift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
-                                currentBuffer->appendLiteral(shiftLiteral);
+                                currentBuffer->appendLiteral(shiftLiteral, this, NULL);
                                 
                                 if (_options.includeDebugBytes) {
                                     compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
@@ -380,7 +380,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
                             shiftLiteral.charValue = shift;
                             shiftLiteral = castLiteralToType(shiftLiteral, assignedVariable.type, this, assignment->expression()->start);
-                            currentBuffer->appendLiteral(shiftLiteral);
+                            currentBuffer->appendLiteral(shiftLiteral, this, NULL);
                             
                             if (_options.includeDebugBytes) {
                                 compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
@@ -497,7 +497,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             } else {
                                 literal.float64Value = 1.0 / literal.float64Value;
                             }
-                            currentBuffer->appendLiteral(literal);
+                            currentBuffer->appendLiteral(literal, this, NULL);
                             break;
                         };
                     } else if (isConcreteUnsignedInt(returnType.primitiveType)) {
@@ -511,7 +511,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
                                 shiftLiteral.charValue = shift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, returnType, this, assignment->expression()->start);
-                                currentBuffer->appendLiteral(shiftLiteral);
+                                currentBuffer->appendLiteral(shiftLiteral, this, NULL);
                                 break;
                             }
                         }
@@ -527,7 +527,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
                             shiftLiteral.charValue = shift;
                             shiftLiteral = castLiteralToType(shiftLiteral, returnType, this, assignment->expression()->start);
-                            currentBuffer->appendLiteral(shiftLiteral);
+                            currentBuffer->appendLiteral(shiftLiteral, this, NULL);
                             break;
                         }
                     }
@@ -568,7 +568,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLLiteral oneLiteral{ { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                 oneLiteral.uInt64Value = 1;
                 oneLiteral = castLiteralToType(oneLiteral, assignedVariable.type, this, statement->keyToken);
-                currentBuffer->appendLiteral(oneLiteral);
+                currentBuffer->appendLiteral(oneLiteral, this, NULL);
                 
                 if (_options.includeDebugBytes) {
                     compileDebugVariableUpdate(objectExpression->identifier()->getText(), assignedVariable, currentBuffer);
@@ -670,7 +670,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLLiteral oneLiteral{ { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
                 oneLiteral.uInt64Value = 1;
                 oneLiteral = castLiteralToType(oneLiteral, returnType, this, statement->keyToken);
-                currentBuffer->appendLiteral(oneLiteral);
+                currentBuffer->appendLiteral(oneLiteral, this, NULL);
             }
         }
             break;
@@ -736,7 +736,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 if (isAmbiguousNumericType(literal.type.primitiveType)) {
                     literal = castLiteralToType(literal, expectedType, this, expression->start);
                 }
-                currentBuffer->appendLiteral(literal);
+                currentBuffer->appendLiteral(literal, this, expression->start);
                 break;
             }
             
@@ -952,7 +952,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
                                 shiftLiteral.charValue = leftOperandShift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
-                                currentBuffer->appendLiteral(shiftLiteral);
+                                currentBuffer->appendLiteral(shiftLiteral, this, NULL);
                                 break;
                             }
                             MaPLLiteral constantRightOperand = constantValueForExpression(rightOperand);
@@ -963,7 +963,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
                                 shiftLiteral.charValue = rightOperandShift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
-                                currentBuffer->appendLiteral(shiftLiteral);
+                                currentBuffer->appendLiteral(shiftLiteral, this, NULL);
                                 break;
                             }
                         }
@@ -989,7 +989,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 }
                                 currentBuffer->appendInstruction(multiplicationInstructionForPrimitive(expectedType.primitiveType));
                                 compileNode(expression->expression(0), expectedType, currentBuffer);
-                                currentBuffer->appendLiteral(constantDenominator);
+                                currentBuffer->appendLiteral(constantDenominator, this, NULL);
                                 break;
                             }
                         } else if (isConcreteUnsignedInt(expectedType.primitiveType)) {
@@ -1004,7 +1004,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 MaPLLiteral shiftLiteral{ { MaPLPrimitiveType_Char } };
                                 shiftLiteral.charValue = denominatorShift;
                                 shiftLiteral = castLiteralToType(shiftLiteral, expectedType, this, expression->keyToken);
-                                currentBuffer->appendLiteral(shiftLiteral);
+                                currentBuffer->appendLiteral(shiftLiteral, this, NULL);
                                 break;
                             }
                         }
@@ -1472,7 +1472,7 @@ void MaPLFile::compileDebugVariableUpdate(const std::string &variableName,
                                           const MaPLVariable &variable,
                                           MaPLBuffer *currentBuffer) {
     currentBuffer->appendInstruction(MaPLInstruction_debug_update_variable);
-    currentBuffer->appendString(variableName);
+    currentBuffer->appendString(variableName, this, NULL);
     currentBuffer->appendInstruction(variableInstructionForPrimitive(variable.type.primitiveType));
     currentBuffer->appendBytes(&(variable.memoryAddress), sizeof(variable.memoryAddress));
 }
@@ -1480,7 +1480,7 @@ void MaPLFile::compileDebugVariableUpdate(const std::string &variableName,
 void MaPLFile::compileDebugPopFromTopStackFrame(MaPLBuffer *currentBuffer) {
     for (const auto&[variableName, variable] : _variableStack->getTopStackFrame()) {
         currentBuffer->appendInstruction(MaPLInstruction_debug_delete_variable);
-        currentBuffer->appendString(variableName);
+        currentBuffer->appendString(variableName, this, NULL);
     }
 }
 

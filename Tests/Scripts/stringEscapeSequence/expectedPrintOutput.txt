@@ -1,0 +1,7 @@
+(string)"Tab:	"
+(string)"Backslash:\"
+(string)"Newline:
+"
+(string)"Quote:""
+(string)"Multiple replacements in one string: 	 \ 
+ " "

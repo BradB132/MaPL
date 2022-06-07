@@ -1,0 +1,12 @@
+Debug line: 3
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Tab:	"
+Debug line: 4
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Backslash:\"
+Debug line: 5
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Newline:
+"
+Debug line: 6
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Quote:""
+Debug line: 7
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Multiple replacements in one string: 	 \ 
+ " "

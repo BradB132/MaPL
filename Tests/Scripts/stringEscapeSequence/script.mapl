@@ -1,0 +1,7 @@
+#import "../TestAPI.mapl"
+
+print("Tab:\t");
+print("Backslash:\\");
+print("Newline:\n");
+print("Quote:\"");
+print("Multiple replacements in one string: \t \\ \n \" ");

@@ -61,7 +61,7 @@ void MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer,
     }
 }
 
-void MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
+void MaPLBuffer::appendLiteral(const MaPLLiteral &literal, MaPLFile *file, antlr4::Token *errToken) {
     switch (literal.type.primitiveType) {
         case MaPLPrimitiveType_Char:
             appendInstruction(MaPLInstruction_char_literal);
@@ -93,7 +93,7 @@ void MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
             break;
         case MaPLPrimitiveType_String:
             appendInstruction(MaPLInstruction_string_literal);
-            appendString(literal.stringValue);
+            appendString(literal.stringValue, file, errToken);
             break;
         case MaPLPrimitiveType_Boolean:
             appendInstruction(literal.booleanValue ? MaPLInstruction_literal_true : MaPLInstruction_literal_false);
@@ -105,7 +105,7 @@ void MaPLBuffer::appendLiteral(const MaPLLiteral &literal) {
     }
 }
 
-void MaPLBuffer::appendString(std::string string) {
+void MaPLBuffer::appendString(std::string string, MaPLFile *file, antlr4::Token *errToken) {
     // Replace escaped chars.
     std::smatch match;
     std::regex escapeChars("\\\\(.)");
@@ -144,11 +144,11 @@ void MaPLBuffer::appendString(std::string string) {
                 replaceString = "\\";
                 break;
             default:
-                _parentFile->logError(NULL, "Invalid escape sequence "+match[0].str()+" specified in string. Accepted escape sequences are: \\a, \\b, \\e, \\f, \\n, \\r, \\t, \\v, \\\", \\\\.");
-                break;
+                file->logError(errToken, "Invalid escape sequence '"+match[0].str()+"' specified in string. Accepted escape sequences are: \\a, \\b, \\e, \\f, \\n, \\r, \\t, \\v, \\\", \\\\.");
+                return;
         }
         string.replace(match[0].first, match[0].second, replaceString);
-        searchStart = match[0].first;
+        searchStart = match[0].first+1;
     }
     
     const char* cString = string.c_str();

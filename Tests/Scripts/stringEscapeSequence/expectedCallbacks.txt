@@ -1,0 +1,7 @@
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Tab:	"
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Backslash:\"
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Newline:
+"
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Quote:""
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Multiple replacements in one string: 	 \ 
+ " "
