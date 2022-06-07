@@ -17,13 +17,11 @@ MaPLFileCache::~MaPLFileCache() {
 MaPLFile *MaPLFileCache::fileForNormalizedPath(const std::filesystem::path &normalizedFilePath) {
     // Attempt first to fetch the file from cache.
     std::string pathString = normalizedFilePath.string();
-    MaPLFile *fileAtPath = _files[pathString];
-    if (!fileAtPath) {
+    if (!_files.count(pathString)) {
         // No matching file found in cache, add a new one.
-        fileAtPath = new MaPLFile(normalizedFilePath, this);
-        _files[pathString] = fileAtPath;
+        _files[pathString] = new MaPLFile(normalizedFilePath, this);
     }
-    return fileAtPath;
+    return _files.at(pathString);
 }
 
 std::unordered_map<std::string, MaPLFile *> MaPLFileCache::getFiles() {
