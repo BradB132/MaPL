@@ -26,7 +26,7 @@ enum MaPLBufferAnnotationType {
 };
 
 struct MaPLBufferAnnotation {
-    size_t byteLocation;
+    MaPLMemoryAddress byteLocation;
     MaPLBufferAnnotationType type;
     std::string text;
 };

@@ -50,15 +50,15 @@ void MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer,
                               MaPLMemoryAddress allocatedMemoryIndexOffset) {
     // Append all bytes from the other buffer.
     size_t previousSize = _bytes.size();
-    std::vector<u_int8_t> otherBytes = otherBuffer->getBytes();
+    const std::vector<u_int8_t> &otherBytes = otherBuffer->getBytes();
     _bytes.insert(_bytes.end(), otherBytes.begin(), otherBytes.end());
     
     for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
         annotation.byteLocation += previousSize;
         if (annotation.type == MaPLBufferAnnotationType_PrimitiveVariableAddress) {
-            _bytes[annotation.byteLocation] += primitiveMemoryAddressOffset;
+            *((MaPLMemoryAddress *)(&_bytes[annotation.byteLocation])) += primitiveMemoryAddressOffset;
         } else if (annotation.type == MaPLBufferAnnotationType_AllocatedVariableIndex) {
-            _bytes[annotation.byteLocation] += allocatedMemoryIndexOffset;
+            *((MaPLMemoryAddress *)(&_bytes[annotation.byteLocation])) += allocatedMemoryIndexOffset;
         }
         _annotations.push_back(annotation);
     }
@@ -168,7 +168,7 @@ size_t MaPLBuffer::getByteCount() {
 }
 
 void MaPLBuffer::addAnnotation(MaPLBufferAnnotationType annotationType, const std::string &text) {
-    _annotations.push_back({ _bytes.size(), annotationType, text });
+    _annotations.push_back({ (MaPLMemoryAddress)_bytes.size(), annotationType, text });
 }
 
 void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bool jumpToEnd) {
