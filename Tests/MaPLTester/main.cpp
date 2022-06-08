@@ -281,7 +281,11 @@ MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnde
         if (memcmp(expectedBytecode, &bytecode[0], length)) {
             printf("Compiled bytecode has different content than expected bytecode '%s'.\n", contents.bytecodePath.c_str());
             for (size_t i = 0; i < length; i++) {
-                printf("Byte #%lu: %u - %u\n", i, expectedBytecode[i], bytecode[i]);
+                printf("Byte #%lu: %u - %u", i, expectedBytecode[i], bytecode[i]);
+                if (expectedBytecode[i] != bytecode[i]) {
+                    printf(" (DIFFERENT)");
+                }
+                printf("\n");
             }
             exit(1);
         }
