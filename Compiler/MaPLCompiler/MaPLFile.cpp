@@ -114,23 +114,17 @@ void MaPLFile::compileIfNeeded() {
         return;
     }
     
-    // Check the dependency graph for duplicate includes of the same file.
-    std::set<std::filesystem::path> duplicates = findDuplicateDependencies(this);
-    for (const std::filesystem::path &normalizedPath : duplicates) {
-        logError(NULL, "File at path '"+normalizedPath.string()+"' exists more than once in the dependency graph.");
-    }
-    if (duplicates.size() > 0) {
-        return;
-    }
-    
     _bytecode = new MaPLBuffer(this);
     
-    // Concatenate all preceding bytecode and variables from dependencies.
-    for(MaPLFile *file : _dependencies) {
+    // Flatten the dependency graph into a list of de-duplicated files.
+    for(MaPLFile *file : flattenedDependencies(this)) {
         file->compileIfNeeded();
+        
+        // Concatenate all preceding bytecode and variables from dependencies.
         MaPLBuffer *dependencyBytecode = file->getBytecode();
         if (dependencyBytecode) {
             _bytecode->appendBuffer(dependencyBytecode,
+                                    dependencyBytecode->getEndOfDependenciesAnnotation().byteLocation,
                                     _variableStack->getMaximumPrimitiveMemoryUsed(),
                                     _variableStack->getMaximumAllocatedMemoryUsed());
         }
@@ -140,6 +134,10 @@ void MaPLFile::compileIfNeeded() {
         }
         _api.assimilate(file->getAPI());
     }
+    _variableStack->flagAllVariablesAsDependency();
+    _api.flagAllContentsAsDependency();
+    _bytecode->zeroDebugLines();
+    _bytecode->addAnnotation(MaPLBufferAnnotationType_EndOfDependencies);
     
     _api.assimilate(_program, this);
     _api.performErrorChecking();
@@ -147,8 +145,6 @@ void MaPLFile::compileIfNeeded() {
     if(_errors.size() > 0) {
         return;
     }
-    
-    _bytecode->zeroDebugLines();
     
     // Compile the bytecode from this file.
     compileChildNodes(_program, { MaPLPrimitiveType_Uninitialized }, _bytecode);
@@ -1084,7 +1080,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLBytecodeLength scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLBytecodeLength);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
-            loopBuffer.appendBuffer(&scopeBuffer, 0, 0);
+            loopBuffer.appendBuffer(&scopeBuffer, 0, 0, 0);
             loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
             MaPLBytecodeLength byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPLBytecodeLength);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
@@ -1092,7 +1088,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Continue, false);
             
-            currentBuffer->appendBuffer(&loopBuffer, 0, 0);
+            currentBuffer->appendBuffer(&loopBuffer, 0, 0, 0);
         }
             break;
         case MaPLParser::RuleForLoop: {
@@ -1152,14 +1148,14 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLBytecodeLength scopeSize = scopeBuffer.getByteCount() + sizeof(MaPLInstruction) + sizeof(MaPLBytecodeLength);
                 loopBuffer.appendBytes(&scopeSize, sizeof(scopeSize));
             }
-            loopBuffer.appendBuffer(&scopeBuffer, 0, 0);
+            loopBuffer.appendBuffer(&scopeBuffer, 0, 0, 0);
             loopBuffer.appendInstruction(MaPLInstruction_cursor_move_back);
             MaPLBytecodeLength byteDistanceToLoopTop = loopBuffer.getByteCount() + sizeof(MaPLBytecodeLength);
             loopBuffer.appendBytes(&byteDistanceToLoopTop, sizeof(byteDistanceToLoopTop));
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
             
-            currentBuffer->appendBuffer(&loopBuffer, 0, 0);
+            currentBuffer->appendBuffer(&loopBuffer, 0, 0, 0);
             
             if (_options.includeDebugBytes) {
                 compileDebugPopFromTopStackFrame(currentBuffer);
@@ -1187,7 +1183,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 !expressionLiteral.booleanValue) {
                 // The conditional at the end of the loop is always false. No need to ever repeat.
                 loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
-                currentBuffer->appendBuffer(&loopBuffer, 0, 0);
+                currentBuffer->appendBuffer(&loopBuffer, 0, 0, 0);
                 break;
             }
             
@@ -1206,7 +1202,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
             
             loopBuffer.resolveControlFlowAnnotations(MaPLBufferAnnotationType_Break, true);
             
-            currentBuffer->appendBuffer(&loopBuffer, 0, 0);
+            currentBuffer->appendBuffer(&loopBuffer, 0, 0, 0);
         }
             break;
         case MaPLParser::RuleConditional: {
@@ -1257,8 +1253,8 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 MaPLBytecodeLength scopeSize = (MaPLBytecodeLength)scopeBuffer.getByteCount();
                 currentBuffer->appendBytes(&scopeSize, sizeof(scopeSize));
                 
-                currentBuffer->appendBuffer(&scopeBuffer, 0, 0);
-                currentBuffer->appendBuffer(&elseBuffer, 0, 0);
+                currentBuffer->appendBuffer(&scopeBuffer, 0, 0, 0);
+                currentBuffer->appendBuffer(&elseBuffer, 0, 0, 0);
             }
         }
             break;

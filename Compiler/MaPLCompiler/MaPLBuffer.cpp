@@ -43,15 +43,20 @@ void MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
 }
 
 void MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer,
+                              MaPLMemoryAddress copyStartAddress,
                               MaPLMemoryAddress primitiveMemoryAddressOffset,
                               MaPLMemoryAddress allocatedMemoryIndexOffset) {
     // Append all bytes from the other buffer.
     size_t previousSize = _bytes.size();
     const std::vector<u_int8_t> &otherBytes = otherBuffer->getBytes();
-    _bytes.insert(_bytes.end(), otherBytes.begin(), otherBytes.end());
+    _bytes.insert(_bytes.end(), otherBytes.begin()+copyStartAddress, otherBytes.end());
     
     for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
-        annotation.byteLocation += previousSize;
+        if (annotation.type == MaPLBufferAnnotationType_EndOfDependencies ||
+            annotation.byteLocation < copyStartAddress) {
+            continue;
+        }
+        annotation.byteLocation += previousSize - copyStartAddress;
         if (annotation.type == MaPLBufferAnnotationType_PrimitiveVariableAddress) {
             *((MaPLMemoryAddress *)(&_bytes[annotation.byteLocation])) += primitiveMemoryAddressOffset;
         } else if (annotation.type == MaPLBufferAnnotationType_AllocatedVariableIndex) {
@@ -203,6 +208,15 @@ void MaPLBuffer::resolveControlFlowAnnotations(MaPLBufferAnnotationType type, bo
 
 std::vector<MaPLBufferAnnotation> MaPLBuffer::getAnnotations() {
     return _annotations;
+}
+
+MaPLBufferAnnotation MaPLBuffer::getEndOfDependenciesAnnotation() {
+    for (const MaPLBufferAnnotation &annotation : _annotations) {
+        if (annotation.type == MaPLBufferAnnotationType_EndOfDependencies) {
+            return annotation;
+        }
+    }
+    return { 0, MaPLBufferAnnotationType_EndOfDependencies };
 }
 
 void MaPLBuffer::resolveSymbolsWithTable(const std::map<std::string, MaPLSymbol> &symbolTable) {

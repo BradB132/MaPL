@@ -280,12 +280,15 @@ void MaPLAPI::assimilate(const MaPLTypeAPI &type) {
 
 void MaPLAPI::assimilate(const MaPLAPI *otherAPI) {
     for (const MaPLFunctionAPI &functionAPI : otherAPI->globalFunctions) {
+        if (functionAPI.declaredInDependency) { continue; }
         assimilate(functionAPI);
     }
     for (const auto&[key, property] : otherAPI->globalProperties) {
+        if (property.declaredInDependency) { continue; }
         assimilate(property);
     }
     for (const auto&[key, type] : otherAPI->types) {
+        if (type.declaredInDependency) { continue; }
         assimilate(type);
     }
 }
@@ -307,6 +310,18 @@ void MaPLAPI::assimilate(MaPLParser::ProgramContext *program, MaPLFile *file) {
                 assimilate(functionAPIForNode(functionContext, {}, file));
             }
         }
+    }
+}
+
+void MaPLAPI::flagAllContentsAsDependency() {
+    for (MaPLFunctionAPI &functionAPI : globalFunctions) {
+        functionAPI.declaredInDependency = true;
+    }
+    for (auto&[key, propertyAPI] : globalProperties) {
+        propertyAPI.declaredInDependency = true;
+    }
+    for (auto&[key, typeAPI] : types) {
+        typeAPI.declaredInDependency = true;
     }
 }
 

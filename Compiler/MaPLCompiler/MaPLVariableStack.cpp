@@ -97,6 +97,9 @@ bool MaPLVariableStack::appendVariableStack(MaPLVariableStack *otherStack) {
     MaPLMemoryAddress allocatedStackSize = _maximumAllocatedMemoryUsed;
     MaPLMemoryAddress primitiveStackSize = _maximumPrimitiveMemoryUsed;
     for (const auto&[name, variable] : otherStack->getGlobalVariables()) {
+        if (variable.declaredInDependency) {
+            continue;
+        }
         MaPLMemoryAddress adjustedAddress = variable.memoryAddress;
         if (!declareVariable(name, variable)) {
             return false;
@@ -129,4 +132,12 @@ std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getGlobalVariab
 
 std::unordered_map<std::string, MaPLVariable> MaPLVariableStack::getTopStackFrame() {
     return _stack[_stack.size()-1];
+}
+
+void MaPLVariableStack::flagAllVariablesAsDependency() {
+    for (std::unordered_map<std::string, MaPLVariable> &frame : _stack) {
+        for (auto&[name, variable] : frame) {
+            variable.declaredInDependency = true;
+        }
+    }
 }

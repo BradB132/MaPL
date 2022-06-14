@@ -1139,25 +1139,22 @@ bool assignOperatorIsCompatibleWithType(MaPLFile *file, size_t operatorType, MaP
     return true;
 }
 
-std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file, std::set<std::filesystem::path> &pathSet) {
-    std::set<std::filesystem::path> returnPaths;
-    if (pathSet.count(file->getNormalizedFilePath())) {
-        returnPaths.insert(file->getNormalizedFilePath());
-        return returnPaths;
-    } else {
-        pathSet.insert(file->getNormalizedFilePath());
-    }
+void flattenDependencies(MaPLFile *file, std::vector<MaPLFile *> &outputList, std::set<std::filesystem::path> &seenPaths) {
     for (MaPLFile *dependentFile : file->getDependencies()) {
-        for (const std::filesystem::path &duplicatePath : findDuplicateDependencies(dependentFile, pathSet)) {
-            returnPaths.insert(duplicatePath);
+        if (seenPaths.count(dependentFile->getNormalizedFilePath())) {
+            continue;
         }
+        seenPaths.insert(dependentFile->getNormalizedFilePath());
+        flattenDependencies(dependentFile, outputList, seenPaths);
+        outputList.push_back(dependentFile);
     }
-    return returnPaths;
 }
 
-std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file) {
-    std::set<std::filesystem::path> pathSet;
-    return findDuplicateDependencies(file, pathSet);
+std::vector<MaPLFile *> flattenedDependencies(MaPLFile *file) {
+    std::vector<MaPLFile *> outputList;
+    std::set<std::filesystem::path> seenPaths;
+    flattenDependencies(file, outputList, seenPaths);
+    return outputList;
 }
 
 std::map<std::string, MaPLSymbol> symbolTableForFiles(const std::vector<MaPLFile *> files) {

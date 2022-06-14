@@ -23,6 +23,7 @@ enum MaPLBufferAnnotationType {
     MaPLBufferAnnotationType_AllocatedVariableIndex,
     MaPLBufferAnnotationType_FunctionSymbol,
     MaPLBufferAnnotationType_DebugLine,
+    MaPLBufferAnnotationType_EndOfDependencies,
 };
 
 struct MaPLBufferAnnotation {
@@ -75,10 +76,12 @@ public:
      * Appends the contents of another MaPLBuffer, including annotations, onto the buffer.
      *
      * @param otherBuffer The other buffer that will have all contents copied into this buffer.
+     * @param copyStartAddress At what byte location that the append should start reading from @c otherBuffer.
      * @param primitiveMemoryAddressOffset How much increment should be applied to the memory address of all primitive variables referenced in the appended bytecode.
      * @param allocatedMemoryIndexOffset How much increment should be applied to the memory index of all allocated variables referenced in the appended bytecode.
      */
     void appendBuffer(MaPLBuffer *otherBuffer,
+                      MaPLMemoryAddress copyStartAddress,
                       MaPLMemoryAddress primitiveMemoryAddressOffset,
                       MaPLMemoryAddress allocatedMemoryIndexOffset);
     
@@ -127,6 +130,11 @@ public:
      * @return A list of all added annotations.
      */
     std::vector<MaPLBufferAnnotation> getAnnotations();
+    
+    /**
+     * @return The first instance of an @c MaPLBufferAnnotationType_EndOfDependencies annotation.
+     */
+    MaPLBufferAnnotation getEndOfDependenciesAnnotation();
     
     /**
      * Uses a mapping of symbol descriptors and symbol values to update this buffer anywhere there's a symbol annotation.

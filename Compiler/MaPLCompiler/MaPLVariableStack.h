@@ -27,6 +27,8 @@ struct MaPLVariable {
     antlr4::Token *token;
     // Specifies the location in the memory where this variable is stored.
     MaPLMemoryAddress memoryAddress;
+    // Specifies if this variable was declared in a dependent file.
+    bool declaredInDependency = false;
 };
 
 /**
@@ -83,6 +85,11 @@ public:
      * @return A mapping of all variables that are in the top stack frame.
      */
     std::unordered_map<std::string, MaPLVariable> getTopStackFrame();
+    
+    /**
+     * Flags all variables as being declared in a dependency. This is useful when the compiler is traversing the dependency graph.
+     */
+    void flagAllVariablesAsDependency();
     
 private:
     

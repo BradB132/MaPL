@@ -51,6 +51,7 @@ struct MaPLFunctionAPI {
     MaPLGenericType returnType;
     std::vector<MaPLGenericType> parameterTypes;
     bool isVariadic;
+    bool declaredInDependency = false;
     
     /**
      * @return The symbol representation of this function. This is used in the symbol table.
@@ -70,6 +71,7 @@ struct MaPLPropertyAPI {
     std::string typeAPIName;
     MaPLGenericType returnType;
     bool isReadonly;
+    bool declaredInDependency = false;
     
     /**
      * @return The symbol representation of this property. This is used in the symbol table.
@@ -99,6 +101,7 @@ struct MaPLTypeAPI {
     std::vector<MaPLFunctionAPI> functions;
     std::unordered_map<std::string, MaPLPropertyAPI> properties;
     std::vector<MaPLSubscriptAPI> subscripts;
+    bool declaredInDependency = false;
 };
 
 class MaPLAPI {
@@ -165,6 +168,11 @@ public:
      * Traverse @c program and assimilate all APIs.
      */
     void assimilate(MaPLParser::ProgramContext *program, MaPLFile *file);
+    
+    /**
+     * Flags all contents of this API as being from a dependent file.
+     */
+    void flagAllContentsAsDependency();
     
 private:
     

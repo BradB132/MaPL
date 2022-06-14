@@ -272,9 +272,9 @@ MaPLInstruction bitwiseShiftRightInstructionForPrimitive(MaPLPrimitiveType type)
 MaPLInstruction ternaryConditionalInstructionForPrimitive(MaPLPrimitiveType type);
 
 /**
- * A set of paths to files which appear multiple times in the dependency graph of @c file.
+ * @return An array containing a de-duplicated list of the dependent files of @c file. List is depth-first order.
  */
-std::set<std::filesystem::path> findDuplicateDependencies(MaPLFile *file);
+std::vector<MaPLFile *> flattenedDependencies(MaPLFile *file);
 
 /**
  * @return A mapping of all symbols names to symbol values for APIs declared within @c files.
