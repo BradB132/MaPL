@@ -6,10 +6,13 @@
 //
 
 #include "MaPLBuffer.h"
+
 #include <stdlib.h>
 #include <string>
 #include <regex>
+
 #include "MaPLFile.h"
+#include "MaPLVariableStack.h"
 
 MaPLBuffer::MaPLBuffer(MaPLFile *parentFile) :
     _parentFile(parentFile)
@@ -43,26 +46,32 @@ void MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
 }
 
 void MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer,
-                              MaPLMemoryAddress copyStartAddress,
-                              MaPLMemoryAddress primitiveMemoryAddressOffset,
-                              MaPLMemoryAddress allocatedMemoryIndexOffset) {
+                              MaPLVariableStack *globalVariableStack) {
     // Append all bytes from the other buffer.
     size_t previousSize = _bytes.size();
     const std::vector<u_int8_t> &otherBytes = otherBuffer->getBytes();
+    MaPLMemoryAddress copyStartAddress = otherBuffer->getEndOfDependenciesAnnotation().byteLocation;
     _bytes.insert(_bytes.end(), otherBytes.begin()+copyStartAddress, otherBytes.end());
     
-    for (MaPLBufferAnnotation annotation : otherBuffer->getAnnotations()) {
+    for (const MaPLBufferAnnotation &annotation : otherBuffer->getAnnotations()) {
+        // Ignore any annotations that appear before the bytes we're copying.
         if (annotation.type == MaPLBufferAnnotationType_EndOfDependencies ||
             annotation.byteLocation < copyStartAddress) {
             continue;
         }
-        annotation.byteLocation += previousSize - copyStartAddress;
-        if (annotation.type == MaPLBufferAnnotationType_PrimitiveVariableAddress) {
-            *((MaPLMemoryAddress *)(&_bytes[annotation.byteLocation])) += primitiveMemoryAddressOffset;
-        } else if (annotation.type == MaPLBufferAnnotationType_AllocatedVariableIndex) {
-            *((MaPLMemoryAddress *)(&_bytes[annotation.byteLocation])) += allocatedMemoryIndexOffset;
+        
+        MaPLBufferAnnotation copiedAnnotation = annotation;
+        copiedAnnotation.byteLocation += previousSize - copyStartAddress;
+        
+        // Variables are now appearing in a different context and need to recalculate their memory addresses.
+        if (globalVariableStack &&
+            (copiedAnnotation.type == MaPLBufferAnnotationType_PrimitiveVariableAddress ||
+             copiedAnnotation.type == MaPLBufferAnnotationType_AllocatedVariableIndex)) {
+            MaPLVariable variable = globalVariableStack->getVariable(copiedAnnotation.text);
+            *((MaPLMemoryAddress *)(&_bytes[copiedAnnotation.byteLocation])) = variable.memoryAddress;
         }
-        _annotations.push_back(annotation);
+        
+        _annotations.push_back(copiedAnnotation);
     }
 }
 

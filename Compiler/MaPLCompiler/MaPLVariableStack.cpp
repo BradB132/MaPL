@@ -105,8 +105,8 @@ bool MaPLVariableStack::appendVariableStack(MaPLVariableStack *otherStack) {
             return false;
         }
         
-        // Redeclaring the variable will scramble its memory address. Calculate what
-        // the appended memory address should be and fix them after redeclaration.
+        // Redeclaring the variable will scramble its memory address because the global variables map
+        // is unordered. Calculate what the memory address should be and fix it after redeclaration.
         if (variable.type.primitiveType == MaPLPrimitiveType_String) {
             adjustedAddress += allocatedStackSize;
         } else {

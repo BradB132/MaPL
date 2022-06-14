@@ -15,6 +15,7 @@
 #include "MaPLCompilerHelpers.h"
 
 class MaPLFile;
+class MaPLVariableStack;
 
 enum MaPLBufferAnnotationType {
     MaPLBufferAnnotationType_Break,
@@ -76,14 +77,10 @@ public:
      * Appends the contents of another MaPLBuffer, including annotations, onto the buffer.
      *
      * @param otherBuffer The other buffer that will have all contents copied into this buffer.
-     * @param copyStartAddress At what byte location that the append should start reading from @c otherBuffer.
-     * @param primitiveMemoryAddressOffset How much increment should be applied to the memory address of all primitive variables referenced in the appended bytecode.
-     * @param allocatedMemoryIndexOffset How much increment should be applied to the memory index of all allocated variables referenced in the appended bytecode.
+     * @param globalVariableStack A variable stack that contains all variables referenced in @c otherBuffer. This stack is referenced when replacing the memory addresses of the copied variables. Pass NULL if not appending global variables.
      */
     void appendBuffer(MaPLBuffer *otherBuffer,
-                      MaPLMemoryAddress copyStartAddress,
-                      MaPLMemoryAddress primitiveMemoryAddressOffset,
-                      MaPLMemoryAddress allocatedMemoryIndexOffset);
+                      MaPLVariableStack *globalVariableStack);
     
     /**
      * Appends the literal value onto the buffer.
