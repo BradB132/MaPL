@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "MaPLCompiler.h"
+#include "MaPLDecompiler.h"
 #include "MaPLRuntime.h"
 #include "TestSymbols.h"
 
@@ -281,12 +282,17 @@ MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnde
         if (memcmp(expectedBytecode, &bytecode[0], length)) {
             printf("Compiled bytecode has different content than expected bytecode '%s'.\n", contents.bytecodePath.c_str());
             for (size_t i = 0; i < length; i++) {
-                printf("Byte #%lu: %u - %u", i, expectedBytecode[i], bytecode[i]);
                 if (expectedBytecode[i] != bytecode[i]) {
-                    printf(" (DIFFERENT)");
+                    printf("Byte #%lu: Expected %u, got %u.\n", i, expectedBytecode[i], bytecode[i]);
                 }
-                printf("\n");
             }
+            
+            printf("\nExpected bytecode:\n");
+            printDecompilationOfBytecode(expectedBytecode, length);
+            
+            printf("\nGot bytecode:\n");
+            printDecompilationOfBytecode(&(bytecode[0]), length);
+            
             exit(1);
         }
 #endif
