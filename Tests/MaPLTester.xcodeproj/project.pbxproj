@@ -10,6 +10,7 @@
 		9B26DEEB2805B76900988F9E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B26DEEA2805B76900988F9E /* main.cpp */; };
 		9B26DF0A2805B8B200988F9E /* libMaPLRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B26DF032805B88A00988F9E /* libMaPLRuntime.a */; };
 		9B7F7F6628171598004955D9 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F63281714F1004955D9 /* libMaPLCompiler.a */; };
+		9BD31E702858DAC200FA5177 /* MaPLDecompiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BD31E6E2858DAC200FA5177 /* MaPLDecompiler.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +76,8 @@
 		9B26DEF12805B87A00988F9E /* MaPLCompiler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLCompiler.xcodeproj; path = ../Compiler/MaPLCompiler.xcodeproj; sourceTree = "<group>"; };
 		9B26DEFB2805B88A00988F9E /* MaPLRuntime.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLRuntime.xcodeproj; path = ../Runtime/MaPLRuntime.xcodeproj; sourceTree = "<group>"; };
 		9B26DF0B2805E4E100988F9E /* TestSymbols.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSymbols.h; sourceTree = "<group>"; };
+		9BD31E6E2858DAC200FA5177 /* MaPLDecompiler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaPLDecompiler.cpp; sourceTree = "<group>"; };
+		9BD31E6F2858DAC200FA5177 /* MaPLDecompiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MaPLDecompiler.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +117,8 @@
 			children = (
 				9B26DF0B2805E4E100988F9E /* TestSymbols.h */,
 				9B26DEEA2805B76900988F9E /* main.cpp */,
+				9BD31E6E2858DAC200FA5177 /* MaPLDecompiler.cpp */,
+				9BD31E6F2858DAC200FA5177 /* MaPLDecompiler.h */,
 			);
 			path = MaPLTester;
 			sourceTree = "<group>";
@@ -244,6 +249,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B26DEEB2805B76900988F9E /* main.cpp in Sources */,
+				9BD31E702858DAC200FA5177 /* MaPLDecompiler.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -378,7 +384,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					"\"${SRCROOT}/../Runtime/Headers\"",
-					"\"${SRCROOT}/../Shared/Headers\"",
+					"\"${SRCROOT}/../Shared/\"/**",
 					"\"${SRCROOT}/../Compiler/Headers\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -391,7 +397,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					"\"${SRCROOT}/../Runtime/Headers\"",
-					"\"${SRCROOT}/../Shared/Headers\"",
+					"\"${SRCROOT}/../Shared/\"/**",
 					"\"${SRCROOT}/../Compiler/Headers\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
