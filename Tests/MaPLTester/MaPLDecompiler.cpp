@@ -32,7 +32,7 @@ void printLineNumber(MaPLDecompilerContext *context, MaPLBytecodeLength byteLeng
     if (byteLength <= 1) {
         printf("%u: ", context->cursorPosition);
     } else {
-        printf("%u-%u: ", context->cursorPosition, context->cursorPosition+byteLength);
+        printf("%u-%u: ", context->cursorPosition, context->cursorPosition+(byteLength-1));
     }
 }
 
@@ -700,7 +700,7 @@ MaPLParameterCount printParameterCount(MaPLDecompilerContext *context) {
 void printString(MaPLDecompilerContext *context) {
     char *literal = (char *)(context->scriptBuffer+context->cursorPosition);
     MaPLBytecodeLength stringLength = strlen(literal)+1;
-    printLineNumber(context, sizeof(stringLength));
+    printLineNumber(context, stringLength);
     printf("LITERAL STRING=\"%s\"\n", literal);
     context->cursorPosition += stringLength;
 }
@@ -1079,6 +1079,10 @@ void evaluateStatement(MaPLDecompilerContext *context) {
 void printDecompilationOfBytecode(const u_int8_t *bytes, MaPLBytecodeLength length) {
     MaPLDecompilerContext context;
     context.scriptBuffer = bytes;
+    printf("(PRIMITIVE STACK BYTE SIZE)\n");
+    printMemoryAddress(&context);
+    printf("(ALLOCATED STACK INDEX SIZE)\n");
+    printMemoryAddress(&context);
     while (context.cursorPosition < length) {
         evaluateStatement(&context);
     }
