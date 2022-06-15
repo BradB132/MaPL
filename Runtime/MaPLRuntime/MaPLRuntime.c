@@ -20,7 +20,6 @@ typedef enum {
 
 typedef struct {
     const u_int8_t* scriptBuffer;
-    MaPLBytecodeLength bufferLength;
     MaPLBytecodeLength cursorPosition;
     u_int8_t *primitiveTable;
     char **stringTable;
@@ -1796,7 +1795,6 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     
     MaPLExecutionContext context;
     context.scriptBuffer = (u_int8_t *)scriptBuffer;
-    context.bufferLength = bufferLength;
     context.callbacks = callbacks;
     context.isDeadCodepath = false;
     context.executionState = MaPLExecutionState_continue;
@@ -1812,7 +1810,7 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     context.stringTable = stringTable;
     context.cursorPosition = sizeof(MaPLMemoryAddress)*2;
     
-    while (context.executionState == MaPLExecutionState_continue && context.cursorPosition < context.bufferLength) {
+    while (context.executionState == MaPLExecutionState_continue && context.cursorPosition < bufferLength) {
         evaluateStatement(&context);
     }
     if (context.executionState == MaPLExecutionState_error && context.callbacks->error) {
