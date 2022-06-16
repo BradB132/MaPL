@@ -1,0 +1,8 @@
+#import "../TestAPI.mapl"
+
+#import "dependency1.mapl"
+#import "dependency2.mapl"
+#import "dependency1.mapl"
+#import "dependency2.mapl"
+
+print("Root file.");

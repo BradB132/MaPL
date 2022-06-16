@@ -1,0 +1,3 @@
+#import "../TestAPI.mapl"
+
+print("2nd file - This should only print once.");

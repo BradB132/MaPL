@@ -1,0 +1,3 @@
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"1st file - This should only print once."
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"2nd file - This should only print once."
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Root file."
