@@ -93,9 +93,9 @@ bool MaPLVariableStack::declareVariable(const std::string &variableName, MaPLVar
     return true;
 }
 
-bool MaPLVariableStack::appendVariableStack(MaPLVariableStack *otherStack) {
-    MaPLMemoryAddress allocatedStackSize = _maximumAllocatedMemoryUsed;
-    MaPLMemoryAddress primitiveStackSize = _maximumPrimitiveMemoryUsed;
+bool MaPLVariableStack::appendVariableStack(MaPLVariableStack *otherStack,
+                                            MaPLMemoryAddress primitiveMemoryAddressOffset,
+                                            MaPLMemoryAddress allocatedMemoryIndexOffset) {
     for (const auto&[name, variable] : otherStack->getGlobalVariables()) {
         if (variable.declaredInDependency) {
             continue;
@@ -108,9 +108,9 @@ bool MaPLVariableStack::appendVariableStack(MaPLVariableStack *otherStack) {
         // Redeclaring the variable will scramble its memory address because the global variables map
         // is unordered. Calculate what the memory address should be and fix it after redeclaration.
         if (variable.type.primitiveType == MaPLPrimitiveType_String) {
-            adjustedAddress += allocatedStackSize;
+            adjustedAddress += allocatedMemoryIndexOffset;
         } else {
-            adjustedAddress += primitiveStackSize;
+            adjustedAddress += primitiveMemoryAddressOffset;
         }
         _stack[_stack.size()-1][name].memoryAddress = adjustedAddress;
     }

@@ -12,6 +12,7 @@
 #include <regex>
 
 #include "MaPLFile.h"
+#include "MaPLVariableStack.h"
 
 MaPLBuffer::MaPLBuffer(MaPLFile *parentFile) :
     _parentFile(parentFile)
@@ -44,28 +45,66 @@ void MaPLBuffer::appendInstruction(MaPLInstruction instruction) {
     appendBytes(&instruction, sizeof(instruction));
 }
 
+MaPLMemoryAddress MaPLBuffer::calculateMemoryAddressOffset(MaPLBufferAnnotationType annotationType,
+                                                           MaPLMemoryAddress endOfDependencies) {
+    MaPLMemoryAddress minimumMemoryAddress;
+    bool hasMinimumMemoryAddress = false;
+    for (const MaPLBufferAnnotation &annotation : _annotations) {
+        // Ignore any annotations that appear before the bytes we're copying.
+        if (annotation.type == MaPLBufferAnnotationType_EndOfDependencies ||
+            annotation.byteLocation < endOfDependencies) {
+            continue;
+        }
+        if (annotation.type == annotationType) {
+            MaPLMemoryAddress annotationAddress = *((MaPLMemoryAddress *)(&_bytes[annotation.byteLocation]));
+            if (hasMinimumMemoryAddress) {
+                if (annotationAddress < minimumMemoryAddress) {
+                    minimumMemoryAddress = annotationAddress;
+                }
+            } else {
+                minimumMemoryAddress = annotationAddress;
+                hasMinimumMemoryAddress = true;
+            }
+        }
+    }
+    if (hasMinimumMemoryAddress) {
+        return minimumMemoryAddress;
+    }
+    return 0;
+}
+
+MaPLMemoryAddress MaPLBuffer::calculatePrimitiveMemoryAddressOffset(MaPLVariableStack *variableStack, MaPLMemoryAddress endOfDependencies) {
+    return variableStack->getMaximumPrimitiveMemoryUsed() - calculateMemoryAddressOffset(MaPLBufferAnnotationType_PrimitiveVariableAddressDeclaration, endOfDependencies);
+}
+
+MaPLMemoryAddress MaPLBuffer::calculateAllocatedMemoryAddressOffset(MaPLVariableStack *variableStack, MaPLMemoryAddress endOfDependencies) {
+    return variableStack->getMaximumAllocatedMemoryUsed() - calculateMemoryAddressOffset(MaPLBufferAnnotationType_AllocatedVariableIndexDeclaration, endOfDependencies);
+}
+
 void MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer,
+                              MaPLMemoryAddress endOfDependencies,
                               MaPLMemoryAddress primitiveMemoryAddressOffset,
                               MaPLMemoryAddress allocatedMemoryIndexOffset) {
     // Append all bytes from the other buffer.
     size_t previousSize = _bytes.size();
     const std::vector<u_int8_t> &otherBytes = otherBuffer->getBytes();
-    MaPLMemoryAddress copyStartAddress = otherBuffer->getEndOfDependenciesAnnotation().byteLocation;
-    _bytes.insert(_bytes.end(), otherBytes.begin()+copyStartAddress, otherBytes.end());
+    _bytes.insert(_bytes.end(), otherBytes.begin()+endOfDependencies, otherBytes.end());
     
     for (const MaPLBufferAnnotation &annotation : otherBuffer->getAnnotations()) {
         // Ignore any annotations that appear before the bytes we're copying.
-        if (annotation.type == MaPLBufferAnnotationType_EndOfDependencies ||
-            annotation.byteLocation < copyStartAddress) {
+        if (annotation.byteLocation < endOfDependencies ||
+            annotation.type == MaPLBufferAnnotationType_EndOfDependencies) {
             continue;
         }
         
         MaPLBufferAnnotation copiedAnnotation = annotation;
-        copiedAnnotation.byteLocation += previousSize - copyStartAddress;
+        copiedAnnotation.byteLocation += previousSize - endOfDependencies;
         
-        if (copiedAnnotation.type == MaPLBufferAnnotationType_PrimitiveVariableAddress) {
+        if (copiedAnnotation.type == MaPLBufferAnnotationType_PrimitiveVariableAddressDeclaration ||
+            copiedAnnotation.type == MaPLBufferAnnotationType_PrimitiveVariableAddressReference) {
             *((MaPLMemoryAddress *)(&_bytes[copiedAnnotation.byteLocation])) += primitiveMemoryAddressOffset;
-        } else if (annotation.type == MaPLBufferAnnotationType_AllocatedVariableIndex) {
+        } else if (annotation.type == MaPLBufferAnnotationType_AllocatedVariableIndexDeclaration ||
+                   annotation.type == MaPLBufferAnnotationType_AllocatedVariableIndexReference) {
             *((MaPLMemoryAddress *)(&_bytes[copiedAnnotation.byteLocation])) += allocatedMemoryIndexOffset;
         }
         

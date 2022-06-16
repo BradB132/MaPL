@@ -15,12 +15,15 @@
 #include "MaPLCompilerHelpers.h"
 
 class MaPLFile;
+class MaPLVariableStack;
 
 enum MaPLBufferAnnotationType {
     MaPLBufferAnnotationType_Break,
     MaPLBufferAnnotationType_Continue,
-    MaPLBufferAnnotationType_PrimitiveVariableAddress,
-    MaPLBufferAnnotationType_AllocatedVariableIndex,
+    MaPLBufferAnnotationType_PrimitiveVariableAddressDeclaration,
+    MaPLBufferAnnotationType_AllocatedVariableIndexDeclaration,
+    MaPLBufferAnnotationType_PrimitiveVariableAddressReference,
+    MaPLBufferAnnotationType_AllocatedVariableIndexReference,
     MaPLBufferAnnotationType_FunctionSymbol,
     MaPLBufferAnnotationType_DebugLine,
     MaPLBufferAnnotationType_EndOfDependencies,
@@ -76,10 +79,12 @@ public:
      * Appends the contents of another MaPLBuffer, including annotations, onto the buffer.
      *
      * @param otherBuffer The other buffer that will have all contents copied into this buffer.
+     * @param endOfDependencies The byte location of the end of dependencies.
      * @param primitiveMemoryAddressOffset How much increment should be applied to the memory address of all primitive variables referenced in the appended bytecode.
      * @param allocatedMemoryIndexOffset How much increment should be applied to the memory index of all allocated variables referenced in the appended bytecode.
      */
     void appendBuffer(MaPLBuffer *otherBuffer,
+                      MaPLMemoryAddress endOfDependencies,
                       MaPLMemoryAddress primitiveMemoryAddressOffset,
                       MaPLMemoryAddress allocatedMemoryIndexOffset);
     
@@ -145,7 +150,16 @@ public:
      */
     void zeroDebugLines();
     
+    MaPLMemoryAddress calculatePrimitiveMemoryAddressOffset(MaPLVariableStack *variableStack,
+                                                            MaPLMemoryAddress endOfDependencies);
+    
+    MaPLMemoryAddress calculateAllocatedMemoryAddressOffset(MaPLVariableStack *variableStack,
+                                                            MaPLMemoryAddress endOfDependencies);
+    
 private:
+    
+    MaPLMemoryAddress calculateMemoryAddressOffset(MaPLBufferAnnotationType annotationType,
+                                                   MaPLMemoryAddress endOfDependencies);
     
     MaPLFile *_parentFile;
     std::vector<u_int8_t> _bytes;

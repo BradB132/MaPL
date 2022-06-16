@@ -69,7 +69,9 @@ public:
     /**
      * Inserts all global variables from another stack into the top stack frame.
      */
-    bool appendVariableStack(MaPLVariableStack *otherStack);
+    bool appendVariableStack(MaPLVariableStack *otherStack,
+                             MaPLMemoryAddress primitiveMemoryAddressOffset,
+                             MaPLMemoryAddress allocatedMemoryIndexOffset);
     
     /**
      * @return The @c MaPLVariable with the given name. If the variable does not exist, its @c primitiveType will be @c MaPLPrimitiveType_TypeError.
