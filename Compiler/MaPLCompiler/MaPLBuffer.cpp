@@ -51,20 +51,18 @@ MaPLMemoryAddress MaPLBuffer::calculateMemoryAddressOffset(MaPLBufferAnnotationT
     bool hasMinimumMemoryAddress = false;
     for (const MaPLBufferAnnotation &annotation : _annotations) {
         // Ignore any annotations that appear before the bytes we're copying.
-        if (annotation.type == MaPLBufferAnnotationType_EndOfDependencies ||
+        if (annotation.type != annotationType ||
             annotation.byteLocation < endOfDependencies) {
             continue;
         }
-        if (annotation.type == annotationType) {
-            MaPLMemoryAddress annotationAddress = *((MaPLMemoryAddress *)(&_bytes[annotation.byteLocation]));
-            if (hasMinimumMemoryAddress) {
-                if (annotationAddress < minimumMemoryAddress) {
-                    minimumMemoryAddress = annotationAddress;
-                }
-            } else {
+        MaPLMemoryAddress annotationAddress = *((MaPLMemoryAddress *)(&_bytes[annotation.byteLocation]));
+        if (hasMinimumMemoryAddress) {
+            if (annotationAddress < minimumMemoryAddress) {
                 minimumMemoryAddress = annotationAddress;
-                hasMinimumMemoryAddress = true;
             }
+        } else {
+            minimumMemoryAddress = annotationAddress;
+            hasMinimumMemoryAddress = true;
         }
     }
     if (hasMinimumMemoryAddress) {
