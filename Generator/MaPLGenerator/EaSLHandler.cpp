@@ -88,7 +88,9 @@ uint32_t uintForSequenceLength(EaSLParser::SequenceDescriptorContext *sequenceDe
 SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext, const std::string &defaultNamespace, ErrorLogger *errorLogger) :
 _attributeContext(attributeContext),
 _name(attributeContext->identifier()->getText()),
-_annotations(parseAnnotations(attributeContext->ANNOTATION())) {
+_annotations(parseAnnotations(attributeContext->ANNOTATION())),
+_typeIsClass(false),
+_typeIsEnum(false) {
     EaSLParser::TypeContext *typeContext = attributeContext->type();
     _typeIsUIDReference = typeContext->typeToken && typeContext->typeToken->getType() == EaSLParser::REFERENCE;
     
