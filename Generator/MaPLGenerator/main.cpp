@@ -80,5 +80,6 @@ int main(int argc, const char * argv[]) {
         invokeScript(scriptPath, xmlNodes, schemas, flags);
     }
     
+    printf("MaPLGenerator completed successfully.\n");
     return 0;
 }
