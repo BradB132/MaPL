@@ -23,7 +23,8 @@ void invokeScript(const std::filesystem::path &scriptPath);
 // Create a stack of metadata about the scripts that are currently running.
 struct MaPLStackFrame {
     std::filesystem::path path;
-    std::unordered_map<std::string, void *> scriptParameters;
+    std::unordered_map<std::string, void *> inParameters;
+    std::unordered_map<std::string, void *> outParameters;
     std::unordered_map<std::string, MaPLParameter> variables;
     MaPLLineNumber currentLineNumber = 0;
     std::ofstream *outputStream = NULL;
@@ -78,9 +79,13 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             break;
         case MaPLSymbols_GLOBAL_schemas:
             return MaPLPointer(_schemas);
-        case MaPLSymbols_GLOBAL_scriptParameters: {
+        case MaPLSymbols_GLOBAL_inParameters: {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-            return MaPLPointer(&frame.scriptParameters);
+            return MaPLPointer(&frame.inParameters);
+        }
+        case MaPLSymbols_GLOBAL_outParameters: {
+            MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+            return MaPLPointer(&frame.outParameters);
         }
         case MaPLSymbols_GLOBAL_writeToFile_VARIADIC: {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
@@ -138,11 +143,20 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
 }
 
 static MaPLParameter invokeSubscript(void *invokedOnPointer, MaPLParameter index) {
-    if (invokedOnPointer) {
-        MaPLInterface *maPLInterface = static_cast<MaPLInterface *>(invokedOnPointer);
-        return maPLInterface->invokeSubscript(index);
+    if (!invokedOnPointer) {
+        return MaPLUninitialized();
     }
-    return MaPLUninitialized();
+    if (index.dataType == MaPLDataType_string) {
+        MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+        std::string stringKey = index.stringValue;
+        if (invokedOnPointer == &frame.inParameters) {
+            return MaPLPointer(frame.inParameters.count(stringKey) ? frame.inParameters.at(stringKey) : NULL);
+        } else if (invokedOnPointer == &frame.outParameters) {
+            return MaPLPointer(frame.outParameters.count(stringKey) ? frame.outParameters.at(stringKey) : NULL);
+        }
+    }
+    MaPLInterface *maPLInterface = static_cast<MaPLInterface *>(invokedOnPointer);
+    return maPLInterface->invokeSubscript(index);
 }
 
 static void assignProperty(void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
@@ -150,11 +164,10 @@ static void assignProperty(void *invokedOnPointer, MaPLSymbol propertySymbol, Ma
 }
 
 static void assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
-    MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-    if (invokedOnPointer == &frame.scriptParameters &&
-        index.dataType == MaPLDataType_string &&
+    std::unordered_map<std::string, void *> *invokedOnMap = (std::unordered_map<std::string, void *> *)invokedOnPointer;
+    if (index.dataType == MaPLDataType_string &&
         assignedValue.dataType == MaPLDataType_pointer) {
-        frame.scriptParameters[index.stringValue] = assignedValue.pointerValue;
+        (*invokedOnMap)[index.stringValue] = assignedValue.pointerValue;
     }
 }
 
@@ -252,7 +265,7 @@ void invokeScript(const std::filesystem::path &scriptPath) {
     if (_stackFrames.size()) {
         // When a previous stack frame exists, pass the script parameters into the new frame.
         MaPLStackFrame &previousFrame = _stackFrames[_stackFrames.size()-1];
-        _stackFrames.push_back({ scriptPath, previousFrame.scriptParameters });
+        _stackFrames.push_back({ scriptPath, previousFrame.outParameters });
     } else {
         _stackFrames.push_back({ scriptPath });
     }
