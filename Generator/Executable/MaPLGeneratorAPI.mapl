@@ -1,6 +1,10 @@
 
+// Base type gives a common ancestor so pointers stored in
+// ScriptParameters can be cast back to original type.
+#type MaPLGeneratorObject {}
+
 // Data Structures.
-#type Array<T> {
+#type Array<T> : MaPLGeneratorObject {
     readonly T[uint32];
     readonly uint32 count;
 }
@@ -13,19 +17,19 @@
 // Schema.
 #global readonly ArrayMap<Schema> schemas;
 
-#type Schema {
+#type Schema : MaPLGeneratorObject {
     readonly string namespace;
     readonly ArrayMap<SchemaEnum> enums;
     readonly ArrayMap<SchemaClass> classes;
 }
 
-#type SchemaEnum {
+#type SchemaEnum : MaPLGeneratorObject {
     readonly string name;
     readonly ArrayMap<string> cases;
     readonly ArrayMap<string> annotations;
 }
 
-#type SchemaClass {
+#type SchemaClass : MaPLGeneratorObject {
     readonly string name;
     readonly string superclass;
     readonly string superclassNamespace;
@@ -33,7 +37,7 @@
     readonly ArrayMap<string> annotations;
 }
 
-#type SchemaAttribute {
+#type SchemaAttribute : MaPLGeneratorObject {
     readonly string name;
     readonly string typeName;
     readonly string typeNamespace;
@@ -49,14 +53,14 @@
 // XML.
 #global readonly Array<XMLNode> xmlFiles;
 
-#type XMLNode {
+#type XMLNode : MaPLGeneratorObject {
     readonly string name;
     readonly string namespace;
     readonly ArrayMap<XMLAttribute> attributes;
     readonly Array<XMLNode> children;
 }
 
-#type XMLAttribute {
+#type XMLAttribute : MaPLGeneratorObject {
     readonly string name;
     readonly string value;
     
@@ -69,7 +73,13 @@
 #global void outputToFile(string filePath);
 #global void writeToFile(...); // Writes the byte representation of the parameters to file, in parameter order.
 
-// Misc utilities.
+// Script invocation.
+#type ScriptParameters {
+    MaPLGeneratorObject [string];
+}
+#global readonly ScriptParameters scriptParameters;
 #global void executeMaPLScript(string filePath);
+
+// Misc utilities.
 #global string commandLineFlag(string flagName);
 #global uint64 hash(string plaintext);

@@ -23,6 +23,7 @@ void invokeScript(const std::filesystem::path &scriptPath);
 // Create a stack of metadata about the scripts that are currently running.
 struct MaPLStackFrame {
     std::filesystem::path path;
+    std::unordered_map<std::string, void *> scriptParameters;
     std::unordered_map<std::string, MaPLParameter> variables;
     MaPLLineNumber currentLineNumber = 0;
     std::ofstream *outputStream = NULL;
@@ -77,6 +78,10 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             break;
         case MaPLSymbols_GLOBAL_schemas:
             return MaPLPointer(_schemas);
+        case MaPLSymbols_GLOBAL_scriptParameters: {
+            MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+            return MaPLPointer(&frame.scriptParameters);
+        }
         case MaPLSymbols_GLOBAL_writeToFile_VARIADIC: {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
             if (!frame.outputStream) {
@@ -145,7 +150,12 @@ static void assignProperty(void *invokedOnPointer, MaPLSymbol propertySymbol, Ma
 }
 
 static void assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
-    // No-op. API contains no write-able subscripts.
+    MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+    if (invokedOnPointer == &frame.scriptParameters &&
+        index.dataType == MaPLDataType_string &&
+        assignedValue.dataType == MaPLDataType_pointer) {
+        frame.scriptParameters[index.stringValue] = assignedValue.pointerValue;
+    }
 }
 
 static void metadata(const char* metadataString) {
@@ -234,12 +244,18 @@ static void error(MaPLRuntimeError error) {
             break;
     }
     MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-    fprintf(stderr, "%s:%d: error: %s\n", frame.path.c_str(), frame.currentLineNumber, errString);
+    fprintf(stderr, "%s:%d: error: %s (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, errString);
     exit(1);
 }
 
 void invokeScript(const std::filesystem::path &scriptPath) {
-    _stackFrames.push_back({ scriptPath });
+    if (_stackFrames.size()) {
+        // When a previous stack frame exists, pass the script parameters into the new frame.
+        MaPLStackFrame &previousFrame = _stackFrames[_stackFrames.size()-1];
+        _stackFrames.push_back({ scriptPath, previousFrame.scriptParameters });
+    } else {
+        _stackFrames.push_back({ scriptPath });
+    }
     
     MaPLCompileOptions options{ true };
     MaPLCompileResult result = compileMaPL({ scriptPath }, options);
