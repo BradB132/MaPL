@@ -28,6 +28,11 @@ _name((char *)node->name) {
     }
     _children = new MaPLArray<XmlNode *>(children);
     
+    // Initialize this empty. It gets filled in during validation.
+    std::vector<MaPLArray<XmlNode *> *> emptyVector;
+    std::unordered_map<std::string, MaPLArray<XmlNode *> *> emptyMap;
+    _childrenBySequence = new MaPLArrayMap<MaPLArray<XmlNode *> *>(emptyVector, emptyMap);
+    
     std::vector<XmlAttribute *> attributes;
     std::unordered_map<std::string, XmlAttribute *> attributeMap;
     for (xmlAttr *xmlAttribute = node->properties; xmlAttribute; xmlAttribute = xmlAttribute->next) {
@@ -44,6 +49,8 @@ MaPLParameter XmlNode::invokeFunction(MaPLSymbol functionSymbol, const MaPLParam
             return MaPLPointer(_attributes);
         case MaPLSymbols_XMLNode_children:
             return MaPLPointer(_children);
+        case MaPLSymbols_XMLNode_childrenBySequence:
+            return MaPLPointer(_childrenBySequence);
         case MaPLSymbols_XMLNode_name:
             return MaPLStringByReference(_name.c_str());
         case MaPLSymbols_XMLNode_namespace:

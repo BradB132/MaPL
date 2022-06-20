@@ -64,6 +64,10 @@
     readonly string namespace;
     readonly ArrayMap<XMLAttribute> attributes;
     readonly Array<XMLNode> children;
+    
+    // Children filtered by schema sequence. Using this data structure guarantees
+    // that your script assigns children to the same sequence as the XML validator.
+    readonly ArrayMap<Array<XMLNode>> childrenBySequence;
 }
 
 #type XMLAttribute : MaPLGeneratorObject {

@@ -707,7 +707,20 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
                               schemas)) {
                 potentialMatch = &attributeCount;
                 if (attributeCount.childCount < attributeCount.schemaAttribute->_maxOccurrences) {
+                    // Child successfully matched to a sequence. Count it and add to filtered children list.
                     attributeCount.childCount++;
+                    
+                    MaPLArray<XmlNode *> *sequenceArray;
+                    if (xmlNode->_childrenBySequence->_backingMap.count(attributeCount.schemaAttribute->_name)) {
+                        sequenceArray = xmlNode->_childrenBySequence->_backingMap.at(attributeCount.schemaAttribute->_name);
+                        sequenceArray->_backingVector.push_back(childNode);
+                    } else {
+                        std::vector<XmlNode *> sequenceVector = { childNode };
+                        sequenceArray = new MaPLArray<XmlNode *>(sequenceVector);
+                    }
+                    xmlNode->_childrenBySequence->_backingVector.push_back(sequenceArray);
+                    xmlNode->_childrenBySequence->_backingMap[attributeCount.schemaAttribute->_name] = sequenceArray;
+                    
                     didMatchAttribute = true;
                     break;
                 }

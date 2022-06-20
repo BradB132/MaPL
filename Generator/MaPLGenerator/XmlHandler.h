@@ -28,6 +28,7 @@ public:
     std::string _namespace;
     MaPLArrayMap<XmlAttribute *> *_attributes;
     MaPLArray<XmlNode *> *_children;
+    MaPLArrayMap<MaPLArray<XmlNode *> *> *_childrenBySequence;
 };
 
 class XmlAttribute : public MaPLInterface {

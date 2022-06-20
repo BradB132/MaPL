@@ -38,7 +38,8 @@ enum MaPLSymbols {
     MaPLSymbols_XMLAttribute_values = 35,
     MaPLSymbols_XMLNode_attributes = 36,
     MaPLSymbols_XMLNode_children = 37,
-    MaPLSymbols_XMLNode_name = 38,
-    MaPLSymbols_XMLNode_namespace = 39,
+    MaPLSymbols_XMLNode_childrenBySequence = 38,
+    MaPLSymbols_XMLNode_name = 39,
+    MaPLSymbols_XMLNode_namespace = 40,
 };
 #endif /* MaPLSymbols_h */
