@@ -28,7 +28,7 @@ print("9/3|1", a/b|c);
 // Modulo takes precedence over arithmetic.
 print("5%3*9", c%b*a);
 
-// Boolean logic takes precedence over negation.
+// Negation takes precedence over boolean logic.
 bool b1 = false;
 bool b2 = true;
 print("!false || true", !b1 || b2);
