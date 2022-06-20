@@ -27,8 +27,8 @@ struct MaPLStackFrame {
     std::unordered_map<std::string, void *> outParameters;
     std::unordered_map<std::string, MaPLParameter> variables;
     MaPLLineNumber currentLineNumber = 0;
-    std::ofstream *outputStream = NULL;
 };
+static std::ofstream *outputStream = NULL;
 static std::vector<MaPLStackFrame> _stackFrames;
 static MaPLArray<XmlNode *> *_xmlNodes;
 static MaPLArrayMap<Schema *> *_schemas;
@@ -71,10 +71,9 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
             break;
         case MaPLSymbols_GLOBAL_outputToFile_string: {
-            MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-            delete frame.outputStream;
+            delete outputStream;
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
-            frame.outputStream = new std::ofstream(normalizedPath);
+            outputStream = new std::ofstream(normalizedPath);
         }
             break;
         case MaPLSymbols_GLOBAL_schemas:
@@ -89,38 +88,38 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
         case MaPLSymbols_GLOBAL_writeToFile_VARIADIC: {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-            if (!frame.outputStream) {
+            if (!outputStream) {
                 fprintf(stderr, "%s:%d: error: Attempted to write to file before any output file was specified.\n", frame.path.c_str(), frame.currentLineNumber);
                 exit(1);
             }
             for (MaPLParameterCount i = 0; i < argc; i++) {
                 switch (argv[i].dataType) {
                     case MaPLDataType_char:
-                        frame.outputStream->write((char *)&(argv[i].charValue), sizeof(argv[i].charValue));
+                        outputStream->write((char *)&(argv[i].charValue), sizeof(argv[i].charValue));
                         break;
                     case MaPLDataType_int32:
-                        frame.outputStream->write((char *)&(argv[i].int32Value), sizeof(argv[i].int32Value));
+                        outputStream->write((char *)&(argv[i].int32Value), sizeof(argv[i].int32Value));
                         break;
                     case MaPLDataType_int64:
-                        frame.outputStream->write((char *)&(argv[i].int64Value), sizeof(argv[i].int64Value));
+                        outputStream->write((char *)&(argv[i].int64Value), sizeof(argv[i].int64Value));
                         break;
                     case MaPLDataType_uint32:
-                        frame.outputStream->write((char *)&(argv[i].uint32Value), sizeof(argv[i].uint32Value));
+                        outputStream->write((char *)&(argv[i].uint32Value), sizeof(argv[i].uint32Value));
                         break;
                     case MaPLDataType_uint64:
-                        frame.outputStream->write((char *)&(argv[i].uint64Value), sizeof(argv[i].uint64Value));
+                        outputStream->write((char *)&(argv[i].uint64Value), sizeof(argv[i].uint64Value));
                         break;
                     case MaPLDataType_float32:
-                        frame.outputStream->write((char *)&(argv[i].float32Value), sizeof(argv[i].float32Value));
+                        outputStream->write((char *)&(argv[i].float32Value), sizeof(argv[i].float32Value));
                         break;
                     case MaPLDataType_float64:
-                        frame.outputStream->write((char *)&(argv[i].float64Value), sizeof(argv[i].float64Value));
+                        outputStream->write((char *)&(argv[i].float64Value), sizeof(argv[i].float64Value));
                         break;
                     case MaPLDataType_string:
-                        frame.outputStream->write(argv[i].stringValue, strlen(argv[i].stringValue)+1);
+                        outputStream->write(argv[i].stringValue, strlen(argv[i].stringValue)+1);
                         break;
                     case MaPLDataType_boolean:
-                        frame.outputStream->write((char *)&(argv[i].booleanValue), sizeof(argv[i].booleanValue));
+                        outputStream->write((char *)&(argv[i].booleanValue), sizeof(argv[i].booleanValue));
                         break;
                     default:
                         fprintf(stderr, "%s:%d: error: MaPL argument at index %d was invalid type.\n", frame.path.c_str(), frame.currentLineNumber, i);
@@ -173,7 +172,7 @@ static void assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLPar
 
 static void metadata(const char* metadataString) {
     MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-    if (!frame.outputStream) {
+    if (!outputStream) {
         fprintf(stderr, "%s:%d: error: Attempted to write metadata to file before any output file was specified.\n", frame.path.c_str(), frame.currentLineNumber);
         exit(1);
     }
@@ -222,7 +221,7 @@ static void metadata(const char* metadataString) {
         outputString.replace(match[0].first, match[0].second, variableValue);
         searchStart = cbegin(outputString);
     }
-    *frame.outputStream << outputString;
+    *outputStream << outputString;
 }
 
 static void debugLine(MaPLLineNumber lineNumber) {
@@ -296,8 +295,6 @@ void invokeScript(const std::filesystem::path &scriptPath) {
     };
     executeMaPLScript(&(bytecode[0]), bytecode.size(), &callbacks);
     
-    MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-    delete frame.outputStream;
     _stackFrames.pop_back();
 }
 
@@ -309,4 +306,5 @@ void invokeScript(const std::filesystem::path &scriptPath,
     _schemas = schemas;
     _flags = &flags;
     invokeScript(scriptPath);
+    delete outputStream;
 }
