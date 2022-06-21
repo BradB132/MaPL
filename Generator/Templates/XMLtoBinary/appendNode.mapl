@@ -1,0 +1,16 @@
+#import "../../Executable/MaPLGeneratorAPI.mapl"
+
+// uint32 instructions should give enough space to reasonably assume no hash collisions
+// No need for stop instructions, implicit whenever there's the start of a new object.
+// lists (including strings) include a length instruction.
+
+XMLNode node = (XMLNode)inParameters["node"];
+
+string nodeName = node.namespace + "_" + node.name;
+<?${nodeName}
+?>
+
+for uint32 i = 0; i < node.children.count; i++ {
+    outParameters["node"] = node.children[i];
+    executeMaPLScript("./appendNode.mapl");
+}

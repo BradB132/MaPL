@@ -75,6 +75,10 @@
             argument = "&quot;${SRCROOT}/Templates/XMLtoBinary/main.mapl&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;--binaryOutputDir=${SRCROOT}/EaSL/generated_c++&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>
    <ProfileAction

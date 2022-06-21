@@ -313,4 +313,5 @@ void invokeScript(const std::filesystem::path &scriptPath,
     _flags = &flags;
     invokeScript(scriptPath);
     delete _outputStream;
+    _outputStream = NULL;
 }
