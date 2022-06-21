@@ -54,6 +54,12 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             }
             return MaPLStringByReference(_flags->at(argString).c_str());
         }
+        case MaPLSymbols_GLOBAL_error_string: {
+            MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+            fprintf(stderr, "%s:%d: error: %s (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, argv[0].stringValue);
+            exit(1);
+        }
+            break;
         case MaPLSymbols_GLOBAL_executeMaPLScript_string: {
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
             invokeScript(normalizedPath);

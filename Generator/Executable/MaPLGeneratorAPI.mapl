@@ -110,3 +110,5 @@
  */
 #global string commandLineFlag(string flagName);
 #global uint64 hash(string plaintext);
+// Logs an error and causes MaPLGenerator to halt execution.
+#global void error(string errorMessage);
