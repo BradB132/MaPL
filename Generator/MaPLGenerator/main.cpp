@@ -73,7 +73,7 @@ int main(int argc, const char * argv[]) {
     }
     
     MaPLArrayMap<Schema *> *schemas = schemasForPaths(schemaPaths);
-    MaPLArray<XmlNode *> *xmlNodes = xmlNodesForPaths(xmlPaths);
+    MaPLArray<XmlFile *> *xmlNodes = xmlFilesForPaths(xmlPaths);
     validateXML(xmlNodes, schemas);
     
     for (const std::filesystem::path &scriptPath : scriptPaths) {

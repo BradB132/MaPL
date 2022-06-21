@@ -746,13 +746,13 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
     }
 }
 
-void validateXML(MaPLArray<XmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas) {
+void validateXML(MaPLArray<XmlFile *> *xmlFiles, MaPLArrayMap<Schema *> *schemas) {
     bool hasLoggedError = false;
     
     std::unordered_map<std::string, XmlNode *> uidMap;
-    for (XmlNode *xmlNode : xmlNodes->_backingVector) {
-        ErrorLogger errorLogger((char *)xmlNode->_node->doc->URL);
-        firstPassXMLValidation(xmlNode, schemas, uidMap, errorLogger);
+    for (XmlFile *xmlFile : xmlFiles->_backingVector) {
+        ErrorLogger errorLogger(xmlFile->_filePath);
+        firstPassXMLValidation(xmlFile->_rootNode, schemas, uidMap, errorLogger);
         if (errorLogger._hasLoggedError) {
             hasLoggedError = true;
         }
@@ -760,9 +760,9 @@ void validateXML(MaPLArray<XmlNode *> *xmlNodes, MaPLArrayMap<Schema *> *schemas
     if (hasLoggedError) {
         exit(1);
     }
-    for (XmlNode *xmlNode : xmlNodes->_backingVector) {
-        ErrorLogger errorLogger((char *)xmlNode->_node->doc->URL);
-        secondPassXMLValidation(xmlNode, schemas, uidMap, errorLogger);
+    for (XmlFile *xmlFile : xmlFiles->_backingVector) {
+        ErrorLogger errorLogger(xmlFile->_filePath);
+        secondPassXMLValidation(xmlFile->_rootNode, schemas, uidMap, errorLogger);
         if (errorLogger._hasLoggedError) {
             hasLoggedError = true;
         }

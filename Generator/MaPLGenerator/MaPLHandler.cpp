@@ -28,9 +28,9 @@ struct MaPLStackFrame {
     std::unordered_map<std::string, MaPLParameter> variables;
     MaPLLineNumber currentLineNumber = 0;
 };
-static std::ofstream *outputStream = NULL;
+static std::ofstream *_outputStream = NULL;
 static std::vector<MaPLStackFrame> _stackFrames;
-static MaPLArray<XmlNode *> *_xmlNodes;
+static MaPLArray<XmlFile *> *_xmlFiles;
 static MaPLArrayMap<Schema *> *_schemas;
 static const std::unordered_map<std::string, std::string> *_flags;
 
@@ -59,6 +59,12 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             invokeScript(normalizedPath);
         }
             break;
+        case MaPLSymbols_GLOBAL_fileStemForPath_string: {
+            std::filesystem::path path = argv[0].stringValue;
+            std::string stem = path.stem();
+            return MaPLStringByValue(stem.c_str());
+        }
+            break;
         case MaPLSymbols_GLOBAL_hash_string: {
             // sdbm algorithm.
             const char *str = argv[0].stringValue;
@@ -71,9 +77,9 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
             break;
         case MaPLSymbols_GLOBAL_outputToFile_string: {
-            delete outputStream;
+            delete _outputStream;
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
-            outputStream = new std::ofstream(normalizedPath);
+            _outputStream = new std::ofstream(normalizedPath);
         }
             break;
         case MaPLSymbols_GLOBAL_schemas:
@@ -88,38 +94,38 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
         case MaPLSymbols_GLOBAL_writeToFile_VARIADIC: {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-            if (!outputStream) {
+            if (!_outputStream) {
                 fprintf(stderr, "%s:%d: error: Attempted to write to file before any output file was specified.\n", frame.path.c_str(), frame.currentLineNumber);
                 exit(1);
             }
             for (MaPLParameterCount i = 0; i < argc; i++) {
                 switch (argv[i].dataType) {
                     case MaPLDataType_char:
-                        outputStream->write((char *)&(argv[i].charValue), sizeof(argv[i].charValue));
+                        _outputStream->write((char *)&(argv[i].charValue), sizeof(argv[i].charValue));
                         break;
                     case MaPLDataType_int32:
-                        outputStream->write((char *)&(argv[i].int32Value), sizeof(argv[i].int32Value));
+                        _outputStream->write((char *)&(argv[i].int32Value), sizeof(argv[i].int32Value));
                         break;
                     case MaPLDataType_int64:
-                        outputStream->write((char *)&(argv[i].int64Value), sizeof(argv[i].int64Value));
+                        _outputStream->write((char *)&(argv[i].int64Value), sizeof(argv[i].int64Value));
                         break;
                     case MaPLDataType_uint32:
-                        outputStream->write((char *)&(argv[i].uint32Value), sizeof(argv[i].uint32Value));
+                        _outputStream->write((char *)&(argv[i].uint32Value), sizeof(argv[i].uint32Value));
                         break;
                     case MaPLDataType_uint64:
-                        outputStream->write((char *)&(argv[i].uint64Value), sizeof(argv[i].uint64Value));
+                        _outputStream->write((char *)&(argv[i].uint64Value), sizeof(argv[i].uint64Value));
                         break;
                     case MaPLDataType_float32:
-                        outputStream->write((char *)&(argv[i].float32Value), sizeof(argv[i].float32Value));
+                        _outputStream->write((char *)&(argv[i].float32Value), sizeof(argv[i].float32Value));
                         break;
                     case MaPLDataType_float64:
-                        outputStream->write((char *)&(argv[i].float64Value), sizeof(argv[i].float64Value));
+                        _outputStream->write((char *)&(argv[i].float64Value), sizeof(argv[i].float64Value));
                         break;
                     case MaPLDataType_string:
-                        outputStream->write(argv[i].stringValue, strlen(argv[i].stringValue)+1);
+                        _outputStream->write(argv[i].stringValue, strlen(argv[i].stringValue)+1);
                         break;
                     case MaPLDataType_boolean:
-                        outputStream->write((char *)&(argv[i].booleanValue), sizeof(argv[i].booleanValue));
+                        _outputStream->write((char *)&(argv[i].booleanValue), sizeof(argv[i].booleanValue));
                         break;
                     default:
                         fprintf(stderr, "%s:%d: error: MaPL argument at index %d was invalid type.\n", frame.path.c_str(), frame.currentLineNumber, i);
@@ -130,7 +136,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
             break;
         case MaPLSymbols_GLOBAL_xmlFiles:
-            return MaPLPointer(_xmlNodes);
+            return MaPLPointer(_xmlFiles);
         default:
             if (invokedOnPointer) {
                 MaPLInterface *maPLInterface = static_cast<MaPLInterface *>(invokedOnPointer);
@@ -172,7 +178,7 @@ static void assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLPar
 
 static void metadata(const char* metadataString) {
     MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-    if (!outputStream) {
+    if (!_outputStream) {
         fprintf(stderr, "%s:%d: error: Attempted to write metadata to file before any output file was specified.\n", frame.path.c_str(), frame.currentLineNumber);
         exit(1);
     }
@@ -221,7 +227,7 @@ static void metadata(const char* metadataString) {
         outputString.replace(match[0].first, match[0].second, variableValue);
         searchStart = cbegin(outputString);
     }
-    *outputStream << outputString;
+    *_outputStream << outputString;
 }
 
 static void debugLine(MaPLLineNumber lineNumber) {
@@ -299,12 +305,12 @@ void invokeScript(const std::filesystem::path &scriptPath) {
 }
 
 void invokeScript(const std::filesystem::path &scriptPath,
-                  MaPLArray<XmlNode *> *xmlNodes,
+                  MaPLArray<XmlFile *> *xmlFiles,
                   MaPLArrayMap<Schema *> *schemas,
                   const std::unordered_map<std::string, std::string> &flags) {
-    _xmlNodes = xmlNodes;
+    _xmlFiles = xmlFiles;
     _schemas = schemas;
     _flags = &flags;
     invokeScript(scriptPath);
-    delete outputStream;
+    delete _outputStream;
 }

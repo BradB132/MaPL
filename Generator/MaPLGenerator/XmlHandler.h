@@ -15,7 +15,18 @@
 #include "MaPLInterface.h"
 #include "MaPLGeneratorCollections.h"
 
+class XmlNode;
 class XmlAttribute;
+
+class XmlFile : public MaPLInterface {
+public:
+    XmlFile(xmlDoc *document);
+    virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
+    virtual MaPLParameter invokeSubscript(MaPLParameter index);
+    
+    XmlNode *_rootNode;
+    std::string _filePath;
+};
 
 class XmlNode : public MaPLInterface {
 public:
@@ -43,6 +54,6 @@ public:
     MaPLArray<std::string> *_values;
 };
 
-MaPLArray<XmlNode *> *xmlNodesForPaths(const std::vector<std::filesystem::path> &xmlPaths);
+MaPLArray<XmlFile *> *xmlFilesForPaths(const std::vector<std::filesystem::path> &xmlPaths);
 
 #endif /* XmlHandler_h */

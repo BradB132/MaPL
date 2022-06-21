@@ -13,6 +13,26 @@
 
 #include "ErrorLogger.h"
 
+XmlFile::XmlFile(xmlDoc *document) :
+_rootNode(new XmlNode(xmlDocGetRootElement(document))),
+_filePath((const char *)document->URL) {
+}
+
+MaPLParameter XmlFile::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
+    switch (functionSymbol) {
+        case MaPLSymbols_XMLFile_filePath:
+            return MaPLStringByReference(_filePath.c_str());
+        case MaPLSymbols_XMLFile_rootNode:
+            return MaPLPointer(_rootNode);
+        default:
+            return MaPLUninitialized();
+    }
+}
+
+MaPLParameter XmlFile::invokeSubscript(MaPLParameter index) {
+    return MaPLUninitialized();
+}
+
 XmlNode::XmlNode(xmlNode *node) :
 _node(node),
 _name((char *)node->name) {
@@ -96,8 +116,8 @@ MaPLParameter XmlAttribute::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-MaPLArray<XmlNode *> *xmlNodesForPaths(const std::vector<std::filesystem::path> &xmlPaths) {
-    std::vector<XmlNode *> xmlNodesVector;
+MaPLArray<XmlFile *> *xmlFilesForPaths(const std::vector<std::filesystem::path> &xmlPaths) {
+    std::vector<XmlFile *> xmlFilesVector;
     
     for (const std::filesystem::path &xmlPath : xmlPaths) {
         xmlDoc *doc = xmlReadFile(xmlPath.c_str(), NULL, 0);
@@ -106,9 +126,8 @@ MaPLArray<XmlNode *> *xmlNodesForPaths(const std::vector<std::filesystem::path> 
             logger.logError("Failed to open data file.");
             exit(1);
         }
-        xmlNode *node = xmlDocGetRootElement(doc);
-        xmlNodesVector.push_back(new XmlNode(node));
+        xmlFilesVector.push_back(new XmlFile(doc));
     }
     
-    return new MaPLArray<XmlNode *>(xmlNodesVector);
+    return new MaPLArray<XmlFile *>(xmlFilesVector);
 }

@@ -57,7 +57,12 @@
 /**
  * XML.
  */
-#global readonly Array<XMLNode> xmlFiles;
+#global readonly Array<XMLFile> xmlFiles;
+
+#type XMLFile : MaPLGeneratorObject {
+    readonly XMLNode rootNode;
+    readonly string filePath;
+}
 
 #type XMLNode : MaPLGeneratorObject {
     readonly string name;
@@ -83,6 +88,8 @@
  * File IO.
  */
 #global void outputToFile(string filePath);
+// Returns the file name without the preceding path or file extension.
+#global string fileStemForPath(string filePath);
 // Writes the byte representation of the parameters to file, in parameter order.
 #global void writeToFile(...);
 

@@ -16,7 +16,7 @@
 #include "MaPLGeneratorCollections.h"
 
 void invokeScript(const std::filesystem::path &scriptPath,
-                  MaPLArray<XmlNode *> *xmlNodes,
+                  MaPLArray<XmlFile *> *xmlFiles,
                   MaPLArrayMap<Schema *> *schemas,
                   const std::unordered_map<std::string, std::string> &flags);
 
