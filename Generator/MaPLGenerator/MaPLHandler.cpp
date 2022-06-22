@@ -49,7 +49,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             const std::string &argString = argv[0].stringValue;
             if (!_flags->count(argString)) {
                 MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-                fprintf(stderr, "%s:%d: error: Attempted to reference missing flag '%s'.\n", frame.path.c_str(), frame.currentLineNumber, argv[0].stringValue);
+                fprintf(stderr, "%s:%d: error: Attempted to reference missing flag '%s'. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, argv[0].stringValue);
                 exit(1);
             }
             return MaPLStringByReference(_flags->at(argString).c_str());
@@ -99,7 +99,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         case MaPLSymbols_GLOBAL_writeToFile_VARIADIC: {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
             if (!_outputStream) {
-                fprintf(stderr, "%s:%d: error: Attempted to write to file before any output file was specified.\n", frame.path.c_str(), frame.currentLineNumber);
+                fprintf(stderr, "%s:%d: error: Attempted to write to file before any output file was specified. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber);
                 exit(1);
             }
             for (MaPLParameterCount i = 0; i < argc; i++) {
@@ -132,7 +132,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
                         _outputStream->write((char *)&(argv[i].booleanValue), sizeof(argv[i].booleanValue));
                         break;
                     default:
-                        fprintf(stderr, "%s:%d: error: MaPL argument at index %d was invalid type.\n", frame.path.c_str(), frame.currentLineNumber, i);
+                        fprintf(stderr, "%s:%d: error: MaPL argument at index %d was invalid type. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, i);
                         exit(1);
                         break;
                 }
@@ -183,7 +183,7 @@ static void assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLPar
 static void metadata(const char* metadataString) {
     MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
     if (!_outputStream) {
-        fprintf(stderr, "%s:%d: error: Attempted to write metadata to file before any output file was specified.\n", frame.path.c_str(), frame.currentLineNumber);
+        fprintf(stderr, "%s:%d: error: Attempted to write metadata to file before any output file was specified. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber);
         exit(1);
     }
     std::string outputString = metadataString;
@@ -223,7 +223,7 @@ static void metadata(const char* metadataString) {
                 variableValue = std::to_string(matchedVariable.booleanValue);
                 break;
             default:
-                fprintf(stderr, "%s:%d: error: Variable '%s' is not a printable data type.\n", frame.path.c_str(), frame.currentLineNumber, variableName.c_str());
+                fprintf(stderr, "%s:%d: error: Variable '%s' is not a printable data type. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, variableName.c_str());
                 exit(1);
                 break;
         }
@@ -278,6 +278,8 @@ void invokeScript(const std::filesystem::path &scriptPath) {
     } else {
         _stackFrames.push_back({ scriptPath });
     }
+    
+    // TODO: Cache the bytecode so that we don't have to recompile every time we revisit the same file.
     
     MaPLCompileOptions options{ true };
     MaPLCompileResult result = compileMaPL({ scriptPath }, options);
