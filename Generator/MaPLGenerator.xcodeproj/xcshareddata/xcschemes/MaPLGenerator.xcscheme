@@ -64,6 +64,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "&quot;--cppOutputDir=${SRCROOT}/EaSL/generated_c++&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "&quot;${SRCROOT}/Templates/MaPL/main.mapl&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
