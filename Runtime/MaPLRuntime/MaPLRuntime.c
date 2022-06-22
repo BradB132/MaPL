@@ -1544,8 +1544,12 @@ MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, enum MaPLInstru
 
 void evaluateStatement(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_unused_return_function_invocation:
-            evaluateFunctionInvocation(context);
+        case MaPLInstruction_unused_return_function_invocation: {
+            MaPLParameter returnedValue = evaluateFunctionInvocation(context);
+            if (returnedValue.dataType == MaPLDataType_string) {
+                freeStringIfNeeded((char *)returnedValue.stringValue);
+            }
+        }
             break;
         case MaPLInstruction_char_assign: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
