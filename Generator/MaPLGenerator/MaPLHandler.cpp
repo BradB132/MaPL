@@ -8,6 +8,7 @@
 #include "MaPLHandler.h"
 
 #include <fstream>
+#include <filesystem>
 #include <regex>
 #include <stdlib.h>
 #include <string>
@@ -41,6 +42,15 @@ std::filesystem::path normalizedParamPath(const char *pathParam) {
         path = frame.path.parent_path() / path;
     }
     return path.lexically_normal();
+}
+
+void createDirectoriesIfNeeded(const std::filesystem::path &path) {
+    std::filesystem::path parentDirectory = path.parent_path();
+    if (std::filesystem::exists(parentDirectory)) {
+        return;
+    }
+    createDirectoriesIfNeeded(parentDirectory);
+    std::filesystem::create_directory(parentDirectory);
 }
 
 static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -83,6 +93,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         case MaPLSymbols_GLOBAL_outputToFile_string: {
             delete _outputStream;
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
+            createDirectoriesIfNeeded(normalizedPath);
             _outputStream = new std::ofstream(normalizedPath);
             return MaPLVoid();
         }
