@@ -107,6 +107,8 @@ MaPLParameter XmlAttribute::invokeFunction(MaPLSymbol functionSymbol, const MaPL
             return MaPLStringByReference(_name.c_str());
         case MaPLSymbols_XMLAttribute_value:
             return MaPLStringByReference(_value.c_str());
+        case MaPLSymbols_XMLAttribute_values:
+            return MaPLPointer(_values);
         default:
             return MaPLUninitialized();
     }

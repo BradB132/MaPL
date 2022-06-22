@@ -63,14 +63,13 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         case MaPLSymbols_GLOBAL_executeMaPLScript_string: {
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
             invokeScript(normalizedPath);
+            return MaPLVoid();
         }
-            break;
         case MaPLSymbols_GLOBAL_fileStemForPath_string: {
             std::filesystem::path path = argv[0].stringValue;
             std::string stem = path.stem();
             return MaPLStringByValue(stem.c_str());
         }
-            break;
         case MaPLSymbols_GLOBAL_hash_string: {
             // sdbm algorithm.
             const char *str = argv[0].stringValue;
@@ -81,13 +80,12 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             }
             return MaPLUint64(hash);
         }
-            break;
         case MaPLSymbols_GLOBAL_outputToFile_string: {
             delete _outputStream;
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
             _outputStream = new std::ofstream(normalizedPath);
+            return MaPLVoid();
         }
-            break;
         case MaPLSymbols_GLOBAL_schemas:
             return MaPLPointer(_schemas);
         case MaPLSymbols_GLOBAL_inParameters: {
@@ -139,8 +137,8 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
                         break;
                 }
             }
+            return MaPLVoid();
         }
-            break;
         case MaPLSymbols_GLOBAL_xmlFiles:
             return MaPLPointer(_xmlFiles);
         default:

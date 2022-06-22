@@ -87,6 +87,7 @@
 /**
  * File IO.
  */
+// Chooses which file to output to.
 #global void outputToFile(string filePath);
 // Returns the file name without the preceding path or file extension.
 #global string fileStemForPath(string filePath);
