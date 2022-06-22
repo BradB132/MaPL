@@ -1,16 +1,96 @@
 #import "../../Executable/MaPLGeneratorAPI.mapl"
 
-// uint32 instructions should give enough space to reasonably assume no hash collisions
-// No need for stop instructions, implicit whenever there's the start of a new object.
-// lists (including strings) include a length instruction.
-
 XMLNode node = (XMLNode)inParameters["node"];
 
-string nodeName = node.namespace + "_" + node.name;
-<?${nodeName}
-?>
+// Find the matching schema class.
+Schema schema = schemas[node.namespace];
+SchemaClass schemaClass = schema.classes[node.name];
 
-for uint32 i = 0; i < node.children.count; i++ {
-    outParameters["node"] = node.children[i];
-    executeMaPLScript("./appendNode.mapl");
+// Write an instruction that describes the start of this class.
+string classDescriptor = "CLASS_" + schema.namespace + "_" + schemaClass.name;
+writeToFile((uint32)hash(classDescriptor));
+
+while schemaClass != NULL {
+    // Iterating by schema attributes instead of node attributes
+    // allows this script to sort child nodes by sequence.
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute schemaAttr = schemaClass.attributes[i];
+        
+        string attributeDescriptor = "ATTRIBUTE_" + schema.namespace + "_" + schemaClass.name + "_" + schemaAttr.name;
+        uint32 attributeHash = (uint32)hash(attributeDescriptor);
+        
+        // If the number of values is deterministic, no need to specify the length.
+        bool mustSpecifyListLength = schemaAttr.minOccurrences != schemaAttr.maxOccurrences;
+        
+        if schemaAttr.typeIsClass {
+            Array<XMLNode> children = node.childrenBySequence[schemaAttr.name];
+            if children == NULL || children.count == 0 {
+                continue;
+            }
+            writeToFile(attributeHash);
+            if mustSpecifyListLength {
+                writeToFile(children.count);
+            }
+            for uint32 childIndex = 0; childIndex < children.count; childIndex++ {
+                outParameters["node"] = children[childIndex];
+                executeMaPLScript("./appendNode.mapl");
+            }
+        } else {
+            if !node.attributes.contains(schemaAttr.name) {
+                // This must be an optional attribute, skip it.
+                continue;
+            }
+            XMLAttribute xmlAttribute = node.attributes[schemaAttr.name];
+            writeToFile(attributeHash);
+            if mustSpecifyListLength {
+                writeToFile(xmlAttribute.values.count);
+            }
+            if schemaAttr.typeIsEnum {
+                SchemaEnum enum = schemas[schemaAttr.typeNamespace].enums[schemaAttr.typeName];
+                for uint32 valueIndex = 0; valueIndex < xmlAttribute.values.count; valueIndex++ {
+                    string enumValue = xmlAttribute.values[valueIndex];
+                    for uint32 caseIndex = 0; caseIndex < enum.cases.count; caseIndex++ {
+                        if enum.cases[caseIndex] == enumValue {
+                            writeToFile(caseIndex);
+                            break;
+                        }
+                    }
+                }
+            } else { // Primitive.
+                for uint32 valueIndex = 0; valueIndex < xmlAttribute.values.count; valueIndex++ {
+                    string primitiveValue = xmlAttribute.values[valueIndex];
+                    if schemaAttr.typeName == "string" ||
+                       schemaAttr.typeName == "UID" ||
+                       schemaAttr.typeIsUIDReference {
+                       writeToFile(primitiveValue);
+                    } else if schemaAttr.typeName == "int32" {
+                        writeToFile((int32)primitiveValue);
+                    } else if schemaAttr.typeName == "uint32" {
+                        writeToFile((uint32)primitiveValue);
+                    } else if schemaAttr.typeName == "float32" {
+                        writeToFile((float32)primitiveValue);
+                    } else if schemaAttr.typeName == "int64" {
+                        writeToFile((int64)primitiveValue);
+                    } else if schemaAttr.typeName == "uint64" {
+                        writeToFile((uint64)primitiveValue);
+                    } else if schemaAttr.typeName == "float64" {
+                        writeToFile((float64)primitiveValue);
+                    } else if schemaAttr.typeName == "bool" {
+                        writeToFile((bool)primitiveValue);
+                    } else if schemaAttr.typeName == "char" {
+                        writeToFile((char)primitiveValue);
+                    } else {
+                        error("Unrecognized primitive type: '"+schemaAttr.typeName+"'.");
+                    }
+                }
+            }
+        }
+    }
+    
+    // Iterate up the class hierarchy.
+    schema = schemas[schemaClass.superclassNamespace];
+    if schema == NULL {
+        break;
+    }
+    schemaClass = schema.classes[schemaClass.superclass];
 }
