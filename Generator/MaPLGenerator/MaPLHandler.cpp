@@ -34,6 +34,7 @@ static std::vector<MaPLStackFrame> _stackFrames;
 static MaPLArray<XmlFile *> *_xmlFiles;
 static MaPLArrayMap<Schema *> *_schemas;
 static const std::unordered_map<std::string, std::string> *_flags;
+static std::unordered_map<std::string, std::vector<u_int8_t>> _bytecodeCache;
 
 std::filesystem::path normalizedParamPath(const char *pathParam) {
     std::filesystem::path path = pathParam;
@@ -290,20 +291,24 @@ void invokeScript(const std::filesystem::path &scriptPath) {
         _stackFrames.push_back({ scriptPath });
     }
     
-    // TODO: Cache the bytecode so that we don't have to recompile every time we revisit the same file.
-    
-    MaPLCompileOptions options{ true };
-    MaPLCompileResult result = compileMaPL({ scriptPath }, options);
-    
-    if (result.errorMessages.size()) {
-        for (const std::string &errorMessage : result.errorMessages) {
-            fputs(errorMessage.c_str(), stderr);
+    std::string pathString = scriptPath.string();
+    std::vector<u_int8_t> bytecode;
+    if (_bytecodeCache.count(pathString) == 0) {
+        MaPLCompileOptions options{ true };
+        MaPLCompileResult result = compileMaPL({ scriptPath }, options);
+        
+        if (result.errorMessages.size()) {
+            for (const std::string &errorMessage : result.errorMessages) {
+                fputs(errorMessage.c_str(), stderr);
+            }
+            exit(1);
         }
-        exit(1);
+        
+        // There should be only one compiled file, grab the first one.
+        bytecode = result.compiledFiles.begin()->second;
+    } else {
+        bytecode = _bytecodeCache.at(pathString);
     }
-    
-    // There should be only one compiled file, grab the first one.
-    std::vector<u_int8_t> bytecode = result.compiledFiles.begin()->second;
     
     MaPLCallbacks callbacks{
         invokeFunction,
