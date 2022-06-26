@@ -4,11 +4,13 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
     Schema schema = schemas[schemaIndex];
     outParameters["schema"] = schema;
     
-    executeMaPLScript("./enums.mapl");
+    if schema.enums.count > 0 {
+        executeMaPLScript("./enums.mapl");
+    }
     executeMaPLScript("./namespaceHeader.mapl");
     executeMaPLScript("./scriptBindings.mapl");
-        
-    for uint32 classIndex; classIndex < schema.classes.count; classIndex++ {
+    
+    for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
         SchemaClass schemaClass = schema.classes[classIndex];
         outParameters["class"] = schemaClass;
         executeMaPLScript("./classHeader.mapl");

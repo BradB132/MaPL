@@ -11,23 +11,27 @@ outputToFile(outputDir + "/" + schemaNamespace + "/Enums.h");
 #ifndef ${schemaNamespace}_Enums_h
 #define ${schemaNamespace}_Enums_h
 
+namespace ${schemaNamespace} {
+
 ?>
 
 for uint32 i = 0; i < schema.enums.count; i++ {
     SchemaEnum enum = schema.enums[i];
     string enumName = enum.name;
-    <?enum MaPLBufferAnnotationType : uint32_t {
+    <?    enum MaPLBufferAnnotationType : uint32_t {
 ?>
     for uint32 j = 0; j < enum.cases.count; j++ {
         string case = enum.cases[j];
-        <?    ${enumName}_${case} = ${j},
+        <?        ${enumName}_${case} = ${j},
 ?>
     }
-    <?}
+    <?    }
 
 ?>
 }
 
 <?
+} /* ${schemaNamespace} namespace */
+
 #endif /* ${schemaNamespace}_Enums_h */
 ?>
