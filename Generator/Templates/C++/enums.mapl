@@ -18,7 +18,7 @@ namespace ${schemaNamespace} {
 for uint32 i = 0; i < schema.enums.count; i++ {
     SchemaEnum enum = schema.enums[i];
     string enumName = enum.name;
-    <?    enum MaPLBufferAnnotationType : uint32_t {
+    <?    enum ${enumName} : uint32_t {
 ?>
     for uint32 j = 0; j < enum.cases.count; j++ {
         string case = enum.cases[j];
