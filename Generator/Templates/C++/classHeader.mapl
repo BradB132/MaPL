@@ -20,7 +20,7 @@ outputToFile(outputDir + "/" + schemaNamespace + "/" + className + ".h");
 #ifndef ${schemaNamespace}_${className}_h
 #define ${schemaNamespace}_${className}_h
 
-#include "#{schemaNamespace}Namespace.h"
+#include "${schemaNamespace}Namespace.h"
 
 namespace ${schemaNamespace} {
 

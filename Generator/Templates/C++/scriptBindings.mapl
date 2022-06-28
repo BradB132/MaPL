@@ -26,6 +26,9 @@ public:
     virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue) = 0;
 };
 
+/**
+ * Array class that implements MaPLInterface and can contain the MaPLRuntime types.
+ */
 template <typename T>
 class MaPLArray : public MaPLInterface {
 public:

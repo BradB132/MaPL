@@ -9,7 +9,6 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
         executeMaPLScript("./enums.mapl");
     }
     executeMaPLScript("./namespaceHeader.mapl");
-    executeMaPLScript("./scriptBindings.mapl");
     
     for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
         SchemaClass schemaClass = schema.classes[classIndex];
@@ -21,5 +20,5 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
 
 executeMaPLScript("./bytecodesHeader.mapl");
 executeMaPLScript("./umbrellaHeader.mapl");
-
+executeMaPLScript("./scriptBindings.mapl");
 // TODO: Output MaPLGeneratorSerialized abstract class header.
