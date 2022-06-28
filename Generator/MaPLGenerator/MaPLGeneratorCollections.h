@@ -35,7 +35,7 @@ public:
     
     static MaPLParameter parameterForTemplate(const T &value) {
         if constexpr (std::is_same_v<T, std::string>) {
-            return MaPLStringByValue(value.c_str());
+            return MaPLStringByReference(value.c_str());
         }
         if constexpr (std::is_pointer_v<T>) {
             return MaPLPointer(value);
