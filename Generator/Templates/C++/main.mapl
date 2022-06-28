@@ -1,5 +1,6 @@
 #import "../../Executable/MaPLGeneratorAPI.mapl"
 
+// Generate the files for each namespace.
 for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
     Schema schema = schemas[schemaIndex];
     outParameters["schema"] = schema;
@@ -17,3 +18,8 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
         executeMaPLScript("./classImplementation.mapl");
     }
 }
+
+executeMaPLScript("./bytecodesHeader.mapl");
+executeMaPLScript("./umbrellaHeader.mapl");
+
+// TODO: Output MaPLGeneratorSerialized abstract class header.
