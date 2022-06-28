@@ -7,9 +7,9 @@ string schemaNamespace = schema.namespace;
 string className = schemaClass.name;
 string superclassName;
 if schemaClass.superclass != "" {
-    superclassName = schemaClass.superclassNamespace + "::" + schemaClass.superclass;
+    superclassName = "public " + schemaClass.superclassNamespace + "::" + schemaClass.superclass;
 } else {
-    superclassName = "MaPLGeneratorSerialized";
+    superclassName = "public MaPLGeneratorSerialized, public MaPLInterface";
 }
 
 string outputDir = commandLineFlag("cppOutputDir");
@@ -25,7 +25,7 @@ outputToFile(outputDir + "/" + schemaNamespace + "/" + className + ".h");
 
 namespace ${schemaNamespace} {
 
-    class ${className} : public ${superclassName} {
+    class ${className} : ${superclassName} {
     public:
         // MaPLGeneratorSerialized.
         virtual void initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength);
