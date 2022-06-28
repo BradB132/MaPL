@@ -72,6 +72,8 @@ int main(int argc, const char * argv[]) {
         return 1;
     }
     
+    printf("Starting MaPLGenerator...\n");
+    
     MaPLArrayMap<Schema *> *schemas = schemasForPaths(schemaPaths);
     MaPLArray<XmlFile *> *xmlNodes = xmlFilesForPaths(xmlPaths);
     validateXML(xmlNodes, schemas);

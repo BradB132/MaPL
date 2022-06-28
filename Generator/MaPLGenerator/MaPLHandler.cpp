@@ -306,6 +306,7 @@ void invokeScript(const std::filesystem::path &scriptPath) {
         
         // There should be only one compiled file, grab the first one.
         bytecode = result.compiledFiles.begin()->second;
+        _bytecodeCache[pathString] = bytecode;
     } else {
         bytecode = _bytecodeCache.at(pathString);
     }
