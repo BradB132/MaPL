@@ -20,5 +20,5 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
 
 executeMaPLScript("./bytecodesHeader.mapl");
 executeMaPLScript("./umbrellaHeader.mapl");
-executeMaPLScript("./scriptBindings.mapl");
-// TODO: Output MaPLGeneratorSerialized abstract class header.
+executeMaPLScript("./MaPLInterface.mapl");
+executeMaPLScript("./MaPLGeneratorSerialized.mapl");

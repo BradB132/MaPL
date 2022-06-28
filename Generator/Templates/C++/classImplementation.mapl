@@ -1,3 +1,7 @@
 #import "../../Executable/MaPLGeneratorAPI.mapl"
 
-// TODO: Class impl.
+Schema schema = (Schema)inParameters["schema"];
+SchemaClass schemaClass = (SchemaClass)inParameters["class"];
+
+// TODO: Implement MaPLGeneratorSerialized.
+// TODO: Implement MaPLInterface.
