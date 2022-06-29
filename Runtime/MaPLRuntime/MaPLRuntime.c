@@ -1042,6 +1042,9 @@ bool evaluateBool(MaPLExecutionContext *context) {
         case MaPLInstruction_logical_equality_string: {
             char *taggedString1 = evaluateString(context);
             char *taggedString2 = evaluateString(context);
+            if (context->isDeadCodepath) {
+                return false;
+            }
             bool returnValue = !strcmp(untagString(taggedString1), untagString(taggedString2));
             freeStringIfNeeded(taggedString1);
             freeStringIfNeeded(taggedString2);
@@ -1068,6 +1071,9 @@ bool evaluateBool(MaPLExecutionContext *context) {
         case MaPLInstruction_logical_inequality_string: {
             char *taggedString1 = evaluateString(context);
             char *taggedString2 = evaluateString(context);
+            if (context->isDeadCodepath) {
+                return false;
+            }
             bool returnValue = strcmp(untagString(taggedString1), untagString(taggedString2)) != 0;
             freeStringIfNeeded(taggedString1);
             freeStringIfNeeded(taggedString2);
