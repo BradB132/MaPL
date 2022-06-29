@@ -484,7 +484,9 @@ SchemaAttribute *schemaAttributeForXmlAttribute(XmlAttribute *xmlAttribute, MaPL
     SchemaClass *attributeParentClass = schemaClass;
     SchemaAttribute *schemaAttribute = NULL;
     while (attributeParentClass) {
-        schemaAttribute = attributeParentClass->_attributes->_backingMap.at(xmlAttribute->_name);
+        if (attributeParentClass->_attributes->_backingMap.count(xmlAttribute->_name)) {
+            schemaAttribute = attributeParentClass->_attributes->_backingMap.at(xmlAttribute->_name);
+        }
         if (schemaAttribute || attributeParentClass->_superclass.empty()) {
             break;
         }
