@@ -5,9 +5,18 @@ class Container {
 }
 
 class Content {
-    int32 x = 1;
-    int32 y = 2;
-    int32 z = 3;
+    char varA;
+    int32 varB;
+    int64 varC;
+    uint32 varD;
+    uint64 varE;
+    float32 varF;
+    float64 varG;
+    bool varH;
+    string varI;
+    UID varJ;
+    reference<Content> varK;
+    TestEnum varL;
 }
 
 enum TestEnum {

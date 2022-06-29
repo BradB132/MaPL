@@ -1,3 +1,4 @@
 <Container xmlns="schema://Example">
-    <Content x="5" y="6" z="7"/>
+    <Content varA="3" varB="-7392" varC="-98765" varD="6542" varE="9876532" varF="1.5" varG="2.5" varH="false" varI="adsf" varJ="FirstUID" varK="SecondUID" varL="A"/>
+    <Content varA="128" varB="-3456" varC="-65432" varD="1234" varE="567890" varF="0.5" varG="0.25" varH="true" varI="hjkl" varJ="SecondUID" varK="FirstUID" varL="C"/>
 </Container>
