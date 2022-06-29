@@ -3,5 +3,16 @@
 Schema schema = (Schema)inParameters["schema"];
 SchemaClass schemaClass = (SchemaClass)inParameters["class"];
 
+if (bool)commandLineFlag("MaPLGeneratorSerialized") {
 // TODO: Implement MaPLGeneratorSerialized.
+// void initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength);
+// void writeDataToVector(std::vector<uint8_t> &data);
+}
+
+if (bool)commandLineFlag("MaPLInterface") {
 // TODO: Implement MaPLInterface.
+// MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
+// MaPLParameter invokeSubscript(MaPLParameter index) const;
+// void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue);
+// void assignSubscript(MaPLParameter index, MaPLParameter assignedValue);
+}

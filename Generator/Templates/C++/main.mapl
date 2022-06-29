@@ -18,7 +18,11 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
     }
 }
 
-executeMaPLScript("./bytecodesHeader.mapl");
 executeMaPLScript("./umbrellaHeader.mapl");
-executeMaPLScript("./MaPLInterface.mapl");
-executeMaPLScript("./MaPLGeneratorSerialized.mapl");
+if (bool)commandLineFlag("MaPLInterface") {
+    executeMaPLScript("./MaPLInterface.mapl");
+    executeMaPLScript("./bytecodesHeader.mapl");
+}
+if (bool)commandLineFlag("MaPLGeneratorSerialized") {
+    executeMaPLScript("./MaPLGeneratorSerialized.mapl");
+}

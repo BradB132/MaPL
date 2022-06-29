@@ -5,11 +5,21 @@ SchemaClass schemaClass = (SchemaClass)inParameters["class"];
 
 string schemaNamespace = schema.namespace;
 string className = schemaClass.name;
-string superclassName;
+string superclassDeclaration;
 if schemaClass.superclass != "" {
-    superclassName = "public " + schemaClass.superclassNamespace + "::" + schemaClass.superclass;
+    superclassDeclaration = " : public " + schemaClass.superclassNamespace + "::" + schemaClass.superclass;
 } else {
-    superclassName = "public MaPLGeneratorSerialized, public MaPLInterface";
+    bool useMaPLGeneratorSerialized = (bool)commandLineFlag("MaPLGeneratorSerialized");
+    bool useMaPLInterface = (bool)commandLineFlag("MaPLInterface");
+    if useMaPLGeneratorSerialized && useMaPLInterface {
+        superclassDeclaration = " : public MaPLGeneratorSerialized, public MaPLInterface";
+    } else if useMaPLGeneratorSerialized {
+        superclassDeclaration = " : public MaPLGeneratorSerialized";
+    } else if useMaPLInterface {
+        superclassDeclaration = " : public MaPLInterface";
+    } else {
+        superclassDeclaration = "";
+    }
 }
 
 string outputDir = commandLineFlag("cppOutputDir");
@@ -25,21 +35,30 @@ outputToFile(outputDir + "/" + schemaNamespace + "/" + className + ".h");
 
 namespace ${schemaNamespace} {
 
-    class ${className} : ${superclassName} {
+    class ${className}${superclassDeclaration} {
     public:
-        // MaPLGeneratorSerialized.
+?>
+
+if (bool)commandLineFlag("MaPLGeneratorSerialized") {
+<?        // MaPLGeneratorSerialized.
         virtual void initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength);
         virtual void writeDataToVector(std::vector<uint8_t> &data);
         
-        // MaPLInterface.
+?>
+}
+
+if (bool)commandLineFlag("MaPLInterface") {
+<?        // MaPLInterface.
         virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
         virtual MaPLParameter invokeSubscript(MaPLParameter index) const;
         virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue);
         virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue);
 
-        // Ivars.
 ?>
+}
 
+<?        // Ivars.
+?>
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
     string attributeName = attribute.name;

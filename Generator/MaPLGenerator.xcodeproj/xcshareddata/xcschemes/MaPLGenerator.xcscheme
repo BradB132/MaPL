@@ -83,6 +83,14 @@
             argument = "&quot;--binaryOutputDir=${SRCROOT}/EaSL/generated_c++&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--MaPLInterface=true"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--MaPLGeneratorSerialized=true"
+            isEnabled = "YES">
+         </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>
    <ProfileAction
