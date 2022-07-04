@@ -125,4 +125,4 @@ The above script will send callbacks to the host program in the following order:
 1. `Loop Metadata`
 1. `End Metadata`
 
-The host program can take these callbacks, append them, and output to file.
+The host program can take these callbacks and output to file. This is the goal of the ancillary [MaPLGenerator](./Generator) program, included in this repo.
