@@ -1,6 +1,6 @@
 # MaPL Generator
 
-MaPL Generator is a code generation tool that takes a schema as input and outputs code files. The generator can also take in XML-formatted data, validate it against the schema.
+MaPL Generator is a code generation tool that takes a schema as input and outputs code files. The generator can also take in XML-formatted data and validate it against the schema.
 
 ## Architecture
 The generator has a few important dependencies:
