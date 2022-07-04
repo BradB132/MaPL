@@ -22,3 +22,22 @@ When the generator runs, it performs the generation in the following phases:
     * Verify that all XML data conforms correctly to the EaSL schema.
 3. **Script-based generation**
     * Execute any specified MaPL scripts. Scripts have access to an API that exposes all schema and XML data. Scripts can specify which file to output to, and how to format that output.
+
+## Command line interface
+
+MaPLGenerator takes in 3 types of paths:
+
+1. Schema paths (requires at least 1).
+1. XML paths (optional).
+1. Script paths (requires at least 1).
+
+In addition, MaPLGenerator accepts flag arguments. Each flag must be prefixed with `--` and specify a key and value. For example: `--myFeatureEnabled=false`. These flag values will be accessible to the MaPL scripts, and can be used to alter the output without having to always go back into the scripts and tinker with the generation logic.
+
+## Building the generator.
+
+The easiest way to build the generator is to invoke:
+```
+cd MaPL/Generator
+xcodebuild
+```
+Then check the [Executable](./Executable) directory for a symlink to the executable, as well as the MaPL API that can be used for accessing the schema and XML data.
