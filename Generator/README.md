@@ -31,9 +31,9 @@ MaPLGenerator takes in 3 types of paths:
 1. XML paths (optional).
 1. Script paths (requires at least 1).
 
-In addition, MaPLGenerator accepts flag arguments. Each flag must be prefixed with `--` and specify a key and value. For example: `--myFeatureEnabled=false`. These flag values will be accessible to the MaPL scripts, and can be used to alter the output without having to always go back into the scripts and tinker with the generation logic.
+In addition, MaPLGenerator accepts flag arguments. Each flag must be prefixed with `--` and specify a key and value. For example: `--myFeatureEnabled=false`. This mechanism allows users to pass important information directly from the command line into the code-generation script, allowing output to be altered without editing the scripts themselves.
 
-## Building the generator.
+## Building the generator
 
 The easiest way to build the generator is to invoke:
 ```
