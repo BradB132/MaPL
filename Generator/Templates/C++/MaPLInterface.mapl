@@ -80,6 +80,9 @@ public:
     }
 
     virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue) {
+        if (index.dataType != MaPLDataType_uint32) {
+            return;
+        }
         if constexpr (std::is_same_v<T, u_int8_t>) {
             _backingVector[index.uint32Value] = assignedValue.charValue;
         }
