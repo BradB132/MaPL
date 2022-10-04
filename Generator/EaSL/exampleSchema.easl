@@ -16,7 +16,12 @@ class Content {
     string varI;
     UID varJ;
     reference<Content> varK;
+    ContentChild child;
     TestEnum varL;
+}
+
+class ContentChild {
+    string name;
 }
 
 enum TestEnum {
