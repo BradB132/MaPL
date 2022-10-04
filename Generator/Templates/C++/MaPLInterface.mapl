@@ -33,7 +33,7 @@ template <typename T>
 class MaPLArray : public MaPLInterface {
 public:
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
-        if (argc == 1 && argv[0].dataType == MaPLDataType_uint32) {
+        if (argc == 0) {
             // Assume this is attempting to check the length of the array.
             return MaPLUint32((uint32_t)_backingVector.size());
         }
