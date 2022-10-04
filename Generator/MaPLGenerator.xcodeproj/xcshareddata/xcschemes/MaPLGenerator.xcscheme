@@ -64,7 +64,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;--cppOutputDir=${SRCROOT}/EaSL/generated_c++&quot;"
+            argument = "&quot;--cppOutputDir=${SRCROOT}/EaSL/generated_c++/cppOutput&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -72,7 +72,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;--scriptOutputDir=${SRCROOT}/EaSL/generated_c++&quot;"
+            argument = "&quot;--scriptOutputDir=${SRCROOT}/EaSL/generated_c++/scriptOutput&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -80,7 +80,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;--binaryOutputDir=${SRCROOT}/EaSL/generated_c++&quot;"
+            argument = "&quot;--binaryOutputDir=${SRCROOT}/EaSL/generated_c++/binaryOutput&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
