@@ -13,6 +13,16 @@ outputToFile(outputDir + "/" + schemaNamespace + "/" + schemaNamespace + "Namesp
 
 ?>
 
+if (bool)commandLineFlag("MaPLGeneratorSerialized") {
+    <?#include "../MaPLGeneratorSerialized.h"
+?>
+}
+
+if (bool)commandLineFlag("MaPLInterface") {
+    <?#include "../MaPLInterface.h"
+?>
+}
+
 if schema.enums.count > 0 {
     <?#include "Enums.h"
 ?>

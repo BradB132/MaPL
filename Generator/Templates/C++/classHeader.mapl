@@ -6,11 +6,11 @@ SchemaClass schemaClass = (SchemaClass)inParameters["class"];
 string schemaNamespace = schema.namespace;
 string className = schemaClass.name;
 string superclassDeclaration;
+bool useMaPLInterface = (bool)commandLineFlag("MaPLInterface");
 if schemaClass.superclass != "" {
     superclassDeclaration = " : public " + schemaClass.superclassNamespace + "::" + schemaClass.superclass;
 } else {
     bool useMaPLGeneratorSerialized = (bool)commandLineFlag("MaPLGeneratorSerialized");
-    bool useMaPLInterface = (bool)commandLineFlag("MaPLInterface");
     if useMaPLGeneratorSerialized && useMaPLInterface {
         superclassDeclaration = " : public MaPLGeneratorSerialized, public MaPLInterface";
     } else if useMaPLGeneratorSerialized {
@@ -31,8 +31,18 @@ outputToFile(outputDir + "/" + schemaNamespace + "/" + className + ".h");
 #define ${schemaNamespace}_${className}_h
 
 #include "${schemaNamespace}Namespace.h"
-#include <vector>
-
+?>
+if !useMaPLInterface {
+    for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
+        SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+        if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
+            <?#include <vector>
+?>
+            break;
+        }
+    }
+}
+<?
 namespace ${schemaNamespace} {
 
     class ${className}${superclassDeclaration} {
@@ -70,7 +80,13 @@ if schemaClass.attributes.count > 0 {
             dataType = attribute.typeName + "_t";
         }
         if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
-            dataType = "std::vector<" + dataType + " *>";
+            string collectionType;
+            if useMaPLInterface {
+                collectionType = "MaPLArray";
+            } else {
+                collectionType = "std::vector";
+            }
+            dataType = collectionType + "<" + dataType + " *>";
             passByReference = true;
         }
         
