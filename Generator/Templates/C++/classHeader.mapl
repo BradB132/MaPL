@@ -39,66 +39,70 @@ namespace ${schemaNamespace} {
     public:
 ?>
 
+if schemaClass.attributes.count > 0 {
+    <?        // Ivars.
+?>
+    for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
+        SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+        string attributeName = attribute.name;
+        
+        // Map the type of this attribute from its EaSL type to its C++ type.
+        string dataType;
+        bool passByReference = false;
+        if attribute.typeIsUIDReference {
+            dataType = "std::string";
+            passByReference = true;
+        } else if attribute.typeIsClass {
+            dataType = attribute.typeNamespace + "::" + attribute.typeName;
+            passByReference = true;
+        } else if attribute.typeIsEnum {
+            dataType = attribute.typeNamespace + "::" + attribute.typeName;
+        } else if attribute.typeName == "float32" {
+            dataType = "float";
+        } else if attribute.typeName == "float64" {
+            dataType = "double";
+        } else if attribute.typeName == "string" || attribute.typeName == "UID" {
+            dataType = "std::string";
+            passByReference = true;
+        } else if attribute.typeName == "bool" || attribute.typeName == "char" {
+            dataType = attribute.typeName;
+        } else {
+            dataType = attribute.typeName + "_t";
+        }
+        if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
+            dataType = "std::vector<" + dataType + " *>";
+            passByReference = true;
+        }
+        
+        <?        ${dataType} ${attributeName};?>
+        if attribute.typeIsUIDReference {
+            string referencedType = attribute.typeNamespace + "::" + attribute.typeName;
+            <?  // Matches a UID on an object of type ${referencedType}.?>
+        }
+        <?
+?>
+    }
+}
+
 if (bool)commandLineFlag("MaPLGeneratorSerialized") {
-<?        // MaPLGeneratorSerialized.
+<?
+        // MaPLGeneratorSerialized.
         virtual void initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength);
         virtual void writeDataToVector(std::vector<uint8_t> &data);
-        
 ?>
 }
 
 if (bool)commandLineFlag("MaPLInterface") {
-<?        // MaPLInterface.
+<?
+        // MaPLInterface.
         virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
         virtual MaPLParameter invokeSubscript(MaPLParameter index) const;
         virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue);
         virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue);
-
 ?>
 }
 
-<?        // Ivars.
-?>
-for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
-    SchemaAttribute attribute = schemaClass.attributes[attrIndex];
-    string attributeName = attribute.name;
-    
-    // Map the type of this attribute from its EaSL type to its C++ type.
-    string dataType;
-    bool passByReference = false;
-    if attribute.typeIsUIDReference {
-        dataType = "std::string";
-        passByReference = true;
-        string referencedType = attribute.typeNamespace + "::" + attribute.typeName;
-        <?        // Refers to an object of type ${referencedType}.
-?>
-    } else if attribute.typeIsClass {
-        dataType = attribute.typeNamespace + "::" + attribute.typeName;
-        passByReference = true;
-    } else if attribute.typeIsEnum {
-        dataType = attribute.typeNamespace + "::" + attribute.typeName;
-    } else if attribute.typeName == "float32" {
-        dataType = "float";
-    } else if attribute.typeName == "float64" {
-        dataType = "double";
-    } else if attribute.typeName == "string" || attribute.typeName == "UID" {
-        dataType = "std::string";
-        passByReference = true;
-    } else if attribute.typeName == "bool" || attribute.typeName == "char" {
-        dataType = attribute.typeName;
-    } else {
-        dataType = attribute.typeName + "_t";
-    }
-    if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
-        dataType = "std::vector<" + dataType + ">";
-        passByReference = true;
-    }
-    
-    <?        ${dataType} ${attributeName};
-?>
-}
-<?
-    };
+<?    };
 
 } /* ${schemaNamespace} namespace */
 
