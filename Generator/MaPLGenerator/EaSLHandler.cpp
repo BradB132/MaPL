@@ -443,6 +443,10 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
         stringBuffer << inputStream.rdbuf();
         std::string rawSchemaText = stringBuffer.str();
         
+        // The subsequent schema context object is kept alive only as long as these lexer/parser objects.
+        // These objects are intentionally allocated and never deleted to keep that schema context alive.
+        // This tradeoff is worth it because this function is only invoked once, and these objects are
+        // needed until the program's termination. Properly managing this memory would add a lot of bookkeeping.
         antlr4::ANTLRInputStream *antlrInputStream = new antlr4::ANTLRInputStream(rawSchemaText);
         EaSLLexer *lexer = new EaSLLexer(antlrInputStream);
         antlr4::CommonTokenStream *tokenStream = new antlr4::CommonTokenStream(lexer);
