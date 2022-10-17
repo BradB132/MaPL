@@ -13,8 +13,9 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
     for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
         SchemaClass schemaClass = schema.classes[classIndex];
         outParameters["class"] = schemaClass;
-        executeMaPLScript("./classHeader.mapl");
-        executeMaPLScript("./classImplementation.mapl");
+        executeMaPLScript("./class.mapl");
+        executeMaPLScript("./classHeaderBase.mapl");
+        executeMaPLScript("./classImplementationBase.mapl");
     }
 }
 
