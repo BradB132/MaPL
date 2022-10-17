@@ -76,6 +76,10 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             invokeScript(normalizedPath);
             return MaPLVoid();
         }
+        case MaPLSymbols_GLOBAL_fileExistsAtPath_string: {
+            std::filesystem::path path = argv[0].stringValue;
+            return MaPLBool(std::filesystem::exists(path));
+        }
         case MaPLSymbols_GLOBAL_fileStemForPath_string: {
             std::filesystem::path path = argv[0].stringValue;
             std::string stem = path.stem();

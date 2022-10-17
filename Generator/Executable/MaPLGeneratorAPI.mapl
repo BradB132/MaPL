@@ -91,6 +91,8 @@
 #global void outputToFile(string filePath);
 // Returns the file name without the preceding path or file extension.
 #global string fileStemForPath(string filePath);
+// Returns a bool indicating if a file exists at the given path.
+#global bool fileExistsAtPath(string filePath);
 // Writes the byte representation of the parameters to file, in parameter order.
 #global void writeToFile(...);
 
