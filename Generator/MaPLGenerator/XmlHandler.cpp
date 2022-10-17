@@ -86,8 +86,11 @@ MaPLParameter XmlNode::invokeSubscript(MaPLParameter index) {
 
 XmlAttribute::XmlAttribute(xmlAttr *attribute) :
 _attribute(attribute),
-_name((char *)attribute->name),
-_value((char *)xmlGetProp(attribute->parent, attribute->name)) {
+_name((char *)attribute->name) {
+    xmlChar *xmlProp = xmlGetProp(attribute->parent, attribute->name);
+    _value = (char *)xmlProp;
+    xmlFree(xmlProp);
+    
     std::vector<std::string> commaDelimitedValues;
     std::stringstream stringStream(_value);
     const char* whitespaceCharset = " \f\n\r\t\v";
