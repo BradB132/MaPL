@@ -24,6 +24,10 @@ class ContentChild {
     string name;
 }
 
+class ContentChildSubclass : ContentChild {
+    int32 number;
+}
+
 enum TestEnum {
     A,
     B,
