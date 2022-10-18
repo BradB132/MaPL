@@ -7,7 +7,8 @@ string schemaNamespace = schema.namespace;
 string className = schemaClass.name;
 string superclassDeclaration;
 bool useMaPLInterface = (bool)commandLineFlag("MaPLInterface");
-if schemaClass.superclass != "" {
+bool isSubclass = schemaClass.superclass != "";
+if isSubclass {
     superclassDeclaration = " : public " + schemaClass.superclassNamespace + "::" + schemaClass.superclass;
 } else {
     bool useMaPLGeneratorSerialized = (bool)commandLineFlag("MaPLGeneratorSerialized");
@@ -100,20 +101,22 @@ if schemaClass.attributes.count > 0 {
 ?>
 
 if (bool)commandLineFlag("MaPLGeneratorSerialized") {
+    string overrideString = isSubclass ? " override" : "";
 <?
         // MaPLGeneratorSerialized.
-        virtual void initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength);
-        virtual void writeDataToVector(std::vector<uint8_t> &data);
+        virtual void initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength)${overrideString};
+        virtual void writeDataToVector(std::vector<uint8_t> &data)${overrideString};
 ?>
 }
 
 if (bool)commandLineFlag("MaPLInterface") {
+    string overrideString = isSubclass ? " override" : "";
 <?
         // MaPLInterface.
-        virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
-        virtual MaPLParameter invokeSubscript(MaPLParameter index) const;
-        virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue);
-        virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue);
+        virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc)${overrideString};
+        virtual MaPLParameter invokeSubscript(MaPLParameter index) const${overrideString};
+        virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue)${overrideString};
+        virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue)${overrideString};
 ?>
 }
 
