@@ -345,7 +345,7 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                     if (!superclassSchema) { break; }
                     superclass = superclassSchema->_classes->_backingMap.at(superclass->_superclass);
                     if (!superclass) { break; }
-                    if (superclass->_attributes->_backingMap.at(attribute->_name)) {
+                    if (superclass->_attributes->_backingMap.count(attribute->_name)) {
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
                                                       "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' conflicts with attribute '"+superclassSchema->_namespace+"::"+superclass->_name+"::"+attribute->_name+"'.");
                     }
