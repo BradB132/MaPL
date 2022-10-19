@@ -36,6 +36,16 @@ MaPLCompileResult compileMaPL(const std::vector<std::filesystem::path> &scriptPa
         std::vector<std::string> errors = file->getErrors();
         compileResult.errorMessages.insert(compileResult.errorMessages.end(), errors.begin(), errors.end());
     }
+    
+    size_t byteLimitation = sizeof(MaPLMemoryAddress) < sizeof(MaPLBytecodeLength) ? sizeof(MaPLMemoryAddress) : sizeof(MaPLBytecodeLength);
+    size_t maxByteCount = (size_t)pow(2, byteLimitation*8);
+    for (MaPLFile *file : files) {
+        size_t fileByteCount = file->getBytecode()->getByteCount();
+        if (fileByteCount > maxByteCount) {
+            compileResult.errorMessages.push_back("Compiled bytecode for file '"+file->getNormalizedFilePath().string()+"' is "+std::to_string(fileByteCount)+" bytes, which exceeds the length that can be described by MaPL's "+std::to_string(byteLimitation)+"-byte addressing system (max of "+std::to_string(maxByteCount)+" bytes). The compiler and runtime must be updated if scripts of this length are required.");
+        }
+    }
+    
     if (compileResult.errorMessages.size()) {
         return compileResult;
     }
