@@ -59,13 +59,10 @@ if schemaClass.attributes.count > 0 {
         
         // Map the type of this attribute from its EaSL type to its C++ type.
         string dataType;
-        bool passByReference = false;
         if attribute.typeIsUIDReference {
             dataType = "std::string";
-            passByReference = true;
         } else if attribute.typeIsClass {
-            dataType = attribute.typeNamespace + "::" + attribute.typeName;
-            passByReference = true;
+            dataType = attribute.typeNamespace + "::" + attribute.typeName + "*";
         } else if attribute.typeIsEnum {
             dataType = attribute.typeNamespace + "::" + attribute.typeName;
         } else if attribute.typeName == "float32" {
@@ -74,7 +71,6 @@ if schemaClass.attributes.count > 0 {
             dataType = "double";
         } else if attribute.typeName == "string" || attribute.typeName == "UID" {
             dataType = "std::string";
-            passByReference = true;
         } else if attribute.typeName == "bool" || attribute.typeName == "char" {
             dataType = attribute.typeName;
         } else {
@@ -82,14 +78,15 @@ if schemaClass.attributes.count > 0 {
         }
         if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
             string collectionType = useMaPLInterface ? "MaPLArray" : "std::vector";
-            dataType = collectionType + "<" + dataType + " *>";
-            passByReference = true;
+            dataType = collectionType + "<" + dataType + ">";
         }
         
         <?        ${dataType} ${attributeName};?>
         if attribute.typeIsUIDReference {
             string referencedType = attribute.typeNamespace + "::" + attribute.typeName;
             <?  // Matches a UID on an object of type ${referencedType}.?>
+        } else if attribute.typeName == "UID" {
+            <?  // UID.?>
         }
         <?
 ?>
@@ -97,6 +94,7 @@ if schemaClass.attributes.count > 0 {
 }
 
 <?
+        ${className}_generated();
         virtual ~${className}_generated();
 ?>
 
