@@ -147,7 +147,8 @@ _typeIsEnum(false) {
                 // literal type matches the declared type. For complex types (class and enum) the equivalent
                 // check must be performed after we've built up a mapping of all types in the schema.
                 bool valueMatchesType;
-                switch (typeContext->typeToken->getType()) {
+                size_t tokenType = typeContext->typeToken->getType();
+                switch (tokenType) {
                     case EaSLParser::DECL_CHAR: // Intentional fallthrough.
                     case EaSLParser::DECL_UINT32: // Intentional fallthrough.
                     case EaSLParser::DECL_UINT64:
@@ -175,7 +176,8 @@ _typeIsEnum(false) {
                         break;
                 }
                 if (!valueMatchesType) {
-                    errorLogger->logError(typeContext->typeToken, "Default value '"+literalText+"' in attribute '"+_name+"' doesn't match the attribute's type '"+typeContext->getText()+"'.");
+                    std::string typeClarification = (tokenType == EaSLParser::DECL_UID || tokenType == EaSLParser::REFERENCE) ? " (aka string)" : "";
+                    errorLogger->logError(typeContext->typeToken, "Default value '"+literalText+"' in attribute '"+_name+"' doesn't match the attribute's type '"+typeContext->getText()+"'"+typeClarification+".");
                 }
             }
             defaultValues.push_back(literalText);
