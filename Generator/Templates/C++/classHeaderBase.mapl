@@ -62,7 +62,7 @@ if schemaClass.attributes.count > 0 {
         if attribute.typeIsUIDReference {
             dataType = "std::string";
         } else if attribute.typeIsClass {
-            dataType = attribute.typeNamespace + "::" + attribute.typeName + "*";
+            dataType = attribute.typeNamespace + "::" + attribute.typeName;
         } else if attribute.typeIsEnum {
             dataType = attribute.typeNamespace + "::" + attribute.typeName;
         } else if attribute.typeName == "float32" {
@@ -78,7 +78,8 @@ if schemaClass.attributes.count > 0 {
         }
         if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
             string collectionType = useMaPLInterface ? "MaPLArray" : "std::vector";
-            dataType = collectionType + "<" + dataType + ">";
+            string referenceSignifier = attribute.typeIsClass ? " *" : "";
+            dataType = collectionType + "<" + dataType + referenceSignifier + ">";
         }
         
         <?        ${dataType} ${attributeName};?>
