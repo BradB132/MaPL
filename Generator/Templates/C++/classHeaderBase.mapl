@@ -56,6 +56,7 @@ if schemaClass.attributes.count > 0 {
     for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
         SchemaAttribute attribute = schemaClass.attributes[attrIndex];
         string attributeName = attribute.name;
+        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
         
         // Map the type of this attribute from its EaSL type to its C++ type.
         string dataType;
@@ -63,6 +64,9 @@ if schemaClass.attributes.count > 0 {
             dataType = "std::string";
         } else if attribute.typeIsClass {
             dataType = attribute.typeNamespace + "::" + attribute.typeName;
+            if requiresList || attribute.defaultValues.count > 0 {
+                dataType += "*";
+            }
         } else if attribute.typeIsEnum {
             dataType = attribute.typeNamespace + "::" + attribute.typeName;
         } else if attribute.typeName == "float32" {
@@ -76,10 +80,9 @@ if schemaClass.attributes.count > 0 {
         } else {
             dataType = attribute.typeName + "_t";
         }
-        if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
+        if requiresList {
             string collectionType = useMaPLInterface ? "MaPLArray" : "std::vector";
-            string referenceSignifier = attribute.typeIsClass ? " *" : "";
-            dataType = collectionType + "<" + dataType + referenceSignifier + ">";
+            dataType = collectionType + "<" + dataType + ">";
         }
         
         <?        ${dataType} ${attributeName};?>
