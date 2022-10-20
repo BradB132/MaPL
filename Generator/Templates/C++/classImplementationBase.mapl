@@ -83,9 +83,10 @@ void ${schemaNamespace}::${className}_generated::writeDataToVector(std::vector<u
         SchemaAttribute attribute = schemaClass.attributes[i];
         string attributeName = attribute.name;
         
-        bool checkForDefault = attribute.defaultValues.count > 0;
-        string indent = checkForDefault ? "    " : "";
-        if checkForDefault {
+        // Check this value against the default value. Elide if it matches the default.
+        bool hasDefaultValue = attribute.defaultValues.count > 0;
+        string indent = hasDefaultValue ? "    " : "";
+        if hasDefaultValue {
             string defaultConditional;
             if attribute.defaultValues.count == 1 {
                 defaultConditional = attributeName + " != " + attribute.defaultValues[0];
@@ -100,9 +101,12 @@ void ${schemaNamespace}::${className}_generated::writeDataToVector(std::vector<u
 ?>
         }
         
+        // Specify which variable is being written.
 <?${indent}    bytecodeSignifier = BYTECODE_${schemaNamespace}_${className}_${attributeName};
 ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
 ?>
+        
+        // Specify the length if this is a list.
         if attribute.minOccurrences != attribute.maxOccurrences {
             // Specify the length of this list.
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
@@ -111,9 +115,68 @@ ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint
 ?>
         }
         
-        // TODO: Insert the value. Handle classes, enums, and primitives.
-
-        if checkForDefault {
+        // Specify the variable value.
+        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
+        string attributeVar = requiresList ? attributeName + "Value" : attributeName;
+        if requiresList {
+            string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+            <?${indent}    for (auto ${attributeVar} : ${attributeName}${collectionIvar}) {
+?>
+            indent += "    ";
+        }
+        
+        if attribute.typeIsClass {
+            string accessorSyntax = hasDefaultValue || requiresList ? "->" : ".";
+            <?${indent}    ${attributeVar}${accessorSyntax}writeDataToVector(data);
+?>
+        } else {  // Primitives.
+            string typeName = attribute.typeName;
+            if attribute.typeIsEnum ||  // Enums are uint32_t.
+               typeName == "int32" ||
+               typeName == "uint32" ||
+               typeName == "float32" {
+                <?${indent}    data.insert(data.end(), { *((uint8_t *)&${attributeVar}), *((uint8_t *)&${attributeVar}+1), *((uint8_t *)&${attributeVar}+2), *((uint8_t *)&${attributeVar}+3) });
+?>
+            } else if typeName == "int64" ||
+                      typeName == "uint64" ||
+                      typeName == "float64" {
+                <?${indent}    data.insert(data.end(), { *((uint8_t *)&${attributeVar}), *((uint8_t *)&${attributeVar}+1), *((uint8_t *)&${attributeVar}+2), *((uint8_t *)&${attributeVar}+3), *((uint8_t *)&${attributeVar}+4), *((uint8_t *)&${attributeVar}+5), *((uint8_t *)&${attributeVar}+6), *((uint8_t *)&${attributeVar}+7) });
+?>
+            } else if typeName == "bool" {
+                if attribute.defaultValues.count == 1 {
+                    // In the case that there's exactly 1 default value, we know this is a single bool, which is not the same as the default.
+                    // This means there's only a single value that it can be, which should be hard coded.
+                    if (bool)attribute.defaultValues[0] {
+                        <?${indent}    data.push_back(0);
+?>
+                    } else {
+                        <?${indent}    data.push_back(1);
+?>
+                    }
+                } else {
+                    <?${indent}    data.push_back(${attributeVar} ? 1 : 0);
+?>
+                }
+            } else if typeName == "char" {
+                <?${indent}    data.push_back(${attributeVar});
+?>
+            } else if attribute.typeIsUIDReference ||
+                      typeName == "string" ||
+                      typeName == "UID" {
+                <?${indent}    for (size_t i = 0; i < ${attributeVar}.length(); i++) {
+${indent}        data.push_back(${attributeVar}[i]);
+${indent}    }
+${indent}    data.push_back(0);
+?>
+            }
+        }
+        
+        if requiresList {
+            <?${indent}}
+?>
+        }
+        
+        if hasDefaultValue {
             <?    }
 ?>
         }
