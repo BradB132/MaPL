@@ -6,18 +6,18 @@ class Container {
 
 class Content {
     char varA;
-    int32 varB;
-    int64 varC;
-    uint32 varD;
-    uint64 varE;
-    float32 varF;
-    float64 varG;
-    bool varH;
-    string varI;
+    int32 varB[] = 5, 7, 9, 13, 23, 1234;
+    int64 varC = 6;
+    uint32 varD = 7;
+    uint64 varE = 8;
+    float32 varF = 5.6;
+    float64 varG = 7.8;
+    bool varH = false;
+    string varI = "asdf";
     UID varJ;
-    reference<Content> varK;
+    reference<Content> varK = "zxcv";
     ContentChild child;
-    TestEnum varL;
+    TestEnum varL = B;
 }
 
 class ContentChild {
