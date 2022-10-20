@@ -72,7 +72,38 @@ if (bool)commandLineFlag("MaPLGeneratorSerialized") {
  * MaPLGeneratorSerialized.
  */
 bool ${schemaNamespace}::${className}_generated::initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) {
+    if (*dataIndex+sizeof(uint32_t) > dataLength) {
+        return false;
+    }
+    if (*((uint32_t*)(data+*dataIndex)) != BYTECODE_${schemaNamespace}_${className}) {
+        return false;
+    }
+    *dataIndex += sizeof(uint32_t);
+    while (true) {
+        if (*dataIndex+sizeof(uint32_t) > dataLength) {
+            return false;
+        }
+        uint32_t nextAttributeName = *((uint32_t*)(data+*dataIndex));
+        *dataIndex += sizeof(uint32_t);
+        switch (nextAttributeName) {
+?>
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute attribute = schemaClass.attributes[i];
+        string attributeName = attribute.name;
+<?            case BYTECODE_${schemaNamespace}_${className}_${attributeName}: {
+?>
 
+        // TODO: Read ivars.
+
+
+<?            }
+                break;
+?>
+    }
+<?            default:
+                return true;
+        }
+    }
 }
 
 void ${schemaNamespace}::${className}_generated::writeDataToVector(std::vector<uint8_t> &data) {
