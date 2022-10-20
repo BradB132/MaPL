@@ -71,7 +71,7 @@ if (bool)commandLineFlag("MaPLGeneratorSerialized") {
 <?/**
  * MaPLGeneratorSerialized.
  */
-void ${schemaNamespace}::${className}_generated::initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) {
+bool ${schemaNamespace}::${className}_generated::initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) {
 
 }
 

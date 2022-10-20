@@ -106,7 +106,7 @@ if (bool)commandLineFlag("MaPLGeneratorSerialized") {
     string overrideString = isSubclass ? " override" : "";
 <?
         // MaPLGeneratorSerialized.
-        virtual void initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength)${overrideString};
+        virtual bool initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength)${overrideString};
         virtual void writeDataToVector(std::vector<uint8_t> &data)${overrideString};
 ?>
 }
