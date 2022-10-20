@@ -86,7 +86,6 @@ void ${schemaNamespace}::${className}_generated::writeDataToVector(std::vector<u
         bool checkForDefault = attribute.defaultValues.count > 0;
         string indent = checkForDefault ? "    " : "";
         if checkForDefault {
-            // TODO: Check if this variable contains the default value, if so, skip.
             string defaultConditional;
             if attribute.defaultValues.count == 1 {
                 defaultConditional = attributeName + " != " + attribute.defaultValues[0];
@@ -104,9 +103,15 @@ void ${schemaNamespace}::${className}_generated::writeDataToVector(std::vector<u
 <?${indent}    bytecodeSignifier = BYTECODE_${schemaNamespace}_${className}_${attributeName};
 ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
 ?>
-
-        // TODO: Insert the length if this is an array.
-        // TODO: Insert the value.
+        if attribute.minOccurrences != attribute.maxOccurrences {
+            // Specify the length of this list.
+            string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+            <?${indent}    bytecodeSignifier = ${attributeName}${collectionIvar}.count();
+${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
+?>
+        }
+        
+        // TODO: Insert the value. Handle classes, enums, and primitives.
 
         if checkForDefault {
             <?    }
