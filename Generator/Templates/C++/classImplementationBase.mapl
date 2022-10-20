@@ -84,15 +84,18 @@ void ${schemaNamespace}::${className}_generated::writeDataToVector(std::vector<u
         string attributeName = attribute.name;
         
         // Check this value against the default value. Elide if it matches the default.
+        // Lists with no default should be considered to have an empty default value.
+        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
         bool hasDefaultValue = attribute.defaultValues.count > 0;
-        string indent = hasDefaultValue ? "    " : "";
-        if hasDefaultValue {
+        string indent = requiresList || hasDefaultValue ? "    " : "";
+        if requiresList || hasDefaultValue {
             string defaultConditional;
             if attribute.defaultValues.count == 1 {
                 defaultConditional = attributeName + " != " + attribute.defaultValues[0];
             } else {
                 string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-                defaultConditional = attributeName + collectionIvar + ".size() != " + (string)attribute.defaultValues.count;
+                uint32 defaultListCount = hasDefaultValue ? attribute.defaultValues.count : 0;
+                defaultConditional = attributeName + collectionIvar + ".size() != " + (string)defaultListCount;
                 for uint32 defaultIndex = 0; defaultIndex < attribute.defaultValues.count; defaultIndex++ {
                     defaultConditional += "\n        || " + attributeName + collectionIvar + "[" + (string)defaultIndex + "] != " + attribute.defaultValues[defaultIndex];
                 }
@@ -106,7 +109,7 @@ void ${schemaNamespace}::${className}_generated::writeDataToVector(std::vector<u
 ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
 ?>
         
-        // Specify the length if this is a list.
+        // Specify the length if this is a list of variable length.
         if attribute.minOccurrences != attribute.maxOccurrences {
             // Specify the length of this list.
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
@@ -116,7 +119,6 @@ ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint
         }
         
         // Specify the variable value.
-        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
         string attributeVar = requiresList ? attributeName + "Value" : attributeName;
         if requiresList {
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
@@ -176,7 +178,7 @@ ${indent}    data.push_back(0);
 ?>
         }
         
-        if hasDefaultValue {
+        if requiresList || hasDefaultValue {
             <?    }
 ?>
         }
