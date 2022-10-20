@@ -17,6 +17,7 @@
 
 // Generating the various expected files can be laborious. Enabling this option overwrites all expected files with the generated values.
 #define OUTPUT_EXPECTED_FILES 0
+// Determines if errors from intentionally erroneous scripts are printed to the console.
 #define PRINT_ERROR_OUTPUT 0
 
 struct TestDirectoryContents {

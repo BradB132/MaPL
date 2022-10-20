@@ -57,7 +57,6 @@ expression
     |    expression keyToken=(ADD | SUBTRACT) expression
     |    expression (keyToken=BITWISE_SHIFT_LEFT | bitwiseShiftRight) expression
     |    expression keyToken=(BITWISE_AND | BITWISE_XOR | BITWISE_OR) expression
-    |    <assoc=right> expression keyToken=TERNARY_CONDITIONAL expression COLON expression
     |    <assoc=right> expression keyToken=NULL_COALESCING expression
     |    expression
          keyToken=(
@@ -69,6 +68,7 @@ expression
             GREATER_THAN_EQUAL
          ) expression
     |    expression keyToken=(LOGICAL_AND | LOGICAL_OR) expression
+    |    <assoc=right> expression keyToken=TERNARY_CONDITIONAL expression COLON expression
     |    PAREN_OPEN expression keyToken=PAREN_CLOSE
     |    keyToken=LITERAL_TRUE
     |    keyToken=LITERAL_FALSE

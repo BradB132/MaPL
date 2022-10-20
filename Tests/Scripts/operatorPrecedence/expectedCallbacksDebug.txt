@@ -46,3 +46,7 @@ Debug line: 34
 Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"!false || true", parameter #1=(bool)true
 Debug line: 36
 Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"9 < 1 || 3 > 1", parameter #1=(bool)true
+Debug line: 39
+Debug variable update: 'ternaryResult' = (string)"true"
+Debug line: 40
+Invoke function: pointer=(pointer)NULL, symbol=6, parameter #0=(string)"Ternary result", parameter #1=(string)"true"
