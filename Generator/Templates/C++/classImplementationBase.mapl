@@ -65,6 +65,8 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
 
 ?>
 
+bool useMaPLInterface = (bool)commandLineFlag("MaPLInterface");
+
 if (bool)commandLineFlag("MaPLGeneratorSerialized") {
 <?/**
  * MaPLGeneratorSerialized.
@@ -74,13 +76,50 @@ void ${schemaNamespace}::${className}_generated::initializeWithData(uint8_t *dat
 }
 
 void ${schemaNamespace}::${className}_generated::writeDataToVector(std::vector<uint8_t> &data) {
+    uint32_t bytecodeSignifier = BYTECODE_${schemaNamespace}_${className};
+    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
+?>
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute attribute = schemaClass.attributes[i];
+        string attributeName = attribute.name;
+        
+        bool checkForDefault = attribute.defaultValues.count > 0;
+        string indent = checkForDefault ? "    " : "";
+        if checkForDefault {
+            // TODO: Check if this variable contains the default value, if so, skip.
+            string defaultConditional;
+            if attribute.defaultValues.count == 1 {
+                defaultConditional = attributeName + " != " + attribute.defaultValues[0];
+            } else {
+                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                defaultConditional = attributeName + collectionIvar + ".size() != " + (string)attribute.defaultValues.count;
+                for uint32 defaultIndex = 0; defaultIndex < attribute.defaultValues.count; defaultIndex++ {
+                    defaultConditional += "\n        || " + attributeName + collectionIvar + "[" + (string)defaultIndex + "] != " + attribute.defaultValues[defaultIndex];
+                }
+            }
+<?    if (${defaultConditional}) {
+?>
+        }
+        
+<?${indent}    bytecodeSignifier = BYTECODE_${schemaNamespace}_${className}_${attributeName};
+${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
+?>
 
-}
+        // TODO: Insert the length if this is an array.
+        // TODO: Insert the value.
+
+        if checkForDefault {
+            <?    }
+?>
+        }
+        
+    }
+<?}
 
 ?>
 }
 
-if (bool)commandLineFlag("MaPLInterface") {
+if useMaPLInterface {
 <?/**
  * MaPLInterface.
  */
