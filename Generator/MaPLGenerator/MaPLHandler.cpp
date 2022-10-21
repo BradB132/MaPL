@@ -208,6 +208,10 @@ static void metadata(const char* metadataString) {
     auto searchStart = cbegin(outputString);
     while (std::regex_search(searchStart, cend(outputString), match, variableSubstitutionRegex)) {
         std::string variableName = match[1].str();
+        if (!frame.variables.count(variableName)) {
+            fprintf(stderr, "%s:%d: error: Variable ${%s} in metadata does not exist. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, variableName.c_str());
+            exit(1);
+        }
         MaPLParameter matchedVariable = frame.variables.at(variableName);
         std::string variableValue;
         switch (matchedVariable.dataType) {
