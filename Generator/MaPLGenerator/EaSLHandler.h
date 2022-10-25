@@ -51,7 +51,7 @@ public:
 
 class SchemaClass : public MaPLInterface {
 public:
-    SchemaClass(EaSLParser::ClassDefinitionContext *classContext, const std::string &defaultNamespace, ErrorLogger *errorLogger);
+    SchemaClass(EaSLParser::ClassDefinitionContext *classContext, const std::string &namespace_, ErrorLogger *errorLogger);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
@@ -59,8 +59,8 @@ public:
     
     EaSLParser::ClassDefinitionContext *_classContext;
     std::string _name;
-    std::string _superclass;
-    std::string _superclassNamespace;
+    std::string _namespace;
+    SchemaClass *_superclass;
     MaPLArrayMap<SchemaAttribute *> *_attributes;
     MaPLArrayMap<std::string> *_annotations;
 };

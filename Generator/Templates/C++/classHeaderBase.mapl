@@ -7,9 +7,9 @@ string schemaNamespace = schema.namespace;
 string className = schemaClass.name;
 string superclassDeclaration;
 bool useMaPLInterface = (bool)commandLineFlag("MaPLInterface");
-bool isSubclass = schemaClass.superclass != "";
+bool isSubclass = schemaClass.superclass != NULL;
 if isSubclass {
-    superclassDeclaration = " : public " + schemaClass.superclassNamespace + "::" + schemaClass.superclass;
+    superclassDeclaration = " : public " + schemaClass.superclass.namespace + "::" + schemaClass.superclass.name;
 } else {
     bool useMaPLGeneratorSerialized = (bool)commandLineFlag("MaPLGeneratorSerialized");
     if useMaPLGeneratorSerialized && useMaPLInterface {

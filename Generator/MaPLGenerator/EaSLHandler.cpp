@@ -223,26 +223,19 @@ MaPLParameter SchemaAttribute::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext, const std::string &defaultNamespace, ErrorLogger *errorLogger) :
+SchemaClass::SchemaClass(EaSLParser::ClassDefinitionContext *classContext, const std::string &namespace_, ErrorLogger *errorLogger) :
 _classContext(classContext),
 _name(classContext->identifier()->getText()),
+_namespace(namespace_),
+_superclass(NULL),
 _annotations(parseAnnotations(classContext->ANNOTATION())) {
     if (conflictsWithPrimitiveName(_name)) {
         errorLogger->logError(classContext->identifier()->start, "Class name '"+_name+"' conflicts with the name of a primitive type.");
     }
-    EaSLParser::ClassTypeContext *superClass = classContext->classType();
-    if (superClass) {
-        _superclass = superClass->classIdentifier->getText();
-        if (superClass->namespaceIdentifier) {
-            _superclassNamespace = superClass->namespaceIdentifier->getText();
-        } else {
-            _superclassNamespace = defaultNamespace;
-        }
-    }
     std::vector<SchemaAttribute *> attributes;
     std::unordered_map<std::string, SchemaAttribute *> attributeMap;
     for (EaSLParser::AttributeContext *attributeContext : classContext->attribute()) {
-        SchemaAttribute *attribute = new SchemaAttribute(attributeContext, defaultNamespace, errorLogger);
+        SchemaAttribute *attribute = new SchemaAttribute(attributeContext, namespace_, errorLogger);
         attributes.push_back(attribute);
         if (attributeMap.count(attribute->_name)) {
             errorLogger->logError(attributeContext->start, "Attribute name '"+attribute->_name+"' conflicts with an attribute of the same name in class '"+_name+"'.");
@@ -260,10 +253,10 @@ MaPLParameter SchemaClass::invokeFunction(MaPLSymbol functionSymbol, const MaPLP
             return MaPLPointer(_attributes);
         case MaPLSymbols_SchemaClass_name:
             return MaPLStringByReference(_name.c_str());
+        case MaPLSymbols_SchemaClass_namespace:
+            return MaPLStringByReference(_namespace.c_str());
         case MaPLSymbols_SchemaClass_superclass:
-            return MaPLStringByReference(_superclass.c_str());
-        case MaPLSymbols_SchemaClass_superclassNamespace:
-            return MaPLStringByReference(_superclassNamespace.c_str());
+            return MaPLPointer(_superclass);
         default:
             return MaPLUninitialized();
     }
@@ -331,25 +324,15 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                 schema->_errorLogger.logError(schemaClass->_classContext->identifier()->start, "Class '"+schema->_namespace+"::"+schemaClass->_name+"' conflicts with another declaration of the same name.");
             }
             topLevelNames.insert(schemaClass->_name);
-            if (!schemaClass->_superclass.empty()) {
-                Schema *superclassSchema = schemaClass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(schemaClass->_superclassNamespace);
-                if (!superclassSchema || !superclassSchema->_classes->_backingMap.at(schemaClass->_superclass)) {
-                    schema->_errorLogger.logError(schemaClass->_classContext->classType()->start,
-                                                  "Class '"+schema->_namespace+"::"+schemaClass->_name+"' references a superclass '"+schemaClass->_superclassNamespace+"::"+schemaClass->_superclass+"' which doesn't exist.");
-                }
-            }
             for (SchemaAttribute *attribute : schemaClass->_attributes->_backingVector) {
                 // Iterate through all super classes to confirm that there are no attribute collisions.
                 SchemaClass *superclass = schemaClass;
                 while (superclass) {
-                    if (superclass->_superclass.empty()) { break; }
-                    Schema *superclassSchema = superclass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(superclass->_superclassNamespace);
-                    if (!superclassSchema) { break; }
-                    superclass = superclassSchema->_classes->_backingMap.at(superclass->_superclass);
+                    superclass = superclass->_superclass;
                     if (!superclass) { break; }
                     if (superclass->_attributes->_backingMap.count(attribute->_name)) {
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
-                                                      "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' conflicts with attribute '"+superclassSchema->_namespace+"::"+superclass->_name+"::"+attribute->_name+"'.");
+                                                      "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' conflicts with attribute '"+superclass->_namespace+"::"+superclass->_name+"::"+attribute->_name+"'.");
                     }
                 }
                 if (!attribute->_typeNamespace.empty() && !attribute->_typeIsUIDReference) {
@@ -394,10 +377,8 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                             typeClassHasUID = true;
                             break;
                         }
-                        if (typeSuperclass->_superclass.empty()) { break; }
-                        Schema *typeSuperclassSchema = typeSuperclass->_superclassNamespace.empty() ? schema : schemas->_backingMap.at(typeSuperclass->_superclassNamespace);
-                        if (!typeSuperclassSchema) { break; }
-                        typeSuperclass = typeSuperclassSchema->_classes->_backingMap.at(typeSuperclass->_superclass);
+                        if (!typeSuperclass->_superclass) { break; }
+                        typeSuperclass = typeSuperclass->_superclass;
                     }
                     if (!typeClassHasUID) {
                         std::string typeNamespace = attribute->_typeNamespace.empty() ? schema->_namespace : attribute->_typeNamespace;
@@ -474,6 +455,34 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
         schemasMap[schema->_namespace] = schema;
     }
     
+    // SchemaClass references its own superclass, make those connections now that all objects are initialized.
+    for (Schema *schema : schemasVector) {
+        for (SchemaClass *schemaClass : schema->_classes->_backingVector) {
+            EaSLParser::ClassTypeContext *superClass = schemaClass->_classContext->classType();
+            if (superClass) {
+                std::string superclassName = superClass->classIdentifier->getText();
+                std::string superclassNamespace;
+                if (superClass->namespaceIdentifier) {
+                    superclassNamespace = superClass->namespaceIdentifier->getText();
+                } else {
+                    superclassNamespace = schemaClass->_namespace;
+                }
+                if (!schemasMap.count(superclassNamespace)) {
+                    schema->_errorLogger.logError(schemaClass->_classContext->classType()->start,
+                                                  "Superclass for class '"+schemaClass->_namespace+"::"+schemaClass->_name+"' references a namespace '"+superclassNamespace+"' which doesn't exist.");
+                    continue;
+                }
+                Schema *superclassSchema = schemasMap.at(superclassNamespace);
+                if (!superclassSchema->_classes->_backingMap.count(superclassName)) {
+                    schema->_errorLogger.logError(schemaClass->_classContext->classType()->start,
+                                                  "Class '"+schemaClass->_namespace+"::"+schemaClass->_name+"' references a superclass '"+superclassNamespace+"::"+superclassName+"' which doesn't exist.");
+                    continue;
+                }
+                schemaClass->_superclass = superclassSchema->_classes->_backingMap.at(superclassName);
+            }
+        }
+    }
+    
     MaPLArrayMap<Schema *> *schemas = new MaPLArrayMap<Schema *>(schemasVector, schemasMap);
     validateSchemas(schemas);
     
@@ -493,14 +502,10 @@ SchemaAttribute *schemaAttributeForXmlAttribute(XmlAttribute *xmlAttribute, MaPL
         if (attributeParentClass->_attributes->_backingMap.count(xmlAttribute->_name)) {
             schemaAttribute = attributeParentClass->_attributes->_backingMap.at(xmlAttribute->_name);
         }
-        if (schemaAttribute || attributeParentClass->_superclass.empty()) {
+        if (schemaAttribute || !attributeParentClass->_superclass) {
             break;
         }
-        Schema *attributeParentSchema = schemas->_backingMap.at(attributeParentClass->_superclassNamespace);
-        if (!attributeParentSchema) {
-            break;
-        }
-        attributeParentClass = attributeParentSchema->_classes->_backingMap.at(attributeParentClass->_superclass);
+        attributeParentClass = attributeParentClass->_superclass;
     }
     return schemaAttribute;
 }
@@ -512,8 +517,8 @@ bool isKindOfClass(const std::string &subclassName, const std::string &subclassN
         return true;
     }
     SchemaClass *schemaClass = schemas->_backingMap.at(subclassNamespace)->_classes->_backingMap.at(subclassName);
-    if (!schemaClass->_superclass.empty() && !schemaClass->_superclassNamespace.empty()) {
-        return isKindOfClass(schemaClass->_superclass, schemaClass->_superclassNamespace, superclassName, superclassNamespace, schemas);
+    if (schemaClass->_superclass) {
+        return isKindOfClass(schemaClass->_superclass->_name, schemaClass->_superclass->_namespace, superclassName, superclassNamespace, schemas);
     }
     return false;
 }
@@ -598,10 +603,8 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
         // Prepend the counts for this class onto the list of all attributes for this type.
         attributeCounts.insert(attributeCounts.begin(), attributeCountsForClass.begin(), attributeCountsForClass.end());
         
-        if (parentSchemaClass->_superclass.empty()) { break; }
-        parentSchema = schemas->_backingMap.at(parentSchemaClass->_superclassNamespace);
-        if (!parentSchemaClass) { break; }
-        parentSchemaClass = parentSchema->_classes->_backingMap.at(parentSchemaClass->_superclass);
+        if (!parentSchemaClass->_superclass) { break; }
+        parentSchemaClass = parentSchemaClass->_superclass;
     }
     
     for (XmlAttribute *xmlAttribute : xmlNode->_attributes->_backingVector) {

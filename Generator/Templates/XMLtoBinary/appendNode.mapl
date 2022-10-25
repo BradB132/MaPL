@@ -3,11 +3,10 @@
 XMLNode node = (XMLNode)inParameters["node"];
 
 // Find the matching schema class.
-Schema schema = schemas[node.namespace];
-SchemaClass schemaClass = schema.classes[node.name];
+SchemaClass schemaClass = schemas[node.namespace].classes[node.name];
 
 // Write an instruction that describes the start of this class.
-string classDescriptor = "CLASS_" + schema.namespace + "_" + schemaClass.name;
+string classDescriptor = "CLASS_" + schemaClass.namespace + "_" + schemaClass.name;
 writeToFile((uint32)hash(classDescriptor));
 
 while schemaClass != NULL {
@@ -16,7 +15,7 @@ while schemaClass != NULL {
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute schemaAttr = schemaClass.attributes[i];
         
-        string attributeDescriptor = "ATTRIBUTE_" + schema.namespace + "_" + schemaClass.name + "_" + schemaAttr.name;
+        string attributeDescriptor = "ATTRIBUTE_" + schemaClass.namespace + "_" + schemaClass.name + "_" + schemaAttr.name;
         uint32 attributeHash = (uint32)hash(attributeDescriptor);
         
         // If the number of values is deterministic, no need to specify the length.
@@ -90,9 +89,8 @@ while schemaClass != NULL {
     }
     
     // Iterate up the class hierarchy.
-    schema = schemas[schemaClass.superclassNamespace];
-    if schema == NULL {
+    schemaClass = schemaClass.superclass;
+    if schemaClass == NULL {
         break;
     }
-    schemaClass = schema.classes[schemaClass.superclass];
 }

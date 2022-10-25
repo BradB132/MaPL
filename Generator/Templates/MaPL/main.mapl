@@ -76,8 +76,8 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
         for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
             SchemaClass class = schema.classes[classIndex];
             string className = schemaNamespace + "_" + class.name;
-            if (class.superclass != "") {
-                className += " : " + class.superclassNamespace + "_" + class.superclass;
+            if (class.superclass != NULL) {
+                className += " : " + class.superclass.namespace + "_" + class.superclass.name;
             }
             <?#type ${className} {
 ?>
