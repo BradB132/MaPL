@@ -63,10 +63,7 @@ if schemaClass.attributes.count > 0 {
         if attribute.typeIsUIDReference {
             dataType = "std::string";
         } else if attribute.typeIsClass {
-            dataType = attribute.typeNamespace + "::" + attribute.typeName;
-            if requiresList || attribute.defaultValues.count > 0 {
-                dataType += "*";
-            }
+            dataType = attribute.typeNamespace + "::" + attribute.typeName + "*";
         } else if attribute.typeIsEnum {
             dataType = attribute.typeNamespace + "::" + attribute.typeName;
         } else if attribute.typeName == "float32" {

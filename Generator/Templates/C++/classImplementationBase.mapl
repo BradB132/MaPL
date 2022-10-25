@@ -52,13 +52,18 @@ ${className}_generated::~${className}_generated() {
 ?>
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
-    if attribute.typeIsClass && (attribute.minOccurrences < 1 || attribute.maxOccurrences > 1) {
-        string dataType = attribute.typeNamespace + "::" + attribute.typeName;
+    if attribute.typeIsClass {
         string attributeName = attribute.name;
+        if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
+            string dataType = attribute.typeNamespace + "::" + attribute.typeName;
 <?    for (${dataType} *value : ${attributeName}) {
         delete value;
     }
 ?>
+        } else {
+<?    delete ${attributeName};
+?>
+        }
     }
 }
 <?}
@@ -127,9 +132,7 @@ bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uin
             } else {
                 objectName = attributeName;
             }
-            bool isReference = !requiresList && attribute.defaultValues.count > 0;
-            string accessorSyntax = isReference ? "->" : ".";
-<?${indent}            if (!${objectName}${accessorSyntax}initializeWithData(data, dataIndex, dataLength)) {
+<?${indent}            if (!${objectName}->initializeWithData(data, dataIndex, dataLength)) {
 ${indent}                return false;
 ${indent}            }
 ?>
@@ -250,8 +253,7 @@ ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint
         }
         
         if attribute.typeIsClass {
-            string accessorSyntax = hasDefaultValue || requiresList ? "->" : ".";
-            <?${indent}    ${attributeVar}${accessorSyntax}writeDataToVector(data);
+            <?${indent}    ${attributeVar}->writeDataToVector(data);
 ?>
         } else {  // Primitives.
             string typeName = attribute.typeName;
