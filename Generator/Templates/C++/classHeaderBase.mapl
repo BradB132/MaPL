@@ -103,22 +103,22 @@ if schemaClass.attributes.count > 0 {
 ?>
 
 if (bool)commandLineFlag("MaPLGeneratorSerialized") {
-    string overrideString = isSubclass ? " override" : "";
 <?
         // MaPLGeneratorSerialized.
-        virtual bool initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength)${overrideString};
-        virtual void writeDataToVector(std::vector<uint8_t> &data)${overrideString};
+        virtual bool initializeObjectWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) override;
+        virtual bool initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) override;
+        virtual void writeObjectToVector(std::vector<uint8_t> &data) override;
+        virtual void writeAttributesToVector(std::vector<uint8_t> &data) override;
 ?>
 }
 
 if (bool)commandLineFlag("MaPLInterface") {
-    string overrideString = isSubclass ? " override" : "";
 <?
         // MaPLInterface.
-        virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc)${overrideString};
-        virtual MaPLParameter invokeSubscript(MaPLParameter index) const${overrideString};
-        virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue)${overrideString};
-        virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue)${overrideString};
+        virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) override;
+        virtual MaPLParameter invokeSubscript(MaPLParameter index) const override;
+        virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue) override;
+        virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue) override;
 ?>
 }
 

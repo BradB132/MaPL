@@ -18,8 +18,10 @@ outputToFile(outputDir + "/MaPLGeneratorSerialized.h");
  */
 class MaPLGeneratorSerialized {
 public:
-    virtual bool initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) = 0;
-    virtual void writeDataToVector(std::vector<uint8_t> &data) = 0;
+    virtual bool initializeObjectWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) = 0;
+    virtual bool initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) = 0;
+    virtual void writeObjectToVector(std::vector<uint8_t> &data) = 0;
+    virtual void writeAttributesToVector(std::vector<uint8_t> &data) = 0;
 };
 
 #endif /* MaPLGeneratorSerialized_h */

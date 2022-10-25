@@ -71,45 +71,136 @@ if (bool)commandLineFlag("MaPLGeneratorSerialized") {
 <?/**
  * MaPLGeneratorSerialized.
  */
-bool ${schemaNamespace}::${className}_generated::initializeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) {
-    if (*dataIndex+sizeof(uint32_t) > dataLength) {
-        return false;
-    }
-    if (*((uint32_t*)(data+*dataIndex)) != BYTECODE_${schemaNamespace}_${className}) {
+bool ${schemaNamespace}::${className}_generated::initializeObjectWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) {
+    if (*dataIndex+sizeof(uint32_t) > dataLength ||
+        *((uint32_t*)(data+*dataIndex)) != BYTECODE_${schemaNamespace}_${className}) {
         return false;
     }
     *dataIndex += sizeof(uint32_t);
-    while (true) {
-        if (*dataIndex+sizeof(uint32_t) > dataLength) {
-            return false;
-        }
-        uint32_t nextAttributeName = *((uint32_t*)(data+*dataIndex));
-        *dataIndex += sizeof(uint32_t);
-        switch (nextAttributeName) {
+    while (initializeAttributeWithData(data, dataIndex, dataLength)) {}
+}
+
+bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) {
+    if (*dataIndex+sizeof(uint32_t) > dataLength) {
+        return false;
+    }
+    uint32_t nextAttributeName = *((uint32_t*)(data+*dataIndex));
+    *dataIndex += sizeof(uint32_t);
+    switch (nextAttributeName) {
 ?>
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
         string attributeName = attribute.name;
-<?            case BYTECODE_${schemaNamespace}_${className}_${attributeName}: {
+<?        case BYTECODE_${schemaNamespace}_${className}_${attributeName}: {
 ?>
-
-        // TODO: Read ivars.
-
-
-<?            }
-                break;
+        // Handle lists of values.
+        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
+        string indent = requiresList ? "    " : "";
+        if requiresList {
+            string listLength;
+            if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
+<?            if (*dataIndex+sizeof(uint32_t) > dataLength) {
+                    return false;
+            }
+            uint32 ${attributeName}Length = *((uint32_t*)(data+*dataIndex));
+            *dataIndex += sizeof(uint32_t);
 ?>
-    }
-<?            default:
-                return true;
+                listLength = attributeName + "Length";
+            } else {  // Fixed length
+                listLength = (string)attribute.minOccurrences;
+            }
+            string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+<?            ${attributeName}${collectionIvar}.reserve(${listLength});
+            for (uint32_t ${attributeName}Index = 0; ${attributeName}Index < ${listLength}; ${attributeName}Index++) {
+?>
         }
+
+        // Read ivar values.
+        if attribute.typeIsClass { // TODO: This doesn't handle polymorphism correctly. Everything must be a reference.
+            string classType = attribute.typeNamespace + "::" + attribute.typeName;
+            string objectName;
+            if requiresList {
+                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                objectName = attributeName + collectionIvar + "[" + attributeName + "Index]";
+<?                ${attributeName}${collectionIvar}.emplace_back();
+?>
+            } else {
+                objectName = attributeName;
+            }
+            bool isReference = !requiresList && attribute.defaultValues.count > 0;
+            string accessorSyntax = isReference ? "->" : ".";
+<?${indent}            if (!${objectName}${accessorSyntax}initializeWithData(data, dataIndex, dataLength)) {
+${indent}                return false;
+${indent}            }
+?>
+        } else if attribute.typeIsUIDReference ||
+                  attribute.typeName == "string" ||
+                  attribute.typeName == "UID" {
+            // TODO: Handle strings as a separate case.
+        } else {
+            string typeName = attribute.typeName;
+            string primitiveType;
+            if typeName == "int32" {
+                primitiveType = "int32_t";
+            } else if typeName == "uint32" {
+                primitiveType = "uint32_t";
+            } else if typeName == "int64" {
+                primitiveType = "int64_t";
+            } else if typeName == "uint64" {
+                primitiveType = "uint64_t";
+            } else if typeName == "float32" {
+                primitiveType = "float";
+            } else if typeName == "float64" {
+                primitiveType = "double";
+            } else if typeName == "bool" || typeName == "char" {
+                primitiveType = "uint8_t";
+            } else if attribute.typeIsEnum {
+                primitiveType = attribute.typeNamespace + "::" + attribute.typeName;
+            }
+            // TODO: Find the `primitiveType` for all remaining primitive types.
+<?${indent}            if (*dataIndex+sizeof(${primitiveType}) > dataLength) {
+${indent}                return false;
+${indent}            }
+${indent}            ${attributeName} = *((primitiveType*)(data+*dataIndex));
+${indent}            *dataIndex += sizeof(primitiveType);
+?>
+        }
+
+        if requiresList {
+<?            }
+?>
+        }
+<?        }
+            return true;
+?>
     }
+<?        default:
+            *dataIndex -= sizeof(uint32_t);
+?>
+    if schemaClass.superclass != NULL {
+        string superclassName = schemaClass.superclass.name;
+        string superclassNamespace = schemaClass.superclass.namespace;
+<?            return ${superclassNamespace}::${superclassName}::initializeAttributeWithData(data, dataIndex, dataLength);
+?>
+    } else {
+<?            return false;
+?>
+    }
+<?    }
 }
 
-void ${schemaNamespace}::${className}_generated::writeDataToVector(std::vector<uint8_t> &data) {
+void ${schemaNamespace}::${className}_generated::writeObjectToVector(std::vector<uint8_t> &data) {
     uint32_t bytecodeSignifier = BYTECODE_${schemaNamespace}_${className};
     data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
+    writeAttributesToVector(data);
+}
+
+void ${schemaNamespace}::${className}_generated::writeAttributesToVector(std::vector<uint8_t> &data) {
 ?>
+    if schemaClass.attributes.count > 0 {
+        <?    uint32_t bytecodeSignifier;
+?>
+    }
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
         string attributeName = attribute.name;
@@ -213,7 +304,12 @@ ${indent}    data.push_back(0);
             <?    }
 ?>
         }
-        
+    }
+    if schemaClass.superclass != NULL {
+        string superclassName = schemaClass.superclass.name;
+        string superclassNamespace = schemaClass.superclass.namespace;
+        <?    ${superclassNamespace}::${superclassName}::writeAttributesToVector(data);
+?>
     }
 <?}
 
