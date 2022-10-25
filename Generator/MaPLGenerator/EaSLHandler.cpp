@@ -228,6 +228,7 @@ _classContext(classContext),
 _name(classContext->identifier()->getText()),
 _namespace(namespace_),
 _superclass(NULL),
+_descendantClasses(NULL),
 _annotations(parseAnnotations(classContext->ANNOTATION())) {
     if (conflictsWithPrimitiveName(_name)) {
         errorLogger->logError(classContext->identifier()->start, "Class name '"+_name+"' conflicts with the name of a primitive type.");
@@ -251,6 +252,8 @@ MaPLParameter SchemaClass::invokeFunction(MaPLSymbol functionSymbol, const MaPLP
             return MaPLPointer(_annotations);
         case MaPLSymbols_SchemaClass_attributes:
             return MaPLPointer(_attributes);
+        case MaPLSymbols_SchemaClass_descendantClasses:
+            return MaPLPointer(_descendantClasses);
         case MaPLSymbols_SchemaClass_name:
             return MaPLStringByReference(_name.c_str());
         case MaPLSymbols_SchemaClass_namespace:
@@ -273,6 +276,28 @@ bool SchemaClass::hasUID() {
         }
     }
     return false;
+}
+
+void SchemaClass::initializeDescendantList(MaPLArrayMap<Schema *> *schemas) {
+    if (_descendantClasses) {
+        return;
+    }
+    std::vector<SchemaClass *> descendants;
+    for (const Schema *schema : schemas->_backingVector) {
+        for (SchemaClass *schemaClass : schema->_classes->_backingVector) {
+            if (schemaClass == this || schemaClass->_superclass != this) {
+                continue;
+            }
+            if (!schemaClass->_descendantClasses) {
+                // If this subclass's descendant list is not initialized, initialize it now. This will
+                // cause the initialization of these lists to happen in the correct topological order.
+                schemaClass->initializeDescendantList(schemas);
+            }
+            descendants.insert(descendants.end(), schemaClass->_descendantClasses->_backingVector.begin(), schemaClass->_descendantClasses->_backingVector.end());
+            descendants.push_back(schemaClass);
+        }
+    }
+    _descendantClasses = new MaPLArray<SchemaClass *>(descendants);
 }
 
 Schema::Schema(const std::filesystem::path &filePath, EaSLParser::SchemaContext *schemaContext) :
@@ -485,6 +510,13 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
     
     MaPLArrayMap<Schema *> *schemas = new MaPLArrayMap<Schema *>(schemasVector, schemasMap);
     validateSchemas(schemas);
+    
+    // Now that superclasses are populated, there's enough information to populate the descendant graph.
+    for (Schema *schema : schemasVector) {
+        for (SchemaClass *schemaClass : schema->_classes->_backingVector) {
+            schemaClass->initializeDescendantList(schemas);
+        }
+    }
     
     for (Schema *schema : schemasVector) {
         if (schema->_errorLogger._hasLoggedError) {

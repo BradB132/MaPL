@@ -18,6 +18,8 @@
 #include "ErrorLogger.h"
 #include "XmlHandler.h"
 
+class Schema;
+
 class SchemaEnum : public MaPLInterface {
 public:
     SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext, ErrorLogger *errorLogger);
@@ -56,11 +58,13 @@ public:
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
     bool hasUID();
+    void initializeDescendantList(MaPLArrayMap<Schema *> *schemas);
     
     EaSLParser::ClassDefinitionContext *_classContext;
     std::string _name;
     std::string _namespace;
     SchemaClass *_superclass;
+    MaPLArray<SchemaClass *> *_descendantClasses;
     MaPLArrayMap<SchemaAttribute *> *_attributes;
     MaPLArrayMap<std::string> *_annotations;
 };

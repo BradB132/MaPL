@@ -35,9 +35,9 @@
 
 #type SchemaClass : MaPLGeneratorObject {
     readonly string name;
-    readonly string namespace; // TODO: Reference the schema.
+    readonly string namespace;
     readonly SchemaClass superclass;
-    // TODO: List all descendant schema classes.
+    readonly Array<SchemaClass> descendantClasses;
     readonly ArrayMap<SchemaAttribute> attributes;
     readonly ArrayMap<string> annotations;
 }
@@ -45,7 +45,7 @@
 #type SchemaAttribute : MaPLGeneratorObject {
     readonly string name;
     readonly string typeName;
-    readonly string typeNamespace; // TODO: Reference the Schema. NULL if primitive attribute.
+    readonly string typeNamespace;
     readonly bool typeIsUIDReference;
     readonly bool typeIsClass;
     readonly bool typeIsEnum;
