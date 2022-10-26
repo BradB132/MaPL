@@ -8,6 +8,7 @@
 #include "EaSLHandler.h"
 
 #include <fstream>
+#include <set>
 #include <sstream>
 #include <unordered_map>
 
@@ -349,15 +350,30 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                 schema->_errorLogger.logError(schemaClass->_classContext->identifier()->start, "Class '"+schema->_namespace+"::"+schemaClass->_name+"' conflicts with another declaration of the same name.");
             }
             topLevelNames.insert(schemaClass->_name);
+            
+            // Check for cycles in the class hierarchy.
+            std::set<SchemaClass *> allSuperclasses;
+            SchemaClass *superclass = schemaClass;
+            while (superclass) {
+                if (allSuperclasses.count(superclass)) {
+                    schema->_errorLogger.logError(schemaClass->_classContext->identifier()->start,
+                                                  "Inheritance graph for class '"+schema->_namespace+"::"+schemaClass->_name+"' contains a loop.");
+                    // Return immediately because this type of error tends to cause infinitely looping behavior during the subsequent validation.
+                    return;
+                }
+                allSuperclasses.insert(superclass);
+                superclass = superclass->_superclass;
+            }
+            
             for (SchemaAttribute *attribute : schemaClass->_attributes->_backingVector) {
                 // Iterate through all super classes to confirm that there are no attribute collisions.
-                SchemaClass *superclass = schemaClass;
-                while (superclass) {
-                    superclass = superclass->_superclass;
-                    if (!superclass) { break; }
-                    if (superclass->_attributes->_backingMap.count(attribute->_name)) {
+                SchemaClass *attributeSuperclass = schemaClass;
+                while (attributeSuperclass) {
+                    attributeSuperclass = attributeSuperclass->_superclass;
+                    if (!attributeSuperclass) { break; }
+                    if (attributeSuperclass->_attributes->_backingMap.count(attribute->_name)) {
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
-                                                      "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' conflicts with attribute '"+superclass->_namespace+"::"+superclass->_name+"::"+attribute->_name+"'.");
+                                                      "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' conflicts with attribute '"+attributeSuperclass->_namespace+"::"+attributeSuperclass->_name+"::"+attribute->_name+"'.");
                     }
                 }
                 if (!attribute->_typeNamespace.empty() && !attribute->_typeIsUIDReference) {
@@ -511,16 +527,16 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
     MaPLArrayMap<Schema *> *schemas = new MaPLArrayMap<Schema *>(schemasVector, schemasMap);
     validateSchemas(schemas);
     
-    // Now that superclasses are populated, there's enough information to populate the descendant graph.
-    for (Schema *schema : schemasVector) {
-        for (SchemaClass *schemaClass : schema->_classes->_backingVector) {
-            schemaClass->initializeDescendantList(schemas);
-        }
-    }
-    
     for (Schema *schema : schemasVector) {
         if (schema->_errorLogger._hasLoggedError) {
             exit(1);
+        }
+    }
+    
+    // Populate the descendant graph.
+    for (Schema *schema : schemasVector) {
+        for (SchemaClass *schemaClass : schema->_classes->_backingVector) {
+            schemaClass->initializeDescendantList(schemas);
         }
     }
     
