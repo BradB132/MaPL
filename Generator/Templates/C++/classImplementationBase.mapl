@@ -121,27 +121,70 @@ bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uin
         }
 
         // Read ivar values.
-        if attribute.typeIsClass { // TODO: This doesn't handle polymorphism correctly. Everything must be a reference.
-            string classType = attribute.typeNamespace + "::" + attribute.typeName;
+        string typeName = attribute.typeName;
+        if attribute.typeIsClass {
+            string typeNamespace = attribute.typeNamespace;
+            SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
+            if attributeClass.descendantClasses.count > 0 {
+<?${indent}            if (*dataIndex+sizeof(uint32_t) > dataLength) {
+${indent}                return false;
+${indent}            }
+${indent}            ${typeNamespace}::${typeName}* createdObject;
+${indent}            switch (*((uint32_t*)(data+*dataIndex))) {
+${indent}                case BYTECODE_${typeNamespace}_${typeName}:
+${indent}                    createdObject = new ${typeNamespace}::${typeName}();
+${indent}                    break;
+?>
+                for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
+                    SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
+                    string descendantNamespace = descendant.namespace;
+                    string descendantName = descendant.name;
+<?${indent}                case BYTECODE_${descendantNamespace}_${descendantName}:
+${indent}                    createdObject = new ${descendantNamespace}::${descendantName}();
+${indent}                    break;
+?>
+                }
+<?${indent}                default:
+${indent}                    return false;
+${indent}            }
+?>
+            } else {
+<?${indent}            ${typeNamespace}::${typeName}* createdObject = new ${typeNamespace}::${typeName}();
+?>
+            }
+            
             string objectName;
             if requiresList {
                 string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-                objectName = attributeName + collectionIvar + "[" + attributeName + "Index]";
-<?                ${attributeName}${collectionIvar}.emplace_back();
+<?${indent}            ${attributeName}${collectionIvar}.push_back(createdObject);
 ?>
             } else {
-                objectName = attributeName;
+<?${indent}            ${attributeName} = createdObject;
+?>
             }
-<?${indent}            if (!${objectName}->initializeWithData(data, dataIndex, dataLength)) {
+<?${indent}            if (!createdObject->initializeWithData(data, dataIndex, dataLength)) {
 ${indent}                return false;
 ${indent}            }
 ?>
         } else if attribute.typeIsUIDReference ||
-                  attribute.typeName == "string" ||
-                  attribute.typeName == "UID" {
-            // TODO: Handle strings as a separate case.
+                  typeName == "string" ||
+                  typeName == "UID" {
+<?${indent}            size_t stringLength = strlen(data+*dataIndex);
+${indent}            if (*dataIndex+stringLength > dataLength) {
+${indent}                return false;
+${indent}            }
+?>
+            if requiresList {
+                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+<?${indent}            ${attributeName}${collectionIvar}.push_back((char*)(data+*dataIndex));
+?>
+            } else {
+<?${indent}            ${attributeName} = (char*)(data+*dataIndex);
+?>
+            }
+<?${indent}            *dataIndex += stringLength;
+?>
         } else {
-            string typeName = attribute.typeName;
             string primitiveType;
             if typeName == "int32" {
                 primitiveType = "int32_t";
@@ -158,14 +201,21 @@ ${indent}            }
             } else if typeName == "bool" || typeName == "char" {
                 primitiveType = "uint8_t";
             } else if attribute.typeIsEnum {
-                primitiveType = attribute.typeNamespace + "::" + attribute.typeName;
+                primitiveType = attribute.typeNamespace + "::" + typeName;
             }
-            // TODO: Find the `primitiveType` for all remaining primitive types.
 <?${indent}            if (*dataIndex+sizeof(${primitiveType}) > dataLength) {
 ${indent}                return false;
 ${indent}            }
-${indent}            ${attributeName} = *((primitiveType*)(data+*dataIndex));
-${indent}            *dataIndex += sizeof(primitiveType);
+?>
+            if requiresList {
+                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+<?${indent}            ${attributeName}${collectionIvar}.push_back(*((${primitiveType}*)(data+*dataIndex)));
+?>
+            } else {
+<?${indent}            ${attributeName} = *((${primitiveType}*)(data+*dataIndex));
+?>
+            }
+<?${indent}            *dataIndex += sizeof(${primitiveType});
 ?>
         }
 
