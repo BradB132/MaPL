@@ -18,12 +18,12 @@ if !fileExistsAtPath(headerOutputPath) {
 #ifndef ${schemaNamespace}_${className}_h
 #define ${schemaNamespace}_${className}_h
 
-#include "${schemaNamespace}Namespace.h"
+#include "${className}_generated.h"
 
 namespace ${schemaNamespace} {
 
     class ${className} : public ${schemaNamespace}::${className}_generated {
-        // Custom logic for ${schemaNamespace}::${className} can go here.
+        // Custom API for ${schemaNamespace}::${className} can go here.
     };
 
 } /* ${schemaNamespace} namespace */

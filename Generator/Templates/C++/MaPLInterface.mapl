@@ -32,6 +32,12 @@ public:
 template <typename T>
 class MaPLArray : public MaPLInterface {
 public:
+    MaPLArray() {
+    }
+    
+    MaPLArray(std::vector<T> &backingVector) : _backingVector(backingVector) {
+    }
+    
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
         if (argc == 0) {
             // Assume this is attempting to check the length of the array.
