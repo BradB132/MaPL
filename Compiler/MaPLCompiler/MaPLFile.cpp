@@ -33,7 +33,7 @@ MaPLFile::~MaPLFile() {
     delete _bytecode;
     delete _variableStack;
     delete _inputStream;
-    delete _lexer;;
+    delete _lexer;
     delete _tokenStream;
     delete _parser;
     // _program doesn't need to be deleted because it's managed by _parser's ParseTreeTracker.
