@@ -174,7 +174,14 @@ bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uin
                 listLength = (string)attribute.minOccurrences;
             }
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-<?            ${attributeName}${collectionIvar}.reserve(${listLength});
+            if attribute.typeIsClass {
+<?            for (auto value : ${attributeName}${collectionIvar}) {
+                delete value;
+            }
+?>
+            }
+<?            ${attributeName}${collectionIvar}.clear();
+            ${attributeName}${collectionIvar}.reserve(${listLength});
             for (uint32_t ${attributeName}Index = 0; ${attributeName}Index < ${listLength}; ${attributeName}Index++) {
 ?>
         }
@@ -228,7 +235,7 @@ ${indent}            }
         } else if attribute.typeIsUIDReference ||
                   typeName == "string" ||
                   typeName == "UID" {
-<?${indent}            size_t stringLength = strlen((char*)(data+*dataIndex));
+<?${indent}            size_t stringLength = strlen((char*)(data+*dataIndex))+1;
 ${indent}            if (*dataIndex+stringLength > dataLength) {
 ${indent}                return false;
 ${indent}            }
