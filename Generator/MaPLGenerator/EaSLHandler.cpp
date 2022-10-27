@@ -653,6 +653,7 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
         
         if (!parentSchemaClass->_superclass) { break; }
         parentSchemaClass = parentSchemaClass->_superclass;
+        parentSchema = schemas->_backingMap.at(parentSchemaClass->_namespace);
     }
     
     for (XmlAttribute *xmlAttribute : xmlNode->_attributes->_backingVector) {
@@ -799,8 +800,10 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
     // The above logic will ensure no schema attribute exceeds its maximum occurrences.
     // Check each attribute count to ensure the minimums were met.
     for (const AttributeCount &attributeCount : attributeCounts) {
-        if (attributeCount.childCount < attributeCount.schemaAttribute->_minOccurrences) {
-            errorLogger.logError(xmlNode->_node, "Node of type '"+xmlNode->_namespace+"::"+xmlNode->_name+"' expects at least "+std::to_string(attributeCount.schemaAttribute->_minOccurrences)+" children of type '"+attributeCount.schemaAttribute->_typeNamespace+"::"+attributeCount.schemaAttribute->_typeName+"', but found "+std::to_string(attributeCount.childCount)+".");
+        bool isUsingDefaults = attributeCount.childCount == 0 && attributeCount.schemaAttribute->_defaultValues->_backingVector.size() > 0;
+        if (attributeCount.childCount < attributeCount.schemaAttribute->_minOccurrences && !isUsingDefaults) {
+            std::string childDescriptor = attributeCount.schemaAttribute->_minOccurrences == 1 ? "child" : "children";
+            errorLogger.logError(xmlNode->_node, "Node of type '"+xmlNode->_namespace+"::"+xmlNode->_name+"' expects at least "+std::to_string(attributeCount.schemaAttribute->_minOccurrences)+" "+childDescriptor+" of type '"+attributeCount.schemaAttribute->_typeNamespace+"::"+attributeCount.schemaAttribute->_typeName+"' for attribute '"+attributeCount.schemaAttribute->_name+"', but found "+std::to_string(attributeCount.childCount)+".");
         }
     }
 }
