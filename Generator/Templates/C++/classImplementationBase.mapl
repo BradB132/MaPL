@@ -51,8 +51,6 @@ if useMaPLInterface {
 }
 
 if useMaPLGeneratorSerialized {
-    <?#include "../MaPLGenerator_Bytecodes.h"
-?>
     for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
         if schemaClass.attributes[attrIndex].typeName == "string" {
             <?#include <cstring>

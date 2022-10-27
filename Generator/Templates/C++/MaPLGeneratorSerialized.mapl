@@ -1,8 +1,5 @@
 #import "../../Executable/MaPLGeneratorAPI.mapl"
 
-Schema schema = (Schema)inParameters["schema"];
-string schemaNamespace = schema.namespace;
-
 string outputDir = commandLineFlag("cppOutputDir");
 outputToFile(outputDir + "/MaPLGeneratorSerialized.h");
 
@@ -24,5 +21,30 @@ public:
     virtual void writeAttributesToVector(std::vector<uint8_t> &data) = 0;
 };
 
-#endif /* MaPLGeneratorSerialized_h */
+?>
+
+for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
+    Schema schema = schemas[schemaIndex];
+    string schemaNamespace = schema.namespace;
+
+    for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
+        SchemaClass schemaClass = schema.classes[classIndex];
+        string className = schemaClass.name;
+        uint32 classHash = (uint32)hash("CLASS_" + schemaNamespace + "_" + className);
+        <?#define BYTECODE_${schemaNamespace}_${className} ${classHash}
+?>
+        
+        for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
+            SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+            string attributeName = attribute.name;
+            uint32 attributeHash = (uint32)hash("ATTRIBUTE_" + schemaNamespace + "_" + className + "_" + attributeName);
+            <?#define BYTECODE_${schemaNamespace}_${className}_${attributeName} ${attributeHash}
+?>
+        }
+        <?
+?>
+    }
+}
+
+<?#endif /* MaPLGeneratorSerialized_h */
 ?>
