@@ -35,7 +35,7 @@ public:
     MaPLArray() {
     }
     
-    MaPLArray(std::vector<T> &backingVector) : _backingVector(backingVector) {
+    MaPLArray(std::initializer_list<T> list) : _backingVector(list) {
     }
     
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
