@@ -91,6 +91,10 @@
             argument = "--MaPLGeneratorSerialized=true"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--MaPLSymbolPrefix=MaPLSymbols"
+            isEnabled = "YES">
+         </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>
    <ProfileAction

@@ -432,6 +432,7 @@ ${indent}    data.push_back(0);
 }
 
 if useMaPLInterface {
+    string symbolPrefix = commandLineFlag(MaPLSymbolPrefix);
 <?/**
  * MaPLInterface.
  */
@@ -440,7 +441,7 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
 }
 
 MaPLParameter ${schemaNamespace}::${className}_generated::invokeSubscript(MaPLParameter index) const {
-    return (MaPLParameter){}; // TODO: Implement this method.
+    return MaPLUninitialized();  // This object doesn't respond to subscripts.
 }
 
 void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
@@ -448,7 +449,7 @@ void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol prope
 }
 
 void ${schemaNamespace}::${className}_generated::assignSubscript(MaPLParameter index, MaPLParameter assignedValue) {
-
+    // No-op. This object doesn't respond to subscripts.
 }
 
 ?>
