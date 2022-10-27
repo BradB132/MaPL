@@ -1,8 +1,5 @@
 #import "../../Executable/MaPLGeneratorAPI.mapl"
 
-Schema schema = (Schema)inParameters["schema"];
-string schemaNamespace = schema.namespace;
-
 string outputDir = commandLineFlag("cppOutputDir");
 outputToFile(outputDir + "/MaPLInterface.h");
 
@@ -15,6 +12,14 @@ outputToFile(outputDir + "/MaPLInterface.h");
 
 #include "MaPLRuntime.h"
 
+/**
+ * Functions that implement all MaPLGenerator-created script APIs.
+ */
+MaPLParameter MaPLGenerator_invokeFunction(void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
+MaPLParameter MaPLGenerator_invokeSubscript(void *invokedOnPointer, MaPLParameter index);
+void MaPLGenerator_assignProperty(void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue);
+void MaPLGenerator_assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue);
+        
 /**
  * Abstract class that can be used for any MaPL API.
  */
@@ -124,4 +129,65 @@ public:
 };
 
 #endif /* MaPLInterface_h */
+?>
+
+outputToFile(outputDir + "/MaPLInterface.cpp");
+
+<?
+#include "MaPLInterface.h"
+#include "MaPLSymbols.h"  // Use MaPLCompiler to generate this symbol file.
+
+MaPLParameter MaPLGenerator_invokeFunction(void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
+    if (invokedOnPointer) {
+        MaPLInterface *maplInterface = static_cast<MaPLInterface *>(invokedOnPointer);
+        return maplInterface->invokeFunction(functionSymbol, argv, argc);
+    }
+?>
+bool hasEnum = false;
+for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
+    Schema schema = schemas[schemaIndex];
+    if schema.enums.count > 0 {
+        hasEnum = true;
+        break;
+    }
+}
+if hasEnum {
+    string symbolPrefix = commandLineFlag("MaPLSymbolPrefix");
+<?    // Enums.
+    switch (functionSymbol) {
+?>
+    for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
+        Schema schema = schemas[schemaIndex];
+        string namespace = schema.namespace;
+        for uint32 i = 0; i < schema.enums.count; i++ {
+            SchemaEnum enum = schema.enums[i];
+            string enumName = enum.name;
+            for uint32 j = 0; j < enum.cases.count; j++ {
+                string case = enum.cases[j];
+<?        case ${symbolPrefix}_GLOBAL_${namespace}_${enumName}_${case}:
+            return MaPLUint32(${j});
+?>
+            }
+        }
+<?    }
+?>
+    }
+}
+<?    return MaPLUninitialized();
+}
+
+MaPLParameter MaPLGenerator_invokeSubscript(void *invokedOnPointer, MaPLParameter index) {
+    MaPLInterface *maplInterface = static_cast<MaPLInterface *>(invokedOnPointer);
+    return maplInterface->invokeSubscript(index);
+}
+
+void MaPLGenerator_assignProperty(void *invokedOnPointer, MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
+    MaPLInterface *maplInterface = static_cast<MaPLInterface *>(invokedOnPointer);
+    maplInterface->assignProperty(propertySymbol, assignedValue);
+}
+
+void MaPLGenerator_assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLParameter assignedValue) {
+    MaPLInterface *maplInterface = static_cast<MaPLInterface *>(invokedOnPointer);
+    maplInterface->assignSubscript(index, assignedValue);
+}
 ?>
