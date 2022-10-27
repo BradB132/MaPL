@@ -21,9 +21,9 @@ outputToFile(outputDir + "/MaPLInterface.h");
 class MaPLInterface {
 public:
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) = 0;
-    virtual MaPLParameter invokeSubscript(MaPLParameter index) const = 0;
-    virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue) = 0;
-    virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue) = 0;
+    virtual MaPLParameter invokeSubscript(MaPLParameter &index) const = 0;
+    virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter &assignedValue) = 0;
+    virtual void assignSubscript(MaPLParameter index, MaPLParameter &assignedValue) = 0;
 };
 
 /**
@@ -46,7 +46,7 @@ public:
         return MaPLUninitialized();
     }
     
-    virtual MaPLParameter invokeSubscript(MaPLParameter index) const {
+    virtual MaPLParameter invokeSubscript(MaPLParameter &index) const {
         const T &value = _backingVector[index.uint32Value];
         if constexpr (std::is_same_v<T, u_int8_t>) {
             return MaPLChar(value);
@@ -81,11 +81,11 @@ public:
         return MaPLUninitialized();
     }
     
-    virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
+    virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter &assignedValue) {
         // No-op. No assignable properties.
     }
 
-    virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue) {
+    virtual void assignSubscript(MaPLParameter index, MaPLParameter &assignedValue) {
         if (index.dataType != MaPLDataType_uint32) {
             return;
         }

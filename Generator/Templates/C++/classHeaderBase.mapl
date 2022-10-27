@@ -169,9 +169,9 @@ if useMaPLInterface {
 <?
         // MaPLInterface.
         virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) override;
-        virtual MaPLParameter invokeSubscript(MaPLParameter index) const override;
-        virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue) override;
-        virtual void assignSubscript(MaPLParameter index, MaPLParameter assignedValue) override;
+        virtual MaPLParameter invokeSubscript(MaPLParameter &index) const override;
+        virtual void assignProperty(MaPLSymbol propertySymbol, MaPLParameter &assignedValue) override;
+        virtual void assignSubscript(MaPLParameter index, MaPLParameter &assignedValue) override;
 ?>
 }
 

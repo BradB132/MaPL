@@ -496,15 +496,67 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
 <?    }
 }
 
-MaPLParameter ${schemaNamespace}::${className}_generated::invokeSubscript(MaPLParameter index) const {
+MaPLParameter ${schemaNamespace}::${className}_generated::invokeSubscript(MaPLParameter &index) const {
     return MaPLUninitialized();  // This object doesn't respond to subscripts.
 }
 
-void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue) {
+void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol propertySymbol, MaPLParameter &assignedValue) {
+    switch (propertySymbol) {
+?>
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute attribute = schemaClass.attributes[i];
+        if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
+            continue;  // Arrays are readonly.
+        }
+        string attributeName = attribute.name;
+        string typeDescriptor;
+        string typeCast = "";
+        bool isString = attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID";
+        if attribute.typeIsClass {
+            typeDescriptor = "pointer";
+            typeCast = "(" + schemaNamespace + "::" + attribute.typeName + "*)";
+        } else if isString {
+            typeDescriptor = "string";
+        } else if attribute.typeIsEnum || attribute.typeName == "uint32" {
+            typeDescriptor = "uint32";
+            if attribute.typeIsEnum {
+                typeCast = "(" + schemaNamespace + "::" + attribute.typeName + ")";
+            }
+        } else if attribute.typeName == "int32" {
+            typeDescriptor = "int32";
+        } else if attribute.typeName == "bool" {
+            typeDescriptor = "boolean";
+        } else if attribute.typeName == "int64" {
+            typeDescriptor = "int64";
+        } else if attribute.typeName == "uint64" {
+            typeDescriptor = "uint64";
+        } else if attribute.typeName == "float32" {
+            typeDescriptor = "float32";
+        } else if attribute.typeName == "float64" {
+            typeDescriptor = "float64";
+        } else { // Char.
+            typeDescriptor = "char";
+        }
+<?        case ${symbolPrefix}_${schemaNamespace}_${className}_${attributeName}:
+            if (assignedValue.dataType != MaPLDataType_${typeDescriptor}) {
+                return;
+            }
+            ${attributeName} = ${typeCast}assignedValue.${typeDescriptor}Value;
+?>
+    }
+<?        default:
+            break;
+    }
+?>
+    if schemaClass.superclass != NULL {
+        string superclassNamespace = schemaClass.superclass.namespace;
+        string superclassName = schemaClass.superclass.name;
+<?    return ${superclassNamespace}::${superclassName}::assignProperty(propertySymbol, assignedValue);
+?>
+    }
+<?}
 
-}
-
-void ${schemaNamespace}::${className}_generated::assignSubscript(MaPLParameter index, MaPLParameter assignedValue) {
+void ${schemaNamespace}::${className}_generated::assignSubscript(MaPLParameter index, MaPLParameter &assignedValue) {
     // No-op. This object doesn't respond to subscripts.
 }
 

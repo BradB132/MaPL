@@ -95,7 +95,7 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
                     attributeType = attribute.typeName;
                 }
                 if (attribute.minOccurrences < 1 || attribute.maxOccurrences > 1) {
-                    attributeType = "Array<" + attributeType + ">";
+                    attributeType = "readonly Array<" + attributeType + ">";
                 }
                 <?    ${attributeType} ${attributeName};?>
                 if attribute.typeIsUIDReference {
