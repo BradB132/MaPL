@@ -511,31 +511,19 @@ void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol prope
         string attributeName = attribute.name;
         string typeDescriptor;
         string typeCast = "";
-        bool isString = attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID";
         if attribute.typeIsClass {
             typeDescriptor = "pointer";
             typeCast = "(" + schemaNamespace + "::" + attribute.typeName + "*)";
-        } else if isString {
+        } else if attribute.typeIsUIDReference || attribute.typeName == "UID" {
             typeDescriptor = "string";
-        } else if attribute.typeIsEnum || attribute.typeName == "uint32" {
+        } else if attribute.typeIsEnum {
             typeDescriptor = "uint32";
-            if attribute.typeIsEnum {
-                typeCast = "(" + schemaNamespace + "::" + attribute.typeName + ")";
-            }
-        } else if attribute.typeName == "int32" {
-            typeDescriptor = "int32";
+            typeCast = "(" + schemaNamespace + "::" + attribute.typeName + ")";
         } else if attribute.typeName == "bool" {
             typeDescriptor = "boolean";
-        } else if attribute.typeName == "int64" {
-            typeDescriptor = "int64";
-        } else if attribute.typeName == "uint64" {
-            typeDescriptor = "uint64";
-        } else if attribute.typeName == "float32" {
-            typeDescriptor = "float32";
-        } else if attribute.typeName == "float64" {
-            typeDescriptor = "float64";
-        } else { // Char.
-            typeDescriptor = "char";
+        } else {
+            // All other types match the `typeName`.
+            typeDescriptor = attribute.typeName;
         }
 <?        case ${symbolPrefix}_${schemaNamespace}_${className}_${attributeName}:
             if (assignedValue.dataType != MaPLDataType_${typeDescriptor}) {
@@ -559,6 +547,5 @@ void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol prope
 void ${schemaNamespace}::${className}_generated::assignSubscript(MaPLParameter index, MaPLParameter &assignedValue) {
     // No-op. This object doesn't respond to subscripts.
 }
-
 ?>
 }
