@@ -41,6 +41,32 @@ while schemaClass != NULL {
                 continue;
             }
             XMLAttribute xmlAttribute = node.attributes[schemaAttr.name];
+            if xmlAttribute.values.count == schemaAttr.defaultValues.count {
+                // Elide this attribute if it matches the default value.
+                bool isDefaultValue = true;
+                for uint32 defaultIndex = 0; defaultIndex < schemaAttr.defaultValues.count; defaultIndex++ {
+                    string defaultString = schemaAttr.defaultValues[defaultIndex];
+                    string valueString = xmlAttribute.values[defaultIndex];
+                    string typeName = schemaAttr.typeName;
+                    bool isString = schemaAttr.typeIsUIDReference || schemaAttr.typeIsEnum || typeName == "string" || typeName == "UID";
+                    if (isString && defaultString != valueString) ||
+                       (typeName == "int32" && (int32)defaultString != (int32)valueString) ||
+                       (typeName == "int64" && (int64)defaultString != (int64)valueString) ||
+                       (typeName == "uint32" && (uint32)defaultString != (uint32)valueString) ||
+                       (typeName == "uint64" && (uint64)defaultString != (uint64)valueString) ||
+                       (typeName == "float32" && (float32)defaultString != (float32)valueString) ||
+                       (typeName == "float64" && (float64)defaultString != (float64)valueString) ||
+                       (typeName == "char" && (char)defaultString != (char)valueString) ||
+                       (typeName == "bool" && (bool)defaultString != (bool)valueString) {
+                        isDefaultValue = false;
+                        break;
+                    }
+                }
+                if isDefaultValue {
+                    continue;
+                }
+            }
+            
             writeToFile(attributeHash);
             if mustSpecifyListLength {
                 writeToFile(xmlAttribute.values.count);
