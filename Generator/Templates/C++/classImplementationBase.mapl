@@ -44,6 +44,12 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
     }
 }
 
+if useMaPLInterface {
+    string symbolPrefix = commandLineFlag("MaPLSymbolPrefix");
+    <?#include "../${symbolPrefix}.h"  // Use MaPLCompiler to generate this symbol file.
+?>
+}
+
 if useMaPLGeneratorSerialized {
     <?#include "../MaPLGenerator_Bytecodes.h"
 ?>
@@ -432,12 +438,62 @@ ${indent}    data.push_back(0);
 }
 
 if useMaPLInterface {
-    string symbolPrefix = commandLineFlag(MaPLSymbolPrefix);
+    string symbolPrefix = commandLineFlag("MaPLSymbolPrefix");
 <?/**
  * MaPLInterface.
  */
 MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
-    return (MaPLParameter){}; // TODO: Implement this method.
+    if (argc > 0) {
+        return MaPLUninitialized();
+    }
+    switch (functionSymbol) {
+?>
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute attribute = schemaClass.attributes[i];
+        string attributeName = attribute.name;
+        string functionName;
+        bool isString = attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID";
+        bool isList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
+        string ivarPrefix = isList ? "&" : "";
+        string ivarSuffix = "";
+        if isList || attribute.typeIsClass {
+            functionName = "MaPLPointer";
+        } else if isString {
+            functionName = "MaPLStringByReference";
+            ivarSuffix = ".c_str()";
+        } else if attribute.typeIsEnum || attribute.typeName == "uint32" {
+            functionName = "MaPLUint32";
+        } else if attribute.typeName == "int32" {
+            functionName = "MaPLInt32";
+        } else if attribute.typeName == "bool" {
+            functionName = "MaPLBool";
+        } else if attribute.typeName == "int64" {
+            functionName = "MaPLInt64";
+        } else if attribute.typeName == "uint64" {
+            functionName = "MaPLUint64";
+        } else if attribute.typeName == "float32" {
+            functionName = "MaPLFloat32";
+        } else if attribute.typeName == "float64" {
+            functionName = "MaPLFloat64";
+        } else { // Char.
+            functionName = "MaPLChar";
+        }
+<?        case ${symbolPrefix}_${schemaNamespace}_${className}_${attributeName}:
+            return ${functionName}(${ivarPrefix}${attributeName}${ivarSuffix});
+?>
+    }
+<?        default:
+?>
+    if schemaClass.superclass == NULL {
+<?            return MaPLUninitialized();
+?>
+    } else {
+        string superclassNamespace = schemaClass.superclass.namespace;
+        string superclassName = schemaClass.superclass.name;
+<?            return ${superclassNamespace}::${superclassName}::invokeFunction(functionSymbol, argv, argc);
+?>
+    }
+<?    }
 }
 
 MaPLParameter ${schemaNamespace}::${className}_generated::invokeSubscript(MaPLParameter index) const {
