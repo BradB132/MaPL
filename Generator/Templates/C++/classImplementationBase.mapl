@@ -436,11 +436,11 @@ if useMaPLInterface {
  * MaPLInterface.
  */
 MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
-    return MaPLUninitialized(); // TODO: Implement this method.
+    return (MaPLParameter){}; // TODO: Implement this method.
 }
 
 MaPLParameter ${schemaNamespace}::${className}_generated::invokeSubscript(MaPLParameter index) const {
-    return MaPLUninitialized(); // TODO: Implement this method.
+    return (MaPLParameter){}; // TODO: Implement this method.
 }
 
 void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol propertySymbol, MaPLParameter assignedValue) {

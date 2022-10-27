@@ -30,8 +30,7 @@ for uint32 i = 0; i < schema.enums.count; i++ {
 ?>
 }
 
-<?
-} /* ${schemaNamespace} namespace */
+<?} /* ${schemaNamespace} namespace */
 
 #endif /* ${schemaNamespace}_Enums_h */
 ?>
