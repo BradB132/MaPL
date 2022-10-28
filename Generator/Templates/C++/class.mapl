@@ -18,12 +18,12 @@ if !fileExistsAtPath(headerOutputPath) {
 #ifndef ${schemaNamespace}_${className}_h
 #define ${schemaNamespace}_${className}_h
 
-#include "${className}_generated.h"
+#include "${schemaNamespace}/${className}_generated.h"
 
 namespace ${schemaNamespace} {
 
     class ${className} : public ${schemaNamespace}::${className}_generated {
-        // Custom API for ${schemaNamespace}::${className} can go here.
+        // Custom APIs for ${schemaNamespace}::${className} can go here.
     };
 
 } /* ${schemaNamespace} namespace */
@@ -35,6 +35,7 @@ namespace ${schemaNamespace} {
 if !fileExistsAtPath(implOutputPath) {
     outputToFile(implOutputPath);
     <?// File initially created by MaPLGenerator, based on the '${schemaNamespace}::${className}' schema.
+#include "${schemaNamespace}/${className}.h"
 
 // Custom logic for ${schemaNamespace}::${className} can go here.
 ?>
