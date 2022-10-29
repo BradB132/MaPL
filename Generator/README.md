@@ -18,9 +18,9 @@ When the generator runs, it performs the generation in the following phases:
 
 1. **Schema Validation**
     * Verify that the collection of all EaSL files are valid unto themselves.
-2. **Data Validation**
+1. **Data Validation**
     * Verify that all XML data conforms correctly to the EaSL schema.
-3. **Script-based generation**
+1. **Script-based generation**
     * Execute any specified MaPL scripts. Scripts have access to an API that exposes all schema and XML data. Scripts can specify which file to output to, and how to format that output.
 
 ## Command line interface
@@ -41,3 +41,6 @@ cd MaPL/Generator
 xcodebuild
 ```
 Then check the [Executable](./Executable) directory for a symlink to the executable, as well as the MaPL API that can be used for accessing the schema and XML data.
+
+## Examples
+Example code-generation templates can be found in the [Templates](./Templates) directory.
