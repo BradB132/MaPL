@@ -42,5 +42,10 @@ xcodebuild
 ```
 Then check the [Executable](./Executable) directory for a symlink to the executable, as well as the MaPL API that can be used for accessing the schema and XML data.
 
+The above command will generate multiple `build` directories. They are already ignored by `.gitignore`, but if you want to clean them up, run:
+```
+rm -r ./build ../Compiler/build ../Runtime/build
+```
+
 ## Examples
 Example code-generation templates can be found in the [Templates](./Templates) directory.
