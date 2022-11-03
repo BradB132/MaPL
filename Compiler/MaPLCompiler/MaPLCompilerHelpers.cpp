@@ -1064,6 +1064,24 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
     return { { MaPLPrimitiveType_TypeError } };
 }
 
+/// https://stackoverflow.com/a/23000588
+u_int8_t logBase2(uint64_t n)
+{
+    static const u_int8_t table[64] = {
+        0, 58, 1, 59, 47, 53, 2, 60, 39, 48, 27, 54, 33, 42, 3, 61,
+        51, 37, 40, 49, 18, 28, 20, 55, 30, 34, 11, 43, 14, 22, 4, 62,
+        57, 46, 52, 38, 26, 32, 41, 50, 36, 17, 19, 29, 10, 13, 21, 56,
+        45, 25, 31, 35, 16, 9, 12, 44, 24, 15, 8, 23, 7, 6, 5, 63
+    };
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    n |= n >> 32;
+    return table[(n * 0x03f6eaf2cd271461) >> 58];
+}
+
 u_int8_t bitShiftForLiteral(const MaPLLiteral &literal) {
     // Convert this literal to an unsigned int.
     u_int64_t unsignedValue;
@@ -1089,12 +1107,9 @@ u_int8_t bitShiftForLiteral(const MaPLLiteral &literal) {
             break;
         default: return 0;
     }
-    for (u_int8_t i = 0; i < 64; i++) {
-        if (unsignedValue == (u_int64_t)1 << i) {
-            return i;
-        }
-    }
-    return 0;
+    // Return the log2 only if it's an exact match.
+    u_int8_t log2 = logBase2(unsignedValue);
+    return 1 << log2 == unsignedValue ? log2 : 0;
 }
 
 MaPLParser::ObjectExpressionContext *terminalObjectExpression(MaPLParser::ObjectExpressionContext *rootExpression) {
