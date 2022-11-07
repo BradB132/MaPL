@@ -1801,8 +1801,10 @@ void evaluateStatement(MaPLExecutionContext *context) {
 }
 
 void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength, const MaPLCallbacks *callbacks) {
-    // TODO: Here and in compiler assert the byte sizes of all types ( https://stackoverflow.com/a/18511691 ).
     // TODO: Check endianness <endian.h> ( https://stackoverflow.com/a/2100363 ).
+    
+    _Static_assert(sizeof(float) == 4, "MaPL assumes that 'float' type is 32-bit. MaPLCompiler must be updated if this must be run in an environment where this assumption is not true.");
+    _Static_assert(sizeof(double) == 8, "MaPL assumes that 'double' type is 64-bit. MaPLCompiler must be updated if this must be run in an environment where this assumption is not true.");
     
     MaPLExecutionContext context;
     context.scriptBuffer = (u_int8_t *)scriptBuffer;
