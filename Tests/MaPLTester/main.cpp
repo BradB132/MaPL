@@ -38,6 +38,7 @@ std::string fakeStringSubscript;
 std::string scriptPrintString;
 std::string scriptCallbacksString;
 bool scriptEncounteredError = false;
+MaPLRuntimeError encounteredError;
 
 std::string pointerToString(const void *pointer) {
     // Memory address can (and almost certainly will be) different each time.
@@ -221,6 +222,7 @@ void debugVariableDelete(const char *variableName) {
 
 void error(MaPLRuntimeError error) {
     scriptEncounteredError = true;
+    encounteredError = error;
 }
 
 bool pathHasExtension(const std::filesystem::path &path, const std::string &extension) {
@@ -310,7 +312,22 @@ MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnde
         // Run the script.
         executeMaPLScript(&bytecode[0], bytecode.size(), &testCallbacks);
         if (scriptEncounteredError) {
-            printf("Script encountered a runtime error '%s'.\n", path.c_str());
+            std::string errorDescription;
+            switch (encounteredError) {
+                case MaPLRuntimeError_malformedBytecode:
+                    errorDescription = "Malformed bytecode";
+                    break;
+                case MaPLRuntimeError_returnValueTypeMismatch:
+                    errorDescription = "Return value type mismatch";
+                    break;
+                case MaPLRuntimeError_missingCallback:
+                    errorDescription = "Missing callback";
+                    break;
+                case MaPLRuntimeError_invocationOnNullPointer:
+                    errorDescription = "Invocation on null pointer";
+                    break;
+            }
+            printf("Script '%s' encountered a runtime error: '%s'.\n", path.c_str(), errorDescription.c_str());
 #if !OUTPUT_EXPECTED_FILES
             exit(1);
 #endif
