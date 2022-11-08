@@ -100,59 +100,38 @@ MaPLParameter MaPLVoid(void) {
     return (MaPLParameter){ MaPLDataType_void };
 }
 MaPLParameter MaPLChar(u_int8_t charValue) {
-    MaPLParameter parameter = { MaPLDataType_char };
-    parameter.charValue = charValue;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_char, .charValue = charValue };
 }
 MaPLParameter MaPLInt32(int32_t int32Value) {
-    MaPLParameter parameter = { MaPLDataType_int32 };
-    parameter.int32Value = int32Value;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_int32, .int32Value = int32Value };
 }
 MaPLParameter MaPLInt64(int64_t int64Value) {
-    MaPLParameter parameter = { MaPLDataType_int64 };
-    parameter.int64Value = int64Value;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_int64, .int64Value = int64Value };
 }
 MaPLParameter MaPLUint32(u_int32_t uint32Value) {
-    MaPLParameter parameter = { MaPLDataType_uint32 };
-    parameter.uint32Value = uint32Value;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_uint32, .uint32Value = uint32Value };
 }
 MaPLParameter MaPLUint64(u_int64_t uint64Value) {
-    MaPLParameter parameter = { MaPLDataType_uint64 };
-    parameter.uint64Value = uint64Value;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_uint64, .uint64Value = uint64Value };
 }
 MaPLParameter MaPLFloat32(float float32Value) {
-    MaPLParameter parameter = { MaPLDataType_float32 };
-    parameter.float32Value = float32Value;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_float32, .float32Value = float32Value };
 }
 MaPLParameter MaPLFloat64(double float64Value) {
-    MaPLParameter parameter = { MaPLDataType_float64 };
-    parameter.float64Value = float64Value;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_float64, .float64Value = float64Value };
 }
 MaPLParameter MaPLBool(bool booleanValue) {
-    MaPLParameter parameter = { MaPLDataType_boolean };
-    parameter.booleanValue = booleanValue;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_boolean, .booleanValue = booleanValue };
 }
 MaPLParameter MaPLPointer(void *pointerValue) {
-    MaPLParameter parameter = { MaPLDataType_pointer };
-    parameter.pointerValue = pointerValue;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_pointer, .pointerValue = pointerValue };
 }
 MaPLParameter MaPLStringByReference(const char *stringValue) {
-    MaPLParameter parameter = { MaPLDataType_string };
-    parameter.stringValue = stringValue;
-    return parameter;
+    return (MaPLParameter){ MaPLDataType_string, .stringValue = stringValue };
 }
 MaPLParameter MaPLStringByValue(const char *stringValue) {
-    MaPLParameter parameter = { MaPLDataType_string };
     size_t strLen = strlen(stringValue)+1;
-    parameter.stringValue = malloc(strLen);
+    MaPLParameter parameter = { MaPLDataType_string, .stringValue = malloc(strLen) };
     memcpy((char *)parameter.stringValue, stringValue, strLen);
     parameter.stringValue = tagStringAsAllocated((char *)parameter.stringValue);
     return parameter;
