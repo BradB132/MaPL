@@ -149,8 +149,9 @@ MaPLParameter MaPLStringByReference(const char *stringValue) {
 }
 MaPLParameter MaPLStringByValue(const char *stringValue) {
     MaPLParameter parameter = { MaPLDataType_string };
-    parameter.stringValue = malloc(strlen(stringValue)+1);
-    strcpy((char *)parameter.stringValue, stringValue);
+    size_t strLen = strlen(stringValue)+1;
+    parameter.stringValue = malloc(strLen);
+    memcpy((char *)parameter.stringValue, stringValue, strLen);
     parameter.stringValue = tagStringAsAllocated((char *)parameter.stringValue);
     return parameter;
 }
@@ -1338,7 +1339,7 @@ char *evaluateString(MaPLExecutionContext *context) {
                     break;
                 }
                 default:
-                    strcpy(returnString, "");
+                    returnString[0] = 0;
                     context->executionState = MaPLExecutionState_error;
                     context->errorType = MaPLRuntimeError_malformedBytecode;
                     break;
@@ -1612,8 +1613,9 @@ void evaluateStatement(MaPLExecutionContext *context) {
                 // In the edge case that this value is the same pointer that's stored elsewhere
                 // in the table, we need to do a copy to manage the memory correctly.
                 char *untaggedString = untagString(assignedString);
-                char *copiedAssignedString = malloc(strlen(untaggedString)+1);
-                strcpy(copiedAssignedString, untaggedString);
+                size_t strLen = strlen(untaggedString)+1;
+                char *copiedAssignedString = malloc(strLen);
+                memcpy(copiedAssignedString, untaggedString, strLen);
                 assignedString = tagStringAsAllocated(copiedAssignedString);
             }
             if (isStringAllocated(assignedString)) {
