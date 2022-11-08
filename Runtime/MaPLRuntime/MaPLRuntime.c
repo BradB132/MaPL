@@ -1802,8 +1802,8 @@ void evaluateStatement(MaPLExecutionContext *context) {
 }
 
 void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength, const MaPLCallbacks *callbacks) {
-    _Static_assert(sizeof(float) == 4, "MaPL assumes that 'float' type is 32-bit. MaPLCompiler must be updated if this must be run in an environment where this assumption is not true.");
-    _Static_assert(sizeof(double) == 8, "MaPL assumes that 'double' type is 64-bit. MaPLCompiler must be updated if this must be run in an environment where this assumption is not true.");
+    _Static_assert(sizeof(float) == 4, "MaPL assumes that 'float' type is 32-bit.");
+    _Static_assert(sizeof(double) == 8, "MaPL assumes that 'double' type is 64-bit.");
     
     MaPLExecutionContext context;
     context.scriptBuffer = (u_int8_t *)scriptBuffer;

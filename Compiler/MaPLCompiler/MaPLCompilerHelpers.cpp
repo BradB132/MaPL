@@ -147,8 +147,8 @@ bool isConcreteType(MaPLPrimitiveType type) {
 }
 
 MaPLMemoryAddress byteSizeOfType(MaPLPrimitiveType type) {
-    static_assert(sizeof(float) == 4, "MaPL assumes that 'float' type is 32-bit. MaPLCompiler must be updated if this must be run in an environment where this assumption is not true.");
-    static_assert(sizeof(double) == 8, "MaPL assumes that 'double' type is 64-bit. MaPLCompiler must be updated if this must be run in an environment where this assumption is not true.");
+    static_assert(sizeof(float) == 4, "MaPL assumes that 'float' type is 32-bit.");
+    static_assert(sizeof(double) == 8, "MaPL assumes that 'double' type is 64-bit.");
     switch (type) {
         case MaPLPrimitiveType_Char: // Intentional fallthrough.
         case MaPLPrimitiveType_Boolean:
