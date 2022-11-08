@@ -49,7 +49,9 @@ char *evaluateString(MaPLExecutionContext *context);
 // 2- Stored - Indicates if the string is stored in the string table.
 //
 // Example #1:
-// string s = ""; -> Both the Lvalue "s" and the literal Rvalue are neither allocated nor stored.
+// string s = "foo"; -> Neither the Lvalue "s" or the literal Rvalue are allocated or stored.
+//   The string is not allocated because the bytes for the string are embedded in the bytecode.
+//   Strings are only marked as Stored if they were allocated.
 //   If there was an allocated string previously stored in "s", it will be freed.
 //
 // Example #2:
