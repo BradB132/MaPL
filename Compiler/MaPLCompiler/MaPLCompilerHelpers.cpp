@@ -70,6 +70,11 @@ MaPLCompileResult compileMaPL(const std::vector<std::filesystem::path> &scriptPa
         };
         buffer->prependBytes(prependedAddresses, sizeof(prependedAddresses));
         
+        // Prepend a byte that indicates big vs little endian (equals 1 if little endian).
+        uint16_t endianShort = 1;
+        uint8_t endianByte = *(uint8_t *)&endianShort;
+        buffer->prependBytes(&endianByte, sizeof(endianByte));
+        
         compileResult.compiledFiles[file->getNormalizedFilePath()] = buffer->getBytes();
     }
     

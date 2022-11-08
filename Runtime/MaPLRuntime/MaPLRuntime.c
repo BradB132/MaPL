@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
 
 typedef enum {
     MaPLExecutionState_continue,
@@ -1801,8 +1802,6 @@ void evaluateStatement(MaPLExecutionContext *context) {
 }
 
 void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength, const MaPLCallbacks *callbacks) {
-    // TODO: Check endianness <endian.h> ( https://stackoverflow.com/a/2100363 ).
-    
     _Static_assert(sizeof(float) == 4, "MaPL assumes that 'float' type is 32-bit. MaPLCompiler must be updated if this must be run in an environment where this assumption is not true.");
     _Static_assert(sizeof(double) == 8, "MaPL assumes that 'double' type is 64-bit. MaPLCompiler must be updated if this must be run in an environment where this assumption is not true.");
     
@@ -1811,17 +1810,24 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     context.callbacks = callbacks;
     context.isDeadCodepath = false;
     context.executionState = MaPLExecutionState_continue;
+
+    // The first byte indicates big vs little endian (equals 1 if little endian).
+    // If these bytes don't match, then the script was compiled with a different
+    // endianness and needs to be recompiled.
+    uint16_t endianShort = 1;
+    uint8_t endianByte = *(uint8_t *)&endianShort;
+    assert(context.scriptBuffer[0] == endianByte);
     
     // The first bytes are always two instances of MaPLMemoryAddress that describe the table sizes.
     // The entire script execution happens synchronously inside this function, so these tables can be stack allocated.
-    MaPLMemoryAddress primitiveTableSize = *((MaPLMemoryAddress *)context.scriptBuffer);
-    MaPLMemoryAddress stringTableSize = *((MaPLMemoryAddress *)context.scriptBuffer+sizeof(MaPLMemoryAddress));
+    MaPLMemoryAddress primitiveTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(uint8_t)));
+    MaPLMemoryAddress stringTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(MaPLMemoryAddress)+sizeof(uint8_t)));
     u_int8_t primitiveTable[primitiveTableSize];
     char *stringTable[stringTableSize];
     memset(stringTable, 0, sizeof(stringTable));
     context.primitiveTable = primitiveTable;
     context.stringTable = stringTable;
-    context.cursorPosition = sizeof(MaPLMemoryAddress)*2;
+    context.cursorPosition = sizeof(MaPLMemoryAddress)*2+sizeof(uint8_t);
     
     while (context.executionState == MaPLExecutionState_continue && context.cursorPosition < bufferLength) {
         evaluateStatement(&context);
