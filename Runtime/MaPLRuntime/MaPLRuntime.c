@@ -160,9 +160,7 @@ bool verifyReturnValue(MaPLExecutionContext *context, MaPLParameter *returnValue
         if (!context->isDeadCodepath) {
             context->executionState = MaPLExecutionState_error;
             context->errorType = MaPLRuntimeError_returnValueTypeMismatch;
-            if (returnValue->dataType == MaPLDataType_string) {
-                freeStringIfNeeded((char *)returnValue->stringValue);
-            }
+            freeMaPLParameterIfNeeded(returnValue);
         }
         return false;
     }
