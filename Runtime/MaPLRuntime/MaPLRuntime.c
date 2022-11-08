@@ -215,9 +215,11 @@ const char *readString(MaPLExecutionContext *context) {
 char *concatenateStrings(char *taggedString1, char *taggedString2) {
     char *untaggedString1 = untagString(taggedString1);
     char *untaggedString2 = untagString(taggedString2);
-    char *concatString = malloc(strlen(untaggedString1)+strlen(untaggedString2)+1);
-    strcpy(concatString, untaggedString1);
-    strcat(concatString, untaggedString2);
+    size_t strlen1 = strlen(untaggedString1);
+    size_t strlen2 = strlen(untaggedString2);
+    char *concatString = malloc(strlen1+strlen2+1);
+    memcpy(concatString, untaggedString1, strlen1);
+    memcpy(concatString+strlen1, untaggedString2, strlen2+1);
     return tagStringAsAllocated(concatString);
 }
 
