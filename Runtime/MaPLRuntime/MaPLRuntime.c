@@ -23,7 +23,7 @@ typedef struct {
     const u_int8_t* scriptBuffer;
     MaPLBytecodeLength cursorPosition;
     u_int8_t *primitiveTable;
-    char **stringTable;
+    const char **stringTable;
     const MaPLCallbacks *callbacks;
     bool isDeadCodepath;
     MaPLExecutionState executionState;
@@ -39,7 +39,7 @@ float evaluateFloat32(MaPLExecutionContext *context);
 double evaluateFloat64(MaPLExecutionContext *context);
 bool evaluateBool(MaPLExecutionContext *context);
 void *evaluatePointer(MaPLExecutionContext *context);
-char *evaluateString(MaPLExecutionContext *context);
+const char *evaluateString(MaPLExecutionContext *context);
 
 // Memory management scheme for MaPL strings:
 // The higher-order bits in 64-bit pointers are unused, so the MaPL runtime
@@ -64,27 +64,27 @@ char *evaluateString(MaPLExecutionContext *context);
 // string s = mallocString(); -> Same as example #2.
 // s = s;
 //   In the edge case of assigning a stored string to itself, this should be a no-op.
-char *tagStringAsAllocated(char *string) {
+const char *tagStringAsAllocated(const char *string) {
     return (char *)((uintptr_t)string | 0x8000000000000000);
 }
-char *tagStringAsNotAllocated(char *string) {
+const char *tagStringAsNotAllocated(const char *string) {
     return (char *)((uintptr_t)string & 0x7FFFFFFFFFFFFFFF);
 }
 bool isStringAllocated(const char *taggedString) {
     return ((uintptr_t)taggedString & 0x8000000000000000) != 0;
 }
-char *tagStringAsStored(char *string) {
+const char *tagStringAsStored(const char *string) {
     return (char *)((uintptr_t)string | 0x4000000000000000);
 }
 bool isStringStored(const char *taggedString) {
     return ((uintptr_t)taggedString & 0x4000000000000000) != 0;
 }
-char *untagString(char *string) {
+const char *untagString(const char *string) {
     return (char *)((uintptr_t)string & 0x3FFFFFFFFFFFFFFF);
 }
-void freeStringIfNeeded(char *string) {
+void freeStringIfNeeded(const char *string) {
     if (isStringAllocated(string)) {
-        free(untagString(string));
+        free((char *)untagString(string));
     }
 }
 void freeMaPLParameterIfNeeded(MaPLParameter *parameter) {
@@ -194,9 +194,9 @@ const char *readString(MaPLExecutionContext *context) {
     return string;
 }
 
-char *concatenateStrings(char *taggedString1, char *taggedString2) {
-    char *untaggedString1 = untagString(taggedString1);
-    char *untaggedString2 = untagString(taggedString2);
+const char *concatenateStrings(const char *taggedString1, const char *taggedString2) {
+    const char *untaggedString1 = untagString(taggedString1);
+    const char *untaggedString2 = untagString(taggedString2);
     size_t strlen1 = strlen(untaggedString1);
     size_t strlen2 = strlen(untaggedString2)+1;
     char *concatString = malloc(strlen1+strlen2);
@@ -388,7 +388,7 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
                 case MaPLDataType_float64:
                     return (u_int8_t)evaluateFloat64(context);
                 case MaPLDataType_string: {
-                    char *taggedString = evaluateString(context);
+                    const char *taggedString = evaluateString(context);
                     u_int8_t returnChar = (u_int8_t)atoi(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnChar;
@@ -481,7 +481,7 @@ int32_t evaluateInt32(MaPLExecutionContext *context) {
                 case MaPLDataType_float64:
                     return (int32_t)evaluateFloat64(context);
                 case MaPLDataType_string: {
-                    char *taggedString = evaluateString(context);
+                    const char *taggedString = evaluateString(context);
                     int32_t returnInt = (int32_t)atoi(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnInt;
@@ -574,7 +574,7 @@ int64_t evaluateInt64(MaPLExecutionContext *context) {
                 case MaPLDataType_float64:
                     return (int64_t)evaluateFloat64(context);
                 case MaPLDataType_string: {
-                    char *taggedString = evaluateString(context);
+                    const char *taggedString = evaluateString(context);
                     int64_t returnInt = (int64_t)atol(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnInt;
@@ -665,7 +665,7 @@ u_int32_t evaluateUint32(MaPLExecutionContext *context) {
                 case MaPLDataType_float64:
                     return (u_int32_t)evaluateFloat64(context);
                 case MaPLDataType_string: {
-                    char *taggedString = evaluateString(context);
+                    const char *taggedString = evaluateString(context);
                     u_int32_t returnInt = (u_int32_t)atol(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnInt;
@@ -756,7 +756,7 @@ u_int64_t evaluateUint64(MaPLExecutionContext *context) {
                 case MaPLDataType_float64:
                     return (u_int64_t)evaluateFloat64(context);
                 case MaPLDataType_string: {
-                    char *taggedString = evaluateString(context);
+                    const char *taggedString = evaluateString(context);
                     u_int64_t returnInt = (u_int64_t)atol(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnInt;
@@ -840,7 +840,7 @@ float evaluateFloat32(MaPLExecutionContext *context) {
                 case MaPLDataType_float64:
                     return (float)evaluateFloat64(context);
                 case MaPLDataType_string: {
-                    char *taggedString = evaluateString(context);
+                    const char *taggedString = evaluateString(context);
                     float returnFloat = (float)atof(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnFloat;
@@ -924,7 +924,7 @@ double evaluateFloat64(MaPLExecutionContext *context) {
                 case MaPLDataType_float32:
                     return (double)evaluateFloat32(context);
                 case MaPLDataType_string: {
-                    char *taggedString = evaluateString(context);
+                    const char *taggedString = evaluateString(context);
                     double returnDouble = atof(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnDouble;
@@ -996,7 +996,7 @@ bool evaluateBool(MaPLExecutionContext *context) {
                 case MaPLDataType_float64:
                     return evaluateFloat64(context) != 0.0;
                 case MaPLDataType_string: {
-                    char *taggedString = evaluateString(context);
+                    const char *taggedString = evaluateString(context);
                     bool returnBool = !strcmp(untagString(taggedString), "true");
                     freeStringIfNeeded(taggedString);
                     return returnBool;
@@ -1024,9 +1024,10 @@ bool evaluateBool(MaPLExecutionContext *context) {
         case MaPLInstruction_logical_equality_boolean:
             return evaluateBool(context) == evaluateBool(context);
         case MaPLInstruction_logical_equality_string: {
-            char *taggedString1 = evaluateString(context);
-            char *taggedString2 = evaluateString(context);
+            const char *taggedString1 = evaluateString(context);
+            const char *taggedString2 = evaluateString(context);
             if (context->isDeadCodepath) {
+                // If this is a dead codepath, the strings that are returned are not allocated.
                 return false;
             }
             bool returnValue = !strcmp(untagString(taggedString1), untagString(taggedString2));
@@ -1053,9 +1054,10 @@ bool evaluateBool(MaPLExecutionContext *context) {
         case MaPLInstruction_logical_inequality_boolean:
             return evaluateBool(context) != evaluateBool(context);
         case MaPLInstruction_logical_inequality_string: {
-            char *taggedString1 = evaluateString(context);
-            char *taggedString2 = evaluateString(context);
+            const char *taggedString1 = evaluateString(context);
+            const char *taggedString2 = evaluateString(context);
             if (context->isDeadCodepath) {
+                // If this is a dead codepath, the strings that are returned are not allocated.
                 return false;
             }
             bool returnValue = strcmp(untagString(taggedString1), untagString(taggedString2)) != 0;
@@ -1205,7 +1207,7 @@ void *evaluatePointer(MaPLExecutionContext *context) {
     return NULL;
 }
 
-char *evaluateString(MaPLExecutionContext *context) {
+const char *evaluateString(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
         case MaPLInstruction_string_literal: {
             char *literal = (char *)(context->scriptBuffer+context->cursorPosition);
@@ -1215,13 +1217,13 @@ char *evaluateString(MaPLExecutionContext *context) {
         case MaPLInstruction_string_variable:
             return tagStringAsNotAllocated(context->stringTable[readMemoryAddress(context)]);
         case MaPLInstruction_string_concat: {
-            char *taggedString1 = evaluateString(context);
-            char *taggedString2 = evaluateString(context);
+            const char *taggedString1 = evaluateString(context);
+            const char *taggedString2 = evaluateString(context);
             if (context->isDeadCodepath) {
                 // If this is a dead codepath, the strings that are returned are not allocated.
                 break;
             }
-            char *concatenatedString = concatenateStrings(taggedString1, taggedString2);
+            const char *concatenatedString = concatenateStrings(taggedString1, taggedString2);
             freeStringIfNeeded(taggedString1);
             freeStringIfNeeded(taggedString2);
             return concatenatedString;
@@ -1236,7 +1238,7 @@ char *evaluateString(MaPLExecutionContext *context) {
         }
         case MaPLInstruction_string_ternary_conditional: {
             bool previousDeadCodepath = context->isDeadCodepath;
-            char *result;
+            const char *result;
             if (evaluateBool(context)) {
                 result = evaluateString(context);
                 context->isDeadCodepath = true;
@@ -1583,8 +1585,8 @@ void evaluateStatement(MaPLExecutionContext *context) {
             break;
         case MaPLInstruction_string_assign: {
             MaPLMemoryAddress stringIndex = readMemoryAddress(context);
-            char *assignedString = evaluateString(context);
-            char *existingString = context->stringTable[stringIndex];
+            const char *assignedString = evaluateString(context);
+            const char *existingString = context->stringTable[stringIndex];
             if (untagString(assignedString) == untagString(existingString)) {
                 // In the edge case where a string is assigned to itself, do nothing.
                 break;
@@ -1593,7 +1595,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             if (isStringStored(assignedString)) {
                 // In the edge case that this value is the same pointer that's stored elsewhere
                 // in the table, we need to do a copy to manage the memory correctly.
-                char *untaggedString = untagString(assignedString);
+                const char *untaggedString = untagString(assignedString);
                 size_t strLen = strlen(untaggedString)+1;
                 char *copiedAssignedString = malloc(strLen);
                 memcpy(copiedAssignedString, untaggedString, strLen);
@@ -1811,7 +1813,7 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     MaPLMemoryAddress primitiveTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(uint8_t)));
     MaPLMemoryAddress stringTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(MaPLMemoryAddress)+sizeof(uint8_t)));
     u_int8_t primitiveTable[primitiveTableSize];
-    char *stringTable[stringTableSize];
+    const char *stringTable[stringTableSize];
     memset(stringTable, 0, sizeof(stringTable));
     context.primitiveTable = primitiveTable;
     context.stringTable = stringTable;
