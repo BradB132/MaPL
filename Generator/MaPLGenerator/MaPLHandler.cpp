@@ -281,6 +281,9 @@ static void error(MaPLRuntimeError error) {
         case MaPLRuntimeError_returnValueTypeMismatch:
             errString = "MaPL return value type mismatch.";
             break;
+        case MaPLRuntimeError_incompatibleEndianness:
+            errString = "Incompatible endianness in MaPL bytecode.";
+            break;
         default:
             errString = "Unknown MaPL error.";
             break;

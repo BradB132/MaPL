@@ -1799,9 +1799,14 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     // endianness and needs to be recompiled.
     uint16_t endianShort = 1;
     uint8_t endianByte = *(uint8_t *)&endianShort;
-    assert(context.scriptBuffer[0] == endianByte);
+    if (context.scriptBuffer[0] != endianByte) {
+        if (context.callbacks->error) {
+            context.callbacks->error(MaPLRuntimeError_incompatibleEndianness);
+        }
+        return;
+    }
     
-    // The first bytes are always two instances of MaPLMemoryAddress that describe the table sizes.
+    // The next bytes are always two instances of MaPLMemoryAddress that describe the table sizes.
     // The entire script execution happens synchronously inside this function, so these tables can be stack allocated.
     MaPLMemoryAddress primitiveTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(uint8_t)));
     MaPLMemoryAddress stringTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(MaPLMemoryAddress)+sizeof(uint8_t)));

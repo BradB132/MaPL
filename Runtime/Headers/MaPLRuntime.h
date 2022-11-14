@@ -92,6 +92,7 @@ typedef enum {
     MaPLRuntimeError_returnValueTypeMismatch,
     MaPLRuntimeError_missingCallback,
     MaPLRuntimeError_invocationOnNullPointer,
+    MaPLRuntimeError_incompatibleEndianness,
 } MaPLRuntimeError;
 
 /**
