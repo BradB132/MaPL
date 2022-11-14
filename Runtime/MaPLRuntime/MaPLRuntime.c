@@ -1210,9 +1210,7 @@ void *evaluatePointer(MaPLExecutionContext *context) {
 const char *evaluateString(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
         case MaPLInstruction_string_literal: {
-            char *literal = (char *)(context->scriptBuffer+context->cursorPosition);
-            context->cursorPosition += strlen(literal)+1;
-            return literal;
+            return readString(context);
         }
         case MaPLInstruction_string_variable:
             return tagStringAsNotAllocated(context->stringTable[readMemoryAddress(context)]);
