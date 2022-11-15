@@ -21,7 +21,7 @@ typedef enum {
 
 typedef struct {
     const u_int8_t* scriptBuffer;
-    MaPLBytecodeLength cursorPosition;
+    size_t cursorPosition;
     u_int8_t *primitiveTable;
     const char **stringTable;
     const MaPLCallbacks *callbacks;
