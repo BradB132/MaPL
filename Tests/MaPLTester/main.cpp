@@ -266,12 +266,11 @@ MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnde
         bytecodeOutputStream.write((char *)(&bytecode[0]), bytecode.size());
 #else
         // Compare the length of expected bytecode.
-        std::ifstream inputStream(contents.bytecodePath);
+        std::ifstream inputStream(contents.bytecodePath, std::ios::binary|std::ios::ate);
         if (!inputStream) {
             printf("Unable to find expected bytecode file '%s'.\n", contents.bytecodePath.c_str());
             exit(1);
         }
-        inputStream.seekg(0, std::ios::end);
         size_t length = inputStream.tellg();
         if (length != bytecode.size()) {
             printf("Compiled bytecode is a different length than expected bytecode '%s'.\n", contents.bytecodePath.c_str());
