@@ -1,6 +1,6 @@
 namespace Example;
 
-class Container {
+@root class Container {
     Content contents[];
 }
 

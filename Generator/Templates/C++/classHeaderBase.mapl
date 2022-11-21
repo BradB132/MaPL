@@ -57,6 +57,10 @@ if !useMaPLInterface {
         }
     }
 }
+if useMaPLGeneratorSerialized && schemaClass.annotations.contains("root") {
+    <?#include <filesystem>
+?>
+}
 
 bool firstForwardDeclaration = true;
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
@@ -82,6 +86,15 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
 ?>
         }
     }
+}
+if useMaPLGeneratorSerialized && schemaClass.annotations.contains("root") {
+    if firstForwardDeclaration {
+        <?
+?>
+        firstForwardDeclaration = false;
+    }
+    <?namespace ${schemaNamespace} { class ${className}; }
+?>
 }
 
 string superclassDeclaration;
@@ -156,6 +169,13 @@ if schemaClass.attributes.count > 0 {
 ?>
 
 if useMaPLGeneratorSerialized {
+    if schemaClass.annotations.contains("root") {
+<?
+        // Convenience methods for serialization / deserialization.
+        static bool readFromFile(const std::filesystem::path& filePath, ${schemaNamespace}::${className}* initializedObject);
+        bool writeToFile(const std::filesystem::path& filePath);
+?>
+    }
 <?
         // MaPLGeneratorSerialized.
         virtual bool initializeObjectWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) override;

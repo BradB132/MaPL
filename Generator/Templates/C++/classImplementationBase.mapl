@@ -58,6 +58,11 @@ if useMaPLGeneratorSerialized {
             break;
         }
     }
+    if schemaClass.annotations.contains("root") {
+        <?#include "${schemaNamespace}/${className}.h"
+#include <fstream>
+?>
+    }
 }
 
 <?
@@ -131,6 +136,36 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
 ?>
 
 if useMaPLGeneratorSerialized {
+    if schemaClass.annotations.contains("root") {
+<?bool ${schemaNamespace}::${className}_generated::readFromFile(const std::filesystem::path& filePath, ${schemaNamespace}::${className}* initializedObject) {
+    std::ifstream inputStream(filePath, std::ios::binary|std::ios::ate);
+    if (!inputStream) {
+        return false;
+    }
+    size_t byteLength = inputStream.tellg();
+    inputStream.seekg(0, std::ios::beg);
+    u_int8_t bytecode[byteLength];
+    inputStream.read((char *)bytecode, byteLength);
+    if (inputStream.rdstate()) {
+        return false;
+    }
+    size_t dataIndex = 0;
+    return initializedObject->initializeObjectWithData(bytecode, &dataIndex, byteLength) && dataIndex == byteLength;
+}
+
+bool ${schemaNamespace}::${className}_generated::writeToFile(const std::filesystem::path& filePath) {
+    std::vector<uint8_t> outputBytes;
+    this->writeObjectToVector(outputBytes);
+    std::ofstream outputStream(filePath, std::ios::binary);
+    if (!outputStream) {
+        return false;
+    }
+    outputStream.write((char *)&(outputBytes[0]), outputBytes.size());
+    return !outputStream.bad();
+}
+
+?>
+    }
 <?/**
  * MaPLGeneratorSerialized.
  */
