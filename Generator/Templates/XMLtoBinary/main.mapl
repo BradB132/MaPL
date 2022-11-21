@@ -4,6 +4,7 @@ string outputDirectory = commandLineFlag("binaryOutputDir") + "/";
 for uint32 i = 0; i < xmlFiles.count; i++ {
     XMLFile file = xmlFiles[i];
     outputToFile(outputDirectory + fileStemForPath(file.filePath) + ".dat");
+    writeToFile((char)deviceIsLittleEndian);
     outParameters["node"] = file.rootNode;
     executeMaPLScript("./appendNode.mapl");
 }

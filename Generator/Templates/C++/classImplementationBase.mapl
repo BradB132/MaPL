@@ -143,18 +143,29 @@ if useMaPLGeneratorSerialized {
         return false;
     }
     size_t byteLength = inputStream.tellg();
+    if (!byteLength) {
+        return false;
+    }
     inputStream.seekg(0, std::ios::beg);
     u_int8_t bytecode[byteLength];
     inputStream.read((char *)bytecode, byteLength);
     if (inputStream.rdstate()) {
         return false;
     }
-    size_t dataIndex = 0;
+    uint16_t endianShort = 1;
+    uint8_t endianByte = *(uint8_t *)&endianShort;
+    if (endianByte != bytecode[0]) {
+        return false;
+    }
+    size_t dataIndex = 1;
     return initializedObject->initializeObjectWithData(bytecode, &dataIndex, byteLength) && dataIndex == byteLength;
 }
 
 bool ${schemaNamespace}::${className}_generated::writeToFile(const std::filesystem::path& filePath) {
     std::vector<uint8_t> outputBytes;
+    uint16_t endianShort = 1;
+    uint8_t endianByte = *(uint8_t *)&endianShort;
+    outputBytes.push_back(endianByte);
     this->writeObjectToVector(outputBytes);
     std::ofstream outputStream(filePath, std::ios::binary);
     if (!outputStream) {
