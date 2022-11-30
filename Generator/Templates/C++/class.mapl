@@ -6,7 +6,7 @@ SchemaClass schemaClass = (SchemaClass)inParameters["class"];
 string outputDir = commandLineFlag("cppOutputDir");
 string schemaNamespace = schema.namespace;
 string className = schemaClass.name;
-string headerOutputPath = outputDir + "/" + schemaNamespace + "/" + className + ".h";
+string headerOutputPath = outputDir + "/" + schemaNamespace + "/" + className + ".hpp";
 string implOutputPath = outputDir + "/" + schemaNamespace + "/" + className + ".cpp";
 
 // NOTE: Base files are where the generator user can augment the generated files with their own code.
@@ -18,7 +18,7 @@ if !fileExistsAtPath(headerOutputPath) {
 #ifndef ${schemaNamespace}_${className}_h
 #define ${schemaNamespace}_${className}_h
 
-#include "${schemaNamespace}/${className}_generated.h"
+#include "${schemaNamespace}/${className}_generated.hpp"
 
 namespace ${schemaNamespace} {
 
@@ -35,7 +35,7 @@ namespace ${schemaNamespace} {
 if !fileExistsAtPath(implOutputPath) {
     outputToFile(implOutputPath);
     <?// File initially created by MaPLGenerator, based on the '${schemaNamespace}::${className}' schema.
-#include "${schemaNamespace}/${className}.h"
+#include "${schemaNamespace}/${className}.hpp"
 
 // Custom logic for ${schemaNamespace}::${className} can go here.
 ?>
