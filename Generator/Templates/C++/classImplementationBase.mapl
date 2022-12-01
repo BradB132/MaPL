@@ -222,16 +222,7 @@ bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uin
                 listLength = (string)attribute.minOccurrences;
             }
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-            string typeNamespace = attribute.typeNamespace;
-            string typeName = attribute.typeName;
-            if attribute.typeIsClass && schemas[typeNamespace].classes[typeName].descendantClasses.count > 0 {
-<?            for (${typeNamespace}::${typeName}* value : ${attributeName}${collectionIvar}) {
-                delete value;
-            }
-?>
-            }
-<?            ${attributeName}${collectionIvar}.clear();
-            ${attributeName}${collectionIvar}.reserve(${listLength});
+<?            ${attributeName}${collectionIvar}.reserve(${listLength});
             for (uint32_t ${attributeName}Index = 0; ${attributeName}Index < ${listLength}; ${attributeName}Index++) {
 ?>
         }
