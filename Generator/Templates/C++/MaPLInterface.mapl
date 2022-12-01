@@ -169,9 +169,9 @@ if hasEnum {
 ?>
             }
         }
+    }
 <?    }
 ?>
-    }
 }
 <?    return MaPLUninitialized();
 }
