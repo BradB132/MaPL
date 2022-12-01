@@ -21,22 +21,24 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
     if attribute.typeIsClass {
         string typeName = attribute.typeName;
-        string classKey = "include:" + attribute.typeNamespace + "::" + typeName;
+        string typeNamespace = attribute.typeNamespace;
+        string classKey = "include:" + typeNamespace + "::" + typeName;
         
         // Hack: `outParameters` is intended as a means of passing objects between scripts,
         // but here it's used to flag if we've already seen this class.
-        if outParameters[classKey] == NULL {
-            <?#include "${schemaNamespace}/${typeName}.hpp"
+        SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
+        if outParameters[classKey] == NULL && attributeClass.descendantClasses.count > 0 {
+            <?#include "${typeNamespace}/${typeName}.hpp"
 ?>
             outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
         }
-        SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[attribute.typeName];
         for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
             SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
             typeName = descendant.name;
-            classKey = "include:" + descendant.namespace + "::" + typeName;
+            typeNamespace = descendant.namespace;
+            classKey = "include:" + typeNamespace + "::" + typeName;
             if outParameters[classKey] == NULL {
-                <?#include "${schemaNamespace}/${typeName}.hpp"
+                <?#include "${typeNamespace}/${typeName}.hpp"
 ?>
                 outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
             }
@@ -116,7 +118,7 @@ ${schemaNamespace}::${className}_generated::~${className}_generated() {
 ?>
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
-    if attribute.typeIsClass {
+    if attribute.typeIsClass && schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count > 0 {
         string attributeName = attribute.name;
         if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
             string dataType = attribute.typeNamespace + "::" + attribute.typeName;
@@ -210,7 +212,7 @@ bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uin
             string listLength;
             if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
 <?            if (*dataIndex+sizeof(uint32_t) > dataLength) {
-                    return false;
+                return false;
             }
             uint32_t ${attributeName}Length = *((uint32_t*)(data+*dataIndex));
             *dataIndex += sizeof(uint32_t);
@@ -220,8 +222,10 @@ bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uin
                 listLength = (string)attribute.minOccurrences;
             }
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-            if attribute.typeIsClass {
-<?            for (auto value : ${attributeName}${collectionIvar}) {
+            string typeNamespace = attribute.typeNamespace;
+            string typeName = attribute.typeName;
+            if attribute.typeIsClass && schemas[typeNamespace].classes[typeName].descendantClasses.count > 0 {
+<?            for (${typeNamespace}::${typeName}* value : ${attributeName}${collectionIvar}) {
                 delete value;
             }
 ?>
@@ -237,7 +241,8 @@ bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uin
         if attribute.typeIsClass {
             string typeNamespace = attribute.typeNamespace;
             SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
-            if attributeClass.descendantClasses.count > 0 {
+            bool hasDescendants = attributeClass.descendantClasses.count > 0;
+            if hasDescendants {
 <?${indent}            if (*dataIndex+sizeof(uint32_t) > dataLength) {
 ${indent}                return false;
 ${indent}            }
@@ -260,21 +265,25 @@ ${indent}                    break;
 ${indent}                    return false;
 ${indent}            }
 ?>
-            } else {
-<?${indent}            ${typeNamespace}::${typeName}* createdObject = new ${typeNamespace}::${typeName}();
-?>
             }
             
-            string objectName;
             if requiresList {
                 string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                if hasDescendants {
 <?${indent}            ${attributeName}${collectionIvar}.push_back(createdObject);
 ?>
-            } else {
+                } else {
+<?${indent}            ${typeNamespace}::${typeName}& createdObject = ${attributeName}${collectionIvar}.emplace_back();
+?>
+                }
+            } else if hasDescendants {
 <?${indent}            ${attributeName} = createdObject;
 ?>
             }
-<?${indent}            if (!createdObject->initializeObjectWithData(data, dataIndex, dataLength)) {
+            string objectToMember = hasDescendants ? "->" : ".";
+            string objectName = requiresList ? "createdObject" : attributeName;
+            
+<?${indent}            if (!${objectName}${objectToMember}initializeObjectWithData(data, dataIndex, dataLength)) {
 ${indent}                return false;
 ${indent}            }
 ?>
@@ -415,18 +424,22 @@ ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint
         
         // Specify the variable value.
         string attributeVar = requiresList ? attributeName + "Value" : attributeName;
+        string typeName = attribute.typeName;
+        string typeNamespace = attribute.typeNamespace;
+        bool hasDescendants = attribute.typeIsClass && schemas[typeNamespace].classes[typeName].descendantClasses.count > 0;
         if requiresList {
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-            <?${indent}    for (auto ${attributeVar} : ${attributeName}${collectionIvar}) {
+            string referenceType = attribute.typeIsClass && !hasDescendants ? "&" : "";
+<?${indent}    for (auto${referenceType} ${attributeVar} : ${attributeName}${collectionIvar}) {
 ?>
             indent += "    ";
         }
         
         if attribute.typeIsClass {
-            <?${indent}    ${attributeVar}->writeObjectToVector(data);
+            string objectToMember = hasDescendants ? "->" : ".";
+<?${indent}    ${attributeVar}${objectToMember}writeObjectToVector(data);
 ?>
         } else {  // Primitives.
-            string typeName = attribute.typeName;
             if attribute.typeIsEnum ||  // Enums are uint32_t.
                typeName == "int32" ||
                typeName == "uint32" ||
@@ -505,7 +518,8 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
         string functionName;
         bool isString = attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID";
         bool isList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
-        string ivarPrefix = isList ? "&" : "";
+        bool isInlineClass = attribute.typeIsClass && schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count == 0;
+        string ivarPrefix = isList || isInlineClass ? "&" : "";
         string ivarSuffix = "";
         if isList || attribute.typeIsClass {
             functionName = "MaPLPointer";
@@ -556,16 +570,13 @@ void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol prope
 ?>
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
-        if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
-            continue;  // Arrays are readonly.
+        if attribute.typeIsClass || attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
+            continue;  // Arrays and classes are readonly.
         }
         string attributeName = attribute.name;
         string typeDescriptor;
         string typeCast = "";
-        if attribute.typeIsClass {
-            typeDescriptor = "pointer";
-            typeCast = "(" + schemaNamespace + "::" + attribute.typeName + "*)";
-        } else if attribute.typeIsUIDReference || attribute.typeName == "UID" {
+        if attribute.typeIsUIDReference || attribute.typeName == "UID" {
             typeDescriptor = "string";
         } else if attribute.typeIsEnum {
             typeDescriptor = "uint32";

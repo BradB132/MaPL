@@ -57,6 +57,22 @@ if !useMaPLInterface {
         }
     }
 }
+for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
+    SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if attribute.typeIsClass {
+        // Hack: `outParameters` is intended as a means of passing objects between scripts,
+        // but here it's used to flag if we've already seen this class.
+        string typeName = attribute.typeName;
+        string typeNamespace = attribute.typeNamespace;
+        string classKey = "include:" + typeNamespace + "::" + typeName;
+        SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
+        if outParameters[classKey] == NULL && attributeClass.descendantClasses.count == 0 {
+            <?#include "${typeNamespace}/${typeName}.hpp"
+?>
+            outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
+        }
+    }
+}
 if useMaPLGeneratorSerialized && schemaClass.annotations.contains("root") {
     <?#include <filesystem>
 ?>
@@ -66,24 +82,21 @@ bool firstForwardDeclaration = true;
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
     if attribute.typeIsClass {
-        bool alreadyDeclaredType = false;
-        for uint32 innerAttrIndex = 0; innerAttrIndex < attrIndex; innerAttrIndex++ {
-            SchemaAttribute innerAttribute = schemaClass.attributes[innerAttrIndex];
-            if innerAttribute.typeName == attribute.typeName && innerAttribute.typeNamespace == attribute.typeNamespace {
-                alreadyDeclaredType = true;
-                break;
-            }
-        }
-        if !alreadyDeclaredType {
+        // Hack: `outParameters` is intended as a means of passing objects between scripts,
+        // but here it's used to flag if we've already seen this class.
+        string typeName = attribute.typeName;
+        string typeNamespace = attribute.typeNamespace;
+        string classKey = "include:" + typeNamespace + "::" + typeName;
+        SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
+        if outParameters[classKey] == NULL && attributeClass.descendantClasses.count > 0 {
             if firstForwardDeclaration {
                 <?
 ?>
                 firstForwardDeclaration = false;
             }
-            string typeNamespace = attribute.typeNamespace;
-            string typeName = attribute.typeName;
             <?namespace ${typeNamespace} { class ${typeName}; }
 ?>
+            outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
         }
     }
 }
@@ -132,7 +145,10 @@ if schemaClass.attributes.count > 0 {
         if attribute.typeIsUIDReference {
             dataType = "std::string";
         } else if attribute.typeIsClass {
-            dataType = attribute.typeNamespace + "::" + attribute.typeName + "*";
+            dataType = attribute.typeNamespace + "::" + attribute.typeName;
+            if schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count > 0 {
+                dataType += "*";
+            }
         } else if attribute.typeIsEnum {
             dataType = attribute.typeNamespace + "::" + attribute.typeName;
         } else if attribute.typeName == "float32" {
