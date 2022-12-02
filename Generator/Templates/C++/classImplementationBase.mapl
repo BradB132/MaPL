@@ -193,48 +193,50 @@ bool ${schemaNamespace}::${className}_generated::initializeObjectWithData(uint8_
 }
 
 bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) {
-    if (*dataIndex+sizeof(uint32_t) > dataLength) {
+?>
+    if schemaClass.attributes.count > 0 {
+<?    if (*dataIndex+sizeof(uint32_t) > dataLength) {
         return false;
     }
     uint32_t nextAttributeName = *((uint32_t*)(data+*dataIndex));
     *dataIndex += sizeof(uint32_t);
     switch (nextAttributeName) {
 ?>
-    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
-        SchemaAttribute attribute = schemaClass.attributes[i];
-        string attributeName = attribute.name;
+        for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+            SchemaAttribute attribute = schemaClass.attributes[i];
+            string attributeName = attribute.name;
 <?        case BYTECODE_${schemaNamespace}_${className}_${attributeName}: {
 ?>
-        // Handle lists of values.
-        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
-        string indent = requiresList ? "    " : "";
-        if requiresList {
-            string listLength;
-            if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
+            // Handle lists of values.
+            bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
+            string indent = requiresList ? "    " : "";
+            if requiresList {
+                string listLength;
+                if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
 <?            if (*dataIndex+sizeof(uint32_t) > dataLength) {
                 return false;
             }
             uint32_t ${attributeName}Length = *((uint32_t*)(data+*dataIndex));
             *dataIndex += sizeof(uint32_t);
 ?>
-                listLength = attributeName + "Length";
-            } else {  // Fixed length
-                listLength = (string)attribute.minOccurrences;
-            }
-            string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                    listLength = attributeName + "Length";
+                } else {  // Fixed length
+                    listLength = (string)attribute.minOccurrences;
+                }
+                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
 <?            ${attributeName}${collectionIvar}.clear();
             ${attributeName}${collectionIvar}.reserve(${listLength});
             for (uint32_t ${attributeName}Index = 0; ${attributeName}Index < ${listLength}; ${attributeName}Index++) {
 ?>
-        }
+            }
 
-        // Read ivar values.
-        string typeName = attribute.typeName;
-        if attribute.typeIsClass {
-            string typeNamespace = attribute.typeNamespace;
-            SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
-            bool hasDescendants = attributeClass.descendantClasses.count > 0;
-            if hasDescendants {
+            // Read ivar values.
+            string typeName = attribute.typeName;
+            if attribute.typeIsClass {
+                string typeNamespace = attribute.typeNamespace;
+                SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
+                bool hasDescendants = attributeClass.descendantClasses.count > 0;
+                if hasDescendants {
 <?${indent}            if (*dataIndex+sizeof(uint32_t) > dataLength) {
 ${indent}                return false;
 ${indent}            }
@@ -244,116 +246,118 @@ ${indent}                case BYTECODE_${typeNamespace}_${typeName}:
 ${indent}                    createdObject = new ${typeNamespace}::${typeName}();
 ${indent}                    break;
 ?>
-                for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
-                    SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
-                    string descendantNamespace = descendant.namespace;
-                    string descendantName = descendant.name;
+                    for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
+                        SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
+                        string descendantNamespace = descendant.namespace;
+                        string descendantName = descendant.name;
 <?${indent}                case BYTECODE_${descendantNamespace}_${descendantName}:
 ${indent}                    createdObject = new ${descendantNamespace}::${descendantName}();
 ${indent}                    break;
 ?>
-                }
+                    }
 <?${indent}                default:
 ${indent}                    return false;
 ${indent}            }
 ?>
-            }
-            
-            if requiresList {
-                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-                if hasDescendants {
+                }
+                
+                if requiresList {
+                    string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                    if hasDescendants {
 <?${indent}            ${attributeName}${collectionIvar}.push_back(createdObject);
 ?>
-                } else {
+                    } else {
 <?${indent}            ${typeNamespace}::${typeName}& createdObject = ${attributeName}${collectionIvar}.emplace_back();
 ?>
-                }
-            } else if hasDescendants {
+                    }
+                } else if hasDescendants {
 <?${indent}            ${attributeName} = createdObject;
 ?>
-            }
-            string objectToMember = hasDescendants ? "->" : ".";
-            string objectName = requiresList ? "createdObject" : attributeName;
-            
+                }
+                string objectToMember = hasDescendants ? "->" : ".";
+                string objectName = requiresList ? "createdObject" : attributeName;
+                
 <?${indent}            if (!${objectName}${objectToMember}initializeObjectWithData(data, dataIndex, dataLength)) {
 ${indent}                return false;
 ${indent}            }
 ?>
-        } else if attribute.typeIsUIDReference ||
-                  typeName == "string" ||
-                  typeName == "UID" {
+            } else if attribute.typeIsUIDReference ||
+                      typeName == "string" ||
+                      typeName == "UID" {
 <?${indent}            size_t stringLength = strlen((char*)(data+*dataIndex))+1;
 ${indent}            if (*dataIndex+stringLength > dataLength) {
 ${indent}                return false;
 ${indent}            }
 ?>
-            if requiresList {
-                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                if requiresList {
+                    string collectionIvar = useMaPLInterface ? "._backingVector" : "";
 <?${indent}            ${attributeName}${collectionIvar}.push_back((char*)(data+*dataIndex));
 ?>
-            } else {
+                } else {
 <?${indent}            ${attributeName} = (char*)(data+*dataIndex);
 ?>
-            }
+                }
 <?${indent}            *dataIndex += stringLength;
 ?>
-        } else {
-            string primitiveType;
-            if typeName == "int32" {
-                primitiveType = "int32_t";
-            } else if typeName == "uint32" {
-                primitiveType = "uint32_t";
-            } else if typeName == "int64" {
-                primitiveType = "int64_t";
-            } else if typeName == "uint64" {
-                primitiveType = "uint64_t";
-            } else if typeName == "float32" {
-                primitiveType = "float";
-            } else if typeName == "float64" {
-                primitiveType = "double";
-            } else if typeName == "bool" || typeName == "char" {
-                primitiveType = "uint8_t";
-            } else if attribute.typeIsEnum {
-                primitiveType = attribute.typeNamespace + "::" + typeName;
-            }
+            } else {
+                string primitiveType;
+                if typeName == "int32" {
+                    primitiveType = "int32_t";
+                } else if typeName == "uint32" {
+                    primitiveType = "uint32_t";
+                } else if typeName == "int64" {
+                    primitiveType = "int64_t";
+                } else if typeName == "uint64" {
+                    primitiveType = "uint64_t";
+                } else if typeName == "float32" {
+                    primitiveType = "float";
+                } else if typeName == "float64" {
+                    primitiveType = "double";
+                } else if typeName == "bool" || typeName == "char" {
+                    primitiveType = "uint8_t";
+                } else if attribute.typeIsEnum {
+                    primitiveType = attribute.typeNamespace + "::" + typeName;
+                }
 <?${indent}            if (*dataIndex+sizeof(${primitiveType}) > dataLength) {
 ${indent}                return false;
 ${indent}            }
 ?>
-            if requiresList {
-                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                if requiresList {
+                    string collectionIvar = useMaPLInterface ? "._backingVector" : "";
 <?${indent}            ${attributeName}${collectionIvar}.push_back(*((${primitiveType}*)(data+*dataIndex)));
 ?>
-            } else {
+                } else {
 <?${indent}            ${attributeName} = *((${primitiveType}*)(data+*dataIndex));
 ?>
-            }
+                }
 <?${indent}            *dataIndex += sizeof(${primitiveType});
 ?>
-        }
+            }
 
-        if requiresList {
+            if requiresList {
 <?            }
 ?>
-        }
+            }
 <?        }
             return true;
 ?>
-    }
+        }
 <?        default:
             *dataIndex -= sizeof(uint32_t);
+            break;
+    }
 ?>
+    }
     if schemaClass.superclass != NULL {
         string superclassName = schemaClass.superclass.name;
         string superclassNamespace = schemaClass.superclass.namespace;
-<?            return ${superclassNamespace}::${superclassName}::initializeAttributeWithData(data, dataIndex, dataLength);
+<?    return ${superclassNamespace}::${superclassName}::initializeAttributeWithData(data, dataIndex, dataLength);
 ?>
     } else {
-<?            return false;
+<?    return false;
 ?>
     }
-<?    }
-}
+<?}
 
 void ${schemaNamespace}::${className}_generated::writeObjectToVector(std::vector<uint8_t> &data) {
     uint32_t bytecodeSignifier = BYTECODE_${schemaNamespace}_${className};
@@ -600,101 +604,122 @@ if useMaPLInterface {
  * MaPLInterface.
  */
 MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
-    if (argc > 0) {
+?>
+    if schemaClass.attributes.count > 0 {
+<?    if (argc > 0) {
         return MaPLUninitialized();
     }
     switch (functionSymbol) {
 ?>
-    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
-        SchemaAttribute attribute = schemaClass.attributes[i];
-        string attributeName = attribute.name;
-        string functionName;
-        bool isString = attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID";
-        bool isList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
-        bool isInlineClass = attribute.typeIsClass && schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count == 0;
-        string ivarPrefix = isList || isInlineClass ? "&" : "";
-        string ivarSuffix = "";
-        if isList || attribute.typeIsClass {
-            functionName = "MaPLPointer";
-        } else if isString {
-            functionName = "MaPLStringByReference";
-            ivarSuffix = ".c_str()";
-        } else if attribute.typeIsEnum || attribute.typeName == "uint32" {
-            functionName = "MaPLUint32";
-        } else if attribute.typeName == "int32" {
-            functionName = "MaPLInt32";
-        } else if attribute.typeName == "bool" {
-            functionName = "MaPLBool";
-        } else if attribute.typeName == "int64" {
-            functionName = "MaPLInt64";
-        } else if attribute.typeName == "uint64" {
-            functionName = "MaPLUint64";
-        } else if attribute.typeName == "float32" {
-            functionName = "MaPLFloat32";
-        } else if attribute.typeName == "float64" {
-            functionName = "MaPLFloat64";
-        } else { // Char.
-            functionName = "MaPLChar";
-        }
+        for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+            SchemaAttribute attribute = schemaClass.attributes[i];
+            string attributeName = attribute.name;
+            string functionName;
+            bool isString = attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID";
+            bool isList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
+            bool isInlineClass = attribute.typeIsClass && schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count == 0;
+            string ivarPrefix = isList || isInlineClass ? "&" : "";
+            string ivarSuffix = "";
+            if isList || attribute.typeIsClass {
+                functionName = "MaPLPointer";
+            } else if isString {
+                functionName = "MaPLStringByReference";
+                ivarSuffix = ".c_str()";
+            } else if attribute.typeIsEnum || attribute.typeName == "uint32" {
+                functionName = "MaPLUint32";
+            } else if attribute.typeName == "int32" {
+                functionName = "MaPLInt32";
+            } else if attribute.typeName == "bool" {
+                functionName = "MaPLBool";
+            } else if attribute.typeName == "int64" {
+                functionName = "MaPLInt64";
+            } else if attribute.typeName == "uint64" {
+                functionName = "MaPLUint64";
+            } else if attribute.typeName == "float32" {
+                functionName = "MaPLFloat32";
+            } else if attribute.typeName == "float64" {
+                functionName = "MaPLFloat64";
+            } else { // Char.
+                functionName = "MaPLChar";
+            }
 <?        case ${symbolPrefix}_${schemaNamespace}_${className}_${attributeName}:
             return ${functionName}(${ivarPrefix}${attributeName}${ivarSuffix});
 ?>
-    }
+        }
 <?        default:
+            break;
+    }
 ?>
+    }
+    
     if schemaClass.superclass == NULL {
-<?            return MaPLUninitialized();
+<?    return MaPLUninitialized();
 ?>
     } else {
         string superclassNamespace = schemaClass.superclass.namespace;
         string superclassName = schemaClass.superclass.name;
-<?            return ${superclassNamespace}::${superclassName}::invokeFunction(functionSymbol, argv, argc);
+<?    return ${superclassNamespace}::${superclassName}::invokeFunction(functionSymbol, argv, argc);
 ?>
     }
-<?    }
-}
+<?}
 
 MaPLParameter ${schemaNamespace}::${className}_generated::invokeSubscript(MaPLParameter &index) const {
     return MaPLUninitialized();  // This object doesn't respond to subscripts.
 }
 
 void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol propertySymbol, MaPLParameter &assignedValue) {
-    switch (propertySymbol) {
 ?>
+    bool hasWriteableProperties = false;
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
-        if attribute.typeIsClass || attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
-            continue;  // Arrays and classes are readonly.
+        // Arrays and classes are readonly.
+        if !attribute.typeIsClass && attribute.minOccurrences == 1 && attribute.maxOccurrences == 1 {
+            hasWriteableProperties = true;
+            break;
         }
-        string attributeName = attribute.name;
-        string typeDescriptor;
-        string typeCast = "";
-        if attribute.typeIsUIDReference || attribute.typeName == "UID" {
-            typeDescriptor = "string";
-        } else if attribute.typeIsEnum {
-            typeDescriptor = "uint32";
-            typeCast = "(" + schemaNamespace + "::" + attribute.typeName + ")";
-        } else if attribute.typeName == "bool" {
-            typeDescriptor = "boolean";
-        } else {
-            // All other types match the `typeName`.
-            typeDescriptor = attribute.typeName;
-        }
+    }
+    if hasWriteableProperties {
+<?    switch (propertySymbol) {
+?>
+        for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+            SchemaAttribute attribute = schemaClass.attributes[i];
+            if attribute.typeIsClass || attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
+                continue;  // Arrays and classes are readonly.
+            }
+            string attributeName = attribute.name;
+            string typeDescriptor;
+            string typeCast = "";
+            if attribute.typeIsUIDReference || attribute.typeName == "UID" {
+                typeDescriptor = "string";
+            } else if attribute.typeIsEnum {
+                typeDescriptor = "uint32";
+                typeCast = "(" + schemaNamespace + "::" + attribute.typeName + ")";
+            } else if attribute.typeName == "bool" {
+                typeDescriptor = "boolean";
+            } else {
+                // All other types match the `typeName`.
+                typeDescriptor = attribute.typeName;
+            }
 <?        case ${symbolPrefix}_${schemaNamespace}_${className}_${attributeName}:
             if (assignedValue.dataType != MaPLDataType_${typeDescriptor}) {
                 return;
             }
             ${attributeName} = ${typeCast}assignedValue.${typeDescriptor}Value;
 ?>
-    }
+        }
 <?        default:
             break;
     }
 ?>
+    }
+
     if schemaClass.superclass != NULL {
         string superclassNamespace = schemaClass.superclass.namespace;
         string superclassName = schemaClass.superclass.name;
 <?    return ${superclassNamespace}::${superclassName}::assignProperty(propertySymbol, assignedValue);
+?>
+    } else if !hasWriteableProperties {
+<?    // No-op.
 ?>
     }
 <?}
