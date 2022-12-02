@@ -66,7 +66,9 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
         string typeNamespace = attribute.typeNamespace;
         string classKey = "include:" + typeNamespace + "::" + typeName;
         SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
-        if outParameters[classKey] == NULL && attributeClass.descendantClasses.count == 0 {
+        if outParameters[classKey] == NULL &&
+           attributeClass.descendantClasses.count == 0 &&
+           attribute.defaultValues.count == 0 {
             <?#include "${typeNamespace}/${typeName}.hpp"
 ?>
             outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
@@ -88,7 +90,8 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
         string typeNamespace = attribute.typeNamespace;
         string classKey = "include:" + typeNamespace + "::" + typeName;
         SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
-        if outParameters[classKey] == NULL && attributeClass.descendantClasses.count > 0 {
+        if outParameters[classKey] == NULL &&
+           (attributeClass.descendantClasses.count > 0 || attribute.defaultValues.count > 0) {
             if firstForwardDeclaration {
                 <?
 ?>
@@ -146,7 +149,8 @@ if schemaClass.attributes.count > 0 {
             dataType = "std::string";
         } else if attribute.typeIsClass {
             dataType = attribute.typeNamespace + "::" + attribute.typeName;
-            if schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count > 0 {
+            if schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count > 0 ||
+               attribute.defaultValues.count > 0 {
                 dataType += "*";
             }
         } else if attribute.typeIsEnum {

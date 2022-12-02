@@ -27,7 +27,8 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
         // Hack: `outParameters` is intended as a means of passing objects between scripts,
         // but here it's used to flag if we've already seen this class.
         SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
-        if outParameters[classKey] == NULL && attributeClass.descendantClasses.count > 0 {
+        if outParameters[classKey] == NULL &&
+           (attributeClass.descendantClasses.count > 0 || attribute.defaultValues.count > 0) {
             <?#include "${typeNamespace}/${typeName}.hpp"
 ?>
             outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
@@ -118,7 +119,8 @@ ${schemaNamespace}::${className}_generated::~${className}_generated() {
 ?>
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
-    if attribute.typeIsClass && schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count > 0 {
+    if attribute.typeIsClass &&
+       (schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count > 0 || attribute.defaultValues.count > 0) {
         string attributeName = attribute.name;
         if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
             string dataType = attribute.typeNamespace + "::" + attribute.typeName;
@@ -261,20 +263,21 @@ ${indent}            }
 ?>
                 }
                 
+                bool classIsPointer = hasDescendants || attribute.defaultValues.count > 0;
                 if requiresList {
                     string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-                    if hasDescendants {
+                    if classIsPointer {
 <?${indent}            ${attributeName}${collectionIvar}.push_back(createdObject);
 ?>
                     } else {
 <?${indent}            ${typeNamespace}::${typeName}& createdObject = ${attributeName}${collectionIvar}.emplace_back();
 ?>
                     }
-                } else if hasDescendants {
+                } else if classIsPointer {
 <?${indent}            ${attributeName} = createdObject;
 ?>
                 }
-                string objectToMember = hasDescendants ? "->" : ".";
+                string objectToMember = classIsPointer ? "->" : ".";
                 string objectName = requiresList ? "createdObject" : attributeName;
                 
 <?${indent}            if (!${objectName}${objectToMember}initializeObjectWithData(data, dataIndex, dataLength)) {
@@ -561,16 +564,16 @@ ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint
         string childVar = requiresList ? attributeName + "Value" : attributeName;
         string typeName = attribute.typeName;
         string typeNamespace = attribute.typeNamespace;
-        bool hasDescendants = schemas[typeNamespace].classes[typeName].descendantClasses.count > 0;
+        bool classIsPointer = schemas[typeNamespace].classes[typeName].descendantClasses.count > 0 || attribute.defaultValues.count > 0;
         if requiresList {
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-            string referenceType = hasDescendants ? "*" : "&";
+            string referenceType = classIsPointer ? "*" : "&";
 <?${indent}    for (${typeNamespace}::${typeName}${referenceType} ${childVar} : ${attributeName}${collectionIvar}) {
 ?>
             indent += "    ";
         }
         
-        string objectToMember = hasDescendants ? "->" : ".";
+        string objectToMember = classIsPointer ? "->" : ".";
 <?${indent}    ${childVar}${objectToMember}writeObjectToVector(data);
 ?>
         
@@ -617,7 +620,9 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
             string functionName;
             bool isString = attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID";
             bool isList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
-            bool isInlineClass = attribute.typeIsClass && schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count == 0;
+            bool isInlineClass = attribute.typeIsClass &&
+                                 schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count == 0 &&
+                                 attribute.defaultValues.count == 0;
             string ivarPrefix = isList || isInlineClass ? "&" : "";
             string ivarSuffix = "";
             if isList || attribute.typeIsClass {
