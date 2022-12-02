@@ -41,8 +41,13 @@ while schemaClass != NULL {
                 continue;
             }
             XMLAttribute xmlAttribute = node.attributes[schemaAttr.name];
+            // Elide this attribute if it matches the default value. Single strings might contain commas,
+            // in which case they should not be treated as a comma-separated list.
+            if schemaAttr.maxOccurrences == 1 && (schemaAttr.typeIsUIDReference || schemaAttr.typeName == "string" || schemaAttr.typeName == "UID") &&
+               schemaAttr.defaultValues.count == 1 && xmlAttribute.value == schemaAttr.defaultValues[0] {
+                continue;
+            }
             if xmlAttribute.values.count == schemaAttr.defaultValues.count {
-                // Elide this attribute if it matches the default value.
                 bool isDefaultValue = true;
                 for uint32 defaultIndex = 0; defaultIndex < schemaAttr.defaultValues.count; defaultIndex++ {
                     string defaultString = schemaAttr.defaultValues[defaultIndex];
@@ -83,31 +88,36 @@ while schemaClass != NULL {
                     }
                 }
             } else { // Primitive.
-                for uint32 valueIndex = 0; valueIndex < xmlAttribute.values.count; valueIndex++ {
-                    string primitiveValue = xmlAttribute.values[valueIndex];
-                    string primitiveTypeName = schemaAttr.typeName;
-                    if primitiveTypeName == "string" ||
-                       primitiveTypeName == "UID" ||
-                       schemaAttr.typeIsUIDReference {
-                       writeToFile(primitiveValue);
-                    } else if primitiveTypeName == "int32" {
-                        writeToFile((int32)primitiveValue);
-                    } else if primitiveTypeName == "uint32" {
-                        writeToFile((uint32)primitiveValue);
-                    } else if primitiveTypeName == "float32" {
-                        writeToFile((float32)primitiveValue);
-                    } else if primitiveTypeName == "int64" {
-                        writeToFile((int64)primitiveValue);
-                    } else if primitiveTypeName == "uint64" {
-                        writeToFile((uint64)primitiveValue);
-                    } else if primitiveTypeName == "float64" {
-                        writeToFile((float64)primitiveValue);
-                    } else if primitiveTypeName == "bool" {
-                        writeToFile((bool)primitiveValue);
-                    } else if primitiveTypeName == "char" {
-                        writeToFile((char)primitiveValue);
-                    } else {
-                        error("Unrecognized primitive type: '"+primitiveTypeName+"'.");
+                // Single strings might contain commas, in which case they should not be treated as a comma-separated list.
+                if schemaAttr.maxOccurrences == 1 && (schemaAttr.typeIsUIDReference || schemaAttr.typeName == "string" || schemaAttr.typeName == "UID") {
+                    writeToFile(xmlAttribute.value);
+                } else {
+                    for uint32 valueIndex = 0; valueIndex < xmlAttribute.values.count; valueIndex++ {
+                        string primitiveValue = xmlAttribute.values[valueIndex];
+                        string primitiveTypeName = schemaAttr.typeName;
+                        if primitiveTypeName == "string" ||
+                           primitiveTypeName == "UID" ||
+                           schemaAttr.typeIsUIDReference {
+                           writeToFile(primitiveValue);
+                        } else if primitiveTypeName == "int32" {
+                            writeToFile((int32)primitiveValue);
+                        } else if primitiveTypeName == "uint32" {
+                            writeToFile((uint32)primitiveValue);
+                        } else if primitiveTypeName == "float32" {
+                            writeToFile((float32)primitiveValue);
+                        } else if primitiveTypeName == "int64" {
+                            writeToFile((int64)primitiveValue);
+                        } else if primitiveTypeName == "uint64" {
+                            writeToFile((uint64)primitiveValue);
+                        } else if primitiveTypeName == "float64" {
+                            writeToFile((float64)primitiveValue);
+                        } else if primitiveTypeName == "bool" {
+                            writeToFile((bool)primitiveValue);
+                        } else if primitiveTypeName == "char" {
+                            writeToFile((char)primitiveValue);
+                        } else {
+                            error("Unrecognized primitive type: '"+primitiveTypeName+"'.");
+                        }
                     }
                 }
             }
