@@ -222,7 +222,8 @@ bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uin
                 listLength = (string)attribute.minOccurrences;
             }
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-<?            ${attributeName}${collectionIvar}.reserve(${listLength});
+<?            ${attributeName}${collectionIvar}.clear();
+            ${attributeName}${collectionIvar}.reserve(${listLength});
             for (uint32_t ${attributeName}Index = 0; ${attributeName}Index < ${listLength}; ${attributeName}Index++) {
 ?>
         }
