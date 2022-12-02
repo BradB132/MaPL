@@ -9,118 +9,141 @@ SchemaClass schemaClass = schemas[node.namespace].classes[node.name];
 string classDescriptor = "CLASS_" + schemaClass.namespace + "_" + schemaClass.name;
 writeToFile((uint32)hash(classDescriptor));
 
-while schemaClass != NULL {
-    // Iterating by schema attributes instead of node attributes
-    // allows this script to sort child nodes by sequence.
+// Traverse the inheritance hierarchy for all non-class attributes.
+while true {
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute schemaAttr = schemaClass.attributes[i];
+        if schemaAttr.typeIsClass {
+            continue;
+        }
+        if !node.attributes.contains(schemaAttr.name) {
+            // This must be an optional attribute, skip it.
+            continue;
+        }
+        
+        XMLAttribute xmlAttribute = node.attributes[schemaAttr.name];
+        // Elide this attribute if it matches the default value. Single strings might contain commas,
+        // in which case they should not be treated as a comma-separated list.
+        if schemaAttr.maxOccurrences == 1 && (schemaAttr.typeIsUIDReference || schemaAttr.typeName == "string" || schemaAttr.typeName == "UID") &&
+           schemaAttr.defaultValues.count == 1 && xmlAttribute.value == schemaAttr.defaultValues[0] {
+            continue;
+        }
+        if xmlAttribute.values.count == schemaAttr.defaultValues.count {
+            bool isDefaultValue = true;
+            for uint32 defaultIndex = 0; defaultIndex < schemaAttr.defaultValues.count; defaultIndex++ {
+                string defaultString = schemaAttr.defaultValues[defaultIndex];
+                string valueString = xmlAttribute.values[defaultIndex];
+                string typeName = schemaAttr.typeName;
+                bool isString = schemaAttr.typeIsUIDReference || schemaAttr.typeIsEnum || typeName == "string" || typeName == "UID";
+                if (isString && defaultString != valueString) ||
+                   (typeName == "int32" && (int32)defaultString != (int32)valueString) ||
+                   (typeName == "int64" && (int64)defaultString != (int64)valueString) ||
+                   (typeName == "uint32" && (uint32)defaultString != (uint32)valueString) ||
+                   (typeName == "uint64" && (uint64)defaultString != (uint64)valueString) ||
+                   (typeName == "float32" && (float32)defaultString != (float32)valueString) ||
+                   (typeName == "float64" && (float64)defaultString != (float64)valueString) ||
+                   (typeName == "char" && (char)defaultString != (char)valueString) ||
+                   (typeName == "bool" && (bool)defaultString != (bool)valueString) {
+                    isDefaultValue = false;
+                    break;
+                }
+            }
+            if isDefaultValue {
+                continue;
+            }
+        }
         
         string attributeDescriptor = "ATTRIBUTE_" + schemaClass.namespace + "_" + schemaClass.name + "_" + schemaAttr.name;
         uint32 attributeHash = (uint32)hash(attributeDescriptor);
+        writeToFile(attributeHash);
         
         // If the number of values is deterministic, no need to specify the length.
         bool mustSpecifyListLength = schemaAttr.minOccurrences != schemaAttr.maxOccurrences;
+        if mustSpecifyListLength {
+            writeToFile(xmlAttribute.values.count);
+        }
         
-        if schemaAttr.typeIsClass {
-            Array<XMLNode> children = node.childrenBySequence[schemaAttr.name];
-            if children == NULL || children.count == 0 {
-                // This sequence contains no child nodes, skip it.
-                continue;
-            }
-            writeToFile(attributeHash);
-            if mustSpecifyListLength {
-                writeToFile(children.count);
-            }
-            for uint32 childIndex = 0; childIndex < children.count; childIndex++ {
-                outParameters["node"] = children[childIndex];
-                executeMaPLScript("./appendNode.mapl");
-            }
-        } else {
-            if !node.attributes.contains(schemaAttr.name) {
-                // This must be an optional attribute, skip it.
-                continue;
-            }
-            XMLAttribute xmlAttribute = node.attributes[schemaAttr.name];
-            // Elide this attribute if it matches the default value. Single strings might contain commas,
-            // in which case they should not be treated as a comma-separated list.
-            if schemaAttr.maxOccurrences == 1 && (schemaAttr.typeIsUIDReference || schemaAttr.typeName == "string" || schemaAttr.typeName == "UID") &&
-               schemaAttr.defaultValues.count == 1 && xmlAttribute.value == schemaAttr.defaultValues[0] {
-                continue;
-            }
-            if xmlAttribute.values.count == schemaAttr.defaultValues.count {
-                bool isDefaultValue = true;
-                for uint32 defaultIndex = 0; defaultIndex < schemaAttr.defaultValues.count; defaultIndex++ {
-                    string defaultString = schemaAttr.defaultValues[defaultIndex];
-                    string valueString = xmlAttribute.values[defaultIndex];
-                    string typeName = schemaAttr.typeName;
-                    bool isString = schemaAttr.typeIsUIDReference || schemaAttr.typeIsEnum || typeName == "string" || typeName == "UID";
-                    if (isString && defaultString != valueString) ||
-                       (typeName == "int32" && (int32)defaultString != (int32)valueString) ||
-                       (typeName == "int64" && (int64)defaultString != (int64)valueString) ||
-                       (typeName == "uint32" && (uint32)defaultString != (uint32)valueString) ||
-                       (typeName == "uint64" && (uint64)defaultString != (uint64)valueString) ||
-                       (typeName == "float32" && (float32)defaultString != (float32)valueString) ||
-                       (typeName == "float64" && (float64)defaultString != (float64)valueString) ||
-                       (typeName == "char" && (char)defaultString != (char)valueString) ||
-                       (typeName == "bool" && (bool)defaultString != (bool)valueString) {
-                        isDefaultValue = false;
+        if schemaAttr.typeIsEnum {
+            SchemaEnum enum = schemas[schemaAttr.typeNamespace].enums[schemaAttr.typeName];
+            for uint32 valueIndex = 0; valueIndex < xmlAttribute.values.count; valueIndex++ {
+                string enumValue = xmlAttribute.values[valueIndex];
+                for uint32 caseIndex = 0; caseIndex < enum.cases.count; caseIndex++ {
+                    if enum.cases[caseIndex] == enumValue {
+                        writeToFile(caseIndex);
                         break;
                     }
                 }
-                if isDefaultValue {
-                    continue;
-                }
             }
-            
-            writeToFile(attributeHash);
-            if mustSpecifyListLength {
-                writeToFile(xmlAttribute.values.count);
-            }
-            if schemaAttr.typeIsEnum {
-                SchemaEnum enum = schemas[schemaAttr.typeNamespace].enums[schemaAttr.typeName];
+        } else { // Primitive.
+            // Single strings might contain commas, in which case they should not be treated as a comma-separated list.
+            if schemaAttr.maxOccurrences == 1 && (schemaAttr.typeIsUIDReference || schemaAttr.typeName == "string" || schemaAttr.typeName == "UID") {
+                writeToFile(xmlAttribute.value);
+            } else {
                 for uint32 valueIndex = 0; valueIndex < xmlAttribute.values.count; valueIndex++ {
-                    string enumValue = xmlAttribute.values[valueIndex];
-                    for uint32 caseIndex = 0; caseIndex < enum.cases.count; caseIndex++ {
-                        if enum.cases[caseIndex] == enumValue {
-                            writeToFile(caseIndex);
-                            break;
-                        }
-                    }
-                }
-            } else { // Primitive.
-                // Single strings might contain commas, in which case they should not be treated as a comma-separated list.
-                if schemaAttr.maxOccurrences == 1 && (schemaAttr.typeIsUIDReference || schemaAttr.typeName == "string" || schemaAttr.typeName == "UID") {
-                    writeToFile(xmlAttribute.value);
-                } else {
-                    for uint32 valueIndex = 0; valueIndex < xmlAttribute.values.count; valueIndex++ {
-                        string primitiveValue = xmlAttribute.values[valueIndex];
-                        string primitiveTypeName = schemaAttr.typeName;
-                        if primitiveTypeName == "string" ||
-                           primitiveTypeName == "UID" ||
-                           schemaAttr.typeIsUIDReference {
-                           writeToFile(primitiveValue);
-                        } else if primitiveTypeName == "int32" {
-                            writeToFile((int32)primitiveValue);
-                        } else if primitiveTypeName == "uint32" {
-                            writeToFile((uint32)primitiveValue);
-                        } else if primitiveTypeName == "float32" {
-                            writeToFile((float32)primitiveValue);
-                        } else if primitiveTypeName == "int64" {
-                            writeToFile((int64)primitiveValue);
-                        } else if primitiveTypeName == "uint64" {
-                            writeToFile((uint64)primitiveValue);
-                        } else if primitiveTypeName == "float64" {
-                            writeToFile((float64)primitiveValue);
-                        } else if primitiveTypeName == "bool" {
-                            writeToFile((bool)primitiveValue);
-                        } else if primitiveTypeName == "char" {
-                            writeToFile((char)primitiveValue);
-                        } else {
-                            error("Unrecognized primitive type: '"+primitiveTypeName+"'.");
-                        }
+                    string primitiveValue = xmlAttribute.values[valueIndex];
+                    string primitiveTypeName = schemaAttr.typeName;
+                    if primitiveTypeName == "string" ||
+                       primitiveTypeName == "UID" ||
+                       schemaAttr.typeIsUIDReference {
+                       writeToFile(primitiveValue);
+                    } else if primitiveTypeName == "int32" {
+                        writeToFile((int32)primitiveValue);
+                    } else if primitiveTypeName == "uint32" {
+                        writeToFile((uint32)primitiveValue);
+                    } else if primitiveTypeName == "float32" {
+                        writeToFile((float32)primitiveValue);
+                    } else if primitiveTypeName == "int64" {
+                        writeToFile((int64)primitiveValue);
+                    } else if primitiveTypeName == "uint64" {
+                        writeToFile((uint64)primitiveValue);
+                    } else if primitiveTypeName == "float64" {
+                        writeToFile((float64)primitiveValue);
+                    } else if primitiveTypeName == "bool" {
+                        writeToFile((bool)primitiveValue);
+                    } else if primitiveTypeName == "char" {
+                        writeToFile((char)primitiveValue);
+                    } else {
+                        error("Unrecognized primitive type: '"+primitiveTypeName+"'.");
                     }
                 }
             }
+        }
+    }
+    
+    // Iterate up the class hierarchy.
+    schemaClass = schemaClass.superclass;
+    if schemaClass == NULL {
+        break;
+    }
+}
+
+// Traverse the inheritance hierarchy for all class attributes.
+schemaClass = schemas[node.namespace].classes[node.name];
+while true {
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute schemaAttr = schemaClass.attributes[i];
+        if !schemaAttr.typeIsClass {
+            continue;
+        }
+        
+        Array<XMLNode> children = node.childrenBySequence[schemaAttr.name];
+        if children == NULL || children.count == 0 {
+            // This sequence contains no child nodes, skip it.
+            continue;
+        }
+        
+        string attributeDescriptor = "ATTRIBUTE_" + schemaClass.namespace + "_" + schemaClass.name + "_" + schemaAttr.name;
+        uint32 attributeHash = (uint32)hash(attributeDescriptor);
+        writeToFile(attributeHash);
+        
+        // If the number of values is deterministic, no need to specify the length.
+        bool mustSpecifyListLength = schemaAttr.minOccurrences != schemaAttr.maxOccurrences;
+        if mustSpecifyListLength {
+            writeToFile(children.count);
+        }
+        for uint32 childIndex = 0; childIndex < children.count; childIndex++ {
+            outParameters["node"] = children[childIndex];
+            executeMaPLScript("./appendNode.mapl");
         }
     }
     

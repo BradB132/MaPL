@@ -19,6 +19,7 @@ public:
     virtual bool initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) = 0;
     virtual void writeObjectToVector(std::vector<uint8_t> &data) = 0;
     virtual void writeAttributesToVector(std::vector<uint8_t> &data) = 0;
+    virtual void writeChildrenToVector(std::vector<uint8_t> &data) = 0;
 };
 
 ?>

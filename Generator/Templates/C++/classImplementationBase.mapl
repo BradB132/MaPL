@@ -359,16 +359,27 @@ void ${schemaNamespace}::${className}_generated::writeObjectToVector(std::vector
     uint32_t bytecodeSignifier = BYTECODE_${schemaNamespace}_${className};
     data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
     writeAttributesToVector(data);
+    writeChildrenToVector(data);
 }
 
 void ${schemaNamespace}::${className}_generated::writeAttributesToVector(std::vector<uint8_t> &data) {
 ?>
-    if schemaClass.attributes.count > 0 {
+    bool hasAttributes = false;
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        if !schemaClass.attributes[i].typeIsClass {
+            hasAttributes = true;
+            break;
+        }
+    }
+    if hasAttributes {
         <?    uint32_t bytecodeSignifier;
 ?>
     }
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
+        if attribute.typeIsClass {
+            continue;
+        }
         string attributeName = attribute.name;
         
         // Check this value against the default value. Elide if it matches the default.
@@ -418,58 +429,52 @@ ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint
         string attributeVar = requiresList ? attributeName + "Value" : attributeName;
         string typeName = attribute.typeName;
         string typeNamespace = attribute.typeNamespace;
-        bool hasDescendants = attribute.typeIsClass && schemas[typeNamespace].classes[typeName].descendantClasses.count > 0;
         if requiresList {
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-            string referenceType = attribute.typeIsClass && !hasDescendants ? "&" : "";
-<?${indent}    for (auto${referenceType} ${attributeVar} : ${attributeName}${collectionIvar}) {
+<?${indent}    for (auto ${attributeVar} : ${attributeName}${collectionIvar}) {
 ?>
             indent += "    ";
         }
         
-        if attribute.typeIsClass {
-            string objectToMember = hasDescendants ? "->" : ".";
-<?${indent}    ${attributeVar}${objectToMember}writeObjectToVector(data);
+        if attribute.typeIsEnum ||  // Enums are uint32_t.
+           typeName == "int32" ||
+           typeName == "uint32" ||
+           typeName == "float32" {
+            <?${indent}    data.insert(data.end(), { *((uint8_t *)&${attributeVar}), *((uint8_t *)&${attributeVar}+1), *((uint8_t *)&${attributeVar}+2), *((uint8_t *)&${attributeVar}+3) });
 ?>
-        } else {  // Primitives.
-            if attribute.typeIsEnum ||  // Enums are uint32_t.
-               typeName == "int32" ||
-               typeName == "uint32" ||
-               typeName == "float32" {
-                <?${indent}    data.insert(data.end(), { *((uint8_t *)&${attributeVar}), *((uint8_t *)&${attributeVar}+1), *((uint8_t *)&${attributeVar}+2), *((uint8_t *)&${attributeVar}+3) });
+        } else if typeName == "int64" ||
+                  typeName == "uint64" ||
+                  typeName == "float64" {
+            <?${indent}    data.insert(data.end(), { *((uint8_t *)&${attributeVar}), *((uint8_t *)&${attributeVar}+1), *((uint8_t *)&${attributeVar}+2), *((uint8_t *)&${attributeVar}+3), *((uint8_t *)&${attributeVar}+4), *((uint8_t *)&${attributeVar}+5), *((uint8_t *)&${attributeVar}+6), *((uint8_t *)&${attributeVar}+7) });
 ?>
-            } else if typeName == "int64" ||
-                      typeName == "uint64" ||
-                      typeName == "float64" {
-                <?${indent}    data.insert(data.end(), { *((uint8_t *)&${attributeVar}), *((uint8_t *)&${attributeVar}+1), *((uint8_t *)&${attributeVar}+2), *((uint8_t *)&${attributeVar}+3), *((uint8_t *)&${attributeVar}+4), *((uint8_t *)&${attributeVar}+5), *((uint8_t *)&${attributeVar}+6), *((uint8_t *)&${attributeVar}+7) });
+        } else if typeName == "bool" {
+            if attribute.defaultValues.count == 1 {
+                // In the case that there's exactly 1 default value, we know this is a single bool, which is not the same as the default.
+                // This means there's only a single value that it can be, which should be hard coded.
+                if (bool)attribute.defaultValues[0] {
+                    <?${indent}    data.push_back(0);
 ?>
-            } else if typeName == "bool" {
-                if attribute.defaultValues.count == 1 {
-                    // In the case that there's exactly 1 default value, we know this is a single bool, which is not the same as the default.
-                    // This means there's only a single value that it can be, which should be hard coded.
-                    if (bool)attribute.defaultValues[0] {
-                        <?${indent}    data.push_back(0);
-?>
-                    } else {
-                        <?${indent}    data.push_back(1);
-?>
-                    }
                 } else {
-                    <?${indent}    data.push_back(${attributeVar} ? 1 : 0);
+                    <?${indent}    data.push_back(1);
 ?>
                 }
-            } else if typeName == "char" {
-                <?${indent}    data.push_back(${attributeVar});
+            } else {
+                <?${indent}    data.push_back(${attributeVar} ? 1 : 0);
 ?>
-            } else if attribute.typeIsUIDReference ||
-                      typeName == "string" ||
-                      typeName == "UID" {
-                <?${indent}    for (size_t i = 0; i < ${attributeVar}.length(); i++) {
+            }
+        } else if typeName == "char" {
+            <?${indent}    data.push_back(${attributeVar});
+?>
+        } else if attribute.typeIsUIDReference ||
+                  typeName == "string" ||
+                  typeName == "UID" {
+            <?${indent}    for (size_t i = 0; i < ${attributeVar}.length(); i++) {
 ${indent}        data.push_back(${attributeVar}[i]);
 ${indent}    }
 ${indent}    data.push_back(0);
 ?>
-            }
+        } else {
+            error("Unrecognized type for attribute "+schemaNamespace+"::"+className+"::"+attributeName);
         }
         
         if requiresList {
@@ -486,6 +491,102 @@ ${indent}    data.push_back(0);
         string superclassName = schemaClass.superclass.name;
         string superclassNamespace = schemaClass.superclass.namespace;
         <?    ${superclassNamespace}::${superclassName}::writeAttributesToVector(data);
+?>
+    } else if !hasAttributes {
+        <?    // No-op.
+?>
+    }
+<?}
+
+void ${schemaNamespace}::${className}_generated::writeChildrenToVector(std::vector<uint8_t> &data) {
+?>
+    bool hasChildren = false;
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        if schemaClass.attributes[i].typeIsClass {
+            hasChildren = true;
+            break;
+        }
+    }
+    if hasChildren {
+        <?    uint32_t bytecodeSignifier;
+?>
+    }
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute attribute = schemaClass.attributes[i];
+        if !attribute.typeIsClass {
+            continue;
+        }
+        string attributeName = attribute.name;
+        
+        // Check this value against the default value. Elide if it matches the default.
+        // Lists with no default should be considered to have an empty default value.
+        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
+        bool hasDefaultValue = attribute.defaultValues.count > 0;
+        string indent = requiresList || hasDefaultValue ? "    " : "";
+        if requiresList || hasDefaultValue {
+            string defaultConditional;
+            if attribute.defaultValues.count == 1 {
+                defaultConditional = attributeName + " != " + attribute.defaultValues[0];
+            } else {
+                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                uint32 defaultListCount = hasDefaultValue ? attribute.defaultValues.count : 0;
+                defaultConditional = attributeName + collectionIvar + ".size() != " + (string)defaultListCount;
+                for uint32 defaultIndex = 0; defaultIndex < attribute.defaultValues.count; defaultIndex++ {
+                    defaultConditional += "\n        || " + attributeName + collectionIvar + "[" + (string)defaultIndex + "] != " + attribute.defaultValues[defaultIndex];
+                }
+            }
+<?    if (${defaultConditional}) {
+?>
+        }
+        
+        // Specify which child is being written.
+<?${indent}    bytecodeSignifier = BYTECODE_${schemaNamespace}_${className}_${attributeName};
+${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
+?>
+        
+        // Specify the length if this is a list of variable length.
+        if attribute.minOccurrences != attribute.maxOccurrences {
+            // Specify the length of this list.
+            string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+            <?${indent}    bytecodeSignifier = (uint32_t)${attributeName}${collectionIvar}.size();
+${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint8_t *)&bytecodeSignifier+1), *((uint8_t *)&bytecodeSignifier+2), *((uint8_t *)&bytecodeSignifier+3) });
+?>
+        }
+        
+        // Specify the child value.
+        string childVar = requiresList ? attributeName + "Value" : attributeName;
+        string typeName = attribute.typeName;
+        string typeNamespace = attribute.typeNamespace;
+        bool hasDescendants = schemas[typeNamespace].classes[typeName].descendantClasses.count > 0;
+        if requiresList {
+            string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+            string referenceType = hasDescendants ? "*" : "&";
+<?${indent}    for (${typeNamespace}::${typeName}${referenceType} ${childVar} : ${attributeName}${collectionIvar}) {
+?>
+            indent += "    ";
+        }
+        
+        string objectToMember = hasDescendants ? "->" : ".";
+<?${indent}    ${childVar}${objectToMember}writeObjectToVector(data);
+?>
+        
+        if requiresList {
+            <?${indent}}
+?>
+        }
+        
+        if requiresList || hasDefaultValue {
+            <?    }
+?>
+        }
+    }
+    if schemaClass.superclass != NULL {
+        string superclassName = schemaClass.superclass.name;
+        string superclassNamespace = schemaClass.superclass.namespace;
+        <?    ${superclassNamespace}::${superclassName}::writeChildrenToVector(data);
+?>
+    } else if !hasChildren {
+        <?    // No-op.
 ?>
     }
 <?}
