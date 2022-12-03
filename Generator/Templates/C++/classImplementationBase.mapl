@@ -238,6 +238,7 @@ bool ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uin
                 string typeNamespace = attribute.typeNamespace;
                 SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
                 bool hasDescendants = attributeClass.descendantClasses.count > 0;
+                bool classIsPointer = hasDescendants || attribute.defaultValues.count > 0;
                 if hasDescendants {
 <?${indent}            if (*dataIndex+sizeof(uint32_t) > dataLength) {
 ${indent}                return false;
@@ -261,9 +262,11 @@ ${indent}                    break;
 ${indent}                    return false;
 ${indent}            }
 ?>
+                } else if classIsPointer {
+<?${indent}            ${typeNamespace}::${typeName}* createdObject = new ${typeNamespace}::${typeName}();
+?>
                 }
                 
-                bool classIsPointer = hasDescendants || attribute.defaultValues.count > 0;
                 if requiresList {
                     string collectionIvar = useMaPLInterface ? "._backingVector" : "";
                     if classIsPointer {
