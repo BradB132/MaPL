@@ -65,8 +65,7 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
             SchemaEnum enum = schema.enums[enumIndex];
             string enumName = enum.name;
             for uint32 enumCaseIndex = 0; enumCaseIndex < enum.cases.count; enumCaseIndex++ {
-                string enumCase = enum.cases[enumCaseIndex];
-                <?#global readonly uint32 ${schemaNamespace}_${enumName}_${enumCase};
+                <?#global readonly uint32 ${schemaNamespace}_${enumName}_${enum.cases[enumCaseIndex]};
 ?>
             }
             <?
@@ -87,7 +86,6 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
 ?>
             for uint32 attributeIndex = 0; attributeIndex < class.attributes.count; attributeIndex++ {
                 SchemaAttribute attribute = class.attributes[attributeIndex];
-                string attributeName = attribute.name;
                 string attributeType;
                 if attribute.typeIsUIDReference || attribute.typeName == "UID" {
                     attributeType = "string";
@@ -104,10 +102,9 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
                     attributeType = arrayQualifier + "Array<" + attributeType + ">";
                 }
                 string attributeQualifier = isList || attribute.typeIsClass ? "readonly " : "";
-                <?    ${attributeQualifier}${attributeType} ${attributeName};?>
+                <?    ${attributeQualifier}${attributeType} ${attribute.name};?>
                 if attribute.typeIsUIDReference {
-                    string typeName = attribute.typeName;
-                    <?  // References a UID on an object of type ${schemaNamespace}_${typeName}.?>
+                    <?  // References a UID on an object of type ${schemaNamespace}_${attribute.typeName}.?>
                 } else if attribute.typeName == "UID" {
                     <?  // UID.?>
                 }

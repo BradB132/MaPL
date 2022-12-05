@@ -19,9 +19,7 @@ if schema.enums.count > 0 {
 }
 
 for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
-    SchemaClass schemaClass = schema.classes[classIndex];
-    string className = schemaClass.name;
-    <?#include "${schemaNamespace}/${className}.hpp"
+    <?#include "${schemaNamespace}/${schema.classes[classIndex].name}.hpp"
 ?>
 }
 

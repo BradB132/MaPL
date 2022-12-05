@@ -183,17 +183,8 @@ void MaPLFile::compileChildNodes(antlr4::ParserRuleContext *node, const MaPLType
 
 void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expectedType, MaPLBuffer *currentBuffer) {
     switch (node->getRuleIndex()) {
-        case MaPLParser::RuleStatement: {
-            MaPLParser::StatementContext *statement = (MaPLParser::StatementContext *)node;
-            antlr4::tree::TerminalNode *metadata = statement->METADATA();
-            if (metadata) {
-                currentBuffer->appendInstruction(MaPLInstruction_metadata);
-                std::string metadataString = metadata->getText();
-                currentBuffer->appendString(metadataString.substr(2, metadataString.length()-4), this, statement->start);
-            } else {
-                compileChildNodes(node, expectedType, currentBuffer);
-            }
-        }
+        case MaPLParser::RuleStatement:
+            compileChildNodes(node, expectedType, currentBuffer);
             break;
         case MaPLParser::RuleImperativeStatement: {
             MaPLParser::ImperativeStatementContext *statement = (MaPLParser::ImperativeStatementContext *)node;
@@ -232,6 +223,61 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
             } else {
                 compileChildNodes(node, expectedType, currentBuffer);
+            }
+        }
+            break;
+        case MaPLParser::RuleMetadataStatement: {
+            MaPLParser::MetadataStatementContext *metadataStatement = (MaPLParser::MetadataStatementContext *)node;
+            
+            // Metadata contains one or more printable sections (literal strings or expressions).
+            // Due to complexities with getting the lexer to correctly understand this syntax,
+            // literal strings are not captured as tokens directly, but rather inferred by the gaps
+            // between the other 'metadata tokens'. Do a first pass to count all non-empty strings.
+            MaPLParameterCount sections = 0;
+            antlr4::Token *previousToken = NULL;
+            for (antlr4::Token *token : metadataStatement->metadataTokens) {
+                if (previousToken) {
+                    if (token->getType() == MaPLParser::SCOPE_CLOSE) {
+                        // This is an expression, which always requires a section.
+                        sections++;
+                    } else {
+                        // This is a literal string, which requires a section only when length > 0.
+                        size_t textStartIndex = previousToken->getStopIndex();
+                        size_t textEndIndex = token->getStartIndex();
+                        sections += (textEndIndex - textStartIndex) > 1 ? 1 : 0;
+                    }
+                }
+                previousToken = token;
+            }
+            currentBuffer->appendInstruction(MaPLInstruction_metadata);
+            currentBuffer->appendBytes(&sections, sizeof(MaPLParameterCount));
+            
+            previousToken = NULL;
+            size_t expressionIndex = 0;
+            for (antlr4::Token *token : metadataStatement->metadataTokens) {
+                if (previousToken) {
+                    if (token->getType() == MaPLParser::SCOPE_CLOSE) {
+                        MaPLParser::ExpressionContext *expression = metadataStatement->expression(expressionIndex);
+                        expressionIndex++;
+                        
+                        // This is an expression, append it and cast to string if needed.
+                        MaPLType expressionType = dataTypeForExpression(expression);
+                        if (expressionType.primitiveType != MaPLPrimitiveType_String) {
+                            currentBuffer->appendInstruction(MaPLInstruction_string_typecast);
+                        }
+                        compileNode(expression, expressionType, currentBuffer);
+                    } else {
+                        // This is a literal string, which requires a section only when length > 0.
+                        size_t textStartIndex = previousToken->getStopIndex();
+                        size_t textEndIndex = token->getStartIndex();
+                        if ((textEndIndex - textStartIndex) > 1) {
+                            std::string metadataText = token->getInputStream()->getText(antlr4::misc::Interval(textStartIndex+1, textEndIndex-1));
+                            currentBuffer->appendInstruction(MaPLInstruction_string_literal);
+                            currentBuffer->appendString(metadataText, this, previousToken);
+                        }
+                    }
+                }
+                previousToken = token;
             }
         }
             break;

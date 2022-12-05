@@ -163,8 +163,7 @@ if hasEnum {
             SchemaEnum enum = schema.enums[i];
             string enumName = enum.name;
             for uint32 j = 0; j < enum.cases.count; j++ {
-                string case = enum.cases[j];
-<?        case ${symbolPrefix}_GLOBAL_${namespace}_${enumName}_${case}:
+<?        case ${symbolPrefix}_GLOBAL_${namespace}_${enumName}_${enum.cases[j]}:
             return MaPLUint32(${j});
 ?>
             }

@@ -182,6 +182,12 @@ MaPLBytecodeLength readCursorMove(MaPLExecutionContext *context) {
     return move;
 }
 
+MaPLParameterCount readParameterCount(MaPLExecutionContext *context) {
+    MaPLParameterCount parameterCount = *((MaPLParameterCount *)(context->scriptBuffer+context->cursorPosition));
+    context->cursorPosition += sizeof(MaPLParameterCount);
+    return parameterCount;
+}
+
 MaPLSymbol readSymbol(MaPLExecutionContext *context) {
     MaPLSymbol symbol = *((MaPLSymbol *)(context->scriptBuffer+context->cursorPosition));
     context->cursorPosition += sizeof(MaPLSymbol);
@@ -251,8 +257,7 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     MaPLSymbol symbol = readSymbol(context);
  
     // Create the list of parameters.
-    MaPLParameterCount paramCount = *((MaPLParameterCount *)(context->scriptBuffer+context->cursorPosition));
-    context->cursorPosition += sizeof(MaPLParameterCount);
+    MaPLParameterCount paramCount = readParameterCount(context);
     MaPLParameter functionParams[paramCount];
     char *taggedStringParams[paramCount];
     memset(taggedStringParams, 0, sizeof(taggedStringParams));
@@ -1741,9 +1746,13 @@ void evaluateStatement(MaPLExecutionContext *context) {
             context->executionState = MaPLExecutionState_exit;
             break;
         case MaPLInstruction_metadata: {
-            const char *metadata = readString(context);
-            if (context->callbacks->metadata) {
-                context->callbacks->metadata(metadata);
+            MaPLParameterCount paramCount = readParameterCount(context);
+            for (MaPLParameterCount i = 0; i < paramCount; i++) {
+                const char *metadataString = evaluateString(context);
+                if (context->callbacks->metadata) {
+                    context->callbacks->metadata(untagString(metadataString));
+                }
+                freeStringIfNeeded(metadataString);
             }
         }
             break;

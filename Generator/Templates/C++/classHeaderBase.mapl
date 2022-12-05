@@ -140,7 +140,6 @@ if schemaClass.attributes.count > 0 {
 ?>
     for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
         SchemaAttribute attribute = schemaClass.attributes[attrIndex];
-        string attributeName = attribute.name;
         bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
         
         // Map the type of this attribute from its EaSL type to its C++ type.
@@ -171,7 +170,7 @@ if schemaClass.attributes.count > 0 {
             dataType = collectionType + "<" + dataType + ">";
         }
         
-        <?        ${dataType} ${attributeName};?>
+        <?        ${dataType} ${attribute.name};?>
         if attribute.typeIsUIDReference {
             string referencedType = attribute.typeNamespace + "::" + attribute.typeName;
             <?  // Matches a UID on an object of type ${referencedType}.?>

@@ -13,6 +13,7 @@ if true {
 }
 
 for(int32 i = 0; i < 3; i++) {
+    <?Iteration #${i}?> // Test metadata interpolation.
     if i == 0 {
         <?First loop?>
     } else if i == 1 {

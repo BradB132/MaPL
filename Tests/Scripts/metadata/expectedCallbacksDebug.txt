@@ -2,12 +2,18 @@ Debug metadata: 'Beginning Metadata'
 Debug metadata: 'This Metadata should print'
 Debug line: 15
 Debug variable update: 'i' = (int32)0
+Debug metadata: 'Iteration #'
+Debug metadata: '0'
 Debug metadata: 'First loop'
 Debug line: 15
 Debug variable update: 'i' = (int32)1
+Debug metadata: 'Iteration #'
+Debug metadata: '1'
 Debug metadata: 'Second loop'
 Debug line: 15
 Debug variable update: 'i' = (int32)2
+Debug metadata: 'Iteration #'
+Debug metadata: '2'
 Debug metadata: 'Third loop'
 Debug line: 15
 Debug variable update: 'i' = (int32)3

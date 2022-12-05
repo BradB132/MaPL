@@ -48,8 +48,7 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
 }
 
 if useMaPLInterface {
-    string symbolPrefix = commandLineFlag("MaPLSymbolPrefix");
-    <?#include "${symbolPrefix}.h"  // Use MaPLCompiler to generate this symbol file.
+    <?#include "${commandLineFlag("MaPLSymbolPrefix")}.h"  // Use MaPLCompiler to generate this symbol file.
 ?>
 }
 
@@ -80,7 +79,6 @@ bool firstDefaultAttribute = true;
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
     if attribute.defaultValues.count > 0 {
-        string attributeName = attribute.name;
         string attributeValue;
         if attribute.defaultValues.count == 1 {
             string defaultValue = attribute.defaultValues[0];
@@ -109,7 +107,7 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
         }
         firstDefaultAttribute = false;
         <?
-    ${attributeName}(${attributeValue})?>
+    ${attribute.name}(${attributeValue})?>
     }
 }
 <? {
@@ -121,16 +119,15 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
     if attribute.typeIsClass &&
        (schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count > 0 || attribute.defaultValues.count > 0) {
-        string attributeName = attribute.name;
         if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
             string dataType = attribute.typeNamespace + "::" + attribute.typeName;
             string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-<?    for (${dataType} *value : ${attributeName}${collectionIvar}) {
+<?    for (${dataType} *value : ${attribute.name}${collectionIvar}) {
         delete value;
     }
 ?>
         } else {
-<?    delete ${attributeName};
+<?    delete ${attribute.name};
 ?>
         }
     }
@@ -251,10 +248,8 @@ ${indent}                    break;
 ?>
                     for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
                         SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
-                        string descendantNamespace = descendant.namespace;
-                        string descendantName = descendant.name;
-<?${indent}                case BYTECODE_${descendantNamespace}_${descendantName}:
-${indent}                    createdObject = new ${descendantNamespace}::${descendantName}();
+<?${indent}                case BYTECODE_${descendant.namespace}_${descendant.name}:
+${indent}                    createdObject = new ${descendant.namespace}::${descendant.name}();
 ${indent}                    break;
 ?>
                     }
@@ -355,9 +350,7 @@ ${indent}            }
 ?>
     }
     if schemaClass.superclass != NULL {
-        string superclassName = schemaClass.superclass.name;
-        string superclassNamespace = schemaClass.superclass.namespace;
-<?    return ${superclassNamespace}::${superclassName}::initializeAttributeWithData(data, dataIndex, dataLength);
+<?    return ${schemaClass.superclass.namespace}::${schemaClass.superclass.name}::initializeAttributeWithData(data, dataIndex, dataLength);
 ?>
     } else {
 <?    return false;
@@ -498,9 +491,7 @@ ${indent}    data.push_back(0);
         }
     }
     if schemaClass.superclass != NULL {
-        string superclassName = schemaClass.superclass.name;
-        string superclassNamespace = schemaClass.superclass.namespace;
-        <?    ${superclassNamespace}::${superclassName}::writeAttributesToVector(data);
+        <?    ${schemaClass.superclass.namespace}::${schemaClass.superclass.name}::writeAttributesToVector(data);
 ?>
     } else if !hasAttributes {
         <?    // No-op.
@@ -591,9 +582,7 @@ ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint
         }
     }
     if schemaClass.superclass != NULL {
-        string superclassName = schemaClass.superclass.name;
-        string superclassNamespace = schemaClass.superclass.namespace;
-        <?    ${superclassNamespace}::${superclassName}::writeChildrenToVector(data);
+        <?    ${schemaClass.superclass.namespace}::${schemaClass.superclass.name}::writeChildrenToVector(data);
 ?>
     } else if !hasChildren {
         <?    // No-op.
@@ -619,7 +608,6 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
 ?>
         for uint32 i = 0; i < schemaClass.attributes.count; i++ {
             SchemaAttribute attribute = schemaClass.attributes[i];
-            string attributeName = attribute.name;
             string functionName;
             bool isString = attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID";
             bool isList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
@@ -650,6 +638,7 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
             } else { // Char.
                 functionName = "MaPLChar";
             }
+            string attributeName = attribute.name;
 <?        case ${symbolPrefix}_${schemaNamespace}_${className}_${attributeName}:
             return ${functionName}(${ivarPrefix}${attributeName}${ivarSuffix});
 ?>
@@ -664,9 +653,7 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
 <?    return MaPLUninitialized();
 ?>
     } else {
-        string superclassNamespace = schemaClass.superclass.namespace;
-        string superclassName = schemaClass.superclass.name;
-<?    return ${superclassNamespace}::${superclassName}::invokeFunction(functionSymbol, argv, argc);
+<?    return ${schemaClass.superclass.namespace}::${schemaClass.superclass.name}::invokeFunction(functionSymbol, argv, argc);
 ?>
     }
 <?}
@@ -722,9 +709,7 @@ void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol prope
     }
 
     if schemaClass.superclass != NULL {
-        string superclassNamespace = schemaClass.superclass.namespace;
-        string superclassName = schemaClass.superclass.name;
-<?    return ${superclassNamespace}::${superclassName}::assignProperty(propertySymbol, assignedValue);
+<?    return ${schemaClass.superclass.namespace}::${schemaClass.superclass.name}::assignProperty(propertySymbol, assignedValue);
 ?>
     } else if !hasWriteableProperties {
 <?    // No-op.

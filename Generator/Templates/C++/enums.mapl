@@ -17,12 +17,10 @@ namespace ${schemaNamespace} {
 
 for uint32 i = 0; i < schema.enums.count; i++ {
     SchemaEnum enum = schema.enums[i];
-    string enumName = enum.name;
-    <?    enum ${enumName} : uint32_t {
+    <?    enum ${enum.name} : uint32_t {
 ?>
     for uint32 j = 0; j < enum.cases.count; j++ {
-        string case = enum.cases[j];
-        <?        ${enumName}_${case} = ${j},
+        <?        ${enum.name}_${enum.cases[j]} = ${j},
 ?>
     }
     <?    };

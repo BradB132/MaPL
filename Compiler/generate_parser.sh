@@ -12,7 +12,7 @@ if [ "${ARG1}" == "c++" ]; then
     mkdir -p "./generated_c++"
 
     echo "Generating C++ code for the parser..."
-    antlr4 ./MaPL.g4 -o ./generated_c++ -Dlanguage=Cpp -no-listener
+    antlr4 ./MaPLLexer.g4 ./MaPLParser.g4 -o ./generated_c++ -Dlanguage=Cpp -no-listener
     
     # Clean up extraneous files.
     rm ./generated_c++/*.interp
@@ -20,5 +20,5 @@ if [ "${ARG1}" == "c++" ]; then
     
 else
     echo "Opening parser output in GUI..."
-    antlr4-parse ./MaPL.g4 program -gui ../Tests/Scripts/TestAPI.mapl
+    antlr4-parse ./MaPLLexer.g4 ./MaPLParser.g4 program -gui ../Tests/Scripts/TestAPI.mapl
 fi
