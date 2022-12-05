@@ -203,7 +203,7 @@ std::string descriptorForType(const MaPLType &type) {
             }
             descriptor += ">";
         }
-        return descriptor;
+        return descriptor + " " + descriptorForPrimitive(MaPLPrimitiveType_Pointer);
     }
     return descriptorForPrimitive(type.primitiveType);
 }

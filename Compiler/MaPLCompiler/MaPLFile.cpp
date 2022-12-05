@@ -721,7 +721,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 break;
             }
             if(!_api.isAssignable(expressionType, expectedType)) {
-                std::string error = "Expression is required to be of type "+descriptorForType(expectedType)+", but was "+descriptorForType(expressionType)+" instead.";
+                std::string error = "Expression is required to be of type '"+descriptorForType(expectedType)+"', but was '"+descriptorForType(expressionType)+"' instead.";
                 logError(expression->start, error);
                 break;
             }
@@ -768,13 +768,13 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                         }
                         // All pointer-to-pointer casts already handled above. No primitive can cast to pointer.
                         if (castType.primitiveType == MaPLPrimitiveType_Pointer) {
-                            logError(expression->type()->start, "Cannot cast primitive "+descriptorForType(expressionType)+" type to pointer type "+descriptorForType(castType)+".");
+                            logError(expression->type()->start, "Cannot cast primitive '"+descriptorForType(expressionType)+"' type to '"+descriptorForType(castType)+"'.");
                             break;
                         }
                         // Strings are the only primitive that can cast from pointer (to print the memory address of pointers).
                         if (expressionType.primitiveType == MaPLPrimitiveType_Pointer &&
                             castType.primitiveType != MaPLPrimitiveType_String) {
-                            logError(expression->type()->start, "Pointer types, like "+descriptorForType(expressionType)+", can only be cast to other pointer types with a child/ancestor relationship or 'string'.");
+                            logError(expression->type()->start, "Pointer types, like '"+descriptorForType(expressionType)+"', can only be cast to other pointer types with a child/ancestor relationship or 'string'.");
                             break;
                         }
                         if (isAmbiguousNumericType(expressionType.primitiveType)) {
@@ -2355,7 +2355,7 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 std::vector<MaPLParser::ObjectExpressionContext *> childExpressions = expression->objectExpression();
                 MaPLType prefixType = objectExpressionReturnType(childExpressions[0], invokedOnType);
                 if (prefixType.primitiveType != MaPLPrimitiveType_Pointer) {
-                    logError(keyToken, "The '.' operator cannot be invoked on "+descriptorForType(prefixType)+", it can only be invoked on pointers.");
+                    logError(keyToken, "The '.' operator cannot be invoked on '"+descriptorForType(prefixType)+"', it can only be invoked on pointers.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 return objectExpressionReturnType(childExpressions[1], prefixType);
@@ -2364,13 +2364,13 @@ MaPLType MaPLFile::objectExpressionReturnType(MaPLParser::ObjectExpressionContex
                 // Subscript invocation.
                 MaPLType prefixType = objectExpressionReturnType(expression->objectExpression(0), invokedOnType);
                 if (prefixType.primitiveType != MaPLPrimitiveType_Pointer) {
-                    logError(keyToken, "The subscript operator cannot be invoked on "+descriptorForType(prefixType)+", it can only be invoked on pointers.");
+                    logError(keyToken, "The subscript operator cannot be invoked on '"+descriptorForType(prefixType)+"', it can only be invoked on pointers.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 MaPLType indexType = dataTypeForExpression(expression->expression(0));
                 const MaPLSubscriptAPI *subscriptAPI = _api.findSubscript(prefixType.pointerType, indexType, prefixType.generics, NULL);
                 if (!subscriptAPI) {
-                    logError(expression->keyToken, "Unable to find a subscript on type '"+descriptorForType(prefixType)+"' with an index parameter of type "+descriptorForType(indexType)+".");
+                    logError(expression->keyToken, "Unable to find a subscript on type '"+descriptorForType(prefixType)+"' with an index parameter of type '"+descriptorForType(indexType)+"'.");
                     return { MaPLPrimitiveType_TypeError };
                 }
                 
