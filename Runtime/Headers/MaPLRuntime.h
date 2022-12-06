@@ -80,7 +80,8 @@ MaPLParameter MaPLPointer(void *pointerValue);
  */
 MaPLParameter MaPLStringByReference(const char *stringValue);
 /**
- * Makes a copy of the string by invoking malloc, and assumes responsibility for freeing that copied string.
+ * Makes a copy of the string by invoking malloc. Once the MaPLParameter is passed into the MaPL runtime,
+ * the runtime assumes responsibility for freeing that copied string.
  */
 MaPLParameter MaPLStringByValue(const char *stringValue);
 
