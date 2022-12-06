@@ -19,9 +19,9 @@ When the generator runs, it performs the generation in the following phases:
 1. **Schema Validation**
     * Verify that the collection of all EaSL files are valid unto themselves.
 1. **Data Validation**
-    * Verify that all XML data conforms correctly to the EaSL schema.
+    * Verify that all XML data conforms correctly to the EaSL schema(s).
 1. **Script-based generation**
-    * Execute any specified MaPL scripts. Scripts have access to an API that exposes all schema and XML data. Scripts can specify which file to output to, and how to format that output.
+    * Execute any specified MaPL scripts. Scripts have access to an [API](./Executable/MaPLGeneratorAPI.mapl) that exposes all schema and XML data. Scripts can specify which file to output to, and how to format that output.
 
 ## Command line interface
 

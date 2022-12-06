@@ -113,16 +113,16 @@ MaPL can be used for code generation (or generation of any type of text file). B
 ```
 <?Start Metadata?>
 for int32 i = 0; i < 3; i++ {
-    <?Loop Metadata?>
+    <?Loop Metadata (iteration number ${i+1})?>
 }
 <?Start Metadata?>
 ```
 The above script will send callbacks to the host program in the following order:
 
 1. `Start Metadata`
-1. `Loop Metadata`
-1. `Loop Metadata`
-1. `Loop Metadata`
+1. `Loop Metadata (iteration number 1)`
+1. `Loop Metadata (iteration number 2)`
+1. `Loop Metadata (iteration number 3)`
 1. `End Metadata`
 
 The host program can take these callbacks and output to file. This is the goal of the ancillary [MaPLGenerator](./Generator) program, included in this repo.
