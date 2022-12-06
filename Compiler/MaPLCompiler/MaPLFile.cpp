@@ -249,6 +249,9 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 }
                 previousToken = token;
             }
+            if (sections == 0) {
+                break;
+            }
             currentBuffer->appendInstruction(MaPLInstruction_metadata);
             currentBuffer->appendBytes(&sections, sizeof(MaPLParameterCount));
             
