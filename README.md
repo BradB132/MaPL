@@ -11,7 +11,7 @@ MaPL is a C-style scripting language that focuses on a few different design goal
     * MaPL is strongly typed, so the compiler will emit errors whenever types are mismatched or ambiguous.
     * MaPL requires the API of the host program to be explicitly specified within the script. With this complete understanding of the API surface, the compiler can provide the maximum amount of feedback about API usage.
 1. **Small runtime footprint** - The compiler absorbs most of the complexity, so bytecode files tend to be small in size (usually smaller than the script itself), and the runtime is lightweight.
-1. **Small in scope** - MaPL scripts are intended to be macros, not entire programs. MaPL intentionally omits language features like the ability to implement entire classes or functions within a script. Instead, think of each MaPL script as the body of a function that can only utilize the existing classes and functions within the host program.
+1. **Small in scope** - MaPL scripts are intended to be macros, not entire programs. MaPL intentionally omits language features like the ability to implement entire classes or functions within a script. Instead, think of each MaPL script as the body of a function that invokes the existing classes and functions within the host program.
 
 ## Language Features
 
@@ -27,7 +27,7 @@ MaPL supports several data types:
 * **float64** - 64-bit floating point.
 * **bool** - `true` or `false` boolean value.
 * **string** - Text.
-* **pointers** - There is no primitive type "pointer". Rather, pointers are referred to by their `#type` which is declared in an [API](#APIs).
+* **pointers** - There is no primitive type "pointer". Rather, pointers are referred to by their `#type` name which is declared in an [API](#APIs).
 
 ### Control Flow
 MaPL supports several types of C-style control flow.
