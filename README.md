@@ -117,12 +117,9 @@ for int32 i = 0; i < 3; i++ {
 }
 <?End Metadata?>
 ```
-The above script will send callbacks to the host program in the following order:
+The above script will generate metadata strings in the following order:
 
-1. `Start Metadata`
-1. `Loop Metadata (iteration number 1)`
-1. `Loop Metadata (iteration number 2)`
-1. `Loop Metadata (iteration number 3)`
-1. `End Metadata`
+ * `Start Metadata` `Loop Metadata (iteration number ` `1` `)` `Loop Metadata (iteration number ` `2` `)` `Loop Metadata (iteration number ` `3` `)` `End Metadata`
 
-The host program can take these callbacks and output to file. This is the goal of the ancillary [MaPLGenerator](./Generator) program, included in this repo.
+
+The host program receives these strings via a callback and can write to disk. This is the goal of the ancillary [MaPLGenerator](./Generator) program, included in this repo.
