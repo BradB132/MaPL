@@ -325,6 +325,9 @@ MaPLCompileResult runTests(const std::vector<std::filesystem::path> &scriptsUnde
                 case MaPLRuntimeError_invocationOnNullPointer:
                     errorDescription = "Invocation on null pointer";
                     break;
+                case MaPLRuntimeError_incompatibleEndianness:
+                    errorDescription = "Incompatible endianness";
+                    break;
             }
             printf("Script '%s' encountered a runtime error: '%s'.\n", path.c_str(), errorDescription.c_str());
 #if !OUTPUT_EXPECTED_FILES
