@@ -115,7 +115,7 @@ MaPL can be used for code generation (or generation of any type of text file). B
 for int32 i = 0; i < 3; i++ {
     <?Loop Metadata (iteration number ${i+1})?>
 }
-<?Start Metadata?>
+<?End Metadata?>
 ```
 The above script will send callbacks to the host program in the following order:
 
