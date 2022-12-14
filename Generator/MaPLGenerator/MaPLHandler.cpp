@@ -241,6 +241,15 @@ static void error(MaPLRuntimeError error) {
 }
 
 void invokeScript(const std::filesystem::path &scriptPath) {
+    if (!std::filesystem::exists(scriptPath)) {
+        if (_stackFrames.size() > 0) {
+            MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
+            fprintf(stderr, "%s:%d: error: Attempted to run script in non-existent file '%s'. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, scriptPath.c_str());
+        } else {
+            fprintf(stderr, "Attempted to run script in non-existent file '%s'.\n", scriptPath.c_str());
+        }
+        exit(1);
+    }
     if (_stackFrames.size()) {
         // When a previous stack frame exists, pass the script parameters into the new frame.
         MaPLStackFrame &previousFrame = _stackFrames[_stackFrames.size()-1];
