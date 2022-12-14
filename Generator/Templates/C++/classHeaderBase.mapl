@@ -20,8 +20,7 @@ outputToFile(outputDir + "/" + schemaNamespace + "/" + className + "_generated.h
 ?>
 bool isSubclass = schemaClass.superclass != NULL;
 if isSubclass {
-    string superclassName = schemaClass.superclass.name;
-    <?#include "${schemaNamespace}/${superclassName}.hpp"
+    <?#include "${schemaNamespace}/${schemaClass.superclass.name}.hpp"
 ?>
 } else {
     if useMaPLInterface {
@@ -144,9 +143,7 @@ if schemaClass.attributes.count > 0 {
         
         // Map the type of this attribute from its EaSL type to its C++ type.
         string dataType;
-        if attribute.typeIsUIDReference {
-            dataType = "std::string";
-        } else if attribute.typeIsClass {
+        if attribute.typeIsClass {
             dataType = attribute.typeNamespace + "::" + attribute.typeName;
             if schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count > 0 ||
                attribute.defaultValues.count > 0 {
@@ -158,7 +155,7 @@ if schemaClass.attributes.count > 0 {
             dataType = "float";
         } else if attribute.typeName == "float64" {
             dataType = "double";
-        } else if attribute.typeName == "string" || attribute.typeName == "UID" {
+        } else if attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID" {
             dataType = "std::string";
         } else if attribute.typeName == "bool" || attribute.typeName == "char" {
             dataType = attribute.typeName;
