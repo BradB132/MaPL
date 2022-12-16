@@ -68,6 +68,14 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "&quot;${SRCROOT}/Templates/Swift/main.mapl&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;--swiftOutputDir=${SRCROOT}/EaSL/generated_c++/swiftOutput&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "&quot;${SRCROOT}/Templates/MaPL/main.mapl&quot;"
             isEnabled = "YES">
          </CommandLineArgument>

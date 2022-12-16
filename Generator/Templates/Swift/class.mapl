@@ -1,0 +1,23 @@
+#import "../../Executable/MaPLGeneratorAPI.mapl"
+
+Schema schema = (Schema)inParameters["schema"];
+SchemaClass schemaClass = (SchemaClass)inParameters["class"];
+
+string outputDir = commandLineFlag("swiftOutputDir");
+string schemaNamespace = schema.namespace;
+string className = schemaClass.name;
+string fileOutputPath = outputDir + "/" + schemaNamespace + "/" + className + ".swift";
+
+// NOTE: Base files are where the generator user can augment the generated files with their own code.
+// Only write these files when they don't already exist to avoid overwriting human-written code.
+if !fileExistsAtPath(fileOutputPath) {
+    outputToFile(fileOutputPath);
+    <?// File initially created by MaPLGenerator, based on the '${schemaNamespace}::${className}' schema.
+
+import Foundation
+
+class ${schemaNamespace}_${className}: ${schemaNamespace}_${className}_generated {
+    // Custom APIs for ${schemaNamespace}_${className} can go here.
+}
+?>
+}

@@ -1,0 +1,22 @@
+#import "../../Executable/MaPLGeneratorAPI.mapl"
+
+// Generate the files for each namespace.
+for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
+    Schema schema = schemas[schemaIndex];
+    outParameters["schema"] = schema;
+    
+    if schema.enums.count > 0 {
+        executeMaPLScript("./enums.mapl");
+    }
+    
+    for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
+        SchemaClass schemaClass = schema.classes[classIndex];
+        outParameters["class"] = schemaClass;
+        executeMaPLScript("./class.mapl");
+        executeMaPLScript("./classBase.mapl");
+    }
+}
+
+if (bool)commandLineFlag("MaPLGeneratorSerialized") {
+    executeMaPLScript("./MaPLGeneratorSerialized.mapl");
+}
