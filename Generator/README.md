@@ -29,9 +29,19 @@ MaPLGenerator takes in 3 types of paths:
 
 1. Schema paths (requires at least 1).
 1. XML paths (optional).
-1. Script paths (requires at least 1).
+1. Template script paths (requires at least 1).
 
-In addition, MaPLGenerator accepts flag arguments. Each flag must be prefixed with `--` and specify a key and value. For example: `--myFeatureEnabled=false`. This mechanism allows users to pass important information directly from the command line into the code-generation script, allowing output to be altered without editing the scripts themselves.
+In addition, MaPLGenerator accepts flag arguments. This mechanism allows users to pass important information directly from the command line into the code-generation template. The required flags are specified in the templates themselves (each template can query for whatever extra information it needs). MaPLGenerator will alert you if your template requests a flag that you haven't specified. Each flag must be prefixed with `--` and specify a key and value. For example: `--myFeatureEnabled=false`.
+
+A template can be invoked via the command line like this:
+```
+cd MaPL/Generator/Executable
+
+./MaPLGenerator ../EaSL/exampleSchema.easl ../Templates/MaPL/main.mapl  --scriptOutputDir=../path/to/output
+```
+
+## Examples
+Example code-generation templates can be found in the [Templates](./Templates) directory.
 
 ## Building the generator
 
@@ -46,6 +56,3 @@ The above command will generate multiple `build` directories. They are already i
 ```
 rm -r ./build ../Compiler/build ../Runtime/build
 ```
-
-## Examples
-Example code-generation templates can be found in the [Templates](./Templates) directory.
