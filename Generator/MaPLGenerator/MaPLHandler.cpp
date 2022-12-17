@@ -104,6 +104,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
             createDirectoriesIfNeeded(normalizedPath);
             _outputStream = new std::ofstream(normalizedPath);
+            printf("Outputting to file: '%s'\n", normalizedPath.c_str());
             return MaPLVoid();
         }
         case MaPLSymbols_GLOBAL_schemas:

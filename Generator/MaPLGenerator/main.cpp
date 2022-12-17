@@ -72,7 +72,7 @@ int main(int argc, const char * argv[]) {
         return 1;
     }
     
-    printf("Starting MaPLGenerator...\n");
+    printf("Starting MaPLGenerator...\n\n");
     
     MaPLArrayMap<Schema *> *schemas = schemasForPaths(schemaPaths);
     MaPLArray<XmlFile *> *xmlNodes = xmlFilesForPaths(xmlPaths);
@@ -82,6 +82,6 @@ int main(int argc, const char * argv[]) {
         invokeScript(scriptPath, xmlNodes, schemas, flags);
     }
     
-    printf("MaPLGenerator completed successfully.\n");
+    printf("\nMaPLGenerator completed successfully.\n");
     return 0;
 }
