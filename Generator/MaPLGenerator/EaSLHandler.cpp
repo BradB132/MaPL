@@ -405,8 +405,13 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                     }
                 }
                 if (attribute->_typeIsUIDReference) {
-                    Schema *typeSchema = schemas->_backingMap.at(attribute->_typeNamespace);
-                    SchemaClass *typeClass = typeSchema ? typeSchema->_classes->_backingMap.at(attribute->_typeName) : NULL;
+                    SchemaClass *typeClass = NULL;
+                    if (schemas->_backingMap.count(attribute->_typeNamespace)) {
+                        Schema *typeSchema = schemas->_backingMap.at(attribute->_typeNamespace);
+                        if (typeSchema->_classes->_backingMap.count(attribute->_typeName)) {
+                            typeClass = typeSchema->_classes->_backingMap.at(attribute->_typeName);
+                        }
+                    }
                     if (!typeClass) {
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
                                                       "Can't find class '"+attribute->_typeNamespace+"::"+attribute->_typeName+"' referenced by '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
@@ -583,16 +588,16 @@ void firstPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, s
     // Do an initial pass over all nodes and attributes in the dataset:
     //  - Confirm all namespaces, classes, and attributes exist in the schema.
     //  - Collect the UIDs, confirm uniqueness, and make a mapping of objects they point to.
-    Schema *schema = schemas->_backingMap.at(xmlNode->_namespace);
-    if (!schema) {
+    if (!schemas->_backingMap.count(xmlNode->_namespace)) {
         errorLogger.logError(xmlNode->_node, "Unable to find schema with namespace '"+xmlNode->_namespace+"'.");
         return;
     }
-    SchemaClass *schemaClass = schema->_classes->_backingMap.at(xmlNode->_name);
-    if (!schemaClass) {
+    Schema *schema = schemas->_backingMap.at(xmlNode->_namespace);
+    if (!schema->_classes->_backingMap.count(xmlNode->_name)) {
         errorLogger.logError(xmlNode->_node, "Unable to find schema class '"+xmlNode->_name+"' in namespace '"+xmlNode->_namespace+"'.");
         return;
     }
+    SchemaClass *schemaClass = schema->_classes->_backingMap.at(xmlNode->_name);
     for (XmlAttribute *xmlAttribute : xmlNode->_attributes->_backingVector) {
         SchemaAttribute *schemaAttribute = schemaAttributeForXmlAttribute(xmlAttribute, schemas, schemaClass);
         if (!schemaAttribute) {
