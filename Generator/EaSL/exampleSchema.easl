@@ -13,7 +13,7 @@ class Content {
     float32 varF = 5.6;
     float64 varG = 7.8;
     bool varH = false;
-    string varI = "asdf";
+    @localized string varI = "asdf";
     UID varJ;
     reference<Content> varK = "zxcv";
     ContentChild child;
@@ -21,7 +21,7 @@ class Content {
 }
 
 class ContentChild {
-    string name;
+    @localized string name;
 }
 
 class ContentChildSubclass : ContentChild {

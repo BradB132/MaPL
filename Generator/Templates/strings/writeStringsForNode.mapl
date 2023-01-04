@@ -1,0 +1,27 @@
+#import "../../Executable/MaPLGeneratorAPI.mapl"
+
+XMLNode node = (XMLNode)inParameters["node"];
+
+// Find the matching schema class.
+SchemaClass schemaClass = schemas[node.namespace].classes[node.name];
+
+for uint32 attrIndex = 0; attrIndex < node.attributes.count; attrIndex++ {
+    XMLAttribute xmlAttribute = node.attributes[attrIndex];
+    string value = xmlAttribute.value;
+    if stringSet.contains(value) {
+        continue;
+    }
+    SchemaAttribute schemaAttribute = schemaClass.attributes[xmlAttribute.name];
+    if schemaAttribute.typeName == "string" && schemaAttribute.annotations.contains("localized") {
+        stringSet.insert(value);
+<?// ${node.namespace}::${node.name}::${schemaAttribute.name}.
+"${value}" = "${value}";
+
+?>
+    }
+}
+
+for uint32 childIndex = 0; childIndex < node.children.count; childIndex++ {
+    outParameters["node"] = node.children[childIndex];
+    executeMaPLScript("./writeStringsForNode.mapl");
+}

@@ -92,6 +92,14 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "&quot;${SRCROOT}/Templates/strings/main.mapl&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;--stringsOutputDir=${SRCROOT}/EaSL/generated_c++/stringsOutput&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "--MaPLInterface=true"
             isEnabled = "YES">
          </CommandLineArgument>

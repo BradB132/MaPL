@@ -1,0 +1,14 @@
+#import "../../Executable/MaPLGeneratorAPI.mapl"
+
+// This template outputs a ".strings" localization file containing a
+// de-duplicated list of every value marked with a "@localized" annotation.
+
+stringSet.clear();
+
+string outputDirectory = commandLineFlag("stringsOutputDir") + "/";
+for uint32 i = 0; i < xmlFiles.count; i++ {
+    XMLFile file = xmlFiles[i];
+    outputToFile(outputDirectory + fileStemForPath(file.filePath) + ".strings");
+    outParameters["node"] = file.rootNode;
+    executeMaPLScript("./writeStringsForNode.mapl");
+}
