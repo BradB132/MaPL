@@ -119,7 +119,11 @@ for int32 i = 0; i < 3; i++ {
 ```
 The above script will generate metadata strings in the following order:
 
- * `Start Metadata` `Loop Metadata (iteration number ` `1` `)` `Loop Metadata (iteration number ` `2` `)` `Loop Metadata (iteration number ` `3` `)` `End Metadata`
+`Start Metadata` `Loop Metadata (iteration number ` `1` `)` `Loop Metadata (iteration number ` `2` `)` `Loop Metadata (iteration number ` `3` `)` `End Metadata`
 
 
 The host program receives these strings via a callback and can write to disk. This is the goal of the ancillary [MaPLGenerator](./Generator) program, included in this repo.
+
+### Portability
+
+MaPL is implemented in C and C++, and so should be relatively portable. However, I've built it and used it exclusively on macOS. All tools in this repo currently assume that you're using Xcode.
