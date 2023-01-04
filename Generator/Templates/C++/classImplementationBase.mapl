@@ -23,7 +23,7 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
     if attribute.typeIsClass {
         string typeName = attribute.typeName;
         string typeNamespace = attribute.typeNamespace;
-        string classKey = "include:" + typeNamespace + "::" + typeName;
+        string classKey = typeNamespace + "::" + typeName;
         
         SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
         if !stringSet.contains(classKey) &&
