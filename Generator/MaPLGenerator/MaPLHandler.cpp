@@ -317,4 +317,5 @@ void invokeScript(const std::filesystem::path &scriptPath,
     invokeScript(scriptPath);
     delete _outputStream;
     _outputStream = NULL;
+    _stringSet.clear();
 }
