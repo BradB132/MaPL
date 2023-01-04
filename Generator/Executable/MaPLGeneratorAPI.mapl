@@ -16,6 +16,14 @@
     bool contains(string key);
 }
 
+// Useful for de-duplicating strings.
+#type StringSet {
+    void insert(string key);
+    bool contains(string key);
+    void clear();
+}
+#global readonly StringSet stringSet;
+
 /**
  * Schema.
  */

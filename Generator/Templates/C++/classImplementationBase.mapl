@@ -17,6 +17,7 @@ bool useMaPLGeneratorSerialized = (bool)commandLineFlag("MaPLGeneratorSerialized
 #include "${schemaNamespace}/${className}_generated.hpp"
 ?>
 
+stringSet.clear();
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
     if attribute.typeIsClass {
@@ -24,24 +25,22 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
         string typeNamespace = attribute.typeNamespace;
         string classKey = "include:" + typeNamespace + "::" + typeName;
         
-        // Hack: `outParameters` is intended as a means of passing objects between scripts,
-        // but here it's used to flag if we've already seen this class.
         SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
-        if outParameters[classKey] == NULL &&
+        if !stringSet.contains(classKey) &&
            (attributeClass.descendantClasses.count > 0 || attribute.defaultValues.count > 0) {
             <?#include "${typeNamespace}/${typeName}.hpp"
 ?>
-            outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
+            stringSet.insert(classKey);
         }
         for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
             SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
             typeName = descendant.name;
             typeNamespace = descendant.namespace;
             classKey = "include:" + typeNamespace + "::" + typeName;
-            if outParameters[classKey] == NULL {
+            if !stringSet.contains(classKey) {
                 <?#include "${typeNamespace}/${typeName}.hpp"
 ?>
-                outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
+                stringSet.insert(classKey);
             }
         }
     }

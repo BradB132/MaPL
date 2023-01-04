@@ -56,21 +56,20 @@ if !useMaPLInterface {
         }
     }
 }
+stringSet.clear();
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
     if attribute.typeIsClass {
-        // Hack: `outParameters` is intended as a means of passing objects between scripts,
-        // but here it's used to flag if we've already seen this class.
         string typeName = attribute.typeName;
         string typeNamespace = attribute.typeNamespace;
         string classKey = "include:" + typeNamespace + "::" + typeName;
         SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
-        if outParameters[classKey] == NULL &&
+        if !stringSet.contains(classKey) &&
            attributeClass.descendantClasses.count == 0 &&
            attribute.defaultValues.count == 0 {
             <?#include "${typeNamespace}/${typeName}.hpp"
 ?>
-            outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
+            stringSet.insert(classKey);
         }
     }
 }
@@ -83,13 +82,11 @@ bool firstForwardDeclaration = true;
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
     if attribute.typeIsClass {
-        // Hack: `outParameters` is intended as a means of passing objects between scripts,
-        // but here it's used to flag if we've already seen this class.
         string typeName = attribute.typeName;
         string typeNamespace = attribute.typeNamespace;
         string classKey = "include:" + typeNamespace + "::" + typeName;
         SchemaClass attributeClass = schemas[typeNamespace].classes[typeName];
-        if outParameters[classKey] == NULL &&
+        if !stringSet.contains(classKey) &&
            (attributeClass.descendantClasses.count > 0 || attribute.defaultValues.count > 0) {
             if firstForwardDeclaration {
                 <?
@@ -98,7 +95,7 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
             }
             <?namespace ${typeNamespace} { class ${typeName}; }
 ?>
-            outParameters[classKey] = attribute; // For this hack, any non-NULL value works.
+            stringSet.insert(classKey);
         }
     }
 }

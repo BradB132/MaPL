@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "MaPLCompiler.h"
@@ -34,6 +35,7 @@ static MaPLArray<XmlFile *> *_xmlFiles;
 static MaPLArrayMap<Schema *> *_schemas;
 static const std::unordered_map<std::string, std::string> *_flags;
 static std::unordered_map<std::string, std::vector<u_int8_t>> _bytecodeCache;
+static std::unordered_set<std::string> _stringSet;
 
 std::filesystem::path normalizedParamPath(const char *pathParam) {
     std::filesystem::path path = pathParam;
@@ -109,6 +111,8 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
         case MaPLSymbols_GLOBAL_schemas:
             return MaPLPointer(_schemas);
+        case MaPLSymbols_GLOBAL_stringSet:
+            return MaPLPointer(&_stringSet);
         case MaPLSymbols_GLOBAL_inParameters: {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
             return MaPLPointer(&frame.inParameters);
@@ -162,6 +166,14 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
         case MaPLSymbols_GLOBAL_xmlFiles:
             return MaPLPointer(_xmlFiles);
+        case MaPLSymbols_StringSet_clear:
+            _stringSet.clear();
+            return MaPLVoid();
+        case MaPLSymbols_StringSet_contains_string:
+            return MaPLBool(_stringSet.count(argv[0].stringValue));
+        case MaPLSymbols_StringSet_insert_string:
+            _stringSet.insert(argv[0].stringValue);
+            return MaPLVoid();
         default:
             if (invokedOnPointer) {
                 MaPLInterface *maPLInterface = static_cast<MaPLInterface *>(invokedOnPointer);
