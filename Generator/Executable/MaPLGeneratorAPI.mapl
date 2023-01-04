@@ -16,7 +16,7 @@
     bool contains(string key);
 }
 
-// Useful for de-duplicating strings.
+// Idempotent data structure that's useful for de-duplicating strings.
 #type StringSet {
     void insert(string key);
     bool contains(string key);

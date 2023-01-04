@@ -167,12 +167,12 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         case MaPLSymbols_GLOBAL_xmlFiles:
             return MaPLPointer(_xmlFiles);
         case MaPLSymbols_StringSet_clear:
-            _stringSet.clear();
+            ((std::unordered_set<std::string> *)invokedOnPointer)->clear();
             return MaPLVoid();
         case MaPLSymbols_StringSet_contains_string:
-            return MaPLBool(_stringSet.count(argv[0].stringValue));
+            return MaPLBool(((std::unordered_set<std::string> *)invokedOnPointer)->count(argv[0].stringValue));
         case MaPLSymbols_StringSet_insert_string:
-            _stringSet.insert(argv[0].stringValue);
+            ((std::unordered_set<std::string> *)invokedOnPointer)->insert(argv[0].stringValue);
             return MaPLVoid();
         default:
             if (invokedOnPointer) {
