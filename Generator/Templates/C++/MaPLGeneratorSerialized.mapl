@@ -10,16 +10,21 @@ outputToFile(outputDir + "/MaPLGeneratorSerialized.hpp");
 
 #include <vector>
 
+enum MaPLGeneratorSerializedParseStatus {
+    MaPLGeneratorSerializedParseStatus_success,
+    MaPLGeneratorSerializedParseStatus_error,
+    MaPLGeneratorSerializedParseStatus_completed,
+};
+
 /**
  * Abstract class that described how generated objects are serialized / deserialized.
  */
 class MaPLGeneratorSerialized {
 public:
     virtual bool initializeObjectWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) = 0;
-    virtual bool initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) = 0;
+    virtual MaPLGeneratorSerializedParseStatus initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) = 0;
     virtual void writeObjectToVector(std::vector<uint8_t> &data) = 0;
     virtual void writeAttributesToVector(std::vector<uint8_t> &data) = 0;
-    virtual void writeChildrenToVector(std::vector<uint8_t> &data) = 0;
 };
 
 ?>
@@ -31,8 +36,10 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
     for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
         SchemaClass schemaClass = schema.classes[classIndex];
         string className = schemaClass.name;
-        uint32 classHash = (uint32)hash("CLASS_" + schemaNamespace + "_" + className);
-        <?#define BYTECODE_${schemaNamespace}_${className} ${classHash}
+        uint32 beginClassHash = (uint32)hash("CLASS_BEGIN_" + schemaNamespace + "_" + className);
+        uint32 endClassHash = (uint32)hash("CLASS_END_" + schemaNamespace + "_" + className);
+<?#define BYTECODE_${schemaNamespace}_${className}_BEGIN ${beginClassHash}
+#define BYTECODE_${schemaNamespace}_${className}_END ${endClassHash}
 ?>
         
         for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {

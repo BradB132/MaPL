@@ -192,10 +192,9 @@ if useMaPLGeneratorSerialized {
 <?
         // MaPLGeneratorSerialized.
         virtual bool initializeObjectWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) override;
-        virtual bool initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) override;
+        virtual MaPLGeneratorSerializedParseStatus initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) override;
         virtual void writeObjectToVector(std::vector<uint8_t> &data) override;
         virtual void writeAttributesToVector(std::vector<uint8_t> &data) override;
-        virtual void writeChildrenToVector(std::vector<uint8_t> &data) override;
 ?>
 }
 

@@ -171,23 +171,28 @@ if useMaPLGeneratorSerialized {
 <?    // MARK: MaPLGeneratorSerialized.
     ${overrideSpecifier}func initializeObject(withData data: [UInt8], dataIndex: inout Int) -> Bool {
         if dataIndex+4 > data.count ||
-           (UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24) != BYTECODE_${schemaNamespace}_${className} {
+           (UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24) != BYTECODE_${schemaNamespace}_${className}_BEGIN {
            return false
         }
         dataIndex += 4
-        while initializeAttribute(withData: data, dataIndex: &dataIndex) {}
-        return true
+        var result: MaPLGeneratorSerializedParseStatus = .success
+        while result == .success {
+            result = initializeAttribute(withData: data, dataIndex: &dataIndex)
+        }
+        return result == .completed
     }
 
-    ${overrideSpecifier}func initializeAttribute(withData data: [UInt8], dataIndex: inout Int) -> Bool {
+    ${overrideSpecifier}func initializeAttribute(withData data: [UInt8], dataIndex: inout Int) -> MaPLGeneratorSerializedParseStatus {
 ?>
     if schemaClass.attributes.count > 0 {
 <?        if (dataIndex+4 > data.count) {
-            return false
+            return .error
         }
         let nextAttributeName = UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24
         dataIndex += 4
         switch (nextAttributeName) {
+            case BYTECODE_${schemaNamespace}_${className}_END:
+                return .completed
 ?>
         for uint32 i = 0; i < schemaClass.attributes.count; i++ {
             SchemaAttribute attribute = schemaClass.attributes[i];
@@ -201,7 +206,7 @@ if useMaPLGeneratorSerialized {
                 string listLength;
                 if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
 <?                if dataIndex+4 > data.count {
-                    return false
+                    return .error
                 }
                 let ${attributeName}Length: UInt32 = UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24
                 dataIndex += 4
@@ -224,21 +229,21 @@ if useMaPLGeneratorSerialized {
                 bool classIsOptional = attribute.defaultValues.count > 0;
                 if attributeClass.descendantClasses.count > 0 {
 <?${indent}                if dataIndex+4 > data.count {
-${indent}                    return false
+${indent}                    return .error
 ${indent}                }
 ${indent}                let createdObject: ${typeNamespace}_${typeName}!
 ${indent}                switch (UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24) {
-${indent}                    case BYTECODE_${typeNamespace}_${typeName}:
+${indent}                    case BYTECODE_${typeNamespace}_${typeName}_BEGIN:
 ${indent}                        createdObject = ${typeNamespace}_${typeName}()
 ?>
                     for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
                         SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
-<?${indent}                    case BYTECODE_${descendant.namespace}_${descendant.name}:
+<?${indent}                    case BYTECODE_${descendant.namespace}_${descendant.name}_BEGIN:
 ${indent}                        createdObject = ${descendant.namespace}_${descendant.name}()
 ?>
                     }
 <?${indent}                    default:
-${indent}                        return false
+${indent}                        return .error
 ${indent}                }
 ?>
                 } else {
@@ -254,7 +259,7 @@ ${indent}                }
 ?>
                 }
 <?${indent}                if !createdObject.initializeObject(withData: data, dataIndex: &dataIndex) {
-${indent}                    return false
+${indent}                    return .error
 ${indent}                }
 ?>
             } else if attribute.typeIsUIDReference ||
@@ -288,7 +293,7 @@ ${indent}                }
                 }
                 
 <?${indent}                if (dataIndex+${primitiveSize} > data.count) {
-${indent}                    return false
+${indent}                    return .error
 ${indent}                }
 ?>
 
@@ -327,7 +332,7 @@ ${indent}                bitPattern |= UInt64(data[dataIndex+7]) << 56
                     primitiveValue = "data[dataIndex]";
                 } else if attribute.typeIsEnum {
 <?${indent}                let rawValue: UInt32 = UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24
-${indent}                guard let enumValue = ${schemaNamespace}_${typeName}(rawValue: rawValue) else { return false }
+${indent}                guard let enumValue = ${schemaNamespace}_${typeName}(rawValue: rawValue) else { return .error }
 ?>
                     primitiveValue = "enumValue";
                 }
@@ -346,12 +351,16 @@ ${indent}                guard let enumValue = ${schemaNamespace}_${typeName}(ra
 <?                }
 ?>
             }
-<?                return true
+<?                return .success
 ?>
         }
 <?            default:
-                dataIndex -= 4
-                break
+?>
+        if schemaClass.superclass != NULL {
+<?                dataIndex -= 4
+?>
+        }
+<?                break
         }
 ?>
     }
@@ -359,39 +368,33 @@ ${indent}                guard let enumValue = ${schemaNamespace}_${typeName}(ra
 <?        return super.initializeAttribute(withData: data, dataIndex: &dataIndex)
 ?>
     } else {
-<?        return false
+<?        return .error
 ?>
     }
 <?    }
 
     ${overrideSpecifier}func writeObject(toData data: inout Data) {
-        let bytecodeSignifier: UInt32 = BYTECODE_${schemaNamespace}_${className}
-        data.append(UInt8(bytecodeSignifier & 0x000000FF))
-        data.append(UInt8((bytecodeSignifier >> 8) & 0x000000FF))
-        data.append(UInt8((bytecodeSignifier >> 16) & 0x000000FF))
+        var bytecodeSignifier: UInt32 = BYTECODE_${schemaNamespace}_${className}_BEGIN
+        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier))
+        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier >> 8))
+        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier >> 16))
         data.append(UInt8(bytecodeSignifier >> 24))
         writeAttributes(toData: &data)
-        writeChildren(toData: &data)
+        bytecodeSignifier = BYTECODE_${schemaNamespace}_${className}_END
+        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier))
+        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier >> 8))
+        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier >> 16))
+        data.append(UInt8(bytecodeSignifier >> 24))
     }
 
     ${overrideSpecifier}func writeAttributes(toData data: inout Data) {
 ?>
-    bool hasAttributes = false;
-    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
-        if !schemaClass.attributes[i].typeIsClass {
-            hasAttributes = true;
-            break;
-        }
-    }
-    if hasAttributes {
+    if schemaClass.attributes.count > 0 {
 <?        var bytecodeSignifier: UInt32
 ?>
     }
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
-        if attribute.typeIsClass {
-            continue;
-        }
         string attributeName = attribute.name;
         
         // Check this value against the default value. Elide if it matches the default.
@@ -424,9 +427,9 @@ ${indent}                guard let enumValue = ${schemaNamespace}_${typeName}(ra
         
         // Specify which variable is being written.
 <?${indent}        bytecodeSignifier = BYTECODE_${schemaNamespace}_${className}_${attributeName}
-${indent}        data.append(UInt8(bytecodeSignifier & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 8) & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 16) & 0x000000FF))
+${indent}        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier))
+${indent}        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier >> 8))
+${indent}        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier >> 16))
 ${indent}        data.append(UInt8(bytecodeSignifier >> 24))
 ?>
         
@@ -434,9 +437,9 @@ ${indent}        data.append(UInt8(bytecodeSignifier >> 24))
         if attribute.minOccurrences != attribute.maxOccurrences {
             // Specify the length of this list.
 <?${indent}        bytecodeSignifier = UInt32(${attributeName}.count)
-${indent}        data.append(UInt8(bytecodeSignifier & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 8) & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 16) & 0x000000FF))
+${indent}        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier))
+${indent}        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier >> 8))
+${indent}        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier >> 16))
 ${indent}        data.append(UInt8(bytecodeSignifier >> 24))
 ?>
         }
@@ -451,87 +454,92 @@ ${indent}        data.append(UInt8(bytecodeSignifier >> 24))
             indent += "    ";
         }
         
-        if typeName == "uint32" {
-<?${indent}        data.append(UInt8(${attributeVar} & 0x000000FF))
-${indent}        data.append(UInt8((${attributeVar} >> 8) & 0x000000FF))
-${indent}        data.append(UInt8((${attributeVar} >> 16) & 0x000000FF))
+        if attribute.typeIsClass {
+<?${indent}        ${attributeVar}.writeObject(toData: &data)
+?>
+        } else {  // Primitives.
+            if typeName == "uint32" {
+<?${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar}))
+${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar} >> 8))
+${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar} >> 16))
 ${indent}        data.append(UInt8(${attributeVar} >> 24))
 ?>
-        } else if attribute.typeIsEnum ||  // Enums are UInt32.
-           typeName == "int32" ||
-           typeName == "float32" {
-            if attribute.typeIsEnum {
+            } else if attribute.typeIsEnum ||  // Enums are UInt32.
+               typeName == "int32" ||
+               typeName == "float32" {
+                if attribute.typeIsEnum {
 <?${indent}        bytecodeSignifier = ${attributeVar}.rawValue
 ?>
-            } else if typeName == "int32" {
- <?${indent}        bytecodeSignifier = UInt32(bitPattern: ${attributeVar})
+                } else if typeName == "int32" {
+<?${indent}        bytecodeSignifier = UInt32(bitPattern: ${attributeVar})
 ?>
-            } else {  // float32.
+                } else {  // float32.
 <?${indent}        bytecodeSignifier = ${attributeVar}.bitPattern
 ?>
-            }
-           
-<?${indent}        data.append(UInt8(bytecodeSignifier & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 8) & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 16) & 0x000000FF))
+                }
+               
+<?${indent}        data.append(UInt8(truncatingIfNeeded:bytecodeSignifier))
+${indent}        data.append(UInt8(truncatingIfNeeded:(bytecodeSignifier >> 8)))
+${indent}        data.append(UInt8(truncatingIfNeeded:(bytecodeSignifier >> 16)))
 ${indent}        data.append(UInt8(bytecodeSignifier >> 24))
 ?>
-        } else if typeName == "uint64" {
-<?${indent}        data.append(UInt8(${attributeVar} & 0x00000000000000FF))
-${indent}        data.append(UInt8((${attributeVar} >> 8) & 0x00000000000000FF))
-${indent}        data.append(UInt8((${attributeVar} >> 16) & 0x00000000000000FF))
-${indent}        data.append(UInt8((${attributeVar} >> 24) & 0x00000000000000FF))
-${indent}        data.append(UInt8((${attributeVar} >> 32) & 0x00000000000000FF))
-${indent}        data.append(UInt8((${attributeVar} >> 40) & 0x00000000000000FF))
-${indent}        data.append(UInt8((${attributeVar} >> 48) & 0x00000000000000FF))
+            } else if typeName == "uint64" {
+<?${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar}))
+${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar} >> 8))
+${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar} >> 16))
+${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar} >> 24))
+${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar} >> 32))
+${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar} >> 40))
+${indent}        data.append(UInt8(truncatingIfNeeded:${attributeVar} >> 48))
 ${indent}        data.append(UInt8(${attributeVar} >> 56))
 ?>
-        } else if typeName == "int64" ||
-                  typeName == "float64" {
-            if typeName == "int64" {
+            } else if typeName == "int64" ||
+                      typeName == "float64" {
+                if typeName == "int64" {
 <?${indent}        let bitPattern = UInt64(bitPattern: ${attributeVar})
 ?>
-            } else {  // float64.
+                } else {  // float64.
 <?${indent}        let bitPattern: UInt64 = ${attributeVar}.bitPattern
 ?>
-            }
-<?${indent}        data.append(UInt8(bitPattern & 0x00000000000000FF))
-${indent}        data.append(UInt8((bitPattern >> 8) & 0x00000000000000FF))
-${indent}        data.append(UInt8((bitPattern >> 16) & 0x00000000000000FF))
-${indent}        data.append(UInt8((bitPattern >> 24) & 0x00000000000000FF))
-${indent}        data.append(UInt8((bitPattern >> 32) & 0x00000000000000FF))
-${indent}        data.append(UInt8((bitPattern >> 40) & 0x00000000000000FF))
-${indent}        data.append(UInt8((bitPattern >> 48) & 0x00000000000000FF))
+                }
+<?${indent}        data.append(UInt8(truncatingIfNeeded:bitPattern))
+${indent}        data.append(UInt8(truncatingIfNeeded:bitPattern >> 8))
+${indent}        data.append(UInt8(truncatingIfNeeded:bitPattern >> 16))
+${indent}        data.append(UInt8(truncatingIfNeeded:bitPattern >> 24))
+${indent}        data.append(UInt8(truncatingIfNeeded:bitPattern >> 32))
+${indent}        data.append(UInt8(truncatingIfNeeded:bitPattern >> 40))
+${indent}        data.append(UInt8(truncatingIfNeeded:bitPattern >> 48))
 ${indent}        data.append(UInt8(bitPattern >> 56))
 ?>
-        } else if typeName == "bool" {
-            if attribute.defaultValues.count == 1 {
-                // In the case that there's exactly 1 default value, we know this is a single bool, which is not the same as the default.
-                // This means there's only a single value that it can be, which should be hard coded.
-                if (bool)attribute.defaultValues[0] {
+            } else if typeName == "bool" {
+                if attribute.defaultValues.count == 1 {
+                    // In the case that there's exactly 1 default value, we know this is a single bool, which is not the same as the default.
+                    // This means there's only a single value that it can be, which should be hard coded.
+                    if (bool)attribute.defaultValues[0] {
 <?${indent}        data.append(0)
 ?>
-                } else {
+                    } else {
 <?${indent}        data.append(1)
 ?>
-                }
-            } else {
+                    }
+                } else {
 <?${indent}        data.append(${attributeVar} ? 1 : 0)
 ?>
-            }
-        } else if typeName == "char" {
+                }
+            } else if typeName == "char" {
 <?${indent}        data.append(${attributeVar})
 ?>
-        } else if attribute.typeIsUIDReference ||
-                  typeName == "string" ||
-                  typeName == "UID" {
+            } else if attribute.typeIsUIDReference ||
+                      typeName == "string" ||
+                      typeName == "UID" {
 <?${indent}        for char in ${attributeVar}.utf8 {
 ${indent}            data.append(char)
 ${indent}        }
 ${indent}        data.append(0)
 ?>
-        } else {
-            error("Unrecognized type for attribute "+schemaNamespace+"::"+className+"::"+attributeName);
+            } else {
+                error("Unrecognized type for attribute "+schemaNamespace+"::"+className+"::"+attributeName);
+            }
         }
         
         if requiresList {
@@ -547,100 +555,8 @@ ${indent}        data.append(0)
     if schemaClass.superclass != NULL {
 <?        super.writeAttributes(toData: &data)
 ?>
-    } else if !hasAttributes {
+    } else if schemaClass.attributes.count == 0 {
 <?        // No-op.
-?>
-    }
-<?    }
-
-    ${overrideSpecifier}func writeChildren(toData data: inout Data) {
-?>
-    bool hasChildren = false;
-    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
-        if schemaClass.attributes[i].typeIsClass {
-            hasChildren = true;
-            break;
-        }
-    }
-    if hasChildren {
-<?        var bytecodeSignifier: UInt32
-?>
-    }
-    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
-        SchemaAttribute attribute = schemaClass.attributes[i];
-        if !attribute.typeIsClass {
-            continue;
-        }
-        string attributeName = attribute.name;
-        
-        // Check this value against the default value. Elide if it matches the default.
-        // Lists with no default should be considered to have an empty default value.
-        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
-        bool hasDefaultValue = attribute.defaultValues.count > 0;
-        string indent = requiresList || hasDefaultValue ? "    " : "";
-        if requiresList || hasDefaultValue {
-            string defaultConditional;
-            if attribute.defaultValues.count == 1 {
-                defaultConditional = attributeName + " != nil";  // Class defaults are always "nil".
-            } else {
-                uint32 defaultListCount = hasDefaultValue ? attribute.defaultValues.count : 0;
-                defaultConditional = attributeName + ".count != " + (string)defaultListCount;
-                for uint32 defaultIndex = 0; defaultIndex < attribute.defaultValues.count; defaultIndex++ {
-                    defaultConditional += "\n            || " + attributeName + "[" + (string)defaultIndex + "] != nil";  // Class defaults are always "nil".
-                }
-            }
-<?        if ${defaultConditional} {
-?>
-        }
-        
-        // Specify which child is being written.
-<?${indent}        bytecodeSignifier = BYTECODE_${schemaNamespace}_${className}_${attributeName}
-${indent}        data.append(UInt8(bytecodeSignifier & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 8) & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 16) & 0x000000FF))
-${indent}        data.append(UInt8(bytecodeSignifier >> 24))
-?>
-        
-        // Specify the length if this is a list of variable length.
-        if attribute.minOccurrences != attribute.maxOccurrences {
-            // Specify the length of this list.
-<?${indent}        bytecodeSignifier = UInt32(${attributeName}.count)
-${indent}        data.append(UInt8(bytecodeSignifier & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 8) & 0x000000FF))
-${indent}        data.append(UInt8((bytecodeSignifier >> 16) & 0x000000FF))
-${indent}        data.append(UInt8(bytecodeSignifier >> 24))
-?>
-        }
-        
-        // Specify the child value.
-        string childVar = requiresList ? attributeName + "Value" : attributeName;
-        string typeName = attribute.typeName;
-        string typeNamespace = attribute.typeNamespace;
-        if requiresList {
-            string compactMap = attribute.typeIsClass && hasDefaultValue ? ".compactMap { $0 }" : "";
-<?${indent}        for ${childVar} in ${attributeName}${compactMap} {
-?>
-            indent += "    ";
-        }
-        string unwrap = attribute.typeIsClass && hasDefaultValue ? "!" : "";
-<?${indent}        ${childVar}${unwrap}.writeObject(toData: &data)
-?>
-        
-        if requiresList {
-            <?${indent}    }
-?>
-        }
-        
-        if requiresList || hasDefaultValue {
-            <?        }
-?>
-        }
-    }
-    if schemaClass.superclass != NULL {
-        <?        super.writeChildren(toData: &data)
-?>
-    } else if !hasChildren {
-        <?        // No-op.
 ?>
     }
 <?    }

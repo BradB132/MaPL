@@ -7,15 +7,20 @@ outputToFile(outputDir + "/MaPLGeneratorSerialized.swift");
 
 import Foundation
 
+enum MaPLGeneratorSerializedParseStatus {
+    case success
+    case error
+    case completed
+}
+
 /**
  * Describes how generated objects are serialized / deserialized.
  */
 protocol MaPLGeneratorSerialized {
     mutating func initializeObject(withData data: [UInt8], dataIndex: inout Int) -> Bool
-    mutating func initializeAttribute(withData data: [UInt8], dataIndex: inout Int) -> Bool
+    mutating func initializeAttribute(withData data: [UInt8], dataIndex: inout Int) -> MaPLGeneratorSerializedParseStatus
     func writeObject(toData data: inout Data)
     func writeAttributes(toData data: inout Data)
-    func writeChildren(toData data: inout Data)
 }
 
 ?>
@@ -27,8 +32,10 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
     for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
         SchemaClass schemaClass = schema.classes[classIndex];
         string className = schemaClass.name;
-        uint32 classHash = (uint32)hash("CLASS_" + schemaNamespace + "_" + className);
-        <?let BYTECODE_${schemaNamespace}_${className}: UInt32 = ${classHash}
+        uint32 beginClassHash = (uint32)hash("CLASS_BEGIN_" + schemaNamespace + "_" + className);
+        uint32 endClassHash = (uint32)hash("CLASS_END_" + schemaNamespace + "_" + className);
+<?let BYTECODE_${schemaNamespace}_${className}_BEGIN: UInt32 = ${beginClassHash}
+let BYTECODE_${schemaNamespace}_${className}_END: UInt32 = ${endClassHash}
 ?>
         
         for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
