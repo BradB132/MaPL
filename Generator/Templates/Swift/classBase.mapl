@@ -144,8 +144,8 @@ if useMaPLGeneratorSerialized {
         
         // Ensure the endianness of this device matches that of the bytecode.
         let machineIsLittleEndian = CFByteOrderGetCurrent() == CFByteOrder(CFByteOrderLittleEndian.rawValue)
-        let scriptIsLittleEndian = dataArray[0] == 1
-        guard machineIsLittleEndian == scriptIsLittleEndian else { return nil }
+        let bytecodeIsLittleEndian = dataArray[0] == 1
+        guard machineIsLittleEndian == bytecodeIsLittleEndian else { return nil }
         
         // Init the object with the remaining data.
         let createdObject = ${schemaNamespace}_${className}()
