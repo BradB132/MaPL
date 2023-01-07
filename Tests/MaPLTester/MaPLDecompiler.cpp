@@ -1085,10 +1085,17 @@ void evaluateStatement(MaPLDecompilerContext *context) {
 void printDecompilationOfBytecode(const u_int8_t *bytes, MaPLBytecodeLength length) {
     MaPLDecompilerContext context;
     context.scriptBuffer = bytes;
+
+    u_int8_t endianByte = bytes[0];
+    printLineNumber(&context, sizeof(u_int8_t));
+    printf("ENDIAN=%s\n", endianByte ? "LITTLE" : "BIG");
+    context.cursorPosition += sizeof(u_int8_t);
+    
     printf("(PRIMITIVE STACK BYTE SIZE)\n");
     printMemoryAddress(&context);
     printf("(ALLOCATED STACK INDEX SIZE)\n");
     printMemoryAddress(&context);
+    
     while (context.cursorPosition < length) {
         evaluateStatement(&context);
     }
