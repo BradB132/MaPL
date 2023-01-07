@@ -794,9 +794,15 @@ void evaluateStatement(MaPLDecompilerContext *context) {
         }
             break;
         case MaPLInstruction_string_literal: // Intentional fallthrough.
-        case MaPLInstruction_metadata: // Intentional fallthrough.
         case MaPLInstruction_debug_delete_variable:
             printString(context);
+            break;
+        case MaPLInstruction_metadata: {
+            MaPLParameterCount paramCount = printParameterCount(context);
+            for (MaPLParameterCount i = 0; i < paramCount; i++) {
+                evaluateStatement(context);
+            }
+        }
             break;
         case MaPLInstruction_debug_line: {
             MaPLLineNumber lineNumber = *((MaPLLineNumber *)(context->scriptBuffer+context->cursorPosition));
