@@ -675,11 +675,17 @@ void printMemoryAddress(MaPLDecompilerContext *context) {
     context->cursorPosition += sizeof(MaPLMemoryAddress);
 }
 
-void printCursorMove(MaPLDecompilerContext *context) {
+void printCursorMove(MaPLDecompilerContext *context, bool moveForward) {
     MaPLBytecodeLength move = *((MaPLBytecodeLength *)(context->scriptBuffer+context->cursorPosition));
     printLineNumber(context, sizeof(MaPLBytecodeLength));
-    printf("CURSOR MOVE=%u\n", move);
     context->cursorPosition += sizeof(MaPLBytecodeLength);
+    MaPLBytecodeLength destination = context->cursorPosition;
+    if (moveForward) {
+        destination += move;
+    } else {
+        destination -= move;
+    }
+    printf("CURSOR MOVE %s=%u (TO %u)\n", moveForward ? "FORWARD" : "BACKWARD", move, destination);
 }
 
 void printSymbol(MaPLDecompilerContext *context) {
@@ -1065,11 +1071,13 @@ void evaluateStatement(MaPLDecompilerContext *context) {
             break;
         case MaPLInstruction_conditional:
             evaluateStatement(context);
-            printCursorMove(context);
+            printCursorMove(context, true);
             break;
-        case MaPLInstruction_cursor_move_forward: // Intentional fallthrough.
+        case MaPLInstruction_cursor_move_forward:
+            printCursorMove(context, true);
+            break;
         case MaPLInstruction_cursor_move_back:
-            printCursorMove(context);
+            printCursorMove(context, false);
             break;
         case MaPLInstruction_debug_update_variable:
             printString(context);
