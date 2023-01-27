@@ -14,7 +14,7 @@ import Foundation
 
 for uint32 i = 0; i < schema.enums.count; i++ {
     SchemaEnum enum = schema.enums[i];
-    <?enum ${schemaNamespace}_${enum.name}: UInt32 {
+    <?enum ${schemaNamespace}_${enum.name}: UInt32, CaseIterable {
 ?>
     for uint32 j = 0; j < enum.cases.count; j++ {
         <?    case ${enum.cases[j]} = ${j}
