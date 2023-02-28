@@ -1,7 +1,7 @@
 # EaSL
 **(Easy Schema Language)**
 
-![Logo](./EaSL.svg)
+![Logo](./EaSL_logo.svg)
 
 ## Design
 EaSL is a schema language intended for use with MaPLGenerator. EaSL has a straightforward syntax that allows specification of:
