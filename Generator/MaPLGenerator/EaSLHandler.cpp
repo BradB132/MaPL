@@ -20,9 +20,11 @@ MaPLArrayMap<std::string> *parseAnnotations(const std::vector<antlr4::tree::Term
     std::unordered_map<std::string, std::string> backingMap;
     for (antlr4::tree::TerminalNode *annotationNode : annotationNodes) {
         std::string tokenText = annotationNode->getText();
-        std::string annotationString = tokenText.substr(1);
-        backingVector.push_back(annotationString);
-        backingMap[annotationString] = annotationString;
+        std::string annotationKeyAndValue = tokenText.substr(1);
+        size_t equalsIndex = annotationKeyAndValue.find("=");
+        std::pair<std::string, std::string> annotationPair = { annotationKeyAndValue.substr(0,equalsIndex), annotationKeyAndValue.substr(equalsIndex+1) };
+        backingVector.push_back(annotationPair.first);
+        backingMap.insert(annotationPair);
     }
     return new MaPLArrayMap<std::string>(backingVector, backingMap);
 }

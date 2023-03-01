@@ -1,5 +1,7 @@
 namespace Example;
 
+// In this example some special serialization code might be added to a class
+// which is the root object. That is communicated to the template via annotation.
 @root class Container {
     Content contents[];
 }
@@ -13,14 +15,21 @@ class Content {
     float32 varF = 5.6;
     float64 varG = 7.8;
     bool varH = false;
-    @localized string varI = "asdf";
+    string varI = "asdf";
     UID varJ;
     reference<Content> varK = "zxcv";
-    ContentChild child;
     TestEnum varL = B;
+    
+    // In this example a property was renamed, but the original name must be
+    // maintained for backward compatibility. For a situation like this, pass
+    // the name in via annotation key and value.
+    @originalName=child ContentChild contentChild;
 }
 
 class ContentChild {
+    // In this example a string contained within the data is annotated as one which
+    // is visible to the user. A special template can search for this annotation
+    // and pull out these values into a separate file for easier translation.
     @localized string name;
 }
 
