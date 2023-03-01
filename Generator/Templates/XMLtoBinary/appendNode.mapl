@@ -6,8 +6,9 @@ XMLNode node = (XMLNode)inParameters["node"];
 SchemaClass schemaClass = schemas[node.namespace].classes[node.name];
 
 // Write an instruction that describes the start of this class.
-uint32 beginClassHash = (uint32)hash("CLASS_BEGIN_" + schemaClass.namespace + "_" + schemaClass.name);
-uint32 endClassHash = (uint32)hash("CLASS_END_" + schemaClass.namespace + "_" + schemaClass.name);
+string classHashName = schemaClass.annotations.contains("originalName") ? schemaClass.annotations["originalName"] : schemaClass.name;
+uint32 beginClassHash = (uint32)hash("CLASS_BEGIN_" + schemaClass.namespace + "_" + classHashName);
+uint32 endClassHash = (uint32)hash("CLASS_END_" + schemaClass.namespace + "_" + classHashName);
 writeToFile(beginClassHash);
 
 // Traverse the inheritance hierarchy for all attributes.
@@ -17,7 +18,8 @@ while true {
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute schemaAttr = schemaClass.attributes[i];
         
-        string attributeDescriptor = "ATTRIBUTE_" + schemaClass.namespace + "_" + schemaClass.name + "_" + schemaAttr.name;
+        string attrHashName = schemaAttr.annotations.contains("originalName") ? schemaAttr.annotations["originalName"] : schemaAttr.name;
+        string attributeDescriptor = "ATTRIBUTE_" + schemaClass.namespace + "_" + classHashName + "_" + attrHashName;
         uint32 attributeHash = (uint32)hash(attributeDescriptor);
         
         // If the number of values is deterministic, no need to specify the length.

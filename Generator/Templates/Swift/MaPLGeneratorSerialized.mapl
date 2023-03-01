@@ -31,18 +31,18 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
 
     for uint32 classIndex = 0; classIndex < schema.classes.count; classIndex++ {
         SchemaClass schemaClass = schema.classes[classIndex];
-        string className = schemaClass.name;
-        uint32 beginClassHash = (uint32)hash("CLASS_BEGIN_" + schemaNamespace + "_" + className);
-        uint32 endClassHash = (uint32)hash("CLASS_END_" + schemaNamespace + "_" + className);
-<?let BYTECODE_${schemaNamespace}_${className}_BEGIN: UInt32 = ${beginClassHash}
-let BYTECODE_${schemaNamespace}_${className}_END: UInt32 = ${endClassHash}
+        string classHashName = schemaClass.annotations.contains("originalName") ? schemaClass.annotations["originalName"] : schemaClass.name;
+        uint32 beginClassHash = (uint32)hash("CLASS_BEGIN_" + schemaNamespace + "_" + classHashName);
+        uint32 endClassHash = (uint32)hash("CLASS_END_" + schemaNamespace + "_" + classHashName);
+<?let BYTECODE_${schemaNamespace}_${schemaClass.name}_BEGIN: UInt32 = ${beginClassHash}
+let BYTECODE_${schemaNamespace}_${schemaClass.name}_END: UInt32 = ${endClassHash}
 ?>
         
         for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
             SchemaAttribute attribute = schemaClass.attributes[attrIndex];
-            string attributeName = attribute.name;
-            uint32 attributeHash = (uint32)hash("ATTRIBUTE_" + schemaNamespace + "_" + className + "_" + attributeName);
-            <?let BYTECODE_${schemaNamespace}_${className}_${attributeName}: UInt32 = ${attributeHash}
+            string attributeHashName = attribute.annotations.contains("originalName") ? attribute.annotations["originalName"] : attribute.name;
+            uint32 attributeHash = (uint32)hash("ATTRIBUTE_" + schemaNamespace + "_" + classHashName + "_" + attributeHashName);
+            <?let BYTECODE_${schemaNamespace}_${schemaClass.name}_${attribute.name}: UInt32 = ${attributeHash}
 ?>
         }
         <?
