@@ -405,11 +405,15 @@ ${indent}                guard let enumValue = ${schemaNamespace}_${typeName}(ra
         if requiresList || hasDefaultValue {
             string defaultConditional;
             if attribute.defaultValues.count == 1 {
-                string defaultValue = attribute.defaultValues[0];
-                if attribute.typeIsEnum {
-                    defaultValue = "." + defaultValue;
+                if attribute.typeIsClass {
+                    defaultConditional = "let " + attributeName + " = " + attributeName;
+                } else {
+                    string defaultValue = attribute.defaultValues[0];
+                    if attribute.typeIsEnum {
+                        defaultValue = "." + defaultValue;
+                    }
+                    defaultConditional = attributeName + " != " + defaultValue;
                 }
-                defaultConditional = attributeName + " != " + defaultValue;
             } else {
                 uint32 defaultListCount = hasDefaultValue ? attribute.defaultValues.count : 0;
                 defaultConditional = attributeName + ".count != " + (string)defaultListCount;
