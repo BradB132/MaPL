@@ -45,14 +45,11 @@ Example code-generation templates can be found in the [Templates](./Templates) d
 
 ## Building the generator
 
-The easiest way to build the generator is to invoke:
+The easiest way to build the generator is to invoke `cmake`:
 ```
 cd MaPL/Generator
-xcodebuild
+cmake .
+make
 ```
-Then check the [Executable](./Executable) directory for a symlink to the executable, as well as the MaPL API that can be used for accessing the schema and XML data.
 
-The above command will generate multiple `build` directories. They are already ignored by `.gitignore`, but if you want to clean them up, run:
-```
-rm -r ./build ../Compiler/build ../Runtime/build
-```
+The executable can also be built using the existing Xcode project if you're on macOS.
