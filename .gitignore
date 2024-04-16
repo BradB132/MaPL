@@ -14,3 +14,7 @@ Generator/build
 Generator/MaPLGenerator.xcodeproj/project.xcworkspace/xcuserdata
 Generator/MaPLGenerator.xcodeproj/xcuserdata
 Generator/Executable/MaPLGenerator
+Generator/CMakeFiles
+Generator/cmake_install.cmake
+Generator/CMakeCache.txt
+Generator/Makefile
