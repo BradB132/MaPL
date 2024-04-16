@@ -1,13 +1,15 @@
-Compiler/generated_c++
 Compiler/build
 Compiler/MaPLCompiler.xcodeproj/project.xcworkspace/xcuserdata
 Compiler/MaPLCompiler.xcodeproj/xcuserdata
+Compiler/CMakeFiles
+Compiler/cmake_install.cmake
+Compiler/CMakeCache.txt
+Compiler/Makefile
 Runtime/build
 Runtime/MaPLRuntime.xcodeproj/project.xcworkspace/xcuserdata
 Runtime/MaPLRuntime.xcodeproj/xcuserdata
 Tests/MaPLTester.xcodeproj/project.xcworkspace/xcuserdata
 Tests/MaPLTester.xcodeproj/xcuserdata
-Generator/EaSL/generated_c++
 Generator/build
 Generator/MaPLGenerator.xcodeproj/project.xcworkspace/xcuserdata
 Generator/MaPLGenerator.xcodeproj/xcuserdata
