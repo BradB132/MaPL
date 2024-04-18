@@ -133,7 +133,7 @@ while true {
     if schemaClass == NULL {
         break;
     }
+    classHashName = schemaClass.annotations.contains("originalName") ? schemaClass.annotations["originalName"] : schemaClass.name;
 }
-
 
 writeToFile(endClassHash);

@@ -1,9 +1,10 @@
 #import "../../Executable/MaPLGeneratorAPI.mapl"
 
 string outputDirectory = commandLineFlag("binaryOutputDir") + "/";
+string outputFileExtension = commandLineFlag("binaryOutputFileExtension");
 for uint32 i = 0; i < xmlFiles.count; i++ {
     XMLFile file = xmlFiles[i];
-    outputToFile(outputDirectory + fileStemForPath(file.filePath) + ".dat");
+    outputToFile(outputDirectory + fileStemForPath(file.filePath) + "." + outputFileExtension);
     writeToFile((char)deviceIsLittleEndian);
     outParameters["node"] = file.rootNode;
     executeMaPLScript("./appendNode.mapl");
