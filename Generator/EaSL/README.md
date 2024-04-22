@@ -15,3 +15,7 @@ EaSL is a schema language intended for use with MaPLGenerator. EaSL has a straig
     * Primitive values.
     * One-to-many object relationships.
     * Child objects.
+
+The EaSL directory contains an [example schema](./exampleSchema.easl) and [example XML](./exampleXML.xml).
+
+EaSL is intended for use in [MaPLGenerator](../).
