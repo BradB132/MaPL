@@ -7,15 +7,14 @@
 
 #include "XmlHandler.h"
 
-#include <libxml/parser.h>
 #include <unordered_map>
 #include <sstream>
 
 #include "ErrorLogger.h"
 
-XmlFile::XmlFile(xmlDoc *document) :
-_rootNode(new XmlNode(xmlDocGetRootElement(document))),
-_filePath((const char *)document->URL) {
+XmlFile::XmlFile(const tinyxml2::XMLDocument *document, const std::filesystem::path &filePath) :
+_rootNode(new XmlNode(document->RootElement(), filePath)),
+_filePath(filePath.c_str()) {
 }
 
 MaPLParameter XmlFile::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -23,7 +22,7 @@ MaPLParameter XmlFile::invokeFunction(MaPLSymbol functionSymbol, const MaPLParam
         case MaPLSymbols_XMLFile_filePath:
             return MaPLStringByReference(_filePath.c_str());
         case MaPLSymbols_XMLFile_rootNode:
-            return MaPLPointer(_rootNode);
+            return MaPLPointer((void *)_rootNode);
         default:
             return MaPLUninitialized();
     }
@@ -33,18 +32,51 @@ MaPLParameter XmlFile::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-XmlNode::XmlNode(xmlNode *node) :
-_node(node),
-_name((char *)node->name) {
+XmlNode::XmlNode(const tinyxml2::XMLElement *node, const std::filesystem::path &filePath) :
+_node(node) {
+    
+    const tinyxml2::XMLElement *rootElement = node->GetDocument()->RootElement();
+    
+    // Parse the name vs namespace.
+    std::string fullName = node->Name();
+    size_t namespaceSeparatorIndex = fullName.find(":");
+    std::string namespaceURL;
+    if (namespaceSeparatorIndex != std::string::npos) {
+        _name = fullName.substr(namespaceSeparatorIndex + 1);
+        std::string namespaceIdentifier = fullName.substr(0, namespaceSeparatorIndex);
+        std::string prefix = "xmlns:";
+        const char *matchingNamespace = rootElement->Attribute((prefix + namespaceIdentifier).c_str());
+        if (!matchingNamespace) {
+            ErrorLogger logger(filePath);
+            logger.logError(node, "The root element in this document must have a 'xmlns' attribute which supplies a namespace URL for the '"+namespaceIdentifier+"' identifier. It should look something like: xmlns:"+namespaceIdentifier+"=\"schema://MyNamespace\".");
+            exit(1);
+        }
+        namespaceURL = matchingNamespace;
+    } else {
+        _name = fullName;
+        const char *defaultNamespace = rootElement->Attribute("xmlns");
+        if (!defaultNamespace) {
+            ErrorLogger logger(filePath);
+            logger.logError(node, "The root element in this document must have a 'xmlns' attribute which supplies a namespace URL. It should look something like: xmlns=\"schema://MyNamespace\".");
+            exit(1);
+        }
+        namespaceURL = defaultNamespace;
+    }
+    
     // XML requires that namespaces be articulated as URLs. MaPLGenerator expects that
     // the string after the URL's scheme matches the namespace in the EaSL schema.
-    std::string href = (char *)node->ns->href;
-    _namespace = href.substr(href.find("://") + 3);
+    size_t namespaceURLPrefixIndex = namespaceURL.find("://");
+    if (namespaceURLPrefixIndex != std::string::npos) {
+        _namespace = namespaceURL.substr(namespaceURLPrefixIndex + 3);
+    } else {
+        ErrorLogger logger(filePath);
+        logger.logError(node, "The 'xmlns' value for this node must be represented as a URL. It should look something like: xmlns=\"schema://MyNamespace\".");
+        exit(1);
+    }
     
     std::vector<XmlNode *> children;
-    for (xmlNode *child = node->children; child; child = child->next) {
-        if (child->type != XML_ELEMENT_NODE) { continue; }
-        children.push_back(new XmlNode(child));
+    for(const tinyxml2::XMLElement* child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+        children.push_back(new XmlNode(child, filePath));
     }
     _children = new MaPLArray<XmlNode *>(children);
     
@@ -55,7 +87,15 @@ _name((char *)node->name) {
     
     std::vector<XmlAttribute *> attributes;
     std::unordered_map<std::string, XmlAttribute *> attributeMap;
-    for (xmlAttr *xmlAttribute = node->properties; xmlAttribute; xmlAttribute = xmlAttribute->next) {
+    for(const tinyxml2::XMLAttribute* xmlAttribute = node->FirstAttribute(); xmlAttribute; xmlAttribute=xmlAttribute->Next()) {
+        if (node == rootElement) {
+            const char *xmlAttributeName = xmlAttribute->Name();
+            if (!strncmp(xmlAttributeName, "xmlns", 5)) {
+                // This attribute is specifying XML namespace and should not be examined as if it's an attribute of this object.
+                continue;
+            }
+        }
+        
         XmlAttribute *attribute = new XmlAttribute(xmlAttribute);
         attributes.push_back(attribute);
         attributeMap[attribute->_name] = attribute;
@@ -84,13 +124,10 @@ MaPLParameter XmlNode::invokeSubscript(MaPLParameter index) {
     return MaPLUninitialized();
 }
 
-XmlAttribute::XmlAttribute(xmlAttr *attribute) :
+XmlAttribute::XmlAttribute(const tinyxml2::XMLAttribute *attribute) :
 _attribute(attribute),
-_name((char *)attribute->name) {
-    xmlChar *xmlProp = xmlGetProp(attribute->parent, attribute->name);
-    _value = (char *)xmlProp;
-    xmlFree(xmlProp);
-    
+_name(attribute->Name()),
+_value(attribute->Value()) {
     std::vector<std::string> commaDelimitedValues;
     std::stringstream stringStream(_value);
     const char* whitespaceCharset = " \f\n\r\t\v";
@@ -125,13 +162,14 @@ MaPLArray<XmlFile *> *xmlFilesForPaths(const std::vector<std::filesystem::path> 
     std::vector<XmlFile *> xmlFilesVector;
     
     for (const std::filesystem::path &xmlPath : xmlPaths) {
-        xmlDoc *doc = xmlReadFile(xmlPath.c_str(), NULL, 0);
-        if (doc == NULL) {
+        tinyxml2::XMLDocument *createdDocument = new tinyxml2::XMLDocument();
+        tinyxml2::XMLError loadResult = createdDocument->LoadFile(xmlPath.c_str());
+        if (loadResult != tinyxml2::XML_SUCCESS) {
             ErrorLogger logger(xmlPath);
             logger.logError("Failed to open data file.");
             exit(1);
         }
-        xmlFilesVector.push_back(new XmlFile(doc));
+        xmlFilesVector.push_back(new XmlFile(createdDocument, xmlPath));
     }
     
     return new MaPLArray<XmlFile *>(xmlFilesVector);

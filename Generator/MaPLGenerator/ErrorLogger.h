@@ -10,14 +10,15 @@
 
 #include <filesystem>
 #include <string>
-#include <libxml/tree.h>
+
 #include "antlr4-common.h"
+#include "tinyxml2.h"
 
 class ErrorLogger {
 public:
     ErrorLogger(const std::filesystem::path &filePath);
     void logError(antlr4::Token *token, const std::string &errorMessage);
-    void logError(xmlNode *node, const std::string &errorMessage);
+    void logError(const tinyxml2::XMLElement *node, const std::string &errorMessage);
     void logError(const std::string &errorMessage);
 
     const std::filesystem::path _filePath;

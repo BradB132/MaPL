@@ -12,7 +12,6 @@
 #include "EaSLHandler.h"
 #include "MaPLHandler.h"
 #include "XmlHandler.h"
-#include <libxml/parser.h>
 
 void printUsage() {
     fprintf(stderr, "Usage: MaPLGenerator [paths] [flags (optional)]\n  Paths are expected to contain:\n    - At least one '.easl' schema file.\n    - At least one '.mapl' script file.\n    - Optional '.xml' data file(s).\n  Flags are prepended with '--' and contain a mapping from name to value. For example, '--myVar=myValue'.\n");

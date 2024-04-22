@@ -15,7 +15,7 @@
 		9B16A749283EA9AE00E5071C /* ErrorLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9B16A747283EA9AE00E5071C /* ErrorLogger.cpp */; };
 		9B7F7F8D281724E8004955D9 /* libMaPLCompiler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F7D2817232F004955D9 /* libMaPLCompiler.a */; };
 		9B7F7F8E281724ED004955D9 /* libMaPLRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F862817233A004955D9 /* libMaPLRuntime.a */; };
-		9B7F7F9028172ADC004955D9 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B7F7F8F28172ADC004955D9 /* libxml2.tbd */; };
+		9BC39DD32BD5F86200D460CC /* tinyxml2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BC39DD22BD5F86200D460CC /* tinyxml2.cpp */; };
 		9BE3EC81281707FB00DED0C2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9BE3EC80281707FB00DED0C2 /* main.cpp */; };
 /* End PBXBuildFile section */
 
@@ -94,7 +94,8 @@
 		9B16A748283EA9AE00E5071C /* ErrorLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ErrorLogger.h; sourceTree = "<group>"; };
 		9B7F7F742817232D004955D9 /* MaPLCompiler.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLCompiler.xcodeproj; path = ../Compiler/MaPLCompiler.xcodeproj; sourceTree = "<group>"; };
 		9B7F7F7E2817233A004955D9 /* MaPLRuntime.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MaPLRuntime.xcodeproj; path = ../Runtime/MaPLRuntime.xcodeproj; sourceTree = "<group>"; };
-		9B7F7F8F28172ADC004955D9 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
+		9BC39DD12BD5F86200D460CC /* tinyxml2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinyxml2.h; path = tinyxml2/tinyxml2.h; sourceTree = SOURCE_ROOT; };
+		9BC39DD22BD5F86200D460CC /* tinyxml2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxml2.cpp; path = tinyxml2/tinyxml2.cpp; sourceTree = SOURCE_ROOT; };
 		9BE3EC7D281707FB00DED0C2 /* MaPLGenerator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MaPLGenerator; sourceTree = BUILT_PRODUCTS_DIR; };
 		9BE3EC80281707FB00DED0C2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -104,7 +105,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B7F7F9028172ADC004955D9 /* libxml2.tbd in Frameworks */,
 				9B7F7F8E281724ED004955D9 /* libMaPLRuntime.a in Frameworks */,
 				9B7F7F8D281724E8004955D9 /* libMaPLCompiler.a in Frameworks */,
 			);
@@ -153,9 +153,17 @@
 		9B7F7F8C281724E8004955D9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9B7F7F8F28172ADC004955D9 /* libxml2.tbd */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		9BC39DD02BD5F85000D460CC /* tinyxml2 */ = {
+			isa = PBXGroup;
+			children = (
+				9BC39DD22BD5F86200D460CC /* tinyxml2.cpp */,
+				9BC39DD12BD5F86200D460CC /* tinyxml2.h */,
+			);
+			path = tinyxml2;
 			sourceTree = "<group>";
 		};
 		9BE3EC74281707FB00DED0C2 = {
@@ -181,6 +189,7 @@
 		9BE3EC7F281707FB00DED0C2 /* MaPLGenerator */ = {
 			isa = PBXGroup;
 			children = (
+				9BC39DD02BD5F85000D460CC /* tinyxml2 */,
 				9BE3EC80281707FB00DED0C2 /* main.cpp */,
 				9B16A6E42833F54300E5071C /* MaPLHandler.cpp */,
 				9B16A6E52833F54300E5071C /* MaPLHandler.h */,
@@ -342,6 +351,7 @@
 				9B16A73528366B6400E5071C /* EaSLHandler.cpp in Sources */,
 				9B16A746283EA74600E5071C /* XmlHandler.cpp in Sources */,
 				9B16A72D283663EB00E5071C /* EaSLParser.cpp in Sources */,
+				9BC39DD32BD5F86200D460CC /* tinyxml2.cpp in Sources */,
 				9BE3EC81281707FB00DED0C2 /* main.cpp in Sources */,
 				9B16A749283EA9AE00E5071C /* ErrorLogger.cpp in Sources */,
 				9B16A72E283663EB00E5071C /* EaSLLexer.cpp in Sources */,
@@ -418,7 +428,6 @@
 					"${SRCROOT}/../Compiler/Headers",
 					"${SRCROOT}/../Runtime/Headers",
 					"${SRCROOT}/../Shared/Headers",
-					"${SDKROOT}/usr/include/libxml2",
 					"\"$(SRCROOT)/../Compiler/ANTLR4/runtime/Cpp/runtime/src\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.3;
@@ -477,7 +486,6 @@
 					"${SRCROOT}/../Compiler/Headers",
 					"${SRCROOT}/../Runtime/Headers",
 					"${SRCROOT}/../Shared/Headers",
-					"${SDKROOT}/usr/include/libxml2",
 					"\"$(SRCROOT)/../Compiler/ANTLR4/runtime/Cpp/runtime/src\"",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.3;

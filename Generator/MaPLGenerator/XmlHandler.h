@@ -10,8 +10,8 @@
 
 #include <filesystem>
 #include <vector>
-#include <libxml/tree.h>
 
+#include "tinyxml2.h"
 #include "MaPLInterface.h"
 #include "MaPLGeneratorCollections.h"
 
@@ -20,21 +20,21 @@ class XmlAttribute;
 
 class XmlFile : public MaPLInterface {
 public:
-    XmlFile(xmlDoc *document);
+    XmlFile(const tinyxml2::XMLDocument *document, const std::filesystem::path &filePath);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
-    XmlNode *_rootNode;
+    const XmlNode *_rootNode;
     std::string _filePath;
 };
 
 class XmlNode : public MaPLInterface {
 public:
-    XmlNode(xmlNode *node);
+    XmlNode(const tinyxml2::XMLElement *node, const std::filesystem::path &filePath);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
-    xmlNode *_node;
+    const tinyxml2::XMLElement *_node;
     std::string _name;
     std::string _namespace;
     MaPLArrayMap<XmlAttribute *> *_attributes;
@@ -44,11 +44,11 @@ public:
 
 class XmlAttribute : public MaPLInterface {
 public:
-    XmlAttribute(xmlAttr *attribute);
+    XmlAttribute(const tinyxml2::XMLAttribute *attribute);
     virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
     virtual MaPLParameter invokeSubscript(MaPLParameter index);
     
-    xmlAttr *_attribute;
+    const tinyxml2::XMLAttribute *_attribute;
     std::string _name;
     std::string _value;
     MaPLArray<std::string> *_values;

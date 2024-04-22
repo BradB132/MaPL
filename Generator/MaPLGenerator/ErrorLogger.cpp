@@ -18,8 +18,8 @@ void ErrorLogger::logError(antlr4::Token *token, const std::string &errorMessage
     _hasLoggedError = true;
 }
 
-void ErrorLogger::logError(xmlNode *node, const std::string &errorMessage) {
-    fprintf(stderr, "%s:%u: error: %s\n", _filePath.c_str(), node->line, errorMessage.c_str());
+void ErrorLogger::logError(const tinyxml2::XMLElement *node, const std::string &errorMessage) {
+    fprintf(stderr, "%s:%u: error: %s\n", _filePath.c_str(), node->GetLineNum(), errorMessage.c_str());
     _hasLoggedError = true;
 }
 

@@ -10,7 +10,6 @@
 
 #include <filesystem>
 #include <vector>
-#include <libxml/tree.h>
 
 #include "EaSLParser.h"
 #include "MaPLInterface.h"

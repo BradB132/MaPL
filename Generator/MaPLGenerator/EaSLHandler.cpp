@@ -821,7 +821,7 @@ void validateXML(MaPLArray<XmlFile *> *xmlFiles, MaPLArrayMap<Schema *> *schemas
     std::unordered_map<std::string, XmlNode *> uidMap;
     for (XmlFile *xmlFile : xmlFiles->_backingVector) {
         ErrorLogger errorLogger(xmlFile->_filePath);
-        firstPassXMLValidation(xmlFile->_rootNode, schemas, uidMap, errorLogger);
+        firstPassXMLValidation((XmlNode *)xmlFile->_rootNode, schemas, uidMap, errorLogger);
         if (errorLogger._hasLoggedError) {
             hasLoggedError = true;
         }
@@ -831,7 +831,7 @@ void validateXML(MaPLArray<XmlFile *> *xmlFiles, MaPLArrayMap<Schema *> *schemas
     }
     for (XmlFile *xmlFile : xmlFiles->_backingVector) {
         ErrorLogger errorLogger(xmlFile->_filePath);
-        secondPassXMLValidation(xmlFile->_rootNode, schemas, uidMap, errorLogger);
+        secondPassXMLValidation((XmlNode *)xmlFile->_rootNode, schemas, uidMap, errorLogger);
         if (errorLogger._hasLoggedError) {
             hasLoggedError = true;
         }

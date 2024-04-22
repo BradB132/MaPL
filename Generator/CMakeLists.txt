@@ -12,6 +12,7 @@ include_directories("${CMAKE_SOURCE_DIR}/../Compiler/generated_c++")
 include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src")
 include_directories("${CMAKE_SOURCE_DIR}/../Runtime/Headers")
 include_directories("${CMAKE_SOURCE_DIR}/EaSL/generated_c++")
+include_directories("${CMAKE_SOURCE_DIR}/tinyxml2")
 include_directories("${CMAKE_SOURCE_DIR}/../Shared")
 include_directories("${CMAKE_SOURCE_DIR}/../Shared/Headers")
 
@@ -162,6 +163,7 @@ set(SOURCE_FILES
     ../Compiler/MaPLCompiler/MaPLFile.cpp
     ../Compiler/MaPLCompiler/MaPLCompilerHelpers.cpp
     ../Runtime/MaPLRuntime/MaPLRuntime.c
+    tinyxml2/tinyxml2.cpp
     EaSL/generated_c++/EaSLLexer.cpp
     EaSL/generated_c++/EaSLParser.cpp
     MaPLGenerator/EaSLHandler.cpp
@@ -175,10 +177,3 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Executable")
 
 # Create executable
 add_executable(MaPLGenerator ${SOURCE_FILES})
-
-# Find libxml2 (adjust REQUIRED/QUIET based on your needs)
-find_package(LibXml2 REQUIRED)
-# Include directories (optional, use only if needed)
-include_directories(${LIBXML2_INCLUDE_DIR})
-# Link against libxml2 libraries
-target_link_libraries(MaPLGenerator PUBLIC LibXml2::LibXml2)

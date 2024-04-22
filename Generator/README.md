@@ -7,10 +7,10 @@ The generator has a few important dependencies:
 
 * **EaSL**
     * EaSL is the schema language used by MaPLGenerator. The implementation for this language is in the [EaSL](./EaSL) directory
-* **libXML**
-    * An open source XML-parsing library which parses the data which adheres to the EaSL schema.
 * **MaPL**
     * MaPL is used to format the output from MaPLGenerator, primarily with its metadata language feature.
+* **tinyxml**
+    * An open source XML-parsing library which parses the data which adheres to the EaSL schema.
 
 ## Generation
 

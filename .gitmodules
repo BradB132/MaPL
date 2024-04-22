@@ -1,3 +1,6 @@
 [submodule "Compiler/ANTLR4"]
 	path = Compiler/ANTLR4
 	url = https://github.com/antlr/antlr4.git
+[submodule "Generator/tinyxml2"]
+	path = Generator/tinyxml2
+	url = https://github.com/leethomason/tinyxml2/
