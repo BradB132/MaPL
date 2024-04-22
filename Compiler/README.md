@@ -5,24 +5,15 @@ The goal of the MaPL compiler is to absorb as much of the complexity and computa
 
 ### How to Build the Compiler
 
-_The compiler was developed on macOS using Xcode. The easiest way to build is to use the Xcode project, which will automatically do everything described in this section._
+The easiest way to build `MaPLCompiler` is with cmake:
 
-The translation from human-readable MaPL scripts to machine-runnable bytecode happens in 3 steps:
-
-1. Lexing (aka Tokenizing)
-2. Parsing
-3. Compiling
-
-MaPL's compiler relies on [ANTLR](https://www.antlr.org/)-generated code for the first 2 steps of the translation. To build the compiler, the ANTLR lexer and parser first need to be generated. Generate it with the following:
 ```
-./generate_parser.sh C++
-```
-Make sure you include the `C++` argument, or the script will build the Java version of the parser that is used for testing. The script should output the C++ code for the lexer and parser:
+cd MaPL/Compiler
+cmake .
+make
 
-* `./generated_c++/MaPLLexer.h`
-* `./generated_c++/MaPLLexer.cpp`
-* `./generated_c++/MaPLParser.h`
-* `./generated_c++/MaPLParser.cpp`
+```
+This will generate an executable in the `MaPL/Compiler/Executable` directory.
 
 ### Optimizations
 
@@ -35,13 +26,36 @@ The MaPL compiler attempts to make optimizations where it can. More complex opti
 **Dead code stripping** - The compiler will omit logic that is obviously unused. For example, `int32 x = true ? 1 : 2` is rewritten as `int32 x = 1`. Similarly if a loop is declared with...
 ```
 while true {
-    /* logic */
+    if /* conditional logic */ {
+        break;
+    }
 }
 ```
 ...it will be rewritten as an infinite loop resembling...
 ```
-label "start";
-/* logic */;
-goto "start";
+// Execution starts here.
+if /* conditional logic */ {
+    // Execution jumps to end.
+}
+// Execution moves back to top.
+// Execution ends here.
 ```
-Note the previous example is more to illustrate an idea, there are no `label` or `goto` statements in MaPL.
+
+### ANTLR4 Dependency
+
+The translation from human-readable MaPL scripts to machine-runnable bytecode happens in 3 steps:
+
+1. Lexing (aka Tokenizing)
+2. Parsing
+3. Compiling
+
+MaPL's compiler relies on [ANTLR](https://www.antlr.org/)-generated code for the first 2 steps of the translation. All code from ANTLR is already generated, and included in the `generated_c++` directory. To regenerate the the C++ code for these steps, run the following:
+```
+MaPL/Compiler/generate_parser.sh C++
+```
+Make sure you include the `C++` argument, or the script will build the Java version of the parser that is used for testing. The script is dependent on `antlr4-tools` and will attempt to install it if needed. The script should output the C++ code for the lexer and parser:
+
+* `./generated_c++/MaPLLexer.h`
+* `./generated_c++/MaPLLexer.cpp`
+* `./generated_c++/MaPLParser.h`
+* `./generated_c++/MaPLParser.cpp`

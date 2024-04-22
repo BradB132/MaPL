@@ -5,6 +5,7 @@ Compiler/CMakeFiles
 Compiler/cmake_install.cmake
 Compiler/CMakeCache.txt
 Compiler/Makefile
+Compiler/Executable
 Runtime/build
 Runtime/MaPLRuntime.xcodeproj/project.xcworkspace/xcuserdata
 Runtime/MaPLRuntime.xcodeproj/xcuserdata
