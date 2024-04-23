@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <stdint.h>
 
 #include "MaPLBytecodeConstants.h"
 #include "MaPLCompilerHelpers.h"
@@ -109,7 +110,7 @@ public:
     /**
      * @return The bytes stored in this buffer.
      */
-    std::vector<u_int8_t> getBytes();
+    std::vector<uint8_t> getBytes();
     
     /**
      * @return The number of bytes in the buffer returned via the @c getBytes method.
@@ -162,7 +163,7 @@ private:
                                                    MaPLMemoryAddress endOfDependencies);
     
     MaPLFile *_parentFile;
-    std::vector<u_int8_t> _bytes;
+    std::vector<uint8_t> _bytes;
     std::vector<MaPLBufferAnnotation> _annotations;
 };
 

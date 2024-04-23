@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <stdint.h>
 
 struct MaPLCompileOptions {
     /// If true, the resulting bytecode will include debug information about what
@@ -29,7 +30,7 @@ struct MaPLCompileResult {
     std::string symbolTable;
     
     /// A mapping of file paths to the resulting bytecode. If compilation failed, this mapping will be empty.
-    std::map<std::filesystem::path, std::vector<u_int8_t>> compiledFiles;
+    std::map<std::filesystem::path, std::vector<uint8_t>> compiledFiles;
     
     /// A list of error messages. This list is only populated if compilation fails.
     std::vector<std::string> errorMessages;

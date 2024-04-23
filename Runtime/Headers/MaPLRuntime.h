@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "MaPLTypedefs.h"
 
@@ -41,11 +42,11 @@ typedef enum {
 typedef struct {
     MaPLDataType dataType;
     union {
-        u_int8_t charValue;
+        uint8_t charValue;
         int32_t int32Value;
         int64_t int64Value;
-        u_int32_t uint32Value;
-        u_int64_t uint64Value;
+        uint32_t uint32Value;
+        uint64_t uint64Value;
         float float32Value;
         double float64Value;
         const char* stringValue;
@@ -59,11 +60,11 @@ typedef struct {
  */
 MaPLParameter MaPLUninitialized(void);
 MaPLParameter MaPLVoid(void);
-MaPLParameter MaPLChar(u_int8_t charValue);
+MaPLParameter MaPLChar(uint8_t charValue);
 MaPLParameter MaPLInt32(int32_t int32Value);
 MaPLParameter MaPLInt64(int64_t int64Value);
-MaPLParameter MaPLUint32(u_int32_t uint32Value);
-MaPLParameter MaPLUint64(u_int64_t uint64Value);
+MaPLParameter MaPLUint32(uint32_t uint32Value);
+MaPLParameter MaPLUint64(uint64_t uint64Value);
 MaPLParameter MaPLFloat32(float float32Value);
 MaPLParameter MaPLFloat64(double float64Value);
 MaPLParameter MaPLBool(bool booleanValue);

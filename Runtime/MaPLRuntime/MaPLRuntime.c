@@ -20,9 +20,9 @@ typedef enum {
 } MaPLExecutionState;
 
 typedef struct {
-    const u_int8_t* scriptBuffer;
+    const uint8_t* scriptBuffer;
     size_t cursorPosition;
-    u_int8_t *primitiveTable;
+    uint8_t *primitiveTable;
     const char **stringTable;
     const MaPLCallbacks *callbacks;
     bool isDeadCodepath;
@@ -30,11 +30,11 @@ typedef struct {
     MaPLRuntimeError errorType;
 } MaPLExecutionContext;
 
-u_int8_t evaluateChar(MaPLExecutionContext *context);
+uint8_t evaluateChar(MaPLExecutionContext *context);
 int32_t evaluateInt32(MaPLExecutionContext *context);
 int64_t evaluateInt64(MaPLExecutionContext *context);
-u_int32_t evaluateUint32(MaPLExecutionContext *context);
-u_int64_t evaluateUint64(MaPLExecutionContext *context);
+uint32_t evaluateUint32(MaPLExecutionContext *context);
+uint64_t evaluateUint64(MaPLExecutionContext *context);
 float evaluateFloat32(MaPLExecutionContext *context);
 double evaluateFloat64(MaPLExecutionContext *context);
 bool evaluateBool(MaPLExecutionContext *context);
@@ -99,7 +99,7 @@ MaPLParameter MaPLUninitialized(void) {
 MaPLParameter MaPLVoid(void) {
     return (MaPLParameter){ MaPLDataType_void };
 }
-MaPLParameter MaPLChar(u_int8_t charValue) {
+MaPLParameter MaPLChar(uint8_t charValue) {
     return (MaPLParameter){ MaPLDataType_char, .charValue = charValue };
 }
 MaPLParameter MaPLInt32(int32_t int32Value) {
@@ -108,10 +108,10 @@ MaPLParameter MaPLInt32(int32_t int32Value) {
 MaPLParameter MaPLInt64(int64_t int64Value) {
     return (MaPLParameter){ MaPLDataType_int64, .int64Value = int64Value };
 }
-MaPLParameter MaPLUint32(u_int32_t uint32Value) {
+MaPLParameter MaPLUint32(uint32_t uint32Value) {
     return (MaPLParameter){ MaPLDataType_uint32, .uint32Value = uint32Value };
 }
-MaPLParameter MaPLUint64(u_int64_t uint64Value) {
+MaPLParameter MaPLUint64(uint64_t uint64Value) {
     return (MaPLParameter){ MaPLDataType_uint64, .uint64Value = uint64Value };
 }
 MaPLParameter MaPLFloat32(float float32Value) {
@@ -322,15 +322,15 @@ MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
     return returnValue;
 }
 
-u_int8_t evaluateChar(MaPLExecutionContext *context) {
+uint8_t evaluateChar(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
         case MaPLInstruction_char_literal: {
-            u_int8_t literal = *((u_int8_t *)(context->scriptBuffer+context->cursorPosition));
-            context->cursorPosition += sizeof(u_int8_t);
+            uint8_t literal = *((uint8_t *)(context->scriptBuffer+context->cursorPosition));
+            context->cursorPosition += sizeof(uint8_t);
             return literal;
         }
         case MaPLInstruction_char_variable:
-            return *((u_int8_t *)(context->primitiveTable+readMemoryAddress(context)));
+            return *((uint8_t *)(context->primitiveTable+readMemoryAddress(context)));
         case MaPLInstruction_char_add:
             return evaluateChar(context) + evaluateChar(context);
         case MaPLInstruction_char_subtract:
@@ -363,7 +363,7 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
         }
         case MaPLInstruction_char_ternary_conditional: {
             bool previousDeadCodepath = context->isDeadCodepath;
-            u_int8_t result;
+            uint8_t result;
             if (evaluateBool(context)) {
                 result = evaluateChar(context);
                 context->isDeadCodepath = true;
@@ -380,20 +380,20 @@ u_int8_t evaluateChar(MaPLExecutionContext *context) {
         case MaPLInstruction_char_typecast:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_int32:
-                    return (u_int8_t)evaluateInt32(context);
+                    return (uint8_t)evaluateInt32(context);
                 case MaPLDataType_int64:
-                    return (u_int8_t)evaluateInt64(context);
+                    return (uint8_t)evaluateInt64(context);
                 case MaPLDataType_uint32:
-                    return (u_int8_t)evaluateUint32(context);
+                    return (uint8_t)evaluateUint32(context);
                 case MaPLDataType_uint64:
-                    return (u_int8_t)evaluateUint64(context);
+                    return (uint8_t)evaluateUint64(context);
                 case MaPLDataType_float32:
-                    return (u_int8_t)evaluateFloat32(context);
+                    return (uint8_t)evaluateFloat32(context);
                 case MaPLDataType_float64:
-                    return (u_int8_t)evaluateFloat64(context);
+                    return (uint8_t)evaluateFloat64(context);
                 case MaPLDataType_string: {
                     const char *taggedString = evaluateString(context);
-                    u_int8_t returnChar = (u_int8_t)atoi(untagString(taggedString));
+                    uint8_t returnChar = (uint8_t)atoi(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnChar;
                 }
@@ -599,15 +599,15 @@ int64_t evaluateInt64(MaPLExecutionContext *context) {
     return 0;
 }
 
-u_int32_t evaluateUint32(MaPLExecutionContext *context) {
+uint32_t evaluateUint32(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
         case MaPLInstruction_uint32_literal: {
-            u_int32_t literal = *((u_int32_t *)(context->scriptBuffer+context->cursorPosition));
-            context->cursorPosition += sizeof(u_int32_t);
+            uint32_t literal = *((uint32_t *)(context->scriptBuffer+context->cursorPosition));
+            context->cursorPosition += sizeof(uint32_t);
             return literal;
         }
         case MaPLInstruction_uint32_variable:
-            return *((u_int32_t *)(context->primitiveTable+readMemoryAddress(context)));
+            return *((uint32_t *)(context->primitiveTable+readMemoryAddress(context)));
         case MaPLInstruction_uint32_add:
             return evaluateUint32(context) + evaluateUint32(context);
         case MaPLInstruction_uint32_subtract:
@@ -640,7 +640,7 @@ u_int32_t evaluateUint32(MaPLExecutionContext *context) {
         }
         case MaPLInstruction_uint32_ternary_conditional: {
             bool previousDeadCodepath = context->isDeadCodepath;
-            u_int32_t result;
+            uint32_t result;
             if (evaluateBool(context)) {
                 result = evaluateUint32(context);
                 context->isDeadCodepath = true;
@@ -657,20 +657,20 @@ u_int32_t evaluateUint32(MaPLExecutionContext *context) {
         case MaPLInstruction_uint32_typecast:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_char:
-                    return (u_int32_t)evaluateChar(context);
+                    return (uint32_t)evaluateChar(context);
                 case MaPLDataType_int32:
-                    return (u_int32_t)evaluateInt32(context);
+                    return (uint32_t)evaluateInt32(context);
                 case MaPLDataType_int64:
-                    return (u_int32_t)evaluateInt64(context);
+                    return (uint32_t)evaluateInt64(context);
                 case MaPLDataType_uint64:
-                    return (u_int32_t)evaluateUint64(context);
+                    return (uint32_t)evaluateUint64(context);
                 case MaPLDataType_float32:
-                    return (u_int32_t)evaluateFloat32(context);
+                    return (uint32_t)evaluateFloat32(context);
                 case MaPLDataType_float64:
-                    return (u_int32_t)evaluateFloat64(context);
+                    return (uint32_t)evaluateFloat64(context);
                 case MaPLDataType_string: {
                     const char *taggedString = evaluateString(context);
-                    u_int32_t returnInt = (u_int32_t)atol(untagString(taggedString));
+                    uint32_t returnInt = (uint32_t)atol(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnInt;
                 }
@@ -690,15 +690,15 @@ u_int32_t evaluateUint32(MaPLExecutionContext *context) {
     return 0;
 }
 
-u_int64_t evaluateUint64(MaPLExecutionContext *context) {
+uint64_t evaluateUint64(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
         case MaPLInstruction_uint64_literal: {
-            u_int64_t literal = *((u_int64_t *)(context->scriptBuffer+context->cursorPosition));
-            context->cursorPosition += sizeof(u_int64_t);
+            uint64_t literal = *((uint64_t *)(context->scriptBuffer+context->cursorPosition));
+            context->cursorPosition += sizeof(uint64_t);
             return literal;
         }
         case MaPLInstruction_uint64_variable:
-            return *((u_int64_t *)(context->primitiveTable+readMemoryAddress(context)));
+            return *((uint64_t *)(context->primitiveTable+readMemoryAddress(context)));
         case MaPLInstruction_uint64_add:
             return evaluateUint64(context) + evaluateUint64(context);
         case MaPLInstruction_uint64_subtract:
@@ -731,7 +731,7 @@ u_int64_t evaluateUint64(MaPLExecutionContext *context) {
         }
         case MaPLInstruction_uint64_ternary_conditional: {
             bool previousDeadCodepath = context->isDeadCodepath;
-            u_int64_t result;
+            uint64_t result;
             if (evaluateBool(context)) {
                 result = evaluateUint64(context);
                 context->isDeadCodepath = true;
@@ -748,20 +748,20 @@ u_int64_t evaluateUint64(MaPLExecutionContext *context) {
         case MaPLInstruction_uint64_typecast:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_char:
-                    return (u_int64_t)evaluateChar(context);
+                    return (uint64_t)evaluateChar(context);
                 case MaPLDataType_int32:
-                    return (u_int64_t)evaluateInt32(context);
+                    return (uint64_t)evaluateInt32(context);
                 case MaPLDataType_int64:
-                    return (u_int64_t)evaluateInt64(context);
+                    return (uint64_t)evaluateInt64(context);
                 case MaPLDataType_uint32:
-                    return (u_int64_t)evaluateUint32(context);
+                    return (uint64_t)evaluateUint32(context);
                 case MaPLDataType_float32:
-                    return (u_int64_t)evaluateFloat32(context);
+                    return (uint64_t)evaluateFloat32(context);
                 case MaPLDataType_float64:
-                    return (u_int64_t)evaluateFloat64(context);
+                    return (uint64_t)evaluateFloat64(context);
                 case MaPLDataType_string: {
                     const char *taggedString = evaluateString(context);
-                    u_int64_t returnInt = (u_int64_t)atol(untagString(taggedString));
+                    uint64_t returnInt = (uint64_t)atol(untagString(taggedString));
                     freeStringIfNeeded(taggedString);
                     return returnInt;
                 }
@@ -956,7 +956,7 @@ bool evaluateBool(MaPLExecutionContext *context) {
         case MaPLInstruction_literal_false:
             return false;
         case MaPLInstruction_boolean_variable: {
-            u_int8_t variableValue = *((u_int8_t *)(context->primitiveTable+readMemoryAddress(context)));
+            uint8_t variableValue = *((uint8_t *)(context->primitiveTable+readMemoryAddress(context)));
             return variableValue != 0;
         }
         case MaPLInstruction_boolean_function_invocation: {
@@ -1547,7 +1547,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             break;
         case MaPLInstruction_char_assign: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
-            *(u_int8_t *)(context->primitiveTable+variableAddress) = evaluateChar(context);
+            *(uint8_t *)(context->primitiveTable+variableAddress) = evaluateChar(context);
         }
             break;
         case MaPLInstruction_int32_assign: {
@@ -1562,12 +1562,12 @@ void evaluateStatement(MaPLExecutionContext *context) {
             break;
         case MaPLInstruction_uint32_assign: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
-            *(u_int32_t *)(context->primitiveTable+variableAddress) = evaluateUint32(context);
+            *(uint32_t *)(context->primitiveTable+variableAddress) = evaluateUint32(context);
         }
             break;
         case MaPLInstruction_uint64_assign: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
-            *(u_int64_t *)(context->primitiveTable+variableAddress) = evaluateUint64(context);
+            *(uint64_t *)(context->primitiveTable+variableAddress) = evaluateUint64(context);
         }
             break;
         case MaPLInstruction_float32_assign: {
@@ -1582,7 +1582,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             break;
         case MaPLInstruction_boolean_assign: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
-            *(u_int8_t *)(context->primitiveTable+variableAddress) = (u_int8_t)evaluateBool(context);
+            *(uint8_t *)(context->primitiveTable+variableAddress) = (uint8_t)evaluateBool(context);
         }
             break;
         case MaPLInstruction_string_assign: {
@@ -1797,7 +1797,7 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     _Static_assert(sizeof(double) == 8, "MaPL assumes that 'double' type is 64-bit.");
     
     MaPLExecutionContext context;
-    context.scriptBuffer = (u_int8_t *)scriptBuffer;
+    context.scriptBuffer = (uint8_t *)scriptBuffer;
     context.callbacks = callbacks;
     context.isDeadCodepath = false;
     context.executionState = MaPLExecutionState_continue;
@@ -1818,7 +1818,7 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     // The entire script execution happens synchronously inside this function, so these tables can be stack allocated.
     MaPLMemoryAddress primitiveTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(uint8_t)));
     MaPLMemoryAddress stringTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(MaPLMemoryAddress)+sizeof(uint8_t)));
-    u_int8_t primitiveTable[primitiveTableSize];
+    uint8_t primitiveTable[primitiveTableSize];
     const char *stringTable[stringTableSize];
     memset(stringTable, 0, sizeof(stringTable));
     context.primitiveTable = primitiveTable;

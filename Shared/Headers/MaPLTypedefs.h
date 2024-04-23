@@ -7,10 +7,12 @@
 #ifndef MaPLTypedefs_h
 #define MaPLTypedefs_h
 
+#include <stdint.h>
+
 // Byte sizes for MaPL types.
-typedef u_int8_t MaPLParameterCount;
-typedef u_int16_t MaPLSymbol;
-typedef u_int16_t MaPLLineNumber;
-typedef u_int16_t MaPLBytecodeLength;
+typedef uint8_t MaPLParameterCount;
+typedef uint16_t MaPLSymbol;
+typedef uint16_t MaPLLineNumber;
+typedef uint16_t MaPLBytecodeLength;
 
 #endif /* MaPLTypedefs_h */

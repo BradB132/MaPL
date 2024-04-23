@@ -675,7 +675,7 @@ void confirmSignedValueFitsInSignedBits(int64_t value, int8_t bits, MaPLFile *fi
     }
 }
 
-void confirmUnsignedValueFitsInSignedBits(u_int64_t value, int8_t bits, MaPLFile *file, antlr4::Token *token) {
+void confirmUnsignedValueFitsInSignedBits(uint64_t value, int8_t bits, MaPLFile *file, antlr4::Token *token) {
     if (value >= 1L << (bits-1)) {
         file->logError(token, "A value of "+std::to_string(value)+" is outside the range of numbers that can be represented by a "+std::to_string(bits)+"-bit signed integer.");
     }
@@ -688,7 +688,7 @@ void confirmSignedValueFitsInUnsignedBits(int64_t value, int8_t bits, MaPLFile *
     }
 }
 
-void confirmUnsignedValueFitsInUnsignedBits(u_int64_t value, int8_t bits, MaPLFile *file, antlr4::Token *token) {
+void confirmUnsignedValueFitsInUnsignedBits(uint64_t value, int8_t bits, MaPLFile *file, antlr4::Token *token) {
     if (value >= 1UL << bits) {
         file->logError(token, "A value of "+std::to_string(value)+" is outside the range of numbers that can be represented by a "+std::to_string(bits)+"-bit unsigned integer.");
     }
@@ -703,35 +703,35 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
                     return literal;
                 case MaPLPrimitiveType_Int32:
                     confirmSignedValueFitsInUnsignedBits(literal.int32Value, 8, file, token);
-                    returnVal.charValue = (u_int8_t)literal.int32Value;
+                    returnVal.charValue = (uint8_t)literal.int32Value;
                     return returnVal;
                 case MaPLPrimitiveType_Int64: // Intentional fallthrough.
                 case MaPLPrimitiveType_SignedInt_AmbiguousSize:
                     confirmSignedValueFitsInUnsignedBits(literal.int64Value, 8, file, token);
-                    returnVal.charValue = (u_int8_t)literal.int64Value;
+                    returnVal.charValue = (uint8_t)literal.int64Value;
                     return returnVal;
                 case MaPLPrimitiveType_UInt32:
                     confirmUnsignedValueFitsInUnsignedBits(literal.uInt32Value, 8, file, token);
-                    returnVal.charValue = (u_int8_t)literal.uInt32Value;
+                    returnVal.charValue = (uint8_t)literal.uInt32Value;
                     return returnVal;
                 case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
                 case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
                     confirmUnsignedValueFitsInUnsignedBits(literal.uInt64Value, 8, file, token);
-                    returnVal.charValue = (u_int8_t)literal.uInt64Value;
+                    returnVal.charValue = (uint8_t)literal.uInt64Value;
                     return returnVal;
                 case MaPLPrimitiveType_Float32:
                     confirmSignedValueFitsInUnsignedBits((int64_t)literal.float32Value, 8, file, token);
-                    returnVal.charValue = (u_int8_t)literal.float32Value;
+                    returnVal.charValue = (uint8_t)literal.float32Value;
                     return returnVal;
                 case MaPLPrimitiveType_Float64: // Intentional fallthrough.
                 case MaPLPrimitiveType_Float_AmbiguousSize:
                     confirmSignedValueFitsInUnsignedBits((int64_t)literal.float64Value, 8, file, token);
-                    returnVal.charValue = (u_int8_t)literal.float64Value;
+                    returnVal.charValue = (uint8_t)literal.float64Value;
                     return returnVal;
                 case MaPLPrimitiveType_String: {
-                    u_int64_t stringAsUnsignedInt = (u_int64_t)std::stoull(literal.stringValue);
+                    uint64_t stringAsUnsignedInt = (uint64_t)std::stoull(literal.stringValue);
                     confirmUnsignedValueFitsInUnsignedBits(stringAsUnsignedInt, 8, file, token);
-                    returnVal.charValue = (u_int8_t)stringAsUnsignedInt;
+                    returnVal.charValue = (uint8_t)stringAsUnsignedInt;
                     return returnVal;
                 }
                 case MaPLPrimitiveType_Boolean:
@@ -822,36 +822,36 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
         case MaPLPrimitiveType_UInt32:
             switch (literal.type.primitiveType) {
                 case MaPLPrimitiveType_Char:
-                    returnVal.uInt32Value = (u_int32_t)literal.charValue;
+                    returnVal.uInt32Value = (uint32_t)literal.charValue;
                     return returnVal;
                 case MaPLPrimitiveType_Int32:
-                    returnVal.uInt32Value = (u_int32_t)literal.int32Value;
+                    returnVal.uInt32Value = (uint32_t)literal.int32Value;
                     return returnVal;
                 case MaPLPrimitiveType_Int64: // Intentional fallthrough.
                 case MaPLPrimitiveType_SignedInt_AmbiguousSize:
                     confirmSignedValueFitsInUnsignedBits(literal.int64Value, 32, file, token);
-                    returnVal.uInt32Value = (u_int32_t)literal.int64Value;
+                    returnVal.uInt32Value = (uint32_t)literal.int64Value;
                     return returnVal;
                 case MaPLPrimitiveType_UInt32:
                     return literal;
                 case MaPLPrimitiveType_UInt64: // Intentional fallthrough.
                 case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
                     confirmUnsignedValueFitsInUnsignedBits(literal.uInt64Value, 32, file, token);
-                    returnVal.uInt32Value = (u_int32_t)literal.uInt64Value;
+                    returnVal.uInt32Value = (uint32_t)literal.uInt64Value;
                     return returnVal;
                 case MaPLPrimitiveType_Float32:
                     confirmSignedValueFitsInUnsignedBits((int64_t)literal.float32Value, 32, file, token);
-                    returnVal.uInt32Value = (u_int32_t)literal.float32Value;
+                    returnVal.uInt32Value = (uint32_t)literal.float32Value;
                     return returnVal;
                 case MaPLPrimitiveType_Float64: // Intentional fallthrough.
                 case MaPLPrimitiveType_Float_AmbiguousSize:
                     confirmSignedValueFitsInUnsignedBits((int64_t)literal.float64Value, 32, file, token);
-                    returnVal.uInt32Value = (u_int32_t)literal.float64Value;
+                    returnVal.uInt32Value = (uint32_t)literal.float64Value;
                     return returnVal;
                 case MaPLPrimitiveType_String: {
-                    u_int64_t stringAsUnsignedInt = (u_int64_t)std::stoull(literal.stringValue);
+                    uint64_t stringAsUnsignedInt = (uint64_t)std::stoull(literal.stringValue);
                     confirmUnsignedValueFitsInUnsignedBits(stringAsUnsignedInt, 32, file, token);
-                    returnVal.uInt32Value = (u_int32_t)stringAsUnsignedInt;
+                    returnVal.uInt32Value = (uint32_t)stringAsUnsignedInt;
                     return returnVal;
                 }
                 case MaPLPrimitiveType_Boolean:
@@ -863,17 +863,17 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
         case MaPLPrimitiveType_UInt64:
             switch (literal.type.primitiveType) {
                 case MaPLPrimitiveType_Char:
-                    returnVal.uInt64Value = (u_int64_t)literal.charValue;
+                    returnVal.uInt64Value = (uint64_t)literal.charValue;
                     return returnVal;
                 case MaPLPrimitiveType_Int32:
-                    returnVal.uInt64Value = (u_int64_t)literal.int32Value;
+                    returnVal.uInt64Value = (uint64_t)literal.int32Value;
                     return returnVal;
                 case MaPLPrimitiveType_Int64: // Intentional fallthrough.
                 case MaPLPrimitiveType_SignedInt_AmbiguousSize:
-                    returnVal.uInt64Value = (u_int64_t)literal.int64Value;
+                    returnVal.uInt64Value = (uint64_t)literal.int64Value;
                     return returnVal;
                 case MaPLPrimitiveType_UInt32:
-                    returnVal.uInt64Value = (u_int64_t)literal.uInt32Value;
+                    returnVal.uInt64Value = (uint64_t)literal.uInt32Value;
                     return returnVal;
                 case MaPLPrimitiveType_UInt64:
                     return literal;
@@ -881,14 +881,14 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
                     returnVal.uInt64Value = literal.uInt64Value;
                     return returnVal;
                 case MaPLPrimitiveType_Float32:
-                    returnVal.uInt64Value = (u_int64_t)literal.float32Value;
+                    returnVal.uInt64Value = (uint64_t)literal.float32Value;
                     return returnVal;
                 case MaPLPrimitiveType_Float64: // Intentional fallthrough.
                 case MaPLPrimitiveType_Float_AmbiguousSize:
-                    returnVal.uInt64Value = (u_int64_t)literal.float64Value;
+                    returnVal.uInt64Value = (uint64_t)literal.float64Value;
                     return returnVal;
                 case MaPLPrimitiveType_String:
-                    returnVal.uInt64Value = (u_int64_t)std::stoull(literal.stringValue);
+                    returnVal.uInt64Value = (uint64_t)std::stoull(literal.stringValue);
                     return returnVal;
                 case MaPLPrimitiveType_Boolean:
                     returnVal.uInt64Value = literal.booleanValue ? 1 : 0;
@@ -1046,7 +1046,7 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
                     returnVal.int64Value = (int64_t)literal.float64Value;
                     return returnVal;
                 case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
-                    returnVal.uInt64Value = (u_int64_t)literal.float64Value;
+                    returnVal.uInt64Value = (uint64_t)literal.float64Value;
                     return returnVal;
                 default: break;
             }
@@ -1056,7 +1056,7 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
                 case MaPLPrimitiveType_SignedInt_AmbiguousSize:
                     return literal;
                 case MaPLPrimitiveType_Int_AmbiguousSizeAndSign:
-                    returnVal.uInt64Value = (u_int64_t)literal.int64Value;
+                    returnVal.uInt64Value = (uint64_t)literal.int64Value;
                     return returnVal;
                 default: break;
             }
@@ -1071,24 +1071,24 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
     return { { MaPLPrimitiveType_TypeError } };
 }
 
-u_int8_t bitShiftForLiteral(const MaPLLiteral &literal) {
+uint8_t bitShiftForLiteral(const MaPLLiteral &literal) {
     // Convert this literal to an unsigned int.
-    u_int64_t unsignedValue;
+    uint64_t unsignedValue;
     switch (literal.type.primitiveType) {
         case MaPLPrimitiveType_Char:
-            unsignedValue = (u_int64_t)literal.charValue;
+            unsignedValue = (uint64_t)literal.charValue;
             break;
         case MaPLPrimitiveType_Int32:
             if (literal.int32Value <= 0) { return 0; }
-            unsignedValue = (u_int64_t)literal.int32Value;
+            unsignedValue = (uint64_t)literal.int32Value;
             break;
         case MaPLPrimitiveType_SignedInt_AmbiguousSize: // Intentional fallthrough.
         case MaPLPrimitiveType_Int64:
             if (literal.int64Value <= 0) { return 0; }
-            unsignedValue = (u_int64_t)literal.int64Value;
+            unsignedValue = (uint64_t)literal.int64Value;
             break;
         case MaPLPrimitiveType_UInt32:
-            unsignedValue = (u_int64_t)literal.uInt32Value;
+            unsignedValue = (uint64_t)literal.uInt32Value;
             break;
         case MaPLPrimitiveType_Int_AmbiguousSizeAndSign: // Intentional fallthrough.
         case MaPLPrimitiveType_UInt64:
@@ -1097,7 +1097,7 @@ u_int8_t bitShiftForLiteral(const MaPLLiteral &literal) {
         default: return 0;
     }
     if (!(unsignedValue & (unsignedValue - 1))) [[unlikely]] { // Only bother calculating log2 for numbers that actually are a power of 2.
-        for (u_int8_t i = 0; i < 64; i++) {
+        for (uint8_t i = 0; i < 64; i++) {
             if (unsignedValue == 1ULL << i) {
                 return i;
             }

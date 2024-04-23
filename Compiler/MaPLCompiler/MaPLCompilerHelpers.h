@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 #include <string>
+#include <stdint.h>
+
 #include "MaPLParser.h"
 #include "MaPLBytecodeConstants.h"
 
@@ -65,11 +67,11 @@ struct MaPLLiteral {
     MaPLType type;
     // The value of the expression.
     union {
-        u_int8_t charValue;
+        uint8_t charValue;
         int32_t int32Value;
         int64_t int64Value;
-        u_int32_t uInt32Value;
-        u_int64_t uInt64Value;
+        uint32_t uInt32Value;
+        uint64_t uInt64Value;
         float float32Value;
         double float64Value;
         bool booleanValue;
@@ -322,7 +324,7 @@ MaPLLiteral castLiteralToType(const MaPLLiteral &literal, const MaPLType &castTy
 /**
  * @return An integer representing the log2 of the literal value. Returns @c 0 if the literal value is not a power of 2.
  */
-u_int8_t bitShiftForLiteral(const MaPLLiteral &literal);
+uint8_t bitShiftForLiteral(const MaPLLiteral &literal);
 
 /**
  * @return The object expression that terminates the chain of expressions for which @c rootExpression is the root node.

@@ -10,10 +10,10 @@
 #include "MaPLTypedefs.h"
 
 // Byte sizes for MaPL bytecode.
-typedef u_int16_t MaPLMemoryAddress;
+typedef uint16_t MaPLMemoryAddress;
 
 // Bytecodes are sorted by return type.
-enum MaPLInstruction : u_int8_t {
+enum MaPLInstruction : uint8_t {
     MaPLInstruction_placeholder = 0,
     
     // INT32

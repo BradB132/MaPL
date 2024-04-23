@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <stdint.h>
 
 #include "MaPLCompiler.h"
 #include "MaPLSymbols.h"
@@ -34,7 +35,7 @@ static std::vector<MaPLStackFrame> _stackFrames;
 static MaPLArray<XmlFile *> *_xmlFiles;
 static MaPLArrayMap<Schema *> *_schemas;
 static const std::unordered_map<std::string, std::string> *_flags;
-static std::unordered_map<std::string, std::vector<u_int8_t>> _bytecodeCache;
+static std::unordered_map<std::string, std::vector<uint8_t>> _bytecodeCache;
 static std::unordered_set<std::string> _stringSet;
 
 std::filesystem::path normalizedParamPath(const char *pathParam) {
@@ -272,7 +273,7 @@ void invokeScript(const std::filesystem::path &scriptPath) {
     }
     
     std::string pathString = scriptPath.string();
-    std::vector<u_int8_t> bytecode;
+    std::vector<uint8_t> bytecode;
     if (_bytecodeCache.count(pathString) == 0) {
         MaPLCompileOptions options{ true };
         MaPLCompileResult result = compileMaPL({ scriptPath }, options);

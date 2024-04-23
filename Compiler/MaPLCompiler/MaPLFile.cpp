@@ -8,6 +8,7 @@
 #include "MaPLFile.h"
 #include <fstream>
 #include <sstream>
+#include <stdint.h>
 
 #include "antlr4-runtime.h"
 #include "MaPLLexer.h"
@@ -392,7 +393,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     } else if (isConcreteUnsignedInt(assignedVariable.type.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
                         if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, assignedVariable.type)) {
-                            u_int8_t shift = bitShiftForLiteral(literal);
+                            uint8_t shift = bitShiftForLiteral(literal);
                             if (shift) {
                                 // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
                                 currentBuffer->appendInstruction(bitwiseShiftRightInstructionForPrimitive(assignedVariable.type.primitiveType));
@@ -415,7 +416,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 } else if (tokenType == MaPLParser::MULTIPLY_ASSIGN && isIntegral(assignedVariable.type.primitiveType)) {
                     MaPLLiteral literal = constantValueForExpression(assignment->expression());
                     if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, assignedVariable.type)) {
-                        u_int8_t shift = bitShiftForLiteral(literal);
+                        uint8_t shift = bitShiftForLiteral(literal);
                         if (shift) {
                             // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
                             currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(assignedVariable.type.primitiveType));
@@ -549,7 +550,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                     } else if (isConcreteUnsignedInt(returnType.primitiveType)) {
                         MaPLLiteral literal = constantValueForExpression(assignment->expression());
                         if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, returnType)) {
-                            u_int8_t shift = bitShiftForLiteral(literal);
+                            uint8_t shift = bitShiftForLiteral(literal);
                             if (shift) {
                                 // Rewrite this as a bit shift. For example, "x /= 4" becomes "x = x >> 2".
                                 currentBuffer->appendInstruction(bitwiseShiftRightInstructionForPrimitive(returnType.primitiveType));
@@ -565,7 +566,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                 } else if (assignTokenType == MaPLParser::MULTIPLY_ASSIGN && isIntegral(returnType.primitiveType)) {
                     MaPLLiteral literal = constantValueForExpression(assignment->expression());
                     if (literal.type.primitiveType != MaPLPrimitiveType_Uninitialized && _api.isAssignable(literal.type, returnType)) {
-                        u_int8_t shift = bitShiftForLiteral(literal);
+                        uint8_t shift = bitShiftForLiteral(literal);
                         if (shift) {
                             // Rewrite this as a bit shift. For example, "x *= 4" becomes "x = x << 2".
                             currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(returnType.primitiveType));
@@ -991,7 +992,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             // Attempt a strength reduction: If an operand is an integral constant and power of 2,
                             // convert this to a left bit shift. For example, "x * 8" becomes "x << 3".
                             MaPLLiteral constantLeftOperand = constantValueForExpression(leftOperand);
-                            u_int8_t leftOperandShift = bitShiftForLiteral(constantLeftOperand);
+                            uint8_t leftOperandShift = bitShiftForLiteral(constantLeftOperand);
                             if (leftOperandShift) {
                                 currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(expectedType.primitiveType));
                                 compileNode(rightOperand, expectedType, currentBuffer);
@@ -1002,7 +1003,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                                 break;
                             }
                             MaPLLiteral constantRightOperand = constantValueForExpression(rightOperand);
-                            u_int8_t rightOperandShift = bitShiftForLiteral(constantRightOperand);
+                            uint8_t rightOperandShift = bitShiftForLiteral(constantRightOperand);
                             if (rightOperandShift) {
                                 currentBuffer->appendInstruction(bitwiseShiftLeftInstructionForPrimitive(expectedType.primitiveType));
                                 compileNode(leftOperand, expectedType, currentBuffer);
@@ -1040,7 +1041,7 @@ void MaPLFile::compileNode(antlr4::ParserRuleContext *node, const MaPLType &expe
                             }
                         } else if (isConcreteUnsignedInt(expectedType.primitiveType)) {
                             MaPLLiteral constantDenominator = constantValueForExpression(denominator);
-                            u_int8_t denominatorShift = bitShiftForLiteral(constantDenominator);
+                            uint8_t denominatorShift = bitShiftForLiteral(constantDenominator);
                             if (denominatorShift) {
                                 // Strength reduction: If this expression is unsigned, and the denominator
                                 // is a constant and power of 2, convert this to a right bit shift.
@@ -2235,7 +2236,7 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
             case MaPLParser::LITERAL_INT: {
                 std::string intAsString = expression->LITERAL_INT()->getText();
                 MaPLLiteral literal{ { MaPLPrimitiveType_Int_AmbiguousSizeAndSign } };
-                literal.uInt64Value = (u_int64_t)std::stoull(intAsString);
+                literal.uInt64Value = (uint64_t)std::stoull(intAsString);
                 return literal;
             }
             case MaPLParser::LITERAL_FLOAT: {

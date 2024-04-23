@@ -85,7 +85,7 @@ void MaPLBuffer::appendBuffer(MaPLBuffer *otherBuffer,
                               MaPLMemoryAddress allocatedMemoryIndexOffset) {
     // Append all bytes from the other buffer.
     size_t previousSize = _bytes.size();
-    const std::vector<u_int8_t> &otherBytes = otherBuffer->getBytes();
+    const std::vector<uint8_t> &otherBytes = otherBuffer->getBytes();
     _bytes.insert(_bytes.end(), otherBytes.begin()+endOfDependencies, otherBytes.end());
     
     for (const MaPLBufferAnnotation &annotation : otherBuffer->getAnnotations()) {
@@ -205,7 +205,7 @@ void MaPLBuffer::appendString(std::string string, MaPLFile *file, antlr4::Token 
     return appendBytes(cString, length+1);
 }
 
-std::vector<u_int8_t> MaPLBuffer::getBytes() {
+std::vector<uint8_t> MaPLBuffer::getBytes() {
     return _bytes;
 }
 
