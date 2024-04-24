@@ -43,7 +43,7 @@ int main(int argc, const char * argv[]) {
         // This arg is not a flag, assume it's a path.
         std::filesystem::path argPath(argString);
         argPath = std::filesystem::absolute(argPath).lexically_normal();
-        std::string pathExtension = argPath.extension();
+        std::string pathExtension = argPath.extension().u8string();
         std::transform(pathExtension.begin(), pathExtension.end(), pathExtension.begin(), [](unsigned char c){
             return std::tolower(c);
         });
