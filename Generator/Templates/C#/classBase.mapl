@@ -277,7 +277,7 @@ ${indent}                    ${attributeName}Bytes.Add(nextByte);
 ${indent}                    nextByte = reader.ReadByte();
 ${indent}                }
 ?>
-                    primitiveValue = "System.Text.Encoding.UTF8.GetString("+attributeName+"Bytes.ToArray())";
+                    primitiveValue = "System.Text.Encoding.UTF8.GetString(System.Runtime.InteropServices.CollectionsMarshal.AsSpan("+attributeName+"Bytes))";
                 } else if typeName == "int32" {
                     primitiveValue = "reader.ReadInt32()";
                 } else if typeName == "uint32" {
