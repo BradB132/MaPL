@@ -183,7 +183,9 @@ std::string descriptorForPrimitive(MaPLPrimitiveType type) {
         case MaPLPrimitiveType_Float_AmbiguousSize: return "floating point";
         case MaPLPrimitiveType_Void: return "void";
         case MaPLPrimitiveType_Uninitialized: return "uninitialized";
-        case MaPLPrimitiveType_TypeError: return "invalid type";
+        case MaPLPrimitiveType_TypeError: // Intentional fallthrough.
+        default:
+            return "invalid type";
     }
 }
 
