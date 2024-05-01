@@ -6,15 +6,25 @@ project(Generator)
 # Set C++ standard to 17
 set(CMAKE_CXX_STANDARD 17)
 
-# Include directories
+# Include ANTLR headers.
+include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src")
+include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src/atn")
+include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src/dfa")
+include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src/internal")
+include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src/misc")
+include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src/support")
+include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src/tree")
+include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src/tree/pattern")
+include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src/tree/xpath")
+
+# Include all other headers.
 include_directories("${CMAKE_SOURCE_DIR}/../Compiler/Headers")
 include_directories("${CMAKE_SOURCE_DIR}/../Compiler/generated_c++")
-include_directories("${CMAKE_SOURCE_DIR}/../Compiler/ANTLR4/runtime/Cpp/runtime/src")
 include_directories("${CMAKE_SOURCE_DIR}/../Runtime/Headers")
-include_directories("${CMAKE_SOURCE_DIR}/EaSL/generated_c++")
-include_directories("${CMAKE_SOURCE_DIR}/tinyxml2")
 include_directories("${CMAKE_SOURCE_DIR}/../Shared")
 include_directories("${CMAKE_SOURCE_DIR}/../Shared/Headers")
+include_directories("${CMAKE_SOURCE_DIR}/EaSL/generated_c++")
+include_directories("${CMAKE_SOURCE_DIR}/tinyxml2")
 
 # List of source files (modify the file names)
 set(SOURCE_FILES
@@ -177,3 +187,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Executable")
 
 # Create executable
 add_executable(MaPLGenerator ${SOURCE_FILES})
+
+# A bunch of linking logic copied from ANTLR.
+find_package(Threads REQUIRED)
+target_link_libraries(MaPLGenerator Threads::Threads)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  set(disabled_compile_warnings "/wd4251")
+else()
+  set(disabled_compile_warnings "-Wno-overloaded-virtual")
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(disabled_compile_warnings "${disabled_compile_warnings} -Wno-dollar-in-identifier-extension -Wno-four-char-constants")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+  set(disabled_compile_warnings "${disabled_compile_warnings} -Wno-multichar")
+endif()

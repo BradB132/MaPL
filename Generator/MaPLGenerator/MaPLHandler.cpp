@@ -89,7 +89,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
         case MaPLSymbols_GLOBAL_fileStemForPath_string: {
             std::filesystem::path path = argv[0].stringValue;
-            std::string stem = path.stem();
+            std::string stem = path.stem().u8string();
             return MaPLStringByValue(stem.c_str());
         }
         case MaPLSymbols_GLOBAL_hash_string: {

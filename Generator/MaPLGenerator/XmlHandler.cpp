@@ -14,7 +14,7 @@
 
 XmlFile::XmlFile(const tinyxml2::XMLDocument *document, const std::filesystem::path &filePath) :
 _rootNode(new XmlNode(document->RootElement(), filePath)),
-_filePath(filePath.c_str()) {
+_filePath(filePath.u8string()) {
 }
 
 MaPLParameter XmlFile::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -163,7 +163,7 @@ MaPLArray<XmlFile *> *xmlFilesForPaths(const std::vector<std::filesystem::path> 
     
     for (const std::filesystem::path &xmlPath : xmlPaths) {
         tinyxml2::XMLDocument *createdDocument = new tinyxml2::XMLDocument();
-        tinyxml2::XMLError loadResult = createdDocument->LoadFile(xmlPath.c_str());
+        tinyxml2::XMLError loadResult = createdDocument->LoadFile(xmlPath.u8string().c_str());
         if (loadResult != tinyxml2::XML_SUCCESS) {
             ErrorLogger logger(xmlPath);
             logger.logError("Failed to open data file.");

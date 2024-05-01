@@ -161,7 +161,7 @@ void MaPLBuffer::appendString(std::string string, MaPLFile *file, antlr4::Token 
     auto searchStart = cbegin(string);
     while (std::regex_search(searchStart, cend(string), match, escapeChars)) {
         const char *replaceString = "";
-        switch (*match[1].first.base()) {
+        switch (match[1].str()[0]) {
             case 'a':
                 replaceString = "\a";
                 break;

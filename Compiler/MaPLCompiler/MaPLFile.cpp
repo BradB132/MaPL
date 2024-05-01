@@ -2248,7 +2248,7 @@ MaPLLiteral MaPLFile::constantValueForExpression(MaPLParser::ExpressionContext *
             case MaPLParser::LITERAL_STRING: {
                 std::string literalString = expression->LITERAL_STRING()->getText();
                 // The literal text will always contain the string quotes, substring call removes them.
-                std::filesystem::path stringValue = literalString.substr(1, literalString.length()-2);
+                std::string stringValue = literalString.substr(1, literalString.length()-2);
                 MaPLLiteral literal{ { MaPLPrimitiveType_String } };
                 literal.stringValue = stringValue;
                 return literal;
