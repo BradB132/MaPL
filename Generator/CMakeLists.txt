@@ -185,6 +185,8 @@ set(SOURCE_FILES
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Executable")
 
+add_definitions(-DANTLR4CPP_STATIC)
+
 # Create executable
 add_executable(MaPLGenerator ${SOURCE_FILES})
 
