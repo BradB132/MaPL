@@ -149,7 +149,7 @@ bool verifyReturnValue(MaPLExecutionContext *context, MaPLParameter *returnValue
     return true;
 }
 
-MaPLDataType typeForInstruction(enum MaPLInstruction instruction) {
+MaPLDataType typeForInstruction(MaPLInstruction instruction) {
     if (instruction <= MaPLInstruction_int32_typecast) { return MaPLDataType_int32; }
     if (instruction <= MaPLInstruction_float32_typecast) { return MaPLDataType_float32; }
     if (instruction <= MaPLInstruction_string_typecast) { return MaPLDataType_string; }
@@ -163,8 +163,8 @@ MaPLDataType typeForInstruction(enum MaPLInstruction instruction) {
     return MaPLDataType_void;
 }
 
-enum MaPLInstruction readInstruction(MaPLExecutionContext *context) {
-    enum MaPLInstruction instruction = context->scriptBuffer[context->cursorPosition];
+MaPLInstruction readInstruction(MaPLExecutionContext *context) {
+    MaPLInstruction instruction = context->scriptBuffer[context->cursorPosition];
     context->cursorPosition++;
     return instruction;
 }
@@ -324,44 +324,44 @@ MaPLParameter evaluateSubscriptInvocation(MaPLExecutionContext *context) {
 
 uint8_t evaluateChar(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_char_literal: {
+        case MAPL_INSTRUCTION_CHAR_LITERAL: {
             uint8_t literal = *((uint8_t *)(context->scriptBuffer+context->cursorPosition));
             context->cursorPosition += sizeof(uint8_t);
             return literal;
         }
-        case MaPLInstruction_char_variable:
+        case MAPL_INSTRUCTION_CHAR_VARIABLE:
             return *((uint8_t *)(context->primitiveTable+readMemoryAddress(context)));
-        case MaPLInstruction_char_add:
+        case MAPL_INSTRUCTION_CHAR_ADD:
             return evaluateChar(context) + evaluateChar(context);
-        case MaPLInstruction_char_subtract:
+        case MAPL_INSTRUCTION_CHAR_SUBTRACT:
             return evaluateChar(context) - evaluateChar(context);
-        case MaPLInstruction_char_divide:
+        case MAPL_INSTRUCTION_CHAR_DIVIDE:
             return evaluateChar(context) / evaluateChar(context);
-        case MaPLInstruction_char_multiply:
+        case MAPL_INSTRUCTION_CHAR_MULTIPLY:
             return evaluateChar(context) * evaluateChar(context);
-        case MaPLInstruction_char_modulo:
+        case MAPL_INSTRUCTION_CHAR_MODULO:
             return evaluateChar(context) % evaluateChar(context);
-        case MaPLInstruction_char_bitwise_and:
+        case MAPL_INSTRUCTION_CHAR_BITWISE_AND:
             return evaluateChar(context) & evaluateChar(context);
-        case MaPLInstruction_char_bitwise_or:
+        case MAPL_INSTRUCTION_CHAR_BITWISE_OR:
             return evaluateChar(context) | evaluateChar(context);
-        case MaPLInstruction_char_bitwise_xor:
+        case MAPL_INSTRUCTION_CHAR_BITWISE_XOR:
             return evaluateChar(context) ^ evaluateChar(context);
-        case MaPLInstruction_char_bitwise_negation:
+        case MAPL_INSTRUCTION_CHAR_BITWISE_NEGATION:
             return ~evaluateChar(context);
-        case MaPLInstruction_char_bitwise_shift_left:
+        case MAPL_INSTRUCTION_CHAR_BITWISE_SHIFT_LEFT:
             return evaluateChar(context) << evaluateChar(context);
-        case MaPLInstruction_char_bitwise_shift_right:
+        case MAPL_INSTRUCTION_CHAR_BITWISE_SHIFT_RIGHT:
             return evaluateChar(context) >> evaluateChar(context);
-        case MaPLInstruction_char_function_invocation: {
+        case MAPL_INSTRUCTION_CHAR_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_char) ? returnedValue.charValue : 0;
         }
-        case MaPLInstruction_char_subscript_invocation: {
+        case MAPL_INSTRUCTION_CHAR_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_char) ? returnedValue.charValue : 0;
         }
-        case MaPLInstruction_char_ternary_conditional: {
+        case MAPL_INSTRUCTION_CHAR_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             uint8_t result;
             if (evaluateBool(context)) {
@@ -377,7 +377,7 @@ uint8_t evaluateChar(MaPLExecutionContext *context) {
             }
             return result;
         }
-        case MaPLInstruction_char_typecast:
+        case MAPL_INSTRUCTION_CHAR_TYPECAST:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_int32:
                     return (uint8_t)evaluateInt32(context);
@@ -415,46 +415,46 @@ uint8_t evaluateChar(MaPLExecutionContext *context) {
 
 int32_t evaluateInt32(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_int32_literal: {
+        case MAPL_INSTRUCTION_INT32_LITERAL: {
             int32_t literal = *((int32_t *)(context->scriptBuffer+context->cursorPosition));
             context->cursorPosition += sizeof(int32_t);
             return literal;
         }
-        case MaPLInstruction_int32_variable:
+        case MAPL_INSTRUCTION_INT32_VARIABLE:
             return *((int32_t *)(context->primitiveTable+readMemoryAddress(context)));
-        case MaPLInstruction_int32_add:
+        case MAPL_INSTRUCTION_INT32_ADD:
             return evaluateInt32(context) + evaluateInt32(context);
-        case MaPLInstruction_int32_subtract:
+        case MAPL_INSTRUCTION_INT32_SUBTRACT:
             return evaluateInt32(context) - evaluateInt32(context);
-        case MaPLInstruction_int32_divide:
+        case MAPL_INSTRUCTION_INT32_DIVIDE:
             return evaluateInt32(context) / evaluateInt32(context);
-        case MaPLInstruction_int32_multiply:
+        case MAPL_INSTRUCTION_INT32_MULTIPLY:
             return evaluateInt32(context) * evaluateInt32(context);
-        case MaPLInstruction_int32_modulo:
+        case MAPL_INSTRUCTION_INT32_MODULO:
             return evaluateInt32(context) % evaluateInt32(context);
-        case MaPLInstruction_int32_numeric_negation:
+        case MAPL_INSTRUCTION_INT32_NUMERIC_NEGATION:
             return -evaluateInt32(context);
-        case MaPLInstruction_int32_bitwise_and:
+        case MAPL_INSTRUCTION_INT32_BITWISE_AND:
             return evaluateInt32(context) & evaluateInt32(context);
-        case MaPLInstruction_int32_bitwise_or:
+        case MAPL_INSTRUCTION_INT32_BITWISE_OR:
             return evaluateInt32(context) | evaluateInt32(context);
-        case MaPLInstruction_int32_bitwise_xor:
+        case MAPL_INSTRUCTION_INT32_BITWISE_XOR:
             return evaluateInt32(context) ^ evaluateInt32(context);
-        case MaPLInstruction_int32_bitwise_negation:
+        case MAPL_INSTRUCTION_INT32_BITWISE_NEGATION:
             return ~evaluateInt32(context);
-        case MaPLInstruction_int32_bitwise_shift_left:
+        case MAPL_INSTRUCTION_INT32_BITWISE_SHIFT_LEFT:
             return evaluateInt32(context) << evaluateInt32(context);
-        case MaPLInstruction_int32_bitwise_shift_right:
+        case MAPL_INSTRUCTION_INT32_BITWISE_SHIFT_RIGHT:
             return evaluateInt32(context) >> evaluateInt32(context);
-        case MaPLInstruction_int32_function_invocation: {
+        case MAPL_INSTRUCTION_INT32_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_int32) ? returnedValue.int32Value : 0;
         }
-        case MaPLInstruction_int32_subscript_invocation: {
+        case MAPL_INSTRUCTION_INT32_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_int32) ? returnedValue.int32Value : 0;
         }
-        case MaPLInstruction_int32_ternary_conditional: {
+        case MAPL_INSTRUCTION_INT32_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             int32_t result;
             if (evaluateBool(context)) {
@@ -470,7 +470,7 @@ int32_t evaluateInt32(MaPLExecutionContext *context) {
             }
             return result;
         }
-        case MaPLInstruction_int32_typecast:
+        case MAPL_INSTRUCTION_INT32_TYPECAST:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_char:
                     return (int32_t)evaluateChar(context);
@@ -508,46 +508,46 @@ int32_t evaluateInt32(MaPLExecutionContext *context) {
 
 int64_t evaluateInt64(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_int64_literal: {
+        case MAPL_INSTRUCTION_INT64_LITERAL: {
             int64_t literal = *((int64_t *)(context->scriptBuffer+context->cursorPosition));
             context->cursorPosition += sizeof(int64_t);
             return literal;
         }
-        case MaPLInstruction_int64_variable:
+        case MAPL_INSTRUCTION_INT64_VARIABLE:
             return *((int64_t *)(context->primitiveTable+readMemoryAddress(context)));
-        case MaPLInstruction_int64_add:
+        case MAPL_INSTRUCTION_INT64_ADD:
             return evaluateInt64(context) + evaluateInt64(context);
-        case MaPLInstruction_int64_subtract:
+        case MAPL_INSTRUCTION_INT64_SUBTRACT:
             return evaluateInt64(context) - evaluateInt64(context);
-        case MaPLInstruction_int64_divide:
+        case MAPL_INSTRUCTION_INT64_DIVIDE:
             return evaluateInt64(context) / evaluateInt64(context);
-        case MaPLInstruction_int64_multiply:
+        case MAPL_INSTRUCTION_INT64_MULTIPLY:
             return evaluateInt64(context) * evaluateInt64(context);
-        case MaPLInstruction_int64_modulo:
+        case MAPL_INSTRUCTION_INT64_MODULO:
             return evaluateInt64(context) % evaluateInt64(context);
-        case MaPLInstruction_int64_numeric_negation:
+        case MAPL_INSTRUCTION_INT64_NUMERIC_NEGATION:
             return -evaluateInt64(context);
-        case MaPLInstruction_int64_bitwise_and:
+        case MAPL_INSTRUCTION_INT64_BITWISE_AND:
             return evaluateInt64(context) & evaluateInt64(context);
-        case MaPLInstruction_int64_bitwise_or:
+        case MAPL_INSTRUCTION_INT64_BITWISE_OR:
             return evaluateInt64(context) | evaluateInt64(context);
-        case MaPLInstruction_int64_bitwise_xor:
+        case MAPL_INSTRUCTION_INT64_BITWISE_XOR:
             return evaluateInt64(context) ^ evaluateInt64(context);
-        case MaPLInstruction_int64_bitwise_negation:
+        case MAPL_INSTRUCTION_INT64_BITWISE_NEGATION:
             return ~evaluateInt64(context);
-        case MaPLInstruction_int64_bitwise_shift_left:
+        case MAPL_INSTRUCTION_INT64_BITWISE_SHIFT_LEFT:
             return evaluateInt64(context) << evaluateInt64(context);
-        case MaPLInstruction_int64_bitwise_shift_right:
+        case MAPL_INSTRUCTION_INT64_BITWISE_SHIFT_RIGHT:
             return evaluateInt64(context) >> evaluateInt64(context);
-        case MaPLInstruction_int64_function_invocation: {
+        case MAPL_INSTRUCTION_INT64_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_int64) ? returnedValue.int64Value : 0;
         }
-        case MaPLInstruction_int64_subscript_invocation: {
+        case MAPL_INSTRUCTION_INT64_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_int64) ? returnedValue.int64Value : 0;
         }
-        case MaPLInstruction_int64_ternary_conditional: {
+        case MAPL_INSTRUCTION_INT64_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             int64_t result;
             if (evaluateBool(context)) {
@@ -563,7 +563,7 @@ int64_t evaluateInt64(MaPLExecutionContext *context) {
             }
             return result;
         }
-        case MaPLInstruction_int64_typecast:
+        case MAPL_INSTRUCTION_INT64_TYPECAST:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_char:
                     return (int64_t)evaluateChar(context);
@@ -601,44 +601,44 @@ int64_t evaluateInt64(MaPLExecutionContext *context) {
 
 uint32_t evaluateUint32(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_uint32_literal: {
+        case MAPL_INSTRUCTION_UINT32_LITERAL: {
             uint32_t literal = *((uint32_t *)(context->scriptBuffer+context->cursorPosition));
             context->cursorPosition += sizeof(uint32_t);
             return literal;
         }
-        case MaPLInstruction_uint32_variable:
+        case MAPL_INSTRUCTION_UINT32_VARIABLE:
             return *((uint32_t *)(context->primitiveTable+readMemoryAddress(context)));
-        case MaPLInstruction_uint32_add:
+        case MAPL_INSTRUCTION_UINT32_ADD:
             return evaluateUint32(context) + evaluateUint32(context);
-        case MaPLInstruction_uint32_subtract:
+        case MAPL_INSTRUCTION_UINT32_SUBTRACT:
             return evaluateUint32(context) - evaluateUint32(context);
-        case MaPLInstruction_uint32_divide:
+        case MAPL_INSTRUCTION_UINT32_DIVIDE:
             return evaluateUint32(context) / evaluateUint32(context);
-        case MaPLInstruction_uint32_multiply:
+        case MAPL_INSTRUCTION_UINT32_MULTIPLY:
             return evaluateUint32(context) * evaluateUint32(context);
-        case MaPLInstruction_uint32_modulo:
+        case MAPL_INSTRUCTION_UINT32_MODULO:
             return evaluateUint32(context) % evaluateUint32(context);
-        case MaPLInstruction_uint32_bitwise_and:
+        case MAPL_INSTRUCTION_UINT32_BITWISE_AND:
             return evaluateUint32(context) & evaluateUint32(context);
-        case MaPLInstruction_uint32_bitwise_or:
+        case MAPL_INSTRUCTION_UINT32_BITWISE_OR:
             return evaluateUint32(context) | evaluateUint32(context);
-        case MaPLInstruction_uint32_bitwise_xor:
+        case MAPL_INSTRUCTION_UINT32_BITWISE_XOR:
             return evaluateUint32(context) ^ evaluateUint32(context);
-        case MaPLInstruction_uint32_bitwise_negation:
+        case MAPL_INSTRUCTION_UINT32_BITWISE_NEGATION:
             return ~evaluateUint32(context);
-        case MaPLInstruction_uint32_bitwise_shift_left:
+        case MAPL_INSTRUCTION_UINT32_BITWISE_SHIFT_LEFT:
             return evaluateUint32(context) << evaluateUint32(context);
-        case MaPLInstruction_uint32_bitwise_shift_right:
+        case MAPL_INSTRUCTION_UINT32_BITWISE_SHIFT_RIGHT:
             return evaluateUint32(context) >> evaluateUint32(context);
-        case MaPLInstruction_uint32_function_invocation: {
+        case MAPL_INSTRUCTION_UINT32_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_uint32) ? returnedValue.uint32Value : 0;
         }
-        case MaPLInstruction_uint32_subscript_invocation: {
+        case MAPL_INSTRUCTION_UINT32_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_uint32) ? returnedValue.uint32Value : 0;
         }
-        case MaPLInstruction_uint32_ternary_conditional: {
+        case MAPL_INSTRUCTION_UINT32_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             uint32_t result;
             if (evaluateBool(context)) {
@@ -654,7 +654,7 @@ uint32_t evaluateUint32(MaPLExecutionContext *context) {
             }
             return result;
         }
-        case MaPLInstruction_uint32_typecast:
+        case MAPL_INSTRUCTION_UINT32_TYPECAST:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_char:
                     return (uint32_t)evaluateChar(context);
@@ -692,44 +692,44 @@ uint32_t evaluateUint32(MaPLExecutionContext *context) {
 
 uint64_t evaluateUint64(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_uint64_literal: {
+        case MAPL_INSTRUCTION_UINT64_LITERAL: {
             uint64_t literal = *((uint64_t *)(context->scriptBuffer+context->cursorPosition));
             context->cursorPosition += sizeof(uint64_t);
             return literal;
         }
-        case MaPLInstruction_uint64_variable:
+        case MAPL_INSTRUCTION_UINT64_VARIABLE:
             return *((uint64_t *)(context->primitiveTable+readMemoryAddress(context)));
-        case MaPLInstruction_uint64_add:
+        case MAPL_INSTRUCTION_UINT64_ADD:
             return evaluateUint64(context) + evaluateUint64(context);
-        case MaPLInstruction_uint64_subtract:
+        case MAPL_INSTRUCTION_UINT64_SUBTRACT:
             return evaluateUint64(context) - evaluateUint64(context);
-        case MaPLInstruction_uint64_divide:
+        case MAPL_INSTRUCTION_UINT64_DIVIDE:
             return evaluateUint64(context) / evaluateUint64(context);
-        case MaPLInstruction_uint64_multiply:
+        case MAPL_INSTRUCTION_UINT64_MULTIPLY:
             return evaluateUint64(context) * evaluateUint64(context);
-        case MaPLInstruction_uint64_modulo:
+        case MAPL_INSTRUCTION_UINT64_MODULO:
             return evaluateUint64(context) % evaluateUint64(context);
-        case MaPLInstruction_uint64_bitwise_and:
+        case MAPL_INSTRUCTION_UINT64_BITWISE_AND:
             return evaluateUint64(context) & evaluateUint64(context);
-        case MaPLInstruction_uint64_bitwise_or:
+        case MAPL_INSTRUCTION_UINT64_BITWISE_OR:
             return evaluateUint64(context) | evaluateUint64(context);
-        case MaPLInstruction_uint64_bitwise_xor:
+        case MAPL_INSTRUCTION_UINT64_BITWISE_XOR:
             return evaluateUint64(context) ^ evaluateUint64(context);
-        case MaPLInstruction_uint64_bitwise_negation:
+        case MAPL_INSTRUCTION_UINT64_BITWISE_NEGATION:
             return ~evaluateUint64(context);
-        case MaPLInstruction_uint64_bitwise_shift_left:
+        case MAPL_INSTRUCTION_UINT64_BITWISE_SHIFT_LEFT:
             return evaluateUint64(context) << evaluateUint64(context);
-        case MaPLInstruction_uint64_bitwise_shift_right:
+        case MAPL_INSTRUCTION_UINT64_BITWISE_SHIFT_RIGHT:
             return evaluateUint64(context) >> evaluateUint64(context);
-        case MaPLInstruction_uint64_function_invocation: {
+        case MAPL_INSTRUCTION_UINT64_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_uint64) ? returnedValue.uint64Value : 0;
         }
-        case MaPLInstruction_uint64_subscript_invocation: {
+        case MAPL_INSTRUCTION_UINT64_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_uint64) ? returnedValue.uint64Value : 0;
         }
-        case MaPLInstruction_uint64_ternary_conditional: {
+        case MAPL_INSTRUCTION_UINT64_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             uint64_t result;
             if (evaluateBool(context)) {
@@ -745,7 +745,7 @@ uint64_t evaluateUint64(MaPLExecutionContext *context) {
             }
             return result;
         }
-        case MaPLInstruction_uint64_typecast:
+        case MAPL_INSTRUCTION_UINT64_TYPECAST:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_char:
                     return (uint64_t)evaluateChar(context);
@@ -783,37 +783,37 @@ uint64_t evaluateUint64(MaPLExecutionContext *context) {
 
 float evaluateFloat32(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_float32_literal: {
+        case MAPL_INSTRUCTION_FLOAT32_LITERAL: {
             float literal = *((float *)(context->scriptBuffer+context->cursorPosition));
             context->cursorPosition += sizeof(float);
             return literal;
         }
-        case MaPLInstruction_float32_variable:
+        case MAPL_INSTRUCTION_FLOAT32_VARIABLE:
             return *((float *)(context->primitiveTable+readMemoryAddress(context)));
-        case MaPLInstruction_float32_add:
+        case MAPL_INSTRUCTION_FLOAT32_ADD:
             return evaluateFloat32(context) + evaluateFloat32(context);
-        case MaPLInstruction_float32_subtract:
+        case MAPL_INSTRUCTION_FLOAT32_SUBTRACT:
             return evaluateFloat32(context) - evaluateFloat32(context);
-        case MaPLInstruction_float32_divide:
+        case MAPL_INSTRUCTION_FLOAT32_DIVIDE:
             return evaluateFloat32(context) / evaluateFloat32(context);
-        case MaPLInstruction_float32_multiply:
+        case MAPL_INSTRUCTION_FLOAT32_MULTIPLY:
             return evaluateFloat32(context) * evaluateFloat32(context);
-        case MaPLInstruction_float32_modulo: {
+        case MAPL_INSTRUCTION_FLOAT32_MODULO: {
             float f1 = evaluateFloat32(context);
             float f2 = evaluateFloat32(context);
             return fmodf(f1, f2);
         }
-        case MaPLInstruction_float32_numeric_negation:
+        case MAPL_INSTRUCTION_FLOAT32_NUMERIC_NEGATION:
             return -evaluateFloat32(context);
-        case MaPLInstruction_float32_function_invocation: {
+        case MAPL_INSTRUCTION_FLOAT32_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_float32) ? returnedValue.float32Value : 0.0f;
         }
-        case MaPLInstruction_float32_subscript_invocation: {
+        case MAPL_INSTRUCTION_FLOAT32_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_float32) ? returnedValue.float32Value : 0.0f;
         }
-        case MaPLInstruction_float32_ternary_conditional: {
+        case MAPL_INSTRUCTION_FLOAT32_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             float result;
             if (evaluateBool(context)) {
@@ -829,7 +829,7 @@ float evaluateFloat32(MaPLExecutionContext *context) {
             }
             return result;
         }
-        case MaPLInstruction_float32_typecast:
+        case MAPL_INSTRUCTION_FLOAT32_TYPECAST:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_char:
                     return (float)evaluateChar(context);
@@ -867,37 +867,37 @@ float evaluateFloat32(MaPLExecutionContext *context) {
 
 double evaluateFloat64(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_float64_literal: {
+        case MAPL_INSTRUCTION_FLOAT64_LITERAL: {
             double literal = *((double *)(context->scriptBuffer+context->cursorPosition));
             context->cursorPosition += sizeof(double);
             return literal;
         }
-        case MaPLInstruction_float64_variable:
+        case MAPL_INSTRUCTION_FLOAT64_VARIABLE:
             return *((double *)(context->primitiveTable+readMemoryAddress(context)));
-        case MaPLInstruction_float64_add:
+        case MAPL_INSTRUCTION_FLOAT64_ADD:
             return evaluateFloat64(context) + evaluateFloat64(context);
-        case MaPLInstruction_float64_subtract:
+        case MAPL_INSTRUCTION_FLOAT64_SUBTRACT:
             return evaluateFloat64(context) - evaluateFloat64(context);
-        case MaPLInstruction_float64_divide:
+        case MAPL_INSTRUCTION_FLOAT64_DIVIDE:
             return evaluateFloat64(context) / evaluateFloat64(context);
-        case MaPLInstruction_float64_multiply:
+        case MAPL_INSTRUCTION_FLOAT64_MULTIPLY:
             return evaluateFloat64(context) * evaluateFloat64(context);
-        case MaPLInstruction_float64_modulo: {
+        case MAPL_INSTRUCTION_FLOAT64_MODULO: {
             double d1 = evaluateFloat64(context);
             double d2 = evaluateFloat64(context);
             return fmod(d1, d2);
         }
-        case MaPLInstruction_float64_numeric_negation:
+        case MAPL_INSTRUCTION_FLOAT64_NUMERIC_NEGATION:
             return -evaluateFloat64(context);
-        case MaPLInstruction_float64_function_invocation: {
+        case MAPL_INSTRUCTION_FLOAT64_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_float64) ? returnedValue.float64Value : 0.0;
         }
-        case MaPLInstruction_float64_subscript_invocation: {
+        case MAPL_INSTRUCTION_FLOAT64_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_float64) ? returnedValue.float64Value : 0.0;
         }
-        case MaPLInstruction_float64_ternary_conditional: {
+        case MAPL_INSTRUCTION_FLOAT64_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             double result;
             if (evaluateBool(context)) {
@@ -913,7 +913,7 @@ double evaluateFloat64(MaPLExecutionContext *context) {
             }
             return result;
         }
-        case MaPLInstruction_float64_typecast:
+        case MAPL_INSTRUCTION_FLOAT64_TYPECAST:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_char:
                     return (double)evaluateChar(context);
@@ -951,23 +951,23 @@ double evaluateFloat64(MaPLExecutionContext *context) {
 
 bool evaluateBool(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_literal_true:
+        case MAPL_INSTRUCTION_LITERAL_TRUE:
             return true;
-        case MaPLInstruction_literal_false:
+        case MAPL_INSTRUCTION_LITERAL_FALSE:
             return false;
-        case MaPLInstruction_boolean_variable: {
+        case MAPL_INSTRUCTION_BOOLEAN_VARIABLE: {
             uint8_t variableValue = *((uint8_t *)(context->primitiveTable+readMemoryAddress(context)));
             return variableValue != 0;
         }
-        case MaPLInstruction_boolean_function_invocation: {
+        case MAPL_INSTRUCTION_BOOLEAN_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_boolean) ? returnedValue.booleanValue : false;
         }
-        case MaPLInstruction_boolean_subscript_invocation: {
+        case MAPL_INSTRUCTION_BOOLEAN_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_boolean) ? returnedValue.booleanValue : false;
         }
-        case MaPLInstruction_boolean_ternary_conditional: {
+        case MAPL_INSTRUCTION_BOOLEAN_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             bool result;
             if (evaluateBool(context)) {
@@ -983,7 +983,7 @@ bool evaluateBool(MaPLExecutionContext *context) {
             }
             return result;
         }
-        case MaPLInstruction_boolean_typecast:
+        case MAPL_INSTRUCTION_BOOLEAN_TYPECAST:
             switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                 case MaPLDataType_char:
                     return evaluateChar(context) != 0;
@@ -1011,23 +1011,23 @@ bool evaluateBool(MaPLExecutionContext *context) {
                     break;
             }
             break;
-        case MaPLInstruction_logical_equality_char:
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_CHAR:
             return evaluateChar(context) == evaluateChar(context);
-        case MaPLInstruction_logical_equality_int32:
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_INT32:
             return evaluateInt32(context) == evaluateInt32(context);
-        case MaPLInstruction_logical_equality_int64:
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_INT64:
             return evaluateInt64(context) == evaluateInt64(context);
-        case MaPLInstruction_logical_equality_uint32:
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_UINT32:
             return evaluateUint32(context) == evaluateUint32(context);
-        case MaPLInstruction_logical_equality_uint64:
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_UINT64:
             return evaluateUint64(context) == evaluateUint64(context);
-        case MaPLInstruction_logical_equality_float32:
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_FLOAT32:
             return evaluateFloat32(context) == evaluateFloat32(context);
-        case MaPLInstruction_logical_equality_float64:
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_FLOAT64:
             return evaluateFloat64(context) == evaluateFloat64(context);
-        case MaPLInstruction_logical_equality_boolean:
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_BOOLEAN:
             return evaluateBool(context) == evaluateBool(context);
-        case MaPLInstruction_logical_equality_string: {
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_STRING: {
             const char *taggedString1 = evaluateString(context);
             const char *taggedString2 = evaluateString(context);
             if (context->isDeadCodepath) {
@@ -1039,25 +1039,25 @@ bool evaluateBool(MaPLExecutionContext *context) {
             freeStringIfNeeded(taggedString2);
             return returnValue;
         }
-        case MaPLInstruction_logical_equality_pointer:
+        case MAPL_INSTRUCTION_LOGICAL_EQUALITY_POINTER:
             return evaluatePointer(context) == evaluatePointer(context);
-        case MaPLInstruction_logical_inequality_char:
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_CHAR:
             return evaluateChar(context) != evaluateChar(context);
-        case MaPLInstruction_logical_inequality_int32:
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_INT32:
             return evaluateInt32(context) != evaluateInt32(context);
-        case MaPLInstruction_logical_inequality_int64:
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_INT64:
             return evaluateInt64(context) != evaluateInt64(context);
-        case MaPLInstruction_logical_inequality_uint32:
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_UINT32:
             return evaluateUint32(context) != evaluateUint32(context);
-        case MaPLInstruction_logical_inequality_uint64:
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_UINT64:
             return evaluateUint64(context) != evaluateUint64(context);
-        case MaPLInstruction_logical_inequality_float32:
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_FLOAT32:
             return evaluateFloat32(context) != evaluateFloat32(context);
-        case MaPLInstruction_logical_inequality_float64:
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_FLOAT64:
             return evaluateFloat64(context) != evaluateFloat64(context);
-        case MaPLInstruction_logical_inequality_boolean:
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_BOOLEAN:
             return evaluateBool(context) != evaluateBool(context);
-        case MaPLInstruction_logical_inequality_string: {
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_STRING: {
             const char *taggedString1 = evaluateString(context);
             const char *taggedString2 = evaluateString(context);
             if (context->isDeadCodepath) {
@@ -1069,65 +1069,65 @@ bool evaluateBool(MaPLExecutionContext *context) {
             freeStringIfNeeded(taggedString2);
             return returnValue;
         }
-        case MaPLInstruction_logical_inequality_pointer:
+        case MAPL_INSTRUCTION_LOGICAL_INEQUALITY_POINTER:
             return evaluatePointer(context) != evaluatePointer(context);
-        case MaPLInstruction_logical_less_than_char:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_CHAR:
             return evaluateChar(context) < evaluateChar(context);
-        case MaPLInstruction_logical_less_than_int32:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_INT32:
             return evaluateInt32(context) < evaluateInt32(context);
-        case MaPLInstruction_logical_less_than_int64:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_INT64:
             return evaluateInt64(context) < evaluateInt64(context);
-        case MaPLInstruction_logical_less_than_uint32:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_UINT32:
             return evaluateUint32(context) < evaluateUint32(context);
-        case MaPLInstruction_logical_less_than_uint64:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_UINT64:
             return evaluateUint64(context) < evaluateUint64(context);
-        case MaPLInstruction_logical_less_than_float32:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_FLOAT32:
             return evaluateFloat32(context) < evaluateFloat32(context);
-        case MaPLInstruction_logical_less_than_float64:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_FLOAT64:
             return evaluateFloat64(context) < evaluateFloat64(context);
-        case MaPLInstruction_logical_less_than_equal_char:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_EQUAL_CHAR:
             return evaluateChar(context) <= evaluateChar(context);
-        case MaPLInstruction_logical_less_than_equal_int32:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_EQUAL_INT32:
             return evaluateInt32(context) <= evaluateInt32(context);
-        case MaPLInstruction_logical_less_than_equal_int64:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_EQUAL_INT64:
             return evaluateInt64(context) <= evaluateInt64(context);
-        case MaPLInstruction_logical_less_than_equal_uint32:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_EQUAL_UINT32:
             return evaluateUint32(context) <= evaluateUint32(context);
-        case MaPLInstruction_logical_less_than_equal_uint64:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_EQUAL_UINT64:
             return evaluateUint64(context) <= evaluateUint64(context);
-        case MaPLInstruction_logical_less_than_equal_float32:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_EQUAL_FLOAT32:
             return evaluateFloat32(context) <= evaluateFloat32(context);
-        case MaPLInstruction_logical_less_than_equal_float64:
+        case MAPL_INSTRUCTION_LOGICAL_LESS_THAN_EQUAL_FLOAT64:
             return evaluateFloat64(context) <= evaluateFloat64(context);
-        case MaPLInstruction_logical_greater_than_char:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_CHAR:
             return evaluateChar(context) > evaluateChar(context);
-        case MaPLInstruction_logical_greater_than_int32:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_INT32:
             return evaluateInt32(context) > evaluateInt32(context);
-        case MaPLInstruction_logical_greater_than_int64:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_INT64:
             return evaluateInt64(context) > evaluateInt64(context);
-        case MaPLInstruction_logical_greater_than_uint32:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_UINT32:
             return evaluateUint32(context) > evaluateUint32(context);
-        case MaPLInstruction_logical_greater_than_uint64:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_UINT64:
             return evaluateUint64(context) > evaluateUint64(context);
-        case MaPLInstruction_logical_greater_than_float32:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_FLOAT32:
             return evaluateFloat32(context) > evaluateFloat32(context);
-        case MaPLInstruction_logical_greater_than_float64:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_FLOAT64:
             return evaluateFloat64(context) > evaluateFloat64(context);
-        case MaPLInstruction_logical_greater_than_equal_char:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_EQUAL_CHAR:
             return evaluateChar(context) >= evaluateChar(context);
-        case MaPLInstruction_logical_greater_than_equal_int32:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_EQUAL_INT32:
             return evaluateInt32(context) >= evaluateInt32(context);
-        case MaPLInstruction_logical_greater_than_equal_int64:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_EQUAL_INT64:
             return evaluateInt64(context) >= evaluateInt64(context);
-        case MaPLInstruction_logical_greater_than_equal_uint32:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_EQUAL_UINT32:
             return evaluateUint32(context) >= evaluateUint32(context);
-        case MaPLInstruction_logical_greater_than_equal_uint64:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_EQUAL_UINT64:
             return evaluateUint64(context) >= evaluateUint64(context);
-        case MaPLInstruction_logical_greater_than_equal_float32:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_EQUAL_FLOAT32:
             return evaluateFloat32(context) >= evaluateFloat32(context);
-        case MaPLInstruction_logical_greater_than_equal_float64:
+        case MAPL_INSTRUCTION_LOGICAL_GREATER_THAN_EQUAL_FLOAT64:
             return evaluateFloat64(context) >= evaluateFloat64(context);
-        case MaPLInstruction_logical_and: {
+        case MAPL_INSTRUCTION_LOGICAL_AND: {
             // If the first bool is false, we don't need to evaluate the second one.
             bool firstBool = evaluateBool(context);
             if (firstBool) {
@@ -1139,7 +1139,7 @@ bool evaluateBool(MaPLExecutionContext *context) {
             context->isDeadCodepath = previousDeadCodepath;
             return false;
         }
-        case MaPLInstruction_logical_or: {
+        case MAPL_INSTRUCTION_LOGICAL_OR: {
             // If the first bool is true, we don't need to evaluate the second one.
             bool firstBool = evaluateBool(context);
             if (!firstBool) {
@@ -1151,7 +1151,7 @@ bool evaluateBool(MaPLExecutionContext *context) {
             context->isDeadCodepath = previousDeadCodepath;
             return true;
         }
-        case MaPLInstruction_logical_negation:
+        case MAPL_INSTRUCTION_LOGICAL_NEGATION:
             return !evaluateBool(context);
         default:
             context->executionState = MaPLExecutionState_error;
@@ -1163,11 +1163,11 @@ bool evaluateBool(MaPLExecutionContext *context) {
 
 void *evaluatePointer(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_literal_null:
+        case MAPL_INSTRUCTION_LITERAL_NULL:
             return NULL;
-        case MaPLInstruction_pointer_variable:
+        case MAPL_INSTRUCTION_POINTER_VARIABLE:
             return *((void **)(context->primitiveTable+readMemoryAddress(context)));
-        case MaPLInstruction_pointer_null_coalescing: {
+        case MAPL_INSTRUCTION_POINTER_NULL_COALESCING: {
             // If the first pointer is non-NULL, we don't need to evaluate the second one.
             void *firstPointer = evaluatePointer(context);
             if (!firstPointer) {
@@ -1179,15 +1179,15 @@ void *evaluatePointer(MaPLExecutionContext *context) {
             context->isDeadCodepath = previousDeadCodepath;
             return firstPointer;
         }
-        case MaPLInstruction_pointer_function_invocation: {
+        case MAPL_INSTRUCTION_POINTER_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_pointer) ? returnedValue.pointerValue : NULL;
         }
-        case MaPLInstruction_pointer_subscript_invocation: {
+        case MAPL_INSTRUCTION_POINTER_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_pointer) ? returnedValue.pointerValue : NULL;
         }
-        case MaPLInstruction_pointer_ternary_conditional: {
+        case MAPL_INSTRUCTION_POINTER_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             void *result;
             if (evaluateBool(context)) {
@@ -1213,12 +1213,12 @@ void *evaluatePointer(MaPLExecutionContext *context) {
 
 const char *evaluateString(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_string_literal: {
+        case MAPL_INSTRUCTION_STRING_LITERAL: {
             return readString(context);
         }
-        case MaPLInstruction_string_variable:
+        case MAPL_INSTRUCTION_STRING_VARIABLE:
             return tagStringAsNotAllocated(context->stringTable[readMemoryAddress(context)]);
-        case MaPLInstruction_string_concat: {
+        case MAPL_INSTRUCTION_STRING_CONCAT: {
             const char *taggedString1 = evaluateString(context);
             const char *taggedString2 = evaluateString(context);
             if (context->isDeadCodepath) {
@@ -1230,15 +1230,15 @@ const char *evaluateString(MaPLExecutionContext *context) {
             freeStringIfNeeded(taggedString2);
             return concatenatedString;
         }
-        case MaPLInstruction_string_function_invocation: {
+        case MAPL_INSTRUCTION_STRING_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_string) ? (char *)returnedValue.stringValue : NULL;
         }
-        case MaPLInstruction_string_subscript_invocation: {
+        case MAPL_INSTRUCTION_STRING_SUBSCRIPT_INVOCATION: {
             MaPLParameter returnedValue = evaluateSubscriptInvocation(context);
             return verifyReturnValue(context, &returnedValue, MaPLDataType_string) ? (char *)returnedValue.stringValue : NULL;
         }
-        case MaPLInstruction_string_ternary_conditional: {
+        case MAPL_INSTRUCTION_STRING_TERNARY_CONDITIONAL: {
             bool previousDeadCodepath = context->isDeadCodepath;
             const char *result;
             if (evaluateBool(context)) {
@@ -1254,7 +1254,7 @@ const char *evaluateString(MaPLExecutionContext *context) {
             }
             return result;
         }
-        case MaPLInstruction_string_typecast: {
+        case MAPL_INSTRUCTION_STRING_TYPECAST: {
             if (context->isDeadCodepath) {
                 switch (typeForInstruction(context->scriptBuffer[context->cursorPosition])) {
                     case MaPLDataType_char:
@@ -1339,192 +1339,192 @@ const char *evaluateString(MaPLExecutionContext *context) {
     return NULL;
 }
 
-MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, enum MaPLInstruction operatorAssignInstruction, MaPLParameter *initialValue, MaPLParameter *incrementValue) {
+MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, MaPLInstruction operatorAssignInstruction, MaPLParameter *initialValue, MaPLParameter *incrementValue) {
     MaPLParameter result = MaPLUninitialized();
     if (verifyReturnValue(context, initialValue, incrementValue->dataType)) {
         result.dataType = typeForInstruction(operatorAssignInstruction);
         switch (operatorAssignInstruction) {
-            case MaPLInstruction_int32_add:
+            case MAPL_INSTRUCTION_INT32_ADD:
                 result.int32Value = initialValue->int32Value + incrementValue->int32Value;
                 break;
-            case MaPLInstruction_int32_subtract:
+            case MAPL_INSTRUCTION_INT32_SUBTRACT:
                 result.int32Value = initialValue->int32Value - incrementValue->int32Value;
                 break;
-            case MaPLInstruction_int32_divide:
+            case MAPL_INSTRUCTION_INT32_DIVIDE:
                 result.int32Value = initialValue->int32Value / incrementValue->int32Value;
                 break;
-            case MaPLInstruction_int32_multiply:
+            case MAPL_INSTRUCTION_INT32_MULTIPLY:
                 result.int32Value = initialValue->int32Value * incrementValue->int32Value;
                 break;
-            case MaPLInstruction_int32_modulo:
+            case MAPL_INSTRUCTION_INT32_MODULO:
                 result.int32Value = initialValue->int32Value % incrementValue->int32Value;
                 break;
-            case MaPLInstruction_int32_bitwise_and:
+            case MAPL_INSTRUCTION_INT32_BITWISE_AND:
                 result.int32Value = initialValue->int32Value & incrementValue->int32Value;
                 break;
-            case MaPLInstruction_int32_bitwise_or:
+            case MAPL_INSTRUCTION_INT32_BITWISE_OR:
                 result.int32Value = initialValue->int32Value | incrementValue->int32Value;
                 break;
-            case MaPLInstruction_int32_bitwise_xor:
+            case MAPL_INSTRUCTION_INT32_BITWISE_XOR:
                 result.int32Value = initialValue->int32Value ^ incrementValue->int32Value;
                 break;
-            case MaPLInstruction_int32_bitwise_shift_left:
+            case MAPL_INSTRUCTION_INT32_BITWISE_SHIFT_LEFT:
                 result.int32Value = initialValue->int32Value << incrementValue->int32Value;
                 break;
-            case MaPLInstruction_int32_bitwise_shift_right:
+            case MAPL_INSTRUCTION_INT32_BITWISE_SHIFT_RIGHT:
                 result.int32Value = initialValue->int32Value >> incrementValue->int32Value;
                 break;
-            case MaPLInstruction_float32_add:
+            case MAPL_INSTRUCTION_FLOAT32_ADD:
                 result.float32Value = initialValue->float32Value + incrementValue->float32Value;
                 break;
-            case MaPLInstruction_float32_subtract:
+            case MAPL_INSTRUCTION_FLOAT32_SUBTRACT:
                 result.float32Value = initialValue->float32Value - incrementValue->float32Value;
                 break;
-            case MaPLInstruction_float32_divide:
+            case MAPL_INSTRUCTION_FLOAT32_DIVIDE:
                 result.float32Value = initialValue->float32Value / incrementValue->float32Value;
                 break;
-            case MaPLInstruction_float32_multiply:
+            case MAPL_INSTRUCTION_FLOAT32_MULTIPLY:
                 result.float32Value = initialValue->float32Value * incrementValue->float32Value;
                 break;
-            case MaPLInstruction_float32_modulo:
+            case MAPL_INSTRUCTION_FLOAT32_MODULO:
                 result.float32Value = fmodf(initialValue->float32Value, incrementValue->float32Value);
                 break;
-            case MaPLInstruction_string_concat:
+            case MAPL_INSTRUCTION_STRING_CONCAT:
                 result.stringValue = concatenateStrings((char *)initialValue->stringValue, (char *)incrementValue->stringValue);
                 break;
-            case MaPLInstruction_int64_add:
+            case MAPL_INSTRUCTION_INT64_ADD:
                 result.int64Value = initialValue->int64Value + incrementValue->int64Value;
                 break;
-            case MaPLInstruction_int64_subtract:
+            case MAPL_INSTRUCTION_INT64_SUBTRACT:
                 result.int64Value = initialValue->int64Value - incrementValue->int64Value;
                 break;
-            case MaPLInstruction_int64_divide:
+            case MAPL_INSTRUCTION_INT64_DIVIDE:
                 result.int64Value = initialValue->int64Value / incrementValue->int64Value;
                 break;
-            case MaPLInstruction_int64_multiply:
+            case MAPL_INSTRUCTION_INT64_MULTIPLY:
                 result.int64Value = initialValue->int64Value * incrementValue->int64Value;
                 break;
-            case MaPLInstruction_int64_modulo:
+            case MAPL_INSTRUCTION_INT64_MODULO:
                 result.int64Value = initialValue->int64Value % incrementValue->int64Value;
                 break;
-            case MaPLInstruction_int64_bitwise_and:
+            case MAPL_INSTRUCTION_INT64_BITWISE_AND:
                 result.int64Value = initialValue->int64Value & incrementValue->int64Value;
                 break;
-            case MaPLInstruction_int64_bitwise_or:
+            case MAPL_INSTRUCTION_INT64_BITWISE_OR:
                 result.int64Value = initialValue->int64Value | incrementValue->int64Value;
                 break;
-            case MaPLInstruction_int64_bitwise_xor:
+            case MAPL_INSTRUCTION_INT64_BITWISE_XOR:
                 result.int64Value = initialValue->int64Value ^ incrementValue->int64Value;
                 break;
-            case MaPLInstruction_int64_bitwise_shift_left:
+            case MAPL_INSTRUCTION_INT64_BITWISE_SHIFT_LEFT:
                 result.int64Value = initialValue->int64Value << incrementValue->int64Value;
                 break;
-            case MaPLInstruction_int64_bitwise_shift_right:
+            case MAPL_INSTRUCTION_INT64_BITWISE_SHIFT_RIGHT:
                 result.int64Value = initialValue->int64Value >> incrementValue->int64Value;
                 break;
-            case MaPLInstruction_float64_add:
+            case MAPL_INSTRUCTION_FLOAT64_ADD:
                 result.float64Value = initialValue->float64Value + incrementValue->float64Value;
                 break;
-            case MaPLInstruction_float64_subtract:
+            case MAPL_INSTRUCTION_FLOAT64_SUBTRACT:
                 result.float64Value = initialValue->float64Value - incrementValue->float64Value;
                 break;
-            case MaPLInstruction_float64_divide:
+            case MAPL_INSTRUCTION_FLOAT64_DIVIDE:
                 result.float64Value = initialValue->float64Value / incrementValue->float64Value;
                 break;
-            case MaPLInstruction_float64_multiply:
+            case MAPL_INSTRUCTION_FLOAT64_MULTIPLY:
                 result.float64Value = initialValue->float64Value * incrementValue->float64Value;
                 break;
-            case MaPLInstruction_float64_modulo:
+            case MAPL_INSTRUCTION_FLOAT64_MODULO:
                 result.float64Value = fmod(initialValue->float64Value, incrementValue->float64Value);
                 break;
-            case MaPLInstruction_uint32_add:
+            case MAPL_INSTRUCTION_UINT32_ADD:
                 result.uint32Value = initialValue->uint32Value + incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint32_subtract:
+            case MAPL_INSTRUCTION_UINT32_SUBTRACT:
                 result.uint32Value = initialValue->uint32Value - incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint32_divide:
+            case MAPL_INSTRUCTION_UINT32_DIVIDE:
                 result.uint32Value = initialValue->uint32Value / incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint32_multiply:
+            case MAPL_INSTRUCTION_UINT32_MULTIPLY:
                 result.uint32Value = initialValue->uint32Value * incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint32_modulo:
+            case MAPL_INSTRUCTION_UINT32_MODULO:
                 result.uint32Value = initialValue->uint32Value % incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint32_bitwise_and:
+            case MAPL_INSTRUCTION_UINT32_BITWISE_AND:
                 result.uint32Value = initialValue->uint32Value & incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint32_bitwise_or:
+            case MAPL_INSTRUCTION_UINT32_BITWISE_OR:
                 result.uint32Value = initialValue->uint32Value | incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint32_bitwise_xor:
+            case MAPL_INSTRUCTION_UINT32_BITWISE_XOR:
                 result.uint32Value = initialValue->uint32Value ^ incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint32_bitwise_shift_left:
+            case MAPL_INSTRUCTION_UINT32_BITWISE_SHIFT_LEFT:
                 result.uint32Value = initialValue->uint32Value << incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint32_bitwise_shift_right:
+            case MAPL_INSTRUCTION_UINT32_BITWISE_SHIFT_RIGHT:
                 result.uint32Value = initialValue->uint32Value >> incrementValue->uint32Value;
                 break;
-            case MaPLInstruction_uint64_add:
+            case MAPL_INSTRUCTION_UINT64_ADD:
                 result.uint64Value = initialValue->uint64Value + incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_uint64_subtract:
+            case MAPL_INSTRUCTION_UINT64_SUBTRACT:
                 result.uint64Value = initialValue->uint64Value - incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_uint64_divide:
+            case MAPL_INSTRUCTION_UINT64_DIVIDE:
                 result.uint64Value = initialValue->uint64Value / incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_uint64_multiply:
+            case MAPL_INSTRUCTION_UINT64_MULTIPLY:
                 result.uint64Value = initialValue->uint64Value * incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_uint64_modulo:
+            case MAPL_INSTRUCTION_UINT64_MODULO:
                 result.uint64Value = initialValue->uint64Value % incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_uint64_bitwise_and:
+            case MAPL_INSTRUCTION_UINT64_BITWISE_AND:
                 result.uint64Value = initialValue->uint64Value & incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_uint64_bitwise_or:
+            case MAPL_INSTRUCTION_UINT64_BITWISE_OR:
                 result.uint64Value = initialValue->uint64Value | incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_uint64_bitwise_xor:
+            case MAPL_INSTRUCTION_UINT64_BITWISE_XOR:
                 result.uint64Value = initialValue->uint64Value ^ incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_uint64_bitwise_shift_left:
+            case MAPL_INSTRUCTION_UINT64_BITWISE_SHIFT_LEFT:
                 result.uint64Value = initialValue->uint64Value << incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_uint64_bitwise_shift_right:
+            case MAPL_INSTRUCTION_UINT64_BITWISE_SHIFT_RIGHT:
                 result.uint64Value = initialValue->uint64Value >> incrementValue->uint64Value;
                 break;
-            case MaPLInstruction_char_add:
+            case MAPL_INSTRUCTION_CHAR_ADD:
                 result.charValue = initialValue->charValue + incrementValue->charValue;
                 break;
-            case MaPLInstruction_char_subtract:
+            case MAPL_INSTRUCTION_CHAR_SUBTRACT:
                 result.charValue = initialValue->charValue - incrementValue->charValue;
                 break;
-            case MaPLInstruction_char_divide:
+            case MAPL_INSTRUCTION_CHAR_DIVIDE:
                 result.charValue = initialValue->charValue / incrementValue->charValue;
                 break;
-            case MaPLInstruction_char_multiply:
+            case MAPL_INSTRUCTION_CHAR_MULTIPLY:
                 result.charValue = initialValue->charValue * incrementValue->charValue;
                 break;
-            case MaPLInstruction_char_modulo:
+            case MAPL_INSTRUCTION_CHAR_MODULO:
                 result.charValue = initialValue->charValue % incrementValue->charValue;
                 break;
-            case MaPLInstruction_char_bitwise_and:
+            case MAPL_INSTRUCTION_CHAR_BITWISE_AND:
                 result.charValue = initialValue->charValue & incrementValue->charValue;
                 break;
-            case MaPLInstruction_char_bitwise_or:
+            case MAPL_INSTRUCTION_CHAR_BITWISE_OR:
                 result.charValue = initialValue->charValue | incrementValue->charValue;
                 break;
-            case MaPLInstruction_char_bitwise_xor:
+            case MAPL_INSTRUCTION_CHAR_BITWISE_XOR:
                 result.charValue = initialValue->charValue ^ incrementValue->charValue;
                 break;
-            case MaPLInstruction_char_bitwise_shift_left:
+            case MAPL_INSTRUCTION_CHAR_BITWISE_SHIFT_LEFT:
                 result.charValue = initialValue->charValue << incrementValue->charValue;
                 break;
-            case MaPLInstruction_char_bitwise_shift_right:
+            case MAPL_INSTRUCTION_CHAR_BITWISE_SHIFT_RIGHT:
                 result.charValue = initialValue->charValue >> incrementValue->charValue;
                 break;
             default:
@@ -1538,54 +1538,54 @@ MaPLParameter applyOperatorAssign(MaPLExecutionContext *context, enum MaPLInstru
 
 void evaluateStatement(MaPLExecutionContext *context) {
     switch(readInstruction(context)) {
-        case MaPLInstruction_unused_return_function_invocation: {
+        case MAPL_INSTRUCTION_UNUSED_RETURN_FUNCTION_INVOCATION: {
             MaPLParameter returnedValue = evaluateFunctionInvocation(context);
             if (returnedValue.dataType == MaPLDataType_string) {
                 freeStringIfNeeded((char *)returnedValue.stringValue);
             }
         }
             break;
-        case MaPLInstruction_char_assign: {
+        case MAPL_INSTRUCTION_CHAR_ASSIGN: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
             *(uint8_t *)(context->primitiveTable+variableAddress) = evaluateChar(context);
         }
             break;
-        case MaPLInstruction_int32_assign: {
+        case MAPL_INSTRUCTION_INT32_ASSIGN: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
             *(int32_t *)(context->primitiveTable+variableAddress) = evaluateInt32(context);
         }
             break;
-        case MaPLInstruction_int64_assign: {
+        case MAPL_INSTRUCTION_INT64_ASSIGN: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
             *(int64_t *)(context->primitiveTable+variableAddress) = evaluateInt64(context);
         }
             break;
-        case MaPLInstruction_uint32_assign: {
+        case MAPL_INSTRUCTION_UINT32_ASSIGN: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
             *(uint32_t *)(context->primitiveTable+variableAddress) = evaluateUint32(context);
         }
             break;
-        case MaPLInstruction_uint64_assign: {
+        case MAPL_INSTRUCTION_UINT64_ASSIGN: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
             *(uint64_t *)(context->primitiveTable+variableAddress) = evaluateUint64(context);
         }
             break;
-        case MaPLInstruction_float32_assign: {
+        case MAPL_INSTRUCTION_FLOAT32_ASSIGN: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
             *(float *)(context->primitiveTable+variableAddress) = evaluateFloat32(context);
         }
             break;
-        case MaPLInstruction_float64_assign: {
+        case MAPL_INSTRUCTION_FLOAT64_ASSIGN: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
             *(double *)(context->primitiveTable+variableAddress) = evaluateFloat64(context);
         }
             break;
-        case MaPLInstruction_boolean_assign: {
+        case MAPL_INSTRUCTION_BOOLEAN_ASSIGN: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
             *(uint8_t *)(context->primitiveTable+variableAddress) = (uint8_t)evaluateBool(context);
         }
             break;
-        case MaPLInstruction_string_assign: {
+        case MAPL_INSTRUCTION_STRING_ASSIGN: {
             MaPLMemoryAddress stringIndex = readMemoryAddress(context);
             const char *assignedString = evaluateString(context);
             const char *existingString = context->stringTable[stringIndex];
@@ -1610,12 +1610,12 @@ void evaluateStatement(MaPLExecutionContext *context) {
             context->stringTable[stringIndex] = assignedString;
         }
             break;
-        case MaPLInstruction_pointer_assign: {
+        case MAPL_INSTRUCTION_POINTER_ASSIGN: {
             MaPLMemoryAddress variableAddress = readMemoryAddress(context);
             *(void **)(context->primitiveTable+variableAddress) = evaluatePointer(context);
         }
             break;
-        case MaPLInstruction_assign_subscript: {
+        case MAPL_INSTRUCTION_ASSIGN_SUBSCRIPT: {
             void *invokedOnPointer = evaluatePointer(context);
             if (!invokedOnPointer) {
                 context->executionState = MaPLExecutionState_error;
@@ -1630,7 +1630,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
                 subscriptIndex.stringValue = untagString((char *)subscriptIndex.stringValue);
             }
             
-            enum MaPLInstruction operatorAssignInstruction = readInstruction(context);
+            MaPLInstruction operatorAssignInstruction = readInstruction(context);
             MaPLParameter assignedExpression = evaluateParameter(context);
             
             if (operatorAssignInstruction != MaPLInstruction_no_op) {
@@ -1670,7 +1670,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             freeMaPLParameterIfNeeded(&assignedExpression);
         }
             break;
-        case MaPLInstruction_assign_property: {
+        case MAPL_INSTRUCTION_ASSIGN_PROPERTY: {
             void *invokedOnPointer = NULL;
             if (context->scriptBuffer[context->cursorPosition] == MaPLInstruction_no_op) {
                 // This property is not invoked on another pointer, it's a global call.
@@ -1684,7 +1684,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             }
             
             MaPLSymbol symbol = readSymbol(context);
-            enum MaPLInstruction operatorAssignInstruction = readInstruction(context);
+            MaPLInstruction operatorAssignInstruction = readInstruction(context);
             MaPLParameter assignedExpression = evaluateParameter(context);
             
             if (operatorAssignInstruction != MaPLInstruction_no_op) {
@@ -1723,7 +1723,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             freeMaPLParameterIfNeeded(&assignedExpression);
         }
             break;
-        case MaPLInstruction_conditional: {
+        case MAPL_INSTRUCTION_CONDITIONAL: {
             bool conditional = evaluateBool(context);
             MaPLBytecodeLength move = readCursorMove(context);
             if (!conditional) {
@@ -1731,20 +1731,20 @@ void evaluateStatement(MaPLExecutionContext *context) {
             }
         }
             break;
-        case MaPLInstruction_cursor_move_forward: {
+        case MAPL_INSTRUCTION_CURSOR_MOVE_FORWARD: {
             MaPLBytecodeLength move = readCursorMove(context);
             context->cursorPosition += move;
         }
             break;
-        case MaPLInstruction_cursor_move_back: {
+        case MAPL_INSTRUCTION_CURSOR_MOVE_BACK: {
             MaPLBytecodeLength move = readCursorMove(context);
             context->cursorPosition -= move;
         }
             break;
-        case MaPLInstruction_program_exit:
+        case MAPL_INSTRUCTION_PROGRAM_EXIT:
             context->executionState = MaPLExecutionState_exit;
             break;
-        case MaPLInstruction_metadata: {
+        case MAPL_INSTRUCTION_METADATA: {
             MaPLParameterCount paramCount = readParameterCount(context);
             for (MaPLParameterCount i = 0; i < paramCount; i++) {
                 const char *metadataString = evaluateString(context);
@@ -1755,7 +1755,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             }
         }
             break;
-        case MaPLInstruction_debug_line: {
+        case MAPL_INSTRUCTION_DEBUG_LINE: {
             MaPLLineNumber lineNumber = *((MaPLLineNumber *)(context->scriptBuffer+context->cursorPosition));
             context->cursorPosition += sizeof(MaPLLineNumber);
             if (context->callbacks->debugLine) {
@@ -1763,7 +1763,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             }
         }
             break;
-        case MaPLInstruction_debug_update_variable: {
+        case MAPL_INSTRUCTION_DEBUG_UPDATE_VARIABLE: {
             const char *variableName = readString(context);
             MaPLParameter variableValue = evaluateParameter(context);
             if (context->callbacks->debugVariableUpdate) {
@@ -1778,7 +1778,7 @@ void evaluateStatement(MaPLExecutionContext *context) {
             }
         }
             break;
-        case MaPLInstruction_debug_delete_variable: {
+        case MAPL_INSTRUCTION_DEBUG_DELETE_VARIABLE: {
             const char *variableName = readString(context);
             if (context->callbacks->debugVariableDelete) {
                 context->callbacks->debugVariableDelete(variableName);
