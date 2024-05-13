@@ -164,5 +164,23 @@ set(SOURCE_FILES
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Executable")
 
+add_definitions(-DANTLR4CPP_STATIC)
+
 # Create executable
 add_executable(MaPLCompiler ${SOURCE_FILES})
+
+# A bunch of linking logic copied from ANTLR.
+find_package(Threads REQUIRED)
+target_link_libraries(MaPLGenerator Threads::Threads)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  set(disabled_compile_warnings "/wd4251")
+else()
+  set(disabled_compile_warnings "-Wno-overloaded-virtual")
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(disabled_compile_warnings "${disabled_compile_warnings} -Wno-dollar-in-identifier-extension -Wno-four-char-constants")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+  set(disabled_compile_warnings "${disabled_compile_warnings} -Wno-multichar")
+endif()
