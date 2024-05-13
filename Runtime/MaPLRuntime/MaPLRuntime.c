@@ -1834,7 +1834,7 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     MaPLMemoryAddress stringTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(MaPLMemoryAddress)+sizeof(uint8_t)));
     uint8_t *allocatedTables = (uint8_t *)malloc(primitiveTableSize + sizeof(char *) * stringTableSize);
     context.primitiveTable = allocatedTables;
-    context.stringTable = allocatedTables+primitiveTableSize;
+    context.stringTable = (const char **)(allocatedTables+primitiveTableSize);
     context.cursorPosition = sizeof(MaPLMemoryAddress)*2+sizeof(uint8_t);
     
     memset(context.stringTable, 0, sizeof(char *) * stringTableSize);
