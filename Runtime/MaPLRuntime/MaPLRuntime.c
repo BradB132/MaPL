@@ -28,6 +28,9 @@ typedef struct {
     bool isDeadCodepath;
     MaPLExecutionState executionState;
     MaPLRuntimeError errorType;
+    MaPLParameter *parameterList;
+    const char **taggedStringParameterList;
+    MaPLParameterCount parameterListCount;
 } MaPLExecutionContext;
 
 uint8_t evaluateChar(MaPLExecutionContext *context);
@@ -257,15 +260,23 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
  
     // Create the list of parameters.
     MaPLParameterCount paramCount = readParameterCount(context);
-    MaPLParameter functionParams[paramCount];
-    char *taggedStringParams[paramCount];
-    memset(taggedStringParams, 0, sizeof(taggedStringParams));
+    
+    // This requires an allocation because the size of these arrays is not compile time constant,
+    // but they can be reused over the lifetime of the script. This optimization is possible because
+    // MaPL doesn't do recursion within a single `MaPLExecutionContext`.
+    if (paramCount > context->parameterListCount) {
+        context->parameterListCount = paramCount;
+        context->parameterList = realloc(context->parameterList, sizeof(MaPLParameter) * paramCount);
+        context->taggedStringParameterList = realloc(context->taggedStringParameterList, sizeof(char *) * paramCount);
+    }
+    
+    memset(context->taggedStringParameterList, 0, sizeof(char *) * paramCount);
     for (MaPLParameterCount i = 0; i < paramCount; i++) {
-        functionParams[i] = evaluateParameter(context);
-        if (functionParams[i].dataType == MaPLDataType_string) {
+        context->parameterList[i] = evaluateParameter(context);
+        if (context->parameterList[i].dataType == MaPLDataType_string) {
             // Untag the string and store the tagged pointer for later release.
-            taggedStringParams[i] = (char *)functionParams[i].stringValue;
-            functionParams[i].stringValue = untagString((char *)functionParams[i].stringValue);
+            context->taggedStringParameterList[i] = (char *)context->parameterList[i].stringValue;
+            context->parameterList[i].stringValue = untagString((char *)context->parameterList[i].stringValue);
         }
     }
     
@@ -278,13 +289,13 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     if (context->executionState == MaPLExecutionState_continue && !context->isDeadCodepath) {
         returnValue = context->callbacks->invokeFunction(invokedOnPointer,
                                                          symbol,
-                                                         functionParams,
+                                                         context->parameterList,
                                                          paramCount);
     }
     
     // Clean up string params.
     for (MaPLParameterCount i = 0; i < paramCount; i++) {
-        freeStringIfNeeded(taggedStringParams[i]);
+        freeStringIfNeeded(context->taggedStringParameterList[i]);
     }
     
     return returnValue;
@@ -1801,6 +1812,9 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     context.callbacks = callbacks;
     context.isDeadCodepath = false;
     context.executionState = MaPLExecutionState_continue;
+    context.parameterList = NULL;
+    context.taggedStringParameterList = NULL;
+    context.parameterListCount = 0;
 
     // The first byte indicates big vs little endian (equals 1 if little endian).
     // If these bytes don't match, then the script was compiled with a different
@@ -1818,12 +1832,12 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     // The entire script execution happens synchronously inside this function, so these tables can be stack allocated.
     MaPLMemoryAddress primitiveTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(uint8_t)));
     MaPLMemoryAddress stringTableSize = *((MaPLMemoryAddress *)(context.scriptBuffer+sizeof(MaPLMemoryAddress)+sizeof(uint8_t)));
-    uint8_t primitiveTable[primitiveTableSize];
-    const char *stringTable[stringTableSize];
-    memset(stringTable, 0, sizeof(stringTable));
-    context.primitiveTable = primitiveTable;
-    context.stringTable = stringTable;
+    uint8_t *allocatedTables = (uint8_t *)malloc(primitiveTableSize + sizeof(char *) * stringTableSize);
+    context.primitiveTable = allocatedTables;
+    context.stringTable = allocatedTables+primitiveTableSize;
     context.cursorPosition = sizeof(MaPLMemoryAddress)*2+sizeof(uint8_t);
+    
+    memset(context.stringTable, 0, sizeof(char *) * stringTableSize);
     
     while (context.executionState == MaPLExecutionState_continue && context.cursorPosition < bufferLength) {
         evaluateStatement(&context);
@@ -1834,6 +1848,12 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     
     // Free any remaining allocated strings.
     for(MaPLMemoryAddress i = 0; i < stringTableSize; i++) {
-        freeStringIfNeeded(stringTable[i]);
+        freeStringIfNeeded(context.stringTable[i]);
+    }
+    
+    free(allocatedTables);
+    if (context.parameterListCount) {
+        free(context.parameterList);
+        free(context.taggedStringParameterList);
     }
 }
