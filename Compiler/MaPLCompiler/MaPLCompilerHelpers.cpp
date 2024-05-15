@@ -671,27 +671,27 @@ bool typeNameMatchesPrimitiveType(const std::string &typeName) {
 }
 
 void confirmSignedValueFitsInSignedBits(int64_t value, int8_t bits, MaPLFile *file, antlr4::Token *token) {
-    if (value >= 1L << (bits-1) ||
+    if (value >= static_cast<int64_t>(1) << (bits-1) ||
         value < -(1L << (bits-1))) {
         file->logError(token, "A value of "+std::to_string(value)+" is outside the range of numbers that can be represented by a "+std::to_string(bits)+"-bit signed integer.");
     }
 }
 
 void confirmUnsignedValueFitsInSignedBits(uint64_t value, int8_t bits, MaPLFile *file, antlr4::Token *token) {
-    if (value >= 1L << (bits-1)) {
+    if (value >= static_cast<int64_t>(1) << (bits-1)) {
         file->logError(token, "A value of "+std::to_string(value)+" is outside the range of numbers that can be represented by a "+std::to_string(bits)+"-bit signed integer.");
     }
 }
 
 void confirmSignedValueFitsInUnsignedBits(int64_t value, int8_t bits, MaPLFile *file, antlr4::Token *token) {
-    if (value >= 1UL << bits ||
+    if (value >= static_cast<uint64_t>(1) << bits ||
         value < 0) {
         file->logError(token, "A value of "+std::to_string(value)+" is outside the range of numbers that can be represented by a "+std::to_string(bits)+"-bit unsigned integer.");
     }
 }
 
 void confirmUnsignedValueFitsInUnsignedBits(uint64_t value, int8_t bits, MaPLFile *file, antlr4::Token *token) {
-    if (value >= 1UL << bits) {
+    if (value >= static_cast<uint64_t>(1) << bits) {
         file->logError(token, "A value of "+std::to_string(value)+" is outside the range of numbers that can be represented by a "+std::to_string(bits)+"-bit unsigned integer.");
     }
 }
