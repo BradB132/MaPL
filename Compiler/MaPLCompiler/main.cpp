@@ -137,7 +137,7 @@ int main(int argc, const char ** argv) {
     // Output each compiled script to file.
     for (const auto&[scriptPath, bytecode] : result.compiledFiles) {
         if (!outputFileMap.count(scriptPath)) {
-            fprintf(stderr, "No '.maplb' file was saved for '%s' because no output file was specified.\n", scriptPath.c_str());
+            fprintf(stderr, "No '.maplb' file was saved for '%s' because no output file was specified.\n", scriptPath.u8string().c_str());
             continue;
         }
         std::ofstream bytecodeOutputStream(outputFileMap.at(scriptPath));

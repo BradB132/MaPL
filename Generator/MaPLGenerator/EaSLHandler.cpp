@@ -467,7 +467,7 @@ MaPLArrayMap<Schema *> *schemasForPaths(const std::vector<std::filesystem::path>
         // Read the raw schema from the file system.
         std::ifstream inputStream(schemaPath);
         if (!inputStream) {
-            fprintf(stderr, "Unable to read schema file at path '%s'.\n", schemaPath.c_str());
+            fprintf(stderr, "Unable to read schema file at path '%s'.\n", schemaPath.u8string().c_str());
             exit(1);
         }
         std::stringstream stringBuffer;

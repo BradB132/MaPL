@@ -62,7 +62,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             const std::string &argString = argv[0].stringValue;
             if (!_flags->count(argString)) {
                 MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-                fprintf(stderr, "%s:%d: error: Attempted to reference missing flag '%s'. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, argv[0].stringValue);
+                fprintf(stderr, "%s:%d: error: Attempted to reference missing flag '%s'. (Runtime)\n", frame.path.u8string().c_str(), frame.currentLineNumber, argv[0].stringValue);
                 exit(1);
             }
             return MaPLStringByReference(_flags->at(argString).c_str());
@@ -74,7 +74,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
         case MaPLSymbols_GLOBAL_error_string: {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-            fprintf(stderr, "%s:%d: error: %s (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, argv[0].stringValue);
+            fprintf(stderr, "%s:%d: error: %s (Runtime)\n", frame.path.u8string().c_str(), frame.currentLineNumber, argv[0].stringValue);
             exit(1);
         }
             break;
@@ -107,7 +107,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
             createDirectoriesIfNeeded(normalizedPath);
             _outputStream = new std::ofstream(normalizedPath);
-            printf("Outputting to file: '%s'\n", normalizedPath.c_str());
+            printf("Outputting to file: '%s'\n", normalizedPath.u8string().c_str());
             return MaPLVoid();
         }
         case MaPLSymbols_GLOBAL_schemas:
@@ -125,7 +125,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         case MaPLSymbols_GLOBAL_writeToFile_VARIADIC: {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
             if (!_outputStream) {
-                fprintf(stderr, "%s:%d: error: Attempted to write to file before any output file was specified. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber);
+                fprintf(stderr, "%s:%d: error: Attempted to write to file before any output file was specified. (Runtime)\n", frame.path.u8string().c_str(), frame.currentLineNumber);
                 exit(1);
             }
             for (MaPLParameterCount i = 0; i < argc; i++) {
@@ -158,7 +158,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
                         _outputStream->write((char *)&(argv[i].booleanValue), sizeof(argv[i].booleanValue));
                         break;
                     default:
-                        fprintf(stderr, "%s:%d: error: MaPL argument at index %d was invalid type. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, i);
+                        fprintf(stderr, "%s:%d: error: MaPL argument at index %d was invalid type. (Runtime)\n", frame.path.u8string().c_str(), frame.currentLineNumber, i);
                         exit(1);
                         break;
                 }
@@ -217,7 +217,7 @@ static void assignSubscript(void *invokedOnPointer, MaPLParameter index, MaPLPar
 static void metadata(const char* metadataString) {
     MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
     if (!_outputStream) {
-        fprintf(stderr, "%s:%d: error: Attempted to write metadata to file before any output file was specified. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber);
+        fprintf(stderr, "%s:%d: error: Attempted to write metadata to file before any output file was specified. (Runtime)\n", frame.path.u8string().c_str(), frame.currentLineNumber);
         exit(1);
     }
     *_outputStream << metadataString;
@@ -250,7 +250,7 @@ static void error(MaPLRuntimeError error) {
             break;
     }
     MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-    fprintf(stderr, "%s:%d: error: %s (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, errString);
+    fprintf(stderr, "%s:%d: error: %s (Runtime)\n", frame.path.u8string().c_str(), frame.currentLineNumber, errString);
     exit(1);
 }
 
@@ -258,9 +258,9 @@ void invokeScript(const std::filesystem::path &scriptPath) {
     if (!std::filesystem::exists(scriptPath)) {
         if (_stackFrames.size() > 0) {
             MaPLStackFrame &frame = _stackFrames[_stackFrames.size()-1];
-            fprintf(stderr, "%s:%d: error: Attempted to run script in non-existent file '%s'. (Runtime)\n", frame.path.c_str(), frame.currentLineNumber, scriptPath.c_str());
+            fprintf(stderr, "%s:%d: error: Attempted to run script in non-existent file '%s'. (Runtime)\n", frame.path.u8string().c_str(), frame.currentLineNumber, scriptPath.u8string().c_str());
         } else {
-            fprintf(stderr, "Attempted to run script in non-existent file '%s'.\n", scriptPath.c_str());
+            fprintf(stderr, "Attempted to run script in non-existent file '%s'.\n", scriptPath.u8string().c_str());
         }
         exit(1);
     }
