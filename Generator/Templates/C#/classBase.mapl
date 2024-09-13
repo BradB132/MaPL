@@ -28,6 +28,9 @@ string superclassDeclaration;
 string overrideSpecifier;
 if schemaClass.superclass != NULL {
     superclassDeclaration = ": " + schemaClass.superclass.namespace + "." + schemaClass.superclass.name;
+    if useMaPLGeneratorSerialized {
+        superclassDeclaration += ", MaPLGeneratorSerialized";
+    }
     overrideSpecifier = "override ";
 } else {
     superclassDeclaration = useMaPLGeneratorSerialized ? ": MaPLGeneratorSerialized" : "";
@@ -149,12 +152,11 @@ if useMaPLGeneratorSerialized {
                     // Ensure the endianness of this device matches that of the bytecode.
                     bool machineIsLittleEndian = System.BitConverter.IsLittleEndian;
                     bool bytecodeIsLittleEndian = reader.ReadByte() == 1;
-                    if (machineIsLittleEndian != bytecodeIsLittleEndian) {
-                        return null;
-                    }
+                    bool flipEndian = machineIsLittleEndian != bytecodeIsLittleEndian;
 
+                    System.Collections.Generic.List<byte> stringReader = new System.Collections.Generic.List<byte>(32);
                     ${schemaNamespace}.${className} createdObject = new ${schemaNamespace}.${className}();
-                    if (!createdObject.initializeObject(reader, reader.ReadUInt32())) {
+                    if (!createdObject.initializeObject(reader, EndianReader.readUInt32(reader, flipEndian), flipEndian, stringReader)) {
                         return null;
                     }
                     return createdObject;
@@ -182,18 +184,18 @@ if useMaPLGeneratorSerialized {
 ?>
     }
 <?#region MaPLGeneratorSerialized
-    public ${overrideSpecifier}bool initializeObject(BinaryReader reader, uint classBytecode) {
+    public ${overrideSpecifier}bool initializeObject(BinaryReader reader, uint classBytecode, bool flipEndian, System.Collections.Generic.List<byte> stringReader) {
         if (classBytecode != MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_BEGIN) {
            return false;
         }
         MaPLGeneratorSerializedParseStatus result = MaPLGeneratorSerializedParseStatus.Success;
         while (result == MaPLGeneratorSerializedParseStatus.Success) {
-            result = initializeAttribute(reader, reader.ReadUInt32());
+            result = initializeAttribute(reader, EndianReader.readUInt32(reader, flipEndian), flipEndian, stringReader);
         }
         return result == MaPLGeneratorSerializedParseStatus.Completed;
     }
 
-    public ${overrideSpecifier}MaPLGeneratorSerializedParseStatus initializeAttribute(BinaryReader reader, uint attributeBytecode) {
+    public ${overrideSpecifier}MaPLGeneratorSerializedParseStatus initializeAttribute(BinaryReader reader, uint attributeBytecode, bool flipEndian, System.Collections.Generic.List<byte> stringReader) {
 ?>
     if schemaClass.attributes.count > 0 {
 <?        switch (attributeBytecode) {
@@ -211,7 +213,7 @@ if useMaPLGeneratorSerialized {
             if requiresList {
                 string listLength;
                 if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
-<?                uint ${attributeName}Length = reader.ReadUInt32();
+<?                uint ${attributeName}Length = EndianReader.readUInt32(reader, flipEndian);
 ?>
                     listLength = attributeName + "Length";
                 } else {  // Fixed length
@@ -229,7 +231,7 @@ if useMaPLGeneratorSerialized {
                 string typeNamespace = attribute.typeNamespace;
                 SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
                 bool classIsOptional = attribute.defaultValues.count > 0;
-<?${indent}                uint classBytecode = reader.ReadUInt32();
+<?${indent}                uint classBytecode = EndianReader.readUInt32(reader, flipEndian);
 ?>
                 if attributeClass.descendantClasses.count > 0 {
 <?${indent}                ${typeNamespace}.${typeName} createdObject;
@@ -261,7 +263,7 @@ ${indent}                }
 <?${indent}                ${attributeName} = createdObject;
 ?>
                 }
-<?${indent}                if (!createdObject.initializeObject(reader, classBytecode)) {
+<?${indent}                if (!createdObject.initializeObject(reader, classBytecode, flipEndian, stringReader)) {
 ${indent}                    return MaPLGeneratorSerializedParseStatus.Error;
 ${indent}                }
 ?>
@@ -270,32 +272,32 @@ ${indent}                }
                 if attribute.typeIsUIDReference ||
                       typeName == "string" ||
                       typeName == "UID" {
-<?${indent}                System.Collections.Generic.List<byte> ${attributeName}Bytes = new System.Collections.Generic.List<byte>();
+<?${indent}                stringReader.Clear();
 ${indent}                byte nextByte = reader.ReadByte();
 ${indent}                while (nextByte != 0) {
-${indent}                    ${attributeName}Bytes.Add(nextByte);
+${indent}                    stringReader.Add(nextByte);
 ${indent}                    nextByte = reader.ReadByte();
 ${indent}                }
 ?>
-                    primitiveValue = "System.Text.Encoding.UTF8.GetString(System.Runtime.InteropServices.CollectionsMarshal.AsSpan("+attributeName+"Bytes))";
+                    primitiveValue = "System.Text.Encoding.UTF8.GetString(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(stringReader))";
                 } else if typeName == "int32" {
-                    primitiveValue = "reader.ReadInt32()";
+                    primitiveValue = "EndianReader.readInt32(reader, flipEndian)";
                 } else if typeName == "uint32" {
-                    primitiveValue = "reader.ReadUInt32()";
+                    primitiveValue = "EndianReader.readUInt32(reader, flipEndian)";
                 } else if typeName == "int64" {
-                    primitiveValue = "reader.ReadInt64()";
+                    primitiveValue = "EndianReader.readInt64(reader, flipEndian)";
                 } else if typeName == "uint64" {
-                    primitiveValue = "reader.ReadUInt64()";
+                    primitiveValue = "EndianReader.readUInt64(reader, flipEndian)";
                 } else if typeName == "float64" {
-                    primitiveValue = "reader.ReadDouble()";
+                    primitiveValue = "EndianReader.readDouble(reader, flipEndian)";
                 } else if typeName == "float32" {
-                    primitiveValue = "reader.ReadSingle()";
+                    primitiveValue = "EndianReader.readFloat(reader, flipEndian)";
                 } else if typeName == "bool" {
                     primitiveValue = "reader.ReadByte() != 0";
                 } else if typeName == "char" {
                     primitiveValue = "reader.ReadByte()";
                 } else if attribute.typeIsEnum {
-                    primitiveValue = "(" + schemaNamespace + "." + typeName + ")reader.ReadUInt32()";
+                    primitiveValue = "(" + schemaNamespace + "." + typeName + ")EndianReader.readUInt32(reader, flipEndian)";
                 }
                 if requiresList {
 <?${indent}                ${attributeName}.Add(${primitiveValue});
@@ -320,7 +322,7 @@ ${indent}                }
 ?>
     }
     if schemaClass.superclass != NULL {
-<?        return base.initializeAttribute(reader, attributeBytecode);
+<?        return base.initializeAttribute(reader, attributeBytecode, flipEndian, stringReader);
 ?>
     } else {
 <?        return MaPLGeneratorSerializedParseStatus.Error;

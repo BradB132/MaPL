@@ -14,11 +14,41 @@ public enum MaPLGeneratorSerializedParseStatus {
 }
 
 /**
+ * Utility functions to fix endianness.
+ */
+public static class EndianReader {
+    public static uint readUInt32(BinaryReader reader, bool flipEndian) {
+        uint rawValue = reader.ReadUInt32();
+        return flipEndian ? System.Buffers.Binary.BinaryPrimitives.ReverseEndianness(rawValue) : rawValue;
+    }
+    public static int readInt32(BinaryReader reader, bool flipEndian) {
+        int rawValue = reader.ReadInt32();
+        return flipEndian ? System.Buffers.Binary.BinaryPrimitives.ReverseEndianness(rawValue) : rawValue;
+    }
+    public static ulong readUInt64(BinaryReader reader, bool flipEndian) {
+        ulong rawValue = reader.ReadUInt64();
+        return flipEndian ? System.Buffers.Binary.BinaryPrimitives.ReverseEndianness(rawValue) : rawValue;
+    }
+    public static long readInt64(BinaryReader reader, bool flipEndian) {
+        long rawValue = reader.ReadInt64();
+        return flipEndian ? System.Buffers.Binary.BinaryPrimitives.ReverseEndianness(rawValue) : rawValue;
+    }
+    public static float readFloat(BinaryReader reader, bool flipEndian) {
+        float rawValue = reader.ReadSingle();
+        return flipEndian ? System.BitConverter.UInt32BitsToSingle(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness(System.BitConverter.SingleToUInt32Bits(rawValue))) : rawValue;
+    }
+    public static double readDouble(BinaryReader reader, bool flipEndian) {
+        double rawValue = reader.ReadDouble();
+        return flipEndian ? System.BitConverter.UInt64BitsToDouble(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness(System.BitConverter.DoubleToUInt64Bits(rawValue))) : rawValue;
+    }
+}
+
+/**
  * Describes how generated objects are serialized / deserialized.
  */
 public interface MaPLGeneratorSerialized {
-    public bool initializeObject(BinaryReader reader, uint classBytecode);
-    public MaPLGeneratorSerializedParseStatus initializeAttribute(BinaryReader reader, uint attributeBytecode);
+    public bool initializeObject(BinaryReader reader, uint classBytecode, bool flipEndian, System.Collections.Generic.List<byte> stringReader);
+    public MaPLGeneratorSerializedParseStatus initializeAttribute(BinaryReader reader, uint attributeBytecode, bool flipEndian, System.Collections.Generic.List<byte> stringReader);
     public void writeObject(BinaryWriter writer);
     public void writeAttributes(BinaryWriter writer);
 
