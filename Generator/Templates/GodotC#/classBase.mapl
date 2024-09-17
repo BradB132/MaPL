@@ -15,7 +15,7 @@ outputToFile(outputDir + "/" + schemaNamespace + "/" + className + "_generated.c
 
 ?>
 if useMaPLGeneratorSerialized {
-<?using System.IO;
+<?using Godot;
 
 ?>
 }
@@ -145,57 +145,47 @@ if schemaClass.attributes.count > 0 {
 if useMaPLGeneratorSerialized {
     if schemaClass.annotations.contains("root") {
 <?    public static ${schemaNamespace}.${className} readFromFile(string filePath) {
-        try {
-            using (FileStream fileStream = File.OpenRead(filePath)) {
-                using (BinaryReader reader = new BinaryReader(fileStream)) {
-                    
-                    // Ensure the endianness of this device matches that of the bytecode. `BinaryReader` assumes little endian.
-                    // The first byte signals endianness of the remainder of the file (where 1 signals little endian).
-                    bool flipEndian = reader.ReadByte() != 1;
+        using (FileAccess fileAccess = FileAccess.Open(filePath, FileAccess.ModeFlags.Read)) {
+            
+            // The first byte signals endianness of the remainder of the file (where 1 signals little endian).
+            fileAccess.BigEndian = fileAccess.Get8() == 0;
 
-                    System.Collections.Generic.List<byte> stringReader = new System.Collections.Generic.List<byte>(32);
-                    ${schemaNamespace}.${className} createdObject = new ${schemaNamespace}.${className}();
-                    if (!createdObject.initializeObject(reader, EndianReader.readUInt32(reader, flipEndian), flipEndian, stringReader)) {
-                        return null;
-                    }
-                    return createdObject;
-                }
+            System.Collections.Generic.List<byte> stringReader = new System.Collections.Generic.List<byte>(32);
+            ${schemaNamespace}.${className} createdObject = new ${schemaNamespace}.${className}();
+            if (!createdObject.initializeObject(fileAccess, fileAccess.Get32(), stringReader)) {
+                return null;
             }
-        } catch (System.Exception) {
-            return null;
+            return createdObject;
         }
     }
 
     public bool writeToFile(string filePath) {
-        try {
-            using (FileStream fileStream = File.OpenWrite(filePath)) {
-                using (BinaryWriter writer = new BinaryWriter(fileStream)) {
-                    // The `BinaryWriter` class always uses little endian. Add a "1" byte to signify this.
-                    writer.Write((byte)(1));
-                    writeObject(writer);
-                    return true;
-                }
-            }
-        } catch (System.Exception) {
-            return false;
+        using (FileAccess fileAccess = FileAccess.Open(filePath, FileAccess.ModeFlags.Write)) {
+            
+            // Always write in little endian.
+            fileAccess.BigEndian = false;
+            fileAccess.Store8(1);
+            
+            writeObject(fileAccess);
+            return fileAccess.GetError() == Error.Ok;
         }
     }
 
 ?>
     }
 <?#region MaPLGeneratorSerialized
-    public ${overrideSpecifier}bool initializeObject(BinaryReader reader, uint classBytecode, bool flipEndian, System.Collections.Generic.List<byte> stringReader) {
+    public ${overrideSpecifier}bool initializeObject(FileAccess fileAccess, uint classBytecode, System.Collections.Generic.List<byte> stringReader) {
         if (classBytecode != MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_BEGIN) {
            return false;
         }
         MaPLGeneratorSerializedParseStatus result = MaPLGeneratorSerializedParseStatus.Success;
         while (result == MaPLGeneratorSerializedParseStatus.Success) {
-            result = initializeAttribute(reader, EndianReader.readUInt32(reader, flipEndian), flipEndian, stringReader);
+            result = initializeAttribute(fileAccess, fileAccess.Get32(), stringReader);
         }
         return result == MaPLGeneratorSerializedParseStatus.Completed;
     }
 
-    public ${overrideSpecifier}MaPLGeneratorSerializedParseStatus initializeAttribute(BinaryReader reader, uint attributeBytecode, bool flipEndian, System.Collections.Generic.List<byte> stringReader) {
+    public ${overrideSpecifier}MaPLGeneratorSerializedParseStatus initializeAttribute(FileAccess fileAccess, uint attributeBytecode, System.Collections.Generic.List<byte> stringReader) {
 ?>
     if schemaClass.attributes.count > 0 {
 <?        switch (attributeBytecode) {
@@ -213,7 +203,7 @@ if useMaPLGeneratorSerialized {
             if requiresList {
                 string listLength;
                 if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
-<?                uint ${attributeName}Length = EndianReader.readUInt32(reader, flipEndian);
+<?                uint ${attributeName}Length = fileAccess.Get32();
 ?>
                     listLength = attributeName + "Length";
                 } else {  // Fixed length
@@ -231,7 +221,7 @@ if useMaPLGeneratorSerialized {
                 string typeNamespace = attribute.typeNamespace;
                 SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
                 bool classIsOptional = attribute.defaultValues.count > 0;
-<?${indent}                uint classBytecode = EndianReader.readUInt32(reader, flipEndian);
+<?${indent}                uint classBytecode = fileAccess.Get32();
 ?>
                 if attributeClass.descendantClasses.count > 0 {
 <?${indent}                ${typeNamespace}.${typeName} createdObject;
@@ -263,7 +253,7 @@ ${indent}                }
 <?${indent}                ${attributeName} = createdObject;
 ?>
                 }
-<?${indent}                if (!createdObject.initializeObject(reader, classBytecode, flipEndian, stringReader)) {
+<?${indent}                if (!createdObject.initializeObject(fileAccess, classBytecode, stringReader)) {
 ${indent}                    return MaPLGeneratorSerializedParseStatus.Error;
 ${indent}                }
 ?>
@@ -273,31 +263,31 @@ ${indent}                }
                       typeName == "string" ||
                       typeName == "UID" {
 <?${indent}                stringReader.Clear();
-${indent}                byte nextByte = reader.ReadByte();
+${indent}                byte nextByte = (byte)fileAccess.Get8();
 ${indent}                while (nextByte != 0) {
 ${indent}                    stringReader.Add(nextByte);
-${indent}                    nextByte = reader.ReadByte();
+${indent}                    nextByte = (byte)fileAccess.Get8();
 ${indent}                }
 ?>
                     primitiveValue = "System.Text.Encoding.UTF8.GetString(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(stringReader))";
                 } else if typeName == "int32" {
-                    primitiveValue = "EndianReader.readInt32(reader, flipEndian)";
+                    primitiveValue = "(int)fileAccess.Get32()";
                 } else if typeName == "uint32" {
-                    primitiveValue = "EndianReader.readUInt32(reader, flipEndian)";
+                    primitiveValue = "fileAccess.Get32()";
                 } else if typeName == "int64" {
-                    primitiveValue = "EndianReader.readInt64(reader, flipEndian)";
+                    primitiveValue = "(long)fileAccess.Get64()";
                 } else if typeName == "uint64" {
-                    primitiveValue = "EndianReader.readUInt64(reader, flipEndian)";
+                    primitiveValue = "fileAccess.Get64()";
                 } else if typeName == "float64" {
-                    primitiveValue = "EndianReader.readDouble(reader, flipEndian)";
+                    primitiveValue = "System.BitConverter.UInt64BitsToDouble(fileAccess.Get64())";
                 } else if typeName == "float32" {
-                    primitiveValue = "EndianReader.readFloat(reader, flipEndian)";
+                    primitiveValue = "System.BitConverter.UInt32BitsToSingle(fileAccess.Get32())";
                 } else if typeName == "bool" {
-                    primitiveValue = "reader.ReadByte() != 0";
+                    primitiveValue = "fileAccess.Get8() != 0";
                 } else if typeName == "char" {
-                    primitiveValue = "reader.ReadByte()";
+                    primitiveValue = "fileAccess.Get8()";
                 } else if attribute.typeIsEnum {
-                    primitiveValue = "(" + schemaNamespace + "." + typeName + ")EndianReader.readUInt32(reader, flipEndian)";
+                    primitiveValue = "(" + schemaNamespace + "." + typeName + ")fileAccess.Get32()";
                 }
                 if requiresList {
 <?${indent}                ${attributeName}.Add(${primitiveValue});
@@ -322,7 +312,7 @@ ${indent}                }
 ?>
     }
     if schemaClass.superclass != NULL {
-<?        return base.initializeAttribute(reader, attributeBytecode, flipEndian, stringReader);
+<?        return base.initializeAttribute(fileAccess, attributeBytecode, stringReader);
 ?>
     } else {
 <?        return MaPLGeneratorSerializedParseStatus.Error;
@@ -330,13 +320,13 @@ ${indent}                }
     }
 <?    }
 
-    public ${overrideSpecifier}void writeObject(BinaryWriter writer) {
-        writer.Write(MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_BEGIN);
-        writeAttributes(writer);
-        writer.Write(MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_END);
+    public ${overrideSpecifier}void writeObject(FileAccess fileAccess) {
+        fileAccess.Store32(MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_BEGIN);
+        writeAttributes(fileAccess);
+        fileAccess.Store32(MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_END);
     }
 
-    public ${overrideSpecifier}void writeAttributes(BinaryWriter writer) {
+    public ${overrideSpecifier}void writeAttributes(FileAccess fileAccess) {
 ?>
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
@@ -379,13 +369,13 @@ ${indent}                }
         }
         
         // Specify which variable is being written.
-<?${indent}        writer.Write(MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_${attributeName});
+<?${indent}        fileAccess.Store32(MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_${attributeName});
 ?>
         
         // Specify the length if this is a list of variable length.
         if attribute.minOccurrences != attribute.maxOccurrences {
             // Specify the length of this list.
-<?${indent}        writer.Write((uint)${attributeName}.Count);
+<?${indent}        fileAccess.Store32((uint)${attributeName}.Count);
 ?>
         }
         
@@ -400,11 +390,11 @@ ${indent}                }
         }
         
         if attribute.typeIsClass {
-<?${indent}        ${attributeVar}.writeObject(writer);
+<?${indent}        ${attributeVar}.writeObject(fileAccess);
 ?>
         } else {  // Primitives.
             if attribute.typeIsEnum {
-<?${indent}        writer.Write((uint)${attributeVar});
+<?${indent}        fileAccess.Store32((uint)${attributeVar});
 ?>
             } else if attribute.typeIsUIDReference ||
                       typeName == "string" ||
@@ -413,28 +403,48 @@ ${indent}                }
 ${indent}        System.Span<byte> ${attributeName}Bytes = stackalloc byte[${attributeName}ByteCount];
 ${indent}        System.Text.Encoding.UTF8.GetBytes(${attributeVar}, ${attributeName}Bytes);
 ${indent}        for (int strIndex = 0; strIndex < ${attributeName}ByteCount; strIndex++) {
-${indent}            writer.Write(${attributeName}Bytes[strIndex]);
+${indent}            fileAccess.Store8(${attributeName}Bytes[strIndex]);
 ${indent}        }
-${indent}        writer.Write((byte)0);
+${indent}        fileAccess.Store8(0);
 ?>
             } else if typeName == "bool" {
                 if attribute.defaultValues.count == 1 {
                     // In the case that there's exactly 1 default value, we know this is a single bool, which is not the same as the default.
                     // This means there's only a single value that it can be, which should be hard coded.
                     if (bool)attribute.defaultValues[0] {
-<?${indent}        writer.Write((byte)0);
+<?${indent}        fileAccess.Store8(0);
 ?>
                     } else {
-<?${indent}        writer.Write((byte)1);
+<?${indent}        fileAccess.Store8(1);
 ?>
                     }
                 } else {
-<?${indent}        writer.Write((byte)(${attributeVar} ? 1 : 0));
+<?${indent}        fileAccess.Store8((byte)(${attributeVar} ? 1 : 0));
 ?>
                 }
-            } else {
-<?${indent}        writer.Write(${attributeVar});
+            } else if typeName == "int32" {
+<?${indent}        fileAccess.Store32((uint)${attributeVar});
 ?>
+            } else if typeName == "uint32" {
+<?${indent}        fileAccess.Store32(${attributeVar});
+?>
+            } else if typeName == "int64" {
+<?${indent}        fileAccess.Store64((ulong)${attributeVar});
+?>
+            } else if typeName == "uint64" {
+<?${indent}        fileAccess.Store64(${attributeVar});
+?>
+            } else if typeName == "float64" {
+<?${indent}        fileAccess.Store64(System.BitConverter.DoubleToUInt64Bits(${attributeVar}));
+?>
+            } else if typeName == "float32" {
+<?${indent}        fileAccess.Store32(System.BitConverter.SingleToUInt32Bits(${attributeVar}));
+?>
+            } else if typeName == "char" {
+<?${indent}        fileAccess.Store8(${attributeVar});
+?>
+            } else {
+                error("Unknown type '"+typeName+"' for attribute '"+attributeName+"'.");
             }
         }
         
@@ -449,7 +459,7 @@ ${indent}        writer.Write((byte)0);
         }
     }
     if schemaClass.superclass != NULL {
-<?        base.writeAttributes(writer);
+<?        base.writeAttributes(fileAccess);
 ?>
     } else if schemaClass.attributes.count == 0 {
 <?        // No-op.
