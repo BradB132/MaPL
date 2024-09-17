@@ -76,7 +76,7 @@ if schemaClass.attributes.count > 0 {
             dataType = "System.Collections.Generic.List<"+dataType+">";
         }
         
-        <?    ${dataType} ${attribute.name}?>
+        <?    public ${dataType} ${attribute.name}?>
         
         if attribute.defaultValues.count == 0 {
             // All attributes must be initialized.
