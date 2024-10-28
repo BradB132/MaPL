@@ -11,7 +11,12 @@ for uint32 attrIndex = 0; attrIndex < node.attributes.count; attrIndex++ {
     if stringSet.contains(value) {
         continue;
     }
-    SchemaAttribute schemaAttribute = schemaClass.attributes[xmlAttribute.name];
+    SchemaClass classWithAttribute = schemaClass;
+    SchemaAttribute schemaAttribute = classWithAttribute.attributes[xmlAttribute.name];
+    while schemaAttribute == NULL {
+        classWithAttribute = classWithAttribute.superclass;
+        schemaAttribute = classWithAttribute.attributes[xmlAttribute.name];
+    }
     if schemaAttribute.typeName == "string" && schemaAttribute.annotations.contains("localized") {
         stringSet.insert(value);
 <?// The value of "${schemaAttribute.name}" on a "${node.namespace}::${node.name}" object.
