@@ -1,5 +1,5 @@
 
-// Generated from ./MaPLLexer.g4 by ANTLR 4.13.1
+// Generated from ./MaPLLexer.g4 by ANTLR 4.13.2
 
 
 #include "MaPLLexer.h"
@@ -45,7 +45,7 @@ struct MaPLLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-MaPLLexerStaticData *mapllexerLexerStaticData = nullptr;
+std::unique_ptr<MaPLLexerStaticData> mapllexerLexerStaticData = nullptr;
 
 void mapllexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -303,7 +303,7 @@ void mapllexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  mapllexerLexerStaticData = staticData.release();
+  mapllexerLexerStaticData = std::move(staticData);
 }
 
 }

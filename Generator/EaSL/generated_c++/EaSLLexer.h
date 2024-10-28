@@ -1,5 +1,5 @@
 
-// Generated from ./EaSL.g4 by ANTLR 4.13.1
+// Generated from ./EaSL.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -20,7 +20,7 @@ public:
     SEQUENCE_WILDCARD = 23, COLON = 24, NAMESPACE_DELIMITER = 25, STATEMENT_END = 26, 
     ANNOTATION = 27, LITERAL_NULL = 28, LITERAL_TRUE = 29, LITERAL_FALSE = 30, 
     LITERAL_INT = 31, LITERAL_FLOAT = 32, LITERAL_STRING = 33, IDENTIFIER = 34, 
-    BLOCK_COMMENT = 35, LINE_COMMENT = 36, WHITESPACE = 37
+    REGEX = 35, BLOCK_COMMENT = 36, LINE_COMMENT = 37, WHITESPACE = 38
   };
 
   explicit EaSLLexer(antlr4::CharStream *input);

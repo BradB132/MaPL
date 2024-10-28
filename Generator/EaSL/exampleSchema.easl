@@ -15,7 +15,7 @@ class Content {
     float32 varF = 5.6;
     float64 varG = 7.8;
     bool varH = false;
-    string varI = "asdf";
+    string varI = "abcd" : /[a-f]+/; // Use regex patterns to restrict the formatting of the values.
     UID varJ;
     reference<Content> varK = "zxcv";
     TestEnum varL = B;

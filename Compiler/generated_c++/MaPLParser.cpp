@@ -1,5 +1,5 @@
 
-// Generated from ./MaPLParser.g4 by ANTLR 4.13.1
+// Generated from ./MaPLParser.g4 by ANTLR 4.13.2
 
 
 
@@ -39,7 +39,7 @@ struct MaPLParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-MaPLParserStaticData *maplparserParserStaticData = nullptr;
+std::unique_ptr<MaPLParserStaticData> maplparserParserStaticData = nullptr;
 
 void maplparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -239,7 +239,7 @@ void maplparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  maplparserParserStaticData = staticData.release();
+  maplparserParserStaticData = std::move(staticData);
 }
 
 }

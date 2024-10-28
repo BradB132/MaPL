@@ -9,7 +9,6 @@
 
 #include <fstream>
 #include <filesystem>
-#include <regex>
 #include <stdlib.h>
 #include <string>
 #include <unordered_map>

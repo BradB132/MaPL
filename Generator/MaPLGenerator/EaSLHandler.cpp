@@ -88,12 +88,30 @@ uint32_t uintForSequenceLength(EaSLParser::SequenceDescriptorContext *sequenceDe
     return (uint32_t)std::stoul(lengthText);
 }
 
+bool isValidRegex(const std::string& pattern) {
+    try {
+        std::regex regexPattern(pattern);
+    } catch (const std::regex_error& e) {
+        return false;
+    }
+    return true;
+}
+
+bool stringMatchesAttributeRegex(const std::string& string, SchemaAttribute *schemaAttribute) {
+    if (schemaAttribute->_isStringType) {
+        return std::regex_match(string.substr(1, string.size() - 2), *schemaAttribute->_pattern);
+    } else {
+        return std::regex_match(string, *schemaAttribute->_pattern);
+    }
+}
+
 SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext, const std::string &defaultNamespace, ErrorLogger *errorLogger) :
 _attributeContext(attributeContext),
 _name(attributeContext->identifier()->getText()),
 _annotations(parseAnnotations(attributeContext->ANNOTATION())),
 _typeIsClass(false),
-_typeIsEnum(false) {
+_typeIsEnum(false),
+_isStringType(false) {
     EaSLParser::TypeContext *typeContext = attributeContext->type();
     _typeIsUIDReference = typeContext->typeToken && typeContext->typeToken->getType() == EaSLParser::REFERENCE;
     
@@ -173,13 +191,14 @@ _typeIsEnum(false) {
                     case EaSLParser::DECL_UID: // Intentional fallthrough.
                     case EaSLParser::REFERENCE:
                         valueMatchesType = literalType == EaSLParser::LITERAL_STRING;
+                        _isStringType = true;
                         break;
                     default:
                         valueMatchesType = false;
                         break;
                 }
                 if (!valueMatchesType) {
-                    std::string typeClarification = (tokenType == EaSLParser::DECL_UID || tokenType == EaSLParser::REFERENCE) ? " (aka string)" : "";
+                    std::string typeClarification = (_isStringType && tokenType != EaSLParser::DECL_STRING) ? " (aka 'string')" : "";
                     errorLogger->logError(typeContext->typeToken, "Default value '"+literalText+"' in attribute '"+_name+"' doesn't match the attribute's type '"+typeContext->getText()+"'"+typeClarification+".");
                 }
             }
@@ -193,6 +212,17 @@ _typeIsEnum(false) {
         }
     }
     _defaultValues = new MaPLArray<std::string>(defaultValues);
+    
+    antlr4::tree::TerminalNode *regexNode = attributeContext->REGEX();
+    if (regexNode) {
+        std::string regexText = regexNode->getText();
+        regexText = regexText.substr(1, regexText.size() - 2);
+        if (isValidRegex(regexText)) {
+            _pattern = new std::regex(regexText);
+        } else {
+            errorLogger->logError(regexNode->getSymbol(), "Pattern /"+regexText+"/ does not form a valid regular expression.");
+        }
+    }
 }
 
 MaPLParameter SchemaAttribute::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -201,6 +231,8 @@ MaPLParameter SchemaAttribute::invokeFunction(MaPLSymbol functionSymbol, const M
             return MaPLPointer(_annotations);
         case MaPLSymbols_SchemaAttribute_defaultValues:
             return MaPLPointer(_defaultValues);
+        case MaPLSymbols_SchemaAttribute_isStringType:
+            return MaPLBool(_isStringType);
         case MaPLSymbols_SchemaAttribute_maxOccurrences:
             return MaPLUint32(_maxOccurrences);
         case MaPLSymbols_SchemaAttribute_minOccurrences:
@@ -432,6 +464,20 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                         std::string typeNamespace = attribute->_typeNamespace.empty() ? schema->_namespace : attribute->_typeNamespace;
                         schema->_errorLogger.logError(attribute->_attributeContext->start,
                                                       "Attribute '"+schema->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' references class '"+typeNamespace+"::"+attribute->_typeName+"', but that class has no UID attribute that could match this reference.");
+                    }
+                }
+                
+                if (attribute->_pattern) {
+                    if (attribute->_typeIsClass) {
+                        schema->_errorLogger.logError(attribute->_attributeContext->start, "Regex cannot be applied to a '"+attribute->_typeNamespace+"::"+attribute->_typeName+"'. Regex can only apply to attributes with primitive types.");
+                    } else {
+                        for (const std::string &defaultValue : attribute->_defaultValues->_backingVector) {
+                            if (!stringMatchesAttributeRegex(defaultValue, attribute)) {
+                                std::string displayValue = attribute->_isStringType ? defaultValue : "'"+defaultValue+"'";
+                                std::string regexText = attribute->_attributeContext->REGEX()->getText();
+                                schema->_errorLogger.logError(attribute->_attributeContext->start, "Default value "+displayValue+" does not match the regex pattern "+regexText+" for attribute '"+schemaClass->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
+                            }
+                        }
                     }
                 }
             }
@@ -668,6 +714,10 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
         
         // If this is a single string, then commas are part of the content and no meaningful validation of sequence length is possible.
         if (schemaAttribute->_typeName == "string" && schemaAttribute->_maxOccurrences == 1) {
+            if (schemaAttribute->_pattern && !stringMatchesAttributeRegex(xmlAttribute->_value, schemaAttribute)) {
+                std::string regexText = schemaAttribute->_attributeContext->REGEX()->getText();
+                errorLogger.logError(xmlNode->_node, "Value '"+xmlAttribute->_value+"' does not match the "+regexText+" pattern specified by '"+schemaClass->_namespace+"::"+schemaClass->_name+"::"+schemaAttribute->_name+"'.");
+            }
             continue;
         }
         
@@ -683,6 +733,11 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
         }
         
         for (const std::string &attributeValue : xmlAttribute->_values->_backingVector) {
+            if (schemaAttribute->_pattern && !stringMatchesAttributeRegex(attributeValue, schemaAttribute)) {
+                std::string regexText = schemaAttribute->_attributeContext->REGEX()->getText();
+                errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' does not match the "+regexText+" pattern specified by '"+schemaClass->_namespace+"::"+schemaClass->_name+"::"+schemaAttribute->_name+"'.");
+            }
+            
             if (schemaAttribute->_typeIsUIDReference) {
                 // If this attribute references another node, make sure that node is what we expect.
                 if (!uidMap.count(attributeValue)) {

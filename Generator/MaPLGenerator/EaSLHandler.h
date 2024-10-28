@@ -9,6 +9,7 @@
 #define EaSLHandler_h
 
 #include <filesystem>
+#include <regex>
 #include <vector>
 
 #include "EaSLParser.h"
@@ -44,10 +45,12 @@ public:
     bool _typeIsUIDReference;
     bool _typeIsClass;
     bool _typeIsEnum;
+    bool _isStringType;
     MaPLArrayMap<std::string> *_annotations;
     MaPLArray<std::string> *_defaultValues;
     uint32_t _minOccurrences;
     uint32_t _maxOccurrences;
+    std::regex *_pattern;
 };
 
 class SchemaClass : public MaPLInterface {

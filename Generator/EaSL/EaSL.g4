@@ -14,7 +14,7 @@ classDefinition
     ;
 
 attribute
-    :    ANNOTATION* type identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? STATEMENT_END
+    :    ANNOTATION* type identifier sequenceDescriptor? (DEFAULTS_TO defaultValue)? (COLON REGEX)? STATEMENT_END
     ;
 
 sequenceDescriptor
@@ -125,6 +125,8 @@ fragment STRING_ESC : '\\"' | '\\\\' ;
 
 IDENTIFIER: IDENTIFIER_FRAGMENT;
 fragment IDENTIFIER_FRAGMENT : [_a-zA-Z][_a-zA-Z0-9]* ;
+
+REGEX: '/' ~('*'|'/') .*?'/' ;
 
 BLOCK_COMMENT : '/*' .*? '*/' -> skip ;
 LINE_COMMENT : '//' .*? '\r'? '\n' -> skip ;

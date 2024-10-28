@@ -57,6 +57,7 @@
     readonly bool typeIsUIDReference;
     readonly bool typeIsClass;
     readonly bool typeIsEnum;
+    readonly bool isStringType; // Includes strings, ID, and IDREF.
     readonly ArrayMap<string> annotations;
     readonly Array<string> defaultValues;
     readonly uint32 minOccurrences;
