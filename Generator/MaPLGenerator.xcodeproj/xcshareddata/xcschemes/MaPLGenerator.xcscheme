@@ -92,6 +92,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "&quot;--binaryOutputFileExtension=dat&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "&quot;${SRCROOT}/Templates/strings/main.mapl&quot;"
             isEnabled = "YES">
          </CommandLineArgument>

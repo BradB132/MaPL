@@ -87,7 +87,7 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
             for uint32 attributeIndex = 0; attributeIndex < class.attributes.count; attributeIndex++ {
                 SchemaAttribute attribute = class.attributes[attributeIndex];
                 string attributeType;
-                if attribute.typeIsUIDReference || attribute.typeName == "UID" {
+                if attribute.isStringType {
                     attributeType = "string";
                 } else if attribute.typeIsClass {
                     attributeType = attribute.typeNamespace + "_" + attribute.typeName;

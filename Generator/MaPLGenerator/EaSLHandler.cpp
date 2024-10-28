@@ -125,9 +125,11 @@ _isStringType(false) {
             _typeNamespace = defaultNamespace;
         }
         isPrimitiveType = _typeIsUIDReference;
+        _isStringType = _typeIsUIDReference;
     } else {
         _typeName = typeContext->getText();
         isPrimitiveType = true;
+        _isStringType = typeContext->typeToken && (typeContext->typeToken->getType() == EaSLParser::DECL_UID || typeContext->typeToken->getType() == EaSLParser::DECL_STRING);
     }
     
     EaSLParser::SequenceDescriptorContext *sequenceDescriptor = attributeContext->sequenceDescriptor();
@@ -191,7 +193,6 @@ _isStringType(false) {
                     case EaSLParser::DECL_UID: // Intentional fallthrough.
                     case EaSLParser::REFERENCE:
                         valueMatchesType = literalType == EaSLParser::LITERAL_STRING;
-                        _isStringType = true;
                         break;
                     default:
                         valueMatchesType = false;

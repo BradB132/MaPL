@@ -286,9 +286,7 @@ ${indent}            }
 ${indent}                return MaPLGeneratorSerializedParseStatus_error;
 ${indent}            }
 ?>
-            } else if attribute.typeIsUIDReference ||
-                      typeName == "string" ||
-                      typeName == "UID" {
+            } else if attribute.isStringType {
 <?${indent}            size_t stringLength = strlen((char*)(data+*dataIndex))+1;
 ${indent}            if (*dataIndex+stringLength > dataLength) {
 ${indent}                return MaPLGeneratorSerializedParseStatus_error;
@@ -475,9 +473,7 @@ ${indent}    data.insert(data.end(), { *((uint8_t *)&bytecodeSignifier), *((uint
             } else if typeName == "char" {
 <?${indent}    data.push_back(${attributeVar});
 ?>
-            } else if attribute.typeIsUIDReference ||
-                      typeName == "string" ||
-                      typeName == "UID" {
+            } else if attribute.isStringType {
 <?${indent}    for (size_t i = 0; i < ${attributeVar}.length(); i++) {
 ${indent}        data.push_back(${attributeVar}[i]);
 ${indent}    }
@@ -526,7 +522,6 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
         for uint32 i = 0; i < schemaClass.attributes.count; i++ {
             SchemaAttribute attribute = schemaClass.attributes[i];
             string functionName;
-            bool isString = attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID";
             bool isList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
             bool isInlineClass = attribute.typeIsClass &&
                                  schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count == 0 &&
@@ -535,7 +530,7 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
             string ivarSuffix = "";
             if isList || attribute.typeIsClass {
                 functionName = "MaPLPointer";
-            } else if isString {
+            } else if attribute.isStringType {
                 functionName = "MaPLStringByReference";
                 ivarSuffix = ".c_str()";
             } else if attribute.typeIsEnum || attribute.typeName == "uint32" {
@@ -601,7 +596,7 @@ void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol prope
             string attributeName = attribute.name;
             string typeDescriptor;
             string typeCast = "";
-            if attribute.typeIsUIDReference || attribute.typeName == "UID" {
+            if attribute.isStringType {
                 typeDescriptor = "string";
             } else if attribute.typeIsEnum {
                 typeDescriptor = "uint32";

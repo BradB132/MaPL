@@ -152,7 +152,7 @@ if schemaClass.attributes.count > 0 {
             dataType = "float";
         } else if attribute.typeName == "float64" {
             dataType = "double";
-        } else if attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID" {
+        } else if attribute.isStringType {
             dataType = "std::string";
         } else if attribute.typeName == "bool" || attribute.typeName == "char" {
             dataType = attribute.typeName;

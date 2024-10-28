@@ -47,7 +47,7 @@ while true {
             XMLAttribute xmlAttribute = node.attributes[schemaAttr.name];
             // Elide this attribute if it matches the default value. Single strings might contain commas,
             // in which case they should not be treated as a comma-separated list.
-            if schemaAttr.maxOccurrences == 1 && (schemaAttr.typeIsUIDReference || schemaAttr.typeName == "string" || schemaAttr.typeName == "UID") &&
+            if schemaAttr.maxOccurrences == 1 && schemaAttr.isStringType &&
                schemaAttr.defaultValues.count == 1 && xmlAttribute.value == schemaAttr.defaultValues[0] {
                 continue;
             }
@@ -57,7 +57,7 @@ while true {
                     string defaultString = schemaAttr.defaultValues[defaultIndex];
                     string valueString = xmlAttribute.values[defaultIndex];
                     string typeName = schemaAttr.typeName;
-                    bool isString = schemaAttr.typeIsUIDReference || schemaAttr.typeIsEnum || typeName == "string" || typeName == "UID";
+                    bool isString = schemaAttr.isStringType || schemaAttr.typeIsEnum;
                     if (isString && defaultString != valueString) ||
                        (typeName == "int32" && (int32)defaultString != (int32)valueString) ||
                        (typeName == "int64" && (int64)defaultString != (int64)valueString) ||
@@ -93,15 +93,13 @@ while true {
                 }
             } else { // Primitive.
                 // Single strings might contain commas, in which case they should not be treated as a comma-separated list.
-                if schemaAttr.maxOccurrences == 1 && (schemaAttr.typeIsUIDReference || schemaAttr.typeName == "string" || schemaAttr.typeName == "UID") {
+                if schemaAttr.maxOccurrences == 1 && schemaAttr.isStringType {
                     writeToFile(xmlAttribute.value);
                 } else {
                     for uint32 valueIndex = 0; valueIndex < xmlAttribute.values.count; valueIndex++ {
                         string primitiveValue = xmlAttribute.values[valueIndex];
                         string primitiveTypeName = schemaAttr.typeName;
-                        if primitiveTypeName == "string" ||
-                           primitiveTypeName == "UID" ||
-                           schemaAttr.typeIsUIDReference {
+                        if schemaAttr.isStringType {
                            writeToFile(primitiveValue);
                         } else if primitiveTypeName == "int32" {
                             writeToFile((int32)primitiveValue);

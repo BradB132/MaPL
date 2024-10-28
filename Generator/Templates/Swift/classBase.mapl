@@ -48,7 +48,7 @@ if schemaClass.attributes.count > 0 {
             }
         } else if attribute.typeIsEnum {
             dataType = attribute.typeNamespace + "_" + attribute.typeName;
-        } else if attribute.typeIsUIDReference || attribute.typeName == "string" || attribute.typeName == "UID" {
+        } else if attribute.isStringType {
             dataType = "String";
         } else if attribute.typeName == "int32" {
             dataType = "Int32";
@@ -83,9 +83,7 @@ if schemaClass.attributes.count > 0 {
                 // No-op.
             } else if attribute.typeIsEnum {
                 <? = ${attribute.typeNamespace}_${attribute.typeName}(rawValue: 0)!?>
-            } else if attribute.typeIsUIDReference ||
-                      attribute.typeName == "string" ||
-                      attribute.typeName == "UID" {
+            } else if attribute.isStringType {
                 <? = ""?>
             } else if attribute.typeName == "bool" {
                 <? = false?>
@@ -262,9 +260,7 @@ ${indent}                }
 ${indent}                    return .error
 ${indent}                }
 ?>
-            } else if attribute.typeIsUIDReference ||
-                      typeName == "string" ||
-                      typeName == "UID" {
+            } else if attribute.isStringType {
 <?${indent}                var stringEndIndex = dataIndex
 ${indent}                while stringEndIndex < data.count {
 ${indent}                    if data[stringEndIndex] == 0 {
@@ -533,9 +529,7 @@ ${indent}        data.append(UInt8(bitPattern >> 56))
             } else if typeName == "char" {
 <?${indent}        data.append(${attributeVar})
 ?>
-            } else if attribute.typeIsUIDReference ||
-                      typeName == "string" ||
-                      typeName == "UID" {
+            } else if attribute.isStringType {
 <?${indent}        for char in ${attributeVar}.utf8 {
 ${indent}            data.append(char)
 ${indent}        }
