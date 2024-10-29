@@ -126,7 +126,8 @@ fragment STRING_ESC : '\\"' | '\\\\' ;
 IDENTIFIER: IDENTIFIER_FRAGMENT;
 fragment IDENTIFIER_FRAGMENT : [_a-zA-Z][_a-zA-Z0-9]* ;
 
-REGEX: '/' ~('*'|'/') .*?'/' ;
+REGEX: '/' (REGEX_ESC|~('*'|'/')) (REGEX_ESC|.)*? '/' ;
+fragment REGEX_ESC : '\\/' | '\\\\' ;
 
 BLOCK_COMMENT : '/*' .*? '*/' -> skip ;
 LINE_COMMENT : '//' .*? '\r'? '\n' -> skip ;

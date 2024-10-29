@@ -97,6 +97,32 @@ bool isValidRegex(const std::string& pattern) {
     return true;
 }
 
+std::string resolveRegexEscapeCharacters(const std::string& input) {
+    std::string result;
+    result.reserve(input.size());
+    for (size_t i = 0; i < input.size(); i++) {
+        if (input[i] == '\\' && i + 1 < input.size()) {
+            switch (input[i + 1]) {
+                case '/':  // Escaped '/'
+                    result += '/';
+                    i++;
+                    break;
+                case '\\': // Escaped '\'
+                    result += '\\';
+                    i++;
+                    break;
+                default:
+                    // Keep the backslash if it's not a recognized escape
+                    result += '\\';
+                    break;
+            }
+        } else {
+            result += input[i];
+        }
+    }
+    return result;
+}
+
 SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext, const std::string &defaultNamespace, ErrorLogger *errorLogger) :
 _attributeContext(attributeContext),
 _name(attributeContext->identifier()->getText()),
@@ -209,11 +235,11 @@ _isStringType(false) {
     antlr4::tree::TerminalNode *regexNode = attributeContext->REGEX();
     if (regexNode) {
         std::string regexText = regexNode->getText();
-        regexText = regexText.substr(1, regexText.size() - 2);
-        if (isValidRegex(regexText)) {
-            _pattern = new std::regex(regexText);
+        std::string resolvedRegex = resolveRegexEscapeCharacters(regexText.substr(1, regexText.size() - 2));
+        if (isValidRegex(resolvedRegex)) {
+            _pattern = new std::regex(resolvedRegex);
         } else {
-            errorLogger->logError(regexNode->getSymbol(), "Pattern /"+regexText+"/ does not form a valid regular expression.");
+            errorLogger->logError(regexNode->getSymbol(), "Pattern "+regexText+" does not form a valid regular expression.");
         }
     }
 }
