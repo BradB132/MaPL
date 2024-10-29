@@ -126,4 +126,4 @@ The host program receives these strings via a callback and can write to disk. Th
 
 ### Portability
 
-MaPL is implemented in C and C++, and so should be relatively portable. However, I've only tested it on macOS. `MaPLCompiler` and `MaPLGenerator` currently have cmake files, while `MaPLRuntime` does not because it's intended to only be run within a larger program.
+MaPL is implemented in C and C++, and so should be relatively portable. However, I've only tested it on Windows and macOS. `MaPLCompiler` and `MaPLGenerator` currently have cmake files, while `MaPLRuntime` does not because it's intended to only be run within a larger program.
