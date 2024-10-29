@@ -97,14 +97,6 @@ bool isValidRegex(const std::string& pattern) {
     return true;
 }
 
-bool stringMatchesAttributeRegex(const std::string& string, SchemaAttribute *schemaAttribute) {
-    if (schemaAttribute->_isStringType) {
-        return std::regex_match(string.substr(1, string.size() - 2), *schemaAttribute->_pattern);
-    } else {
-        return std::regex_match(string, *schemaAttribute->_pattern);
-    }
-}
-
 SchemaAttribute::SchemaAttribute(EaSLParser::AttributeContext *attributeContext, const std::string &defaultNamespace, ErrorLogger *errorLogger) :
 _attributeContext(attributeContext),
 _name(attributeContext->identifier()->getText()),
@@ -473,7 +465,13 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                         schema->_errorLogger.logError(attribute->_attributeContext->start, "Regex cannot be applied to a '"+attribute->_typeNamespace+"::"+attribute->_typeName+"'. Regex can only apply to attributes with primitive types.");
                     } else {
                         for (const std::string &defaultValue : attribute->_defaultValues->_backingVector) {
-                            if (!stringMatchesAttributeRegex(defaultValue, attribute)) {
+                            bool isMatch;
+                            if (attribute->_isStringType) {
+                                isMatch = std::regex_match(defaultValue.substr(1, defaultValue.size() - 2), *attribute->_pattern);
+                            } else {
+                                isMatch = std::regex_match(defaultValue, *attribute->_pattern);
+                            }
+                            if (!isMatch) {
                                 std::string displayValue = attribute->_isStringType ? defaultValue : "'"+defaultValue+"'";
                                 std::string regexText = attribute->_attributeContext->REGEX()->getText();
                                 schema->_errorLogger.logError(attribute->_attributeContext->start, "Default value "+displayValue+" does not match the regex pattern "+regexText+" for attribute '"+schemaClass->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"'.");
@@ -715,7 +713,7 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
         
         // If this is a single string, then commas are part of the content and no meaningful validation of sequence length is possible.
         if (schemaAttribute->_typeName == "string" && schemaAttribute->_maxOccurrences == 1) {
-            if (schemaAttribute->_pattern && !stringMatchesAttributeRegex(xmlAttribute->_value, schemaAttribute)) {
+            if (schemaAttribute->_pattern && !std::regex_match(xmlAttribute->_value, *schemaAttribute->_pattern)) {
                 std::string regexText = schemaAttribute->_attributeContext->REGEX()->getText();
                 errorLogger.logError(xmlNode->_node, "Value '"+xmlAttribute->_value+"' does not match the "+regexText+" pattern specified by '"+schemaClass->_namespace+"::"+schemaClass->_name+"::"+schemaAttribute->_name+"'.");
             }
@@ -734,7 +732,7 @@ void secondPassXMLValidation(XmlNode *xmlNode, MaPLArrayMap<Schema *> *schemas, 
         }
         
         for (const std::string &attributeValue : xmlAttribute->_values->_backingVector) {
-            if (schemaAttribute->_pattern && !stringMatchesAttributeRegex(attributeValue, schemaAttribute)) {
+            if (schemaAttribute->_pattern && !std::regex_match(attributeValue, *schemaAttribute->_pattern)) {
                 std::string regexText = schemaAttribute->_attributeContext->REGEX()->getText();
                 errorLogger.logError(xmlNode->_node, "Value '"+attributeValue+"' does not match the "+regexText+" pattern specified by '"+schemaClass->_namespace+"::"+schemaClass->_name+"::"+schemaAttribute->_name+"'.");
             }
