@@ -129,7 +129,8 @@ _name(attributeContext->identifier()->getText()),
 _annotations(parseAnnotations(attributeContext->ANNOTATION())),
 _typeIsClass(false),
 _typeIsEnum(false),
-_isStringType(false) {
+_isStringType(false),
+_pattern(NULL) {
     EaSLParser::TypeContext *typeContext = attributeContext->type();
     _typeIsUIDReference = typeContext->typeToken && typeContext->typeToken->getType() == EaSLParser::REFERENCE;
     
@@ -488,7 +489,7 @@ void validateSchemas(MaPLArrayMap<Schema *> *schemas) {
                 
                 if (attribute->_pattern) {
                     if (attribute->_typeIsClass) {
-                        schema->_errorLogger.logError(attribute->_attributeContext->start, "Regex cannot be applied to a '"+attribute->_typeNamespace+"::"+attribute->_typeName+"'. Regex can only apply to attributes with primitive types.");
+                        schema->_errorLogger.logError(attribute->_attributeContext->start, "Regex cannot be applied to attribute '"+schemaClass->_namespace+"::"+schemaClass->_name+"::"+attribute->_name+"' of type '"+attribute->_typeNamespace+"::"+attribute->_typeName+"'. Regex can only apply to attributes with primitive types.");
                     } else {
                         for (const std::string &defaultValue : attribute->_defaultValues->_backingVector) {
                             bool isMatch;
