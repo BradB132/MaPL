@@ -17,7 +17,7 @@ for uint32 i = 0; i < schema.enums.count; i++ {
     <?public enum ${enum.name}: uint {
 ?>
     for uint32 j = 0; j < enum.cases.count; j++ {
-        <?    ${enum.cases[j]} = ${j},
+        <?    ${enum.cases[j].name} = ${j},
 ?>
     }
     <?}

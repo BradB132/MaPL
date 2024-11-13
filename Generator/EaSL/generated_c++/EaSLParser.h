@@ -26,8 +26,8 @@ public:
   enum {
     RuleSchema = 0, RuleNamespace_ = 1, RuleClassDefinition = 2, RuleAttribute = 3, 
     RuleSequenceDescriptor = 4, RuleSequenceLength = 5, RuleEnumDefinition = 6, 
-    RuleDefaultValue = 7, RuleLiteralValue = 8, RuleType = 9, RuleClassType = 10, 
-    RuleIdentifier = 11
+    RuleEnumCase = 7, RuleDefaultValue = 8, RuleLiteralValue = 9, RuleType = 10, 
+    RuleClassType = 11, RuleIdentifier = 12
   };
 
   explicit EaSLParser(antlr4::TokenStream *input);
@@ -54,6 +54,7 @@ public:
   class SequenceDescriptorContext;
   class SequenceLengthContext;
   class EnumDefinitionContext;
+  class EnumCaseContext;
   class DefaultValueContext;
   class LiteralValueContext;
   class TypeContext;
@@ -159,15 +160,14 @@ public:
   class  EnumDefinitionContext : public antlr4::ParserRuleContext {
   public:
     EaSLParser::IdentifierContext *enumName = nullptr;
-    EaSLParser::IdentifierContext *identifierContext = nullptr;
-    std::vector<IdentifierContext *> enumValue;
     EnumDefinitionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ENUM();
     antlr4::tree::TerminalNode *DEFINITION_OPEN();
+    std::vector<EnumCaseContext *> enumCase();
+    EnumCaseContext* enumCase(size_t i);
     antlr4::tree::TerminalNode *DEFINITION_CLOSE();
-    std::vector<IdentifierContext *> identifier();
-    IdentifierContext* identifier(size_t i);
+    IdentifierContext *identifier();
     std::vector<antlr4::tree::TerminalNode *> ANNOTATION();
     antlr4::tree::TerminalNode* ANNOTATION(size_t i);
     std::vector<antlr4::tree::TerminalNode *> SEQUENCE_DELIMITER();
@@ -177,6 +177,19 @@ public:
   };
 
   EnumDefinitionContext* enumDefinition();
+
+  class  EnumCaseContext : public antlr4::ParserRuleContext {
+  public:
+    EnumCaseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    IdentifierContext *identifier();
+    std::vector<antlr4::tree::TerminalNode *> ANNOTATION();
+    antlr4::tree::TerminalNode* ANNOTATION(size_t i);
+
+   
+  };
+
+  EnumCaseContext* enumCase();
 
   class  DefaultValueContext : public antlr4::ParserRuleContext {
   public:

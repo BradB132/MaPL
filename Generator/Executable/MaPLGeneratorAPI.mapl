@@ -37,7 +37,12 @@
 
 #type SchemaEnum : MaPLGeneratorObject {
     readonly string name;
-    readonly ArrayMap<string> cases;
+    readonly ArrayMap<SchemaEnumCase> cases;
+    readonly ArrayMap<string> annotations;
+}
+
+#type SchemaEnumCase {
+    readonly string name;
     readonly ArrayMap<string> annotations;
 }
 

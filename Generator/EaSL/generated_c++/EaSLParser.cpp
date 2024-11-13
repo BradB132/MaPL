@@ -52,7 +52,7 @@ void easlParserInitialize() {
   auto staticData = std::make_unique<EaSLParserStaticData>(
     std::vector<std::string>{
       "schema", "namespace_", "classDefinition", "attribute", "sequenceDescriptor", 
-      "sequenceLength", "enumDefinition", "defaultValue", "literalValue", 
+      "sequenceLength", "enumDefinition", "enumCase", "defaultValue", "literalValue", 
       "type", "classType", "identifier"
     },
     std::vector<std::string>{
@@ -74,59 +74,62 @@ void easlParserInitialize() {
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,38,160,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
-  	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,1,0,1,0,1,0,5,0,28,8,0,10,0,
-  	12,0,31,9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,2,5,2,40,8,2,10,2,12,2,43,9,2,1,
-  	2,1,2,1,2,1,2,3,2,49,8,2,1,2,1,2,5,2,53,8,2,10,2,12,2,56,9,2,1,2,1,2,
-  	1,3,5,3,61,8,3,10,3,12,3,64,9,3,1,3,1,3,1,3,3,3,69,8,3,1,3,1,3,3,3,73,
-  	8,3,1,3,1,3,3,3,77,8,3,1,3,1,3,1,4,1,4,1,4,1,4,3,4,85,8,4,3,4,87,8,4,
-  	1,4,1,4,1,5,1,5,1,6,5,6,94,8,6,10,6,12,6,97,9,6,1,6,1,6,1,6,1,6,1,6,1,
-  	6,5,6,105,8,6,10,6,12,6,108,9,6,1,6,1,6,3,6,112,8,6,1,6,1,6,1,7,1,7,1,
-  	7,5,7,119,8,7,10,7,12,7,122,9,7,1,8,1,8,1,8,1,8,1,8,1,8,1,8,3,8,131,8,
-  	8,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,3,9,
-  	149,8,9,1,10,1,10,1,10,3,10,154,8,10,1,10,1,10,1,11,1,11,1,11,0,0,12,
-  	0,2,4,6,8,10,12,14,16,18,20,22,0,2,2,0,23,23,31,31,4,0,1,11,14,16,28,
-  	30,34,34,180,0,24,1,0,0,0,2,34,1,0,0,0,4,41,1,0,0,0,6,62,1,0,0,0,8,80,
-  	1,0,0,0,10,90,1,0,0,0,12,95,1,0,0,0,14,115,1,0,0,0,16,130,1,0,0,0,18,
-  	148,1,0,0,0,20,153,1,0,0,0,22,157,1,0,0,0,24,29,3,2,1,0,25,28,3,4,2,0,
-  	26,28,3,12,6,0,27,25,1,0,0,0,27,26,1,0,0,0,28,31,1,0,0,0,29,27,1,0,0,
-  	0,29,30,1,0,0,0,30,32,1,0,0,0,31,29,1,0,0,0,32,33,5,0,0,1,33,1,1,0,0,
-  	0,34,35,5,14,0,0,35,36,3,22,11,0,36,37,5,26,0,0,37,3,1,0,0,0,38,40,5,
-  	27,0,0,39,38,1,0,0,0,40,43,1,0,0,0,41,39,1,0,0,0,41,42,1,0,0,0,42,44,
-  	1,0,0,0,43,41,1,0,0,0,44,45,5,15,0,0,45,48,3,22,11,0,46,47,5,24,0,0,47,
-  	49,3,20,10,0,48,46,1,0,0,0,48,49,1,0,0,0,49,50,1,0,0,0,50,54,5,18,0,0,
-  	51,53,3,6,3,0,52,51,1,0,0,0,53,56,1,0,0,0,54,52,1,0,0,0,54,55,1,0,0,0,
-  	55,57,1,0,0,0,56,54,1,0,0,0,57,58,5,19,0,0,58,5,1,0,0,0,59,61,5,27,0,
-  	0,60,59,1,0,0,0,61,64,1,0,0,0,62,60,1,0,0,0,62,63,1,0,0,0,63,65,1,0,0,
-  	0,64,62,1,0,0,0,65,66,3,18,9,0,66,68,3,22,11,0,67,69,3,8,4,0,68,67,1,
-  	0,0,0,68,69,1,0,0,0,69,72,1,0,0,0,70,71,5,17,0,0,71,73,3,14,7,0,72,70,
-  	1,0,0,0,72,73,1,0,0,0,73,76,1,0,0,0,74,75,5,24,0,0,75,77,5,35,0,0,76,
-  	74,1,0,0,0,76,77,1,0,0,0,77,78,1,0,0,0,78,79,5,26,0,0,79,7,1,0,0,0,80,
-  	86,5,20,0,0,81,84,3,10,5,0,82,83,5,22,0,0,83,85,3,10,5,0,84,82,1,0,0,
-  	0,84,85,1,0,0,0,85,87,1,0,0,0,86,81,1,0,0,0,86,87,1,0,0,0,87,88,1,0,0,
-  	0,88,89,5,21,0,0,89,9,1,0,0,0,90,91,7,0,0,0,91,11,1,0,0,0,92,94,5,27,
-  	0,0,93,92,1,0,0,0,94,97,1,0,0,0,95,93,1,0,0,0,95,96,1,0,0,0,96,98,1,0,
-  	0,0,97,95,1,0,0,0,98,99,5,16,0,0,99,100,3,22,11,0,100,106,5,18,0,0,101,
-  	102,3,22,11,0,102,103,5,22,0,0,103,105,1,0,0,0,104,101,1,0,0,0,105,108,
-  	1,0,0,0,106,104,1,0,0,0,106,107,1,0,0,0,107,109,1,0,0,0,108,106,1,0,0,
-  	0,109,111,3,22,11,0,110,112,5,22,0,0,111,110,1,0,0,0,111,112,1,0,0,0,
-  	112,113,1,0,0,0,113,114,5,19,0,0,114,13,1,0,0,0,115,120,3,16,8,0,116,
-  	117,5,22,0,0,117,119,3,16,8,0,118,116,1,0,0,0,119,122,1,0,0,0,120,118,
-  	1,0,0,0,120,121,1,0,0,0,121,15,1,0,0,0,122,120,1,0,0,0,123,131,5,28,0,
-  	0,124,131,5,29,0,0,125,131,5,30,0,0,126,131,5,33,0,0,127,131,5,31,0,0,
-  	128,131,5,32,0,0,129,131,3,22,11,0,130,123,1,0,0,0,130,124,1,0,0,0,130,
-  	125,1,0,0,0,130,126,1,0,0,0,130,127,1,0,0,0,130,128,1,0,0,0,130,129,1,
-  	0,0,0,131,17,1,0,0,0,132,149,5,1,0,0,133,149,5,2,0,0,134,149,5,3,0,0,
-  	135,149,5,4,0,0,136,149,5,5,0,0,137,149,5,6,0,0,138,149,5,7,0,0,139,149,
-  	5,8,0,0,140,149,5,9,0,0,141,149,5,10,0,0,142,143,5,11,0,0,143,144,5,12,
-  	0,0,144,145,3,20,10,0,145,146,5,13,0,0,146,149,1,0,0,0,147,149,3,20,10,
-  	0,148,132,1,0,0,0,148,133,1,0,0,0,148,134,1,0,0,0,148,135,1,0,0,0,148,
-  	136,1,0,0,0,148,137,1,0,0,0,148,138,1,0,0,0,148,139,1,0,0,0,148,140,1,
-  	0,0,0,148,141,1,0,0,0,148,142,1,0,0,0,148,147,1,0,0,0,149,19,1,0,0,0,
-  	150,151,3,22,11,0,151,152,5,25,0,0,152,154,1,0,0,0,153,150,1,0,0,0,153,
-  	154,1,0,0,0,154,155,1,0,0,0,155,156,3,22,11,0,156,21,1,0,0,0,157,158,
-  	7,1,0,0,158,23,1,0,0,0,18,27,29,41,48,54,62,68,72,76,84,86,95,106,111,
-  	120,130,148,153
+  	4,1,38,170,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,1,0,1,0,1,0,5,0,30,
+  	8,0,10,0,12,0,33,9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,2,5,2,42,8,2,10,2,12,2,
+  	45,9,2,1,2,1,2,1,2,1,2,3,2,51,8,2,1,2,1,2,5,2,55,8,2,10,2,12,2,58,9,2,
+  	1,2,1,2,1,3,5,3,63,8,3,10,3,12,3,66,9,3,1,3,1,3,1,3,3,3,71,8,3,1,3,1,
+  	3,3,3,75,8,3,1,3,1,3,3,3,79,8,3,1,3,1,3,1,4,1,4,1,4,1,4,3,4,87,8,4,3,
+  	4,89,8,4,1,4,1,4,1,5,1,5,1,6,5,6,96,8,6,10,6,12,6,99,9,6,1,6,1,6,1,6,
+  	1,6,1,6,1,6,5,6,107,8,6,10,6,12,6,110,9,6,1,6,1,6,3,6,114,8,6,1,6,1,6,
+  	1,7,5,7,119,8,7,10,7,12,7,122,9,7,1,7,1,7,1,8,1,8,1,8,5,8,129,8,8,10,
+  	8,12,8,132,9,8,1,9,1,9,1,9,1,9,1,9,1,9,1,9,3,9,141,8,9,1,10,1,10,1,10,
+  	1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,3,10,
+  	159,8,10,1,11,1,11,1,11,3,11,164,8,11,1,11,1,11,1,12,1,12,1,12,0,0,13,
+  	0,2,4,6,8,10,12,14,16,18,20,22,24,0,2,2,0,23,23,31,31,4,0,1,11,14,16,
+  	28,30,34,34,190,0,26,1,0,0,0,2,36,1,0,0,0,4,43,1,0,0,0,6,64,1,0,0,0,8,
+  	82,1,0,0,0,10,92,1,0,0,0,12,97,1,0,0,0,14,120,1,0,0,0,16,125,1,0,0,0,
+  	18,140,1,0,0,0,20,158,1,0,0,0,22,163,1,0,0,0,24,167,1,0,0,0,26,31,3,2,
+  	1,0,27,30,3,4,2,0,28,30,3,12,6,0,29,27,1,0,0,0,29,28,1,0,0,0,30,33,1,
+  	0,0,0,31,29,1,0,0,0,31,32,1,0,0,0,32,34,1,0,0,0,33,31,1,0,0,0,34,35,5,
+  	0,0,1,35,1,1,0,0,0,36,37,5,14,0,0,37,38,3,24,12,0,38,39,5,26,0,0,39,3,
+  	1,0,0,0,40,42,5,27,0,0,41,40,1,0,0,0,42,45,1,0,0,0,43,41,1,0,0,0,43,44,
+  	1,0,0,0,44,46,1,0,0,0,45,43,1,0,0,0,46,47,5,15,0,0,47,50,3,24,12,0,48,
+  	49,5,24,0,0,49,51,3,22,11,0,50,48,1,0,0,0,50,51,1,0,0,0,51,52,1,0,0,0,
+  	52,56,5,18,0,0,53,55,3,6,3,0,54,53,1,0,0,0,55,58,1,0,0,0,56,54,1,0,0,
+  	0,56,57,1,0,0,0,57,59,1,0,0,0,58,56,1,0,0,0,59,60,5,19,0,0,60,5,1,0,0,
+  	0,61,63,5,27,0,0,62,61,1,0,0,0,63,66,1,0,0,0,64,62,1,0,0,0,64,65,1,0,
+  	0,0,65,67,1,0,0,0,66,64,1,0,0,0,67,68,3,20,10,0,68,70,3,24,12,0,69,71,
+  	3,8,4,0,70,69,1,0,0,0,70,71,1,0,0,0,71,74,1,0,0,0,72,73,5,17,0,0,73,75,
+  	3,16,8,0,74,72,1,0,0,0,74,75,1,0,0,0,75,78,1,0,0,0,76,77,5,24,0,0,77,
+  	79,5,35,0,0,78,76,1,0,0,0,78,79,1,0,0,0,79,80,1,0,0,0,80,81,5,26,0,0,
+  	81,7,1,0,0,0,82,88,5,20,0,0,83,86,3,10,5,0,84,85,5,22,0,0,85,87,3,10,
+  	5,0,86,84,1,0,0,0,86,87,1,0,0,0,87,89,1,0,0,0,88,83,1,0,0,0,88,89,1,0,
+  	0,0,89,90,1,0,0,0,90,91,5,21,0,0,91,9,1,0,0,0,92,93,7,0,0,0,93,11,1,0,
+  	0,0,94,96,5,27,0,0,95,94,1,0,0,0,96,99,1,0,0,0,97,95,1,0,0,0,97,98,1,
+  	0,0,0,98,100,1,0,0,0,99,97,1,0,0,0,100,101,5,16,0,0,101,102,3,24,12,0,
+  	102,108,5,18,0,0,103,104,3,14,7,0,104,105,5,22,0,0,105,107,1,0,0,0,106,
+  	103,1,0,0,0,107,110,1,0,0,0,108,106,1,0,0,0,108,109,1,0,0,0,109,111,1,
+  	0,0,0,110,108,1,0,0,0,111,113,3,14,7,0,112,114,5,22,0,0,113,112,1,0,0,
+  	0,113,114,1,0,0,0,114,115,1,0,0,0,115,116,5,19,0,0,116,13,1,0,0,0,117,
+  	119,5,27,0,0,118,117,1,0,0,0,119,122,1,0,0,0,120,118,1,0,0,0,120,121,
+  	1,0,0,0,121,123,1,0,0,0,122,120,1,0,0,0,123,124,3,24,12,0,124,15,1,0,
+  	0,0,125,130,3,18,9,0,126,127,5,22,0,0,127,129,3,18,9,0,128,126,1,0,0,
+  	0,129,132,1,0,0,0,130,128,1,0,0,0,130,131,1,0,0,0,131,17,1,0,0,0,132,
+  	130,1,0,0,0,133,141,5,28,0,0,134,141,5,29,0,0,135,141,5,30,0,0,136,141,
+  	5,33,0,0,137,141,5,31,0,0,138,141,5,32,0,0,139,141,3,24,12,0,140,133,
+  	1,0,0,0,140,134,1,0,0,0,140,135,1,0,0,0,140,136,1,0,0,0,140,137,1,0,0,
+  	0,140,138,1,0,0,0,140,139,1,0,0,0,141,19,1,0,0,0,142,159,5,1,0,0,143,
+  	159,5,2,0,0,144,159,5,3,0,0,145,159,5,4,0,0,146,159,5,5,0,0,147,159,5,
+  	6,0,0,148,159,5,7,0,0,149,159,5,8,0,0,150,159,5,9,0,0,151,159,5,10,0,
+  	0,152,153,5,11,0,0,153,154,5,12,0,0,154,155,3,22,11,0,155,156,5,13,0,
+  	0,156,159,1,0,0,0,157,159,3,22,11,0,158,142,1,0,0,0,158,143,1,0,0,0,158,
+  	144,1,0,0,0,158,145,1,0,0,0,158,146,1,0,0,0,158,147,1,0,0,0,158,148,1,
+  	0,0,0,158,149,1,0,0,0,158,150,1,0,0,0,158,151,1,0,0,0,158,152,1,0,0,0,
+  	158,157,1,0,0,0,159,21,1,0,0,0,160,161,3,24,12,0,161,162,5,25,0,0,162,
+  	164,1,0,0,0,163,160,1,0,0,0,163,164,1,0,0,0,164,165,1,0,0,0,165,166,3,
+  	24,12,0,166,23,1,0,0,0,167,168,7,1,0,0,168,25,1,0,0,0,19,29,31,43,50,
+  	56,64,70,74,78,86,88,97,108,113,120,130,140,158,163
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -225,24 +228,24 @@ EaSLParser::SchemaContext* EaSLParser::schema() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(24);
+    setState(26);
     namespace_();
-    setState(29);
+    setState(31);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 134316032) != 0)) {
-      setState(27);
+      setState(29);
       _errHandler->sync(this);
       switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 0, _ctx)) {
       case 1: {
-        setState(25);
+        setState(27);
         classDefinition();
         break;
       }
 
       case 2: {
-        setState(26);
+        setState(28);
         enumDefinition();
         break;
       }
@@ -250,11 +253,11 @@ EaSLParser::SchemaContext* EaSLParser::schema() {
       default:
         break;
       }
-      setState(31);
+      setState(33);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(32);
+    setState(34);
     match(EaSLParser::EOF);
    
   }
@@ -304,11 +307,11 @@ EaSLParser::Namespace_Context* EaSLParser::namespace_() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(34);
-    match(EaSLParser::NAMESPACE);
-    setState(35);
-    identifier();
     setState(36);
+    match(EaSLParser::NAMESPACE);
+    setState(37);
+    identifier();
+    setState(38);
     match(EaSLParser::STATEMENT_END);
    
   }
@@ -387,44 +390,44 @@ EaSLParser::ClassDefinitionContext* EaSLParser::classDefinition() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(41);
+    setState(43);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == EaSLParser::ANNOTATION) {
-      setState(38);
+      setState(40);
       match(EaSLParser::ANNOTATION);
-      setState(43);
+      setState(45);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(44);
+    setState(46);
     match(EaSLParser::CLASS);
-    setState(45);
+    setState(47);
     identifier();
-    setState(48);
+    setState(50);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == EaSLParser::COLON) {
-      setState(46);
+      setState(48);
       match(EaSLParser::COLON);
-      setState(47);
+      setState(49);
       classType();
     }
-    setState(50);
+    setState(52);
     match(EaSLParser::DEFINITION_OPEN);
-    setState(54);
+    setState(56);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 19193253886) != 0)) {
-      setState(51);
+      setState(53);
       attribute();
-      setState(56);
+      setState(58);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(57);
+    setState(59);
     match(EaSLParser::DEFINITION_CLOSE);
    
   }
@@ -503,49 +506,49 @@ EaSLParser::AttributeContext* EaSLParser::attribute() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(62);
+    setState(64);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == EaSLParser::ANNOTATION) {
-      setState(59);
+      setState(61);
       match(EaSLParser::ANNOTATION);
-      setState(64);
+      setState(66);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(65);
+    setState(67);
     type();
-    setState(66);
-    identifier();
     setState(68);
+    identifier();
+    setState(70);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == EaSLParser::SEQUENCE_OPEN) {
-      setState(67);
+      setState(69);
       sequenceDescriptor();
     }
-    setState(72);
+    setState(74);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == EaSLParser::DEFAULTS_TO) {
-      setState(70);
+      setState(72);
       match(EaSLParser::DEFAULTS_TO);
-      setState(71);
+      setState(73);
       defaultValue();
     }
-    setState(76);
+    setState(78);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == EaSLParser::COLON) {
-      setState(74);
+      setState(76);
       match(EaSLParser::COLON);
-      setState(75);
+      setState(77);
       match(EaSLParser::REGEX);
     }
-    setState(78);
+    setState(80);
     match(EaSLParser::STATEMENT_END);
    
   }
@@ -604,29 +607,29 @@ EaSLParser::SequenceDescriptorContext* EaSLParser::sequenceDescriptor() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(80);
+    setState(82);
     match(EaSLParser::SEQUENCE_OPEN);
-    setState(86);
+    setState(88);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == EaSLParser::SEQUENCE_WILDCARD
 
     || _la == EaSLParser::LITERAL_INT) {
-      setState(81);
+      setState(83);
       sequenceLength();
-      setState(84);
+      setState(86);
       _errHandler->sync(this);
 
       _la = _input->LA(1);
       if (_la == EaSLParser::SEQUENCE_DELIMITER) {
-        setState(82);
+        setState(84);
         match(EaSLParser::SEQUENCE_DELIMITER);
-        setState(83);
+        setState(85);
         sequenceLength();
       }
     }
-    setState(88);
+    setState(90);
     match(EaSLParser::SEQUENCE_CLOSE);
    
   }
@@ -673,7 +676,7 @@ EaSLParser::SequenceLengthContext* EaSLParser::sequenceLength() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(90);
+    setState(92);
     _la = _input->LA(1);
     if (!(_la == EaSLParser::SEQUENCE_WILDCARD
 
@@ -709,16 +712,20 @@ tree::TerminalNode* EaSLParser::EnumDefinitionContext::DEFINITION_OPEN() {
   return getToken(EaSLParser::DEFINITION_OPEN, 0);
 }
 
+std::vector<EaSLParser::EnumCaseContext *> EaSLParser::EnumDefinitionContext::enumCase() {
+  return getRuleContexts<EaSLParser::EnumCaseContext>();
+}
+
+EaSLParser::EnumCaseContext* EaSLParser::EnumDefinitionContext::enumCase(size_t i) {
+  return getRuleContext<EaSLParser::EnumCaseContext>(i);
+}
+
 tree::TerminalNode* EaSLParser::EnumDefinitionContext::DEFINITION_CLOSE() {
   return getToken(EaSLParser::DEFINITION_CLOSE, 0);
 }
 
-std::vector<EaSLParser::IdentifierContext *> EaSLParser::EnumDefinitionContext::identifier() {
-  return getRuleContexts<EaSLParser::IdentifierContext>();
-}
-
-EaSLParser::IdentifierContext* EaSLParser::EnumDefinitionContext::identifier(size_t i) {
-  return getRuleContext<EaSLParser::IdentifierContext>(i);
+EaSLParser::IdentifierContext* EaSLParser::EnumDefinitionContext::identifier() {
+  return getRuleContext<EaSLParser::IdentifierContext>(0);
 }
 
 std::vector<tree::TerminalNode *> EaSLParser::EnumDefinitionContext::ANNOTATION() {
@@ -758,50 +765,109 @@ EaSLParser::EnumDefinitionContext* EaSLParser::enumDefinition() {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(95);
+    setState(97);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == EaSLParser::ANNOTATION) {
-      setState(92);
+      setState(94);
       match(EaSLParser::ANNOTATION);
-      setState(97);
+      setState(99);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(98);
-    match(EaSLParser::ENUM);
-    setState(99);
-    antlrcpp::downCast<EnumDefinitionContext *>(_localctx)->enumName = identifier();
     setState(100);
+    match(EaSLParser::ENUM);
+    setState(101);
+    antlrcpp::downCast<EnumDefinitionContext *>(_localctx)->enumName = identifier();
+    setState(102);
     match(EaSLParser::DEFINITION_OPEN);
-    setState(106);
+    setState(108);
     _errHandler->sync(this);
     alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 12, _ctx);
     while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
       if (alt == 1) {
-        setState(101);
-        antlrcpp::downCast<EnumDefinitionContext *>(_localctx)->identifierContext = identifier();
-        antlrcpp::downCast<EnumDefinitionContext *>(_localctx)->enumValue.push_back(antlrcpp::downCast<EnumDefinitionContext *>(_localctx)->identifierContext);
-        setState(102);
+        setState(103);
+        enumCase();
+        setState(104);
         match(EaSLParser::SEQUENCE_DELIMITER); 
       }
-      setState(108);
+      setState(110);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 12, _ctx);
     }
-    setState(109);
-    antlrcpp::downCast<EnumDefinitionContext *>(_localctx)->identifierContext = identifier();
-    antlrcpp::downCast<EnumDefinitionContext *>(_localctx)->enumValue.push_back(antlrcpp::downCast<EnumDefinitionContext *>(_localctx)->identifierContext);
     setState(111);
+    enumCase();
+    setState(113);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == EaSLParser::SEQUENCE_DELIMITER) {
-      setState(110);
+      setState(112);
       match(EaSLParser::SEQUENCE_DELIMITER);
     }
-    setState(113);
+    setState(115);
     match(EaSLParser::DEFINITION_CLOSE);
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- EnumCaseContext ------------------------------------------------------------------
+
+EaSLParser::EnumCaseContext::EnumCaseContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+EaSLParser::IdentifierContext* EaSLParser::EnumCaseContext::identifier() {
+  return getRuleContext<EaSLParser::IdentifierContext>(0);
+}
+
+std::vector<tree::TerminalNode *> EaSLParser::EnumCaseContext::ANNOTATION() {
+  return getTokens(EaSLParser::ANNOTATION);
+}
+
+tree::TerminalNode* EaSLParser::EnumCaseContext::ANNOTATION(size_t i) {
+  return getToken(EaSLParser::ANNOTATION, i);
+}
+
+
+size_t EaSLParser::EnumCaseContext::getRuleIndex() const {
+  return EaSLParser::RuleEnumCase;
+}
+
+
+EaSLParser::EnumCaseContext* EaSLParser::enumCase() {
+  EnumCaseContext *_localctx = _tracker.createInstance<EnumCaseContext>(_ctx, getState());
+  enterRule(_localctx, 14, EaSLParser::RuleEnumCase);
+  size_t _la = 0;
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(120);
+    _errHandler->sync(this);
+    _la = _input->LA(1);
+    while (_la == EaSLParser::ANNOTATION) {
+      setState(117);
+      match(EaSLParser::ANNOTATION);
+      setState(122);
+      _errHandler->sync(this);
+      _la = _input->LA(1);
+    }
+    setState(123);
+    identifier();
    
   }
   catch (RecognitionException &e) {
@@ -843,7 +909,7 @@ size_t EaSLParser::DefaultValueContext::getRuleIndex() const {
 
 EaSLParser::DefaultValueContext* EaSLParser::defaultValue() {
   DefaultValueContext *_localctx = _tracker.createInstance<DefaultValueContext>(_ctx, getState());
-  enterRule(_localctx, 14, EaSLParser::RuleDefaultValue);
+  enterRule(_localctx, 16, EaSLParser::RuleDefaultValue);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -855,17 +921,17 @@ EaSLParser::DefaultValueContext* EaSLParser::defaultValue() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(115);
+    setState(125);
     literalValue();
-    setState(120);
+    setState(130);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == EaSLParser::SEQUENCE_DELIMITER) {
-      setState(116);
+      setState(126);
       match(EaSLParser::SEQUENCE_DELIMITER);
-      setState(117);
+      setState(127);
       literalValue();
-      setState(122);
+      setState(132);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -922,7 +988,7 @@ size_t EaSLParser::LiteralValueContext::getRuleIndex() const {
 
 EaSLParser::LiteralValueContext* EaSLParser::literalValue() {
   LiteralValueContext *_localctx = _tracker.createInstance<LiteralValueContext>(_ctx, getState());
-  enterRule(_localctx, 16, EaSLParser::RuleLiteralValue);
+  enterRule(_localctx, 18, EaSLParser::RuleLiteralValue);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -932,54 +998,54 @@ EaSLParser::LiteralValueContext* EaSLParser::literalValue() {
     exitRule();
   });
   try {
-    setState(130);
+    setState(140);
     _errHandler->sync(this);
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 15, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 16, _ctx)) {
     case 1: {
       enterOuterAlt(_localctx, 1);
-      setState(123);
+      setState(133);
       antlrcpp::downCast<LiteralValueContext *>(_localctx)->literalToken = match(EaSLParser::LITERAL_NULL);
       break;
     }
 
     case 2: {
       enterOuterAlt(_localctx, 2);
-      setState(124);
+      setState(134);
       antlrcpp::downCast<LiteralValueContext *>(_localctx)->literalToken = match(EaSLParser::LITERAL_TRUE);
       break;
     }
 
     case 3: {
       enterOuterAlt(_localctx, 3);
-      setState(125);
+      setState(135);
       antlrcpp::downCast<LiteralValueContext *>(_localctx)->literalToken = match(EaSLParser::LITERAL_FALSE);
       break;
     }
 
     case 4: {
       enterOuterAlt(_localctx, 4);
-      setState(126);
+      setState(136);
       antlrcpp::downCast<LiteralValueContext *>(_localctx)->literalToken = match(EaSLParser::LITERAL_STRING);
       break;
     }
 
     case 5: {
       enterOuterAlt(_localctx, 5);
-      setState(127);
+      setState(137);
       antlrcpp::downCast<LiteralValueContext *>(_localctx)->literalToken = match(EaSLParser::LITERAL_INT);
       break;
     }
 
     case 6: {
       enterOuterAlt(_localctx, 6);
-      setState(128);
+      setState(138);
       antlrcpp::downCast<LiteralValueContext *>(_localctx)->literalToken = match(EaSLParser::LITERAL_FLOAT);
       break;
     }
 
     case 7: {
       enterOuterAlt(_localctx, 7);
-      setState(129);
+      setState(139);
       identifier();
       break;
     }
@@ -1068,7 +1134,7 @@ size_t EaSLParser::TypeContext::getRuleIndex() const {
 
 EaSLParser::TypeContext* EaSLParser::type() {
   TypeContext *_localctx = _tracker.createInstance<TypeContext>(_ctx, getState());
-  enterRule(_localctx, 18, EaSLParser::RuleType);
+  enterRule(_localctx, 20, EaSLParser::RuleType);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1078,95 +1144,95 @@ EaSLParser::TypeContext* EaSLParser::type() {
     exitRule();
   });
   try {
-    setState(148);
+    setState(158);
     _errHandler->sync(this);
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 16, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 17, _ctx)) {
     case 1: {
       enterOuterAlt(_localctx, 1);
-      setState(132);
+      setState(142);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_CHAR);
       break;
     }
 
     case 2: {
       enterOuterAlt(_localctx, 2);
-      setState(133);
+      setState(143);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_INT32);
       break;
     }
 
     case 3: {
       enterOuterAlt(_localctx, 3);
-      setState(134);
+      setState(144);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_INT64);
       break;
     }
 
     case 4: {
       enterOuterAlt(_localctx, 4);
-      setState(135);
+      setState(145);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_UINT32);
       break;
     }
 
     case 5: {
       enterOuterAlt(_localctx, 5);
-      setState(136);
+      setState(146);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_UINT64);
       break;
     }
 
     case 6: {
       enterOuterAlt(_localctx, 6);
-      setState(137);
+      setState(147);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_FLOAT32);
       break;
     }
 
     case 7: {
       enterOuterAlt(_localctx, 7);
-      setState(138);
+      setState(148);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_FLOAT64);
       break;
     }
 
     case 8: {
       enterOuterAlt(_localctx, 8);
-      setState(139);
+      setState(149);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_BOOL);
       break;
     }
 
     case 9: {
       enterOuterAlt(_localctx, 9);
-      setState(140);
+      setState(150);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_STRING);
       break;
     }
 
     case 10: {
       enterOuterAlt(_localctx, 10);
-      setState(141);
+      setState(151);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::DECL_UID);
       break;
     }
 
     case 11: {
       enterOuterAlt(_localctx, 11);
-      setState(142);
+      setState(152);
       antlrcpp::downCast<TypeContext *>(_localctx)->typeToken = match(EaSLParser::REFERENCE);
-      setState(143);
+      setState(153);
       match(EaSLParser::REFERENCE_OPEN);
-      setState(144);
+      setState(154);
       classType();
-      setState(145);
+      setState(155);
       match(EaSLParser::REFERENCE_CLOSE);
       break;
     }
 
     case 12: {
       enterOuterAlt(_localctx, 12);
-      setState(147);
+      setState(157);
       classType();
       break;
     }
@@ -1211,7 +1277,7 @@ size_t EaSLParser::ClassTypeContext::getRuleIndex() const {
 
 EaSLParser::ClassTypeContext* EaSLParser::classType() {
   ClassTypeContext *_localctx = _tracker.createInstance<ClassTypeContext>(_ctx, getState());
-  enterRule(_localctx, 20, EaSLParser::RuleClassType);
+  enterRule(_localctx, 22, EaSLParser::RuleClassType);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1222,14 +1288,14 @@ EaSLParser::ClassTypeContext* EaSLParser::classType() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(153);
+    setState(163);
     _errHandler->sync(this);
 
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 17, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 18, _ctx)) {
     case 1: {
-      setState(150);
+      setState(160);
       antlrcpp::downCast<ClassTypeContext *>(_localctx)->namespaceIdentifier = identifier();
-      setState(151);
+      setState(161);
       match(EaSLParser::NAMESPACE_DELIMITER);
       break;
     }
@@ -1237,7 +1303,7 @@ EaSLParser::ClassTypeContext* EaSLParser::classType() {
     default:
       break;
     }
-    setState(155);
+    setState(165);
     antlrcpp::downCast<ClassTypeContext *>(_localctx)->classIdentifier = identifier();
    
   }
@@ -1336,7 +1402,7 @@ size_t EaSLParser::IdentifierContext::getRuleIndex() const {
 
 EaSLParser::IdentifierContext* EaSLParser::identifier() {
   IdentifierContext *_localctx = _tracker.createInstance<IdentifierContext>(_ctx, getState());
-  enterRule(_localctx, 22, EaSLParser::RuleIdentifier);
+  enterRule(_localctx, 24, EaSLParser::RuleIdentifier);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1348,7 +1414,7 @@ EaSLParser::IdentifierContext* EaSLParser::identifier() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(157);
+    setState(167);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 19059036158) != 0))) {

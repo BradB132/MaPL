@@ -65,7 +65,7 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
             SchemaEnum enum = schema.enums[enumIndex];
             string enumName = enum.name;
             for uint32 enumCaseIndex = 0; enumCaseIndex < enum.cases.count; enumCaseIndex++ {
-                <?#global readonly uint32 ${schemaNamespace}_${enumName}_${enum.cases[enumCaseIndex]};
+                <?#global readonly uint32 ${schemaNamespace}_${enumName}_${enum.cases[enumCaseIndex].name};
 ?>
             }
             <?

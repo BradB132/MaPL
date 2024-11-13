@@ -42,6 +42,27 @@ bool conflictsWithPrimitiveName(const std::string &typeName) {
         typeName == "UID";
 }
 
+SchemaEnumCase::SchemaEnumCase(EaSLParser::EnumCaseContext *enumCaseContext, ErrorLogger *errorLogger) :
+_enumCaseContext(enumCaseContext),
+_name(enumCaseContext->identifier()->getText()),
+_annotations(parseAnnotations(enumCaseContext->ANNOTATION())) {
+}
+
+MaPLParameter SchemaEnumCase::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
+    switch (functionSymbol) {
+        case MaPLSymbols_SchemaEnumCase_annotations:
+            return MaPLPointer(_annotations);
+        case MaPLSymbols_SchemaEnumCase_name:
+            return MaPLStringByReference(_name.c_str());
+        default:
+            return MaPLUninitialized();
+    }
+}
+
+MaPLParameter SchemaEnumCase::invokeSubscript(MaPLParameter index) {
+    return MaPLUninitialized();
+}
+
 SchemaEnum::SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext, ErrorLogger *errorLogger) :
 _enumContext(enumContext),
 _name(enumContext->enumName->getText()),
@@ -49,17 +70,17 @@ _annotations(parseAnnotations(enumContext->ANNOTATION())) {
     if (conflictsWithPrimitiveName(_name)) {
         errorLogger->logError(enumContext->enumName->start, "Enum name '"+_name+"' conflicts with the name of a primitive type.");
     }
-    std::vector<std::string> cases;
-    std::unordered_map<std::string, std::string> caseMap;
-    for (EaSLParser::IdentifierContext *caseNode : enumContext->enumValue) {
-        std::string caseText = caseNode->getText();
-        cases.push_back(caseText);
-        if (caseMap.count(caseText)) {
-            errorLogger->logError(caseNode->start, "Case '"+caseText+"' exists more than once in enum '"+_name+"'.");
+    std::vector<SchemaEnumCase *> cases;
+    std::unordered_map<std::string, SchemaEnumCase *> caseMap;
+    for (EaSLParser::EnumCaseContext *caseContext : enumContext->enumCase()) {
+        SchemaEnumCase *schemaEnumCase = new SchemaEnumCase(caseContext, errorLogger);
+        cases.push_back(schemaEnumCase);
+        if (caseMap.count(schemaEnumCase->_name)) {
+            errorLogger->logError(caseContext->start, "Case '"+schemaEnumCase->_name+"' exists more than once in enum '"+_name+"'.");
         }
-        caseMap[caseText] = caseText;
+        caseMap[schemaEnumCase->_name] = schemaEnumCase;
     }
-    _cases = new MaPLArrayMap<std::string>(cases, caseMap);
+    _cases = new MaPLArrayMap<SchemaEnumCase *>(cases, caseMap);
 }
 
 MaPLParameter SchemaEnum::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {

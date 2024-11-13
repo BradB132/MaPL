@@ -17,7 +17,7 @@ for uint32 i = 0; i < schema.enums.count; i++ {
     <?enum ${schemaNamespace}_${enum.name}: UInt32, CaseIterable {
 ?>
     for uint32 j = 0; j < enum.cases.count; j++ {
-        <?    case ${enum.cases[j]} = ${j}
+        <?    case ${enum.cases[j].name} = ${j}
 ?>
     }
     <?}

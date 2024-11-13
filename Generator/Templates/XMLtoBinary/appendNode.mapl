@@ -85,7 +85,7 @@ while true {
                 for uint32 valueIndex = 0; valueIndex < xmlAttribute.values.count; valueIndex++ {
                     string enumValue = xmlAttribute.values[valueIndex];
                     for uint32 caseIndex = 0; caseIndex < enum.cases.count; caseIndex++ {
-                        if enum.cases[caseIndex] == enumValue {
+                        if enum.cases[caseIndex].name == enumValue {
                             writeToFile(caseIndex);
                             break;
                         }

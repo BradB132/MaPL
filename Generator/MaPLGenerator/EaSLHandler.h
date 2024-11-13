@@ -20,6 +20,17 @@
 
 class Schema;
 
+class SchemaEnumCase : public MaPLInterface {
+public:
+    SchemaEnumCase(EaSLParser::EnumCaseContext *enumCaseContext, ErrorLogger *errorLogger);
+    virtual MaPLParameter invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc);
+    virtual MaPLParameter invokeSubscript(MaPLParameter index);
+    
+    EaSLParser::EnumCaseContext *_enumCaseContext;
+    std::string _name;
+    MaPLArrayMap<std::string> *_annotations;
+};
+
 class SchemaEnum : public MaPLInterface {
 public:
     SchemaEnum(EaSLParser::EnumDefinitionContext *enumContext, ErrorLogger *errorLogger);
@@ -28,7 +39,7 @@ public:
     
     EaSLParser::EnumDefinitionContext *_enumContext;
     std::string _name;
-    MaPLArrayMap<std::string> *_cases;
+    MaPLArrayMap<SchemaEnumCase *> *_cases;
     MaPLArrayMap<std::string> *_annotations;
 };
 
