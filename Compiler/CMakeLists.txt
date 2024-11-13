@@ -171,7 +171,7 @@ add_executable(MaPLCompiler ${SOURCE_FILES})
 
 # A bunch of linking logic copied from ANTLR.
 find_package(Threads REQUIRED)
-target_link_libraries(MaPLGenerator Threads::Threads)
+target_link_libraries(MaPLCompiler Threads::Threads)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   set(disabled_compile_warnings "/wd4251")

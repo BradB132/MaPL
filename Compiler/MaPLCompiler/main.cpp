@@ -23,11 +23,15 @@ bool pathHasExtension(const std::filesystem::path &path, const std::string &exte
     return pathExtension == extension;
 }
 
+void printUsage() {
+    printf("Example usage: MaPLCompiler /path/to/file.mapl -o /path/to/output.maplb -s /path/to/symbol/table.h\n");
+    printf("Specify the --debug flag to include debug info in the bytecode. This option increases bloat for bytecode size and runtime speed.\n");
+}
+
 int main(int argc, const char ** argv) {
     if (argc < 2) {
         printf("No arguments specified. Specify one or more file paths along with an output path for the symbol table.\n");
-        printf("Example usage: MaPLCompiler /path/to/file.mapl -o /path/to/output.maplb -s /path/to/symbol/table.h\n");
-        printf("Specify the --debug flag to include debug info in the bytecode. This option increases bloat for bytecode size and runtime speed.\n");
+        printUsage();
         return 1;
     }
     
@@ -58,6 +62,7 @@ int main(int argc, const char ** argv) {
         if (isFlag) {
             if (previousExpectation != ArgumentExpectation_InputPath) {
                 printf("The flag '%s' was specified, but not followed by any path.\n", argv[i-1]);
+                printUsage();
                 return 1;
             }
             continue;
@@ -72,6 +77,7 @@ int main(int argc, const char ** argv) {
             case ArgumentExpectation_InputPath:
                 if (!pathHasExtension(argPath, ".mapl")) {
                     printf("The script file path '%s' must have a '.mapl' file extension.\n", argv[i]);
+                    printUsage();
                     return 1;
                 }
                 scriptPaths.push_back(argPath);
@@ -80,6 +86,7 @@ int main(int argc, const char ** argv) {
             case ArgumentExpectation_OutputPath:
                 if (!pathHasExtension(argPath, ".maplb")) {
                     printf("The output path '%s' must have a '.maplb' file extension.\n", argv[i]);
+                    printUsage();
                     return 1;
                 }
                 if (canTakeOutputFile) {
@@ -87,12 +94,14 @@ int main(int argc, const char ** argv) {
                     outputFileMap[scriptPaths[scriptPaths.size()-1]] = argPath;
                 } else {
                     printf("Output file '%s' is specified before any file.\n", argv[i]);
+                    printUsage();
                     return 1;
                 }
                 break;
             case ArgumentExpectation_SymbolTablePath:
                 if (!pathHasExtension(argPath, ".h")) {
                     printf("The symbol table path '%s' must have a '.h' file extension.\n", argv[i]);
+                    printUsage();
                     return 1;
                 }
                 symbolOutputPath = argPath;
@@ -105,14 +114,17 @@ int main(int argc, const char ** argv) {
     }
     if (expectation != ArgumentExpectation_InputPath) {
         printf("The flag '%s' was specified, but not followed by any path.\n", argv[argc-1]);
+        printUsage();
         return 1;
     }
     if (scriptPaths.size() == 0) {
         printf("No script file paths were specified.\n");
+        printUsage();
         return 1;
     }
     if (symbolOutputPath.empty()) {
         printf("No symbol table path was specified.\n");
+        printUsage();
         return 1;
     }
     
