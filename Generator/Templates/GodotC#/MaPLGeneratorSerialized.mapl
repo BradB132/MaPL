@@ -39,6 +39,9 @@ for uint32 schemaIndex = 0; schemaIndex < schemas.count; schemaIndex++ {
         
         for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
             SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+            if attribute.annotations.contains("omit") {
+                continue;
+            }
             string attributeHashName = attribute.annotations.contains("originalName") ? attribute.annotations["originalName"] : attribute.name;
             uint32 attributeHash = (uint32)hash("ATTRIBUTE_" + schemaNamespace + "_" + classHashName + "_" + attributeHashName);
 <?    const uint BYTECODE_${schemaNamespace}_${schemaClass.name}_${attribute.name} = ${attributeHash};

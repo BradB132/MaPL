@@ -17,9 +17,18 @@ bool useMaPLGeneratorSerialized = (bool)commandLineFlag("MaPLGeneratorSerialized
 #include "${schemaNamespace}/${className}_generated.hpp"
 ?>
 
+// The "omit" annotation causes the attribute to be ignored. Instead of checking for a non-zero
+// number of attributes in `schemaClass.attributes`, determine if there are any non-omitted attributes.
+bool hasAttributes = false;
+
 stringSet.clear();
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if attribute.annotations.contains("omit") {
+        continue;
+    } else {
+        hasAttributes = true;
+    }
     if attribute.typeIsClass {
         string typeName = attribute.typeName;
         string typeNamespace = attribute.typeNamespace;
@@ -53,7 +62,11 @@ if useMaPLInterface {
 
 if useMaPLGeneratorSerialized {
     for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
-        if schemaClass.attributes[attrIndex].typeName == "string" {
+        SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
+        if attribute.typeName == "string" {
             <?#include <cstring>
 ?>
             break;
@@ -69,7 +82,11 @@ if useMaPLGeneratorSerialized {
 <?
 ${schemaNamespace}::${className}_generated::${className}_generated()?>
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
-    if schemaClass.attributes[attrIndex].defaultValues.count > 0 {
+    SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if attribute.annotations.contains("omit") {
+        continue;
+    }
+    if attribute.defaultValues.count > 0 {
         <? : ?>
         break;
     }
@@ -77,6 +94,9 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
 bool firstDefaultAttribute = true;
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if attribute.annotations.contains("omit") {
+        continue;
+    }
     if attribute.defaultValues.count > 0 {
         string attributeValue;
         if attribute.defaultValues.count == 1 {
@@ -116,6 +136,9 @@ ${schemaNamespace}::${className}_generated::~${className}_generated() {
 ?>
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if attribute.annotations.contains("omit") {
+        continue;
+    }
     if attribute.typeIsClass &&
        (schemas[attribute.typeNamespace].classes[attribute.typeName].descendantClasses.count > 0 || attribute.defaultValues.count > 0) {
         if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
@@ -195,7 +218,7 @@ bool ${schemaNamespace}::${className}_generated::initializeObjectWithData(uint8_
 
 MaPLGeneratorSerializedParseStatus ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) {
 ?>
-    if schemaClass.attributes.count > 0 {
+    if hasAttributes {
 <?    if (*dataIndex+sizeof(uint32_t) > dataLength) {
         return MaPLGeneratorSerializedParseStatus_error;
     }
@@ -207,6 +230,9 @@ MaPLGeneratorSerializedParseStatus ${schemaNamespace}::${className}_generated::i
 ?>
         for uint32 i = 0; i < schemaClass.attributes.count; i++ {
             SchemaAttribute attribute = schemaClass.attributes[i];
+            if attribute.annotations.contains("omit") {
+                continue;
+            }
             string attributeName = attribute.name;
 <?        case BYTECODE_${schemaNamespace}_${className}_${attributeName}: {
 ?>
@@ -374,13 +400,15 @@ void ${schemaNamespace}::${className}_generated::writeObjectToVector(std::vector
 
 void ${schemaNamespace}::${className}_generated::writeAttributesToVector(std::vector<uint8_t> &data) {
 ?>
-    bool hasAttributes = false;
-    if schemaClass.attributes.count > 0 {
+    if hasAttributes {
         <?    uint32_t bytecodeSignifier;
 ?>
     }
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
         string attributeName = attribute.name;
         
         // Check this value against the default value. Elide if it matches the default.
@@ -497,7 +525,7 @@ ${indent}    data.push_back(0);
     if schemaClass.superclass != NULL {
         <?    ${schemaClass.superclass.namespace}::${schemaClass.superclass.name}::writeAttributesToVector(data);
 ?>
-    } else if schemaClass.attributes.count == 0 {
+    } else if !hasAttributes {
         <?    // No-op.
 ?>
     }
@@ -513,7 +541,7 @@ if useMaPLInterface {
  */
 MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
 ?>
-    if schemaClass.attributes.count > 0 {
+    if hasAttributes {
 <?    if (argc > 0) {
         return MaPLUninitialized();
     }
@@ -521,6 +549,9 @@ MaPLParameter ${schemaNamespace}::${className}_generated::invokeFunction(MaPLSym
 ?>
         for uint32 i = 0; i < schemaClass.attributes.count; i++ {
             SchemaAttribute attribute = schemaClass.attributes[i];
+            if attribute.annotations.contains("omit") {
+                continue;
+            }
             string functionName;
             bool isList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
             bool isInlineClass = attribute.typeIsClass &&
@@ -579,6 +610,9 @@ void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol prope
     bool hasWriteableProperties = false;
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
         // Arrays and classes are readonly.
         if !attribute.typeIsClass && attribute.minOccurrences == 1 && attribute.maxOccurrences == 1 {
             hasWriteableProperties = true;
@@ -590,6 +624,9 @@ void ${schemaNamespace}::${className}_generated::assignProperty(MaPLSymbol prope
 ?>
         for uint32 i = 0; i < schemaClass.attributes.count; i++ {
             SchemaAttribute attribute = schemaClass.attributes[i];
+            if attribute.annotations.contains("omit") {
+                continue;
+            }
             if attribute.typeIsClass || attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
                 continue;  // Arrays and classes are readonly.
             }

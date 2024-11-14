@@ -33,14 +33,22 @@ if isSubclass {
     }
 }
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
-    if schemaClass.attributes[attrIndex].typeIsEnum {
+    SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if attribute.annotations.contains("omit") {
+        continue;
+    }
+    if attribute.typeIsEnum {
         <?#include "${schemaNamespace}/Enums.hpp"
 ?>
         break;
     }
 }
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
-    if schemaClass.attributes[attrIndex].typeName == "string" {
+    SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if attribute.annotations.contains("omit") {
+        continue;
+    }
+    if attribute.typeName == "string" {
         <?#include <string>
 ?>
         break;
@@ -49,7 +57,7 @@ for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ 
 if !useMaPLInterface {
     for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
         SchemaAttribute attribute = schemaClass.attributes[attrIndex];
-        if attribute.minOccurrences < 1 || attribute.maxOccurrences > 1 {
+        if (attribute.minOccurrences < 1 || attribute.maxOccurrences > 1) && !attribute.annotations.contains("omit") {
         <?#include <vector>
 ?>
             break;
@@ -59,6 +67,9 @@ if !useMaPLInterface {
 stringSet.clear();
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if attribute.annotations.contains("omit") {
+        continue;
+    }
     if attribute.typeIsClass {
         string typeName = attribute.typeName;
         string typeNamespace = attribute.typeNamespace;
@@ -78,9 +89,18 @@ if useMaPLGeneratorSerialized && schemaClass.annotations.contains("root") {
 ?>
 }
 
+// The "omit" annotation causes the attribute to be ignored. Instead of checking for a non-zero
+// number of attributes in `schemaClass.attributes`, determine if there are any non-omitted attributes.
+bool hasAttributes = false;
+
 bool firstForwardDeclaration = true;
 for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
     SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if attribute.annotations.contains("omit") {
+        continue;
+    } else {
+        hasAttributes = true;
+    }
     if attribute.typeIsClass {
         string typeName = attribute.typeName;
         string typeNamespace = attribute.typeNamespace;
@@ -131,11 +151,14 @@ namespace ${schemaNamespace} {
     public:
 ?>
 
-if schemaClass.attributes.count > 0 {
+if hasAttributes {
     <?        // Ivars.
 ?>
     for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
         SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
         bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
         
         // Map the type of this attribute from its EaSL type to its C++ type.

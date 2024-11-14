@@ -30,11 +30,26 @@ if schemaClass.superclass != NULL {
 <?class ${schemaNamespace}_${className}_generated${superclassDeclaration} {
 ?>
 
-if schemaClass.attributes.count > 0 {
+// The "omit" annotation causes the attribute to be ignored. Instead of checking for a non-zero
+// number of attributes in `schemaClass.attributes`, determine if there are any non-omitted attributes.
+bool hasAttributes = false;
+for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
+    SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if (!attribute.annotations.contains("omit")) {
+        hasAttributes = true;
+        break;
+    }
+}
+
+if hasAttributes {
     <?    // Properties.
 ?>
     for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
         SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
+        
         bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
         
         // Map the type of this attribute from its EaSL type to its Swift type.
@@ -182,7 +197,7 @@ if useMaPLGeneratorSerialized {
 
     ${overrideSpecifier}func initializeAttribute(withData data: [UInt8], dataIndex: inout Int) -> MaPLGeneratorSerializedParseStatus {
 ?>
-    if schemaClass.attributes.count > 0 {
+    if hasAttributes {
 <?        if (dataIndex+4 > data.count) {
             return .error
         }
@@ -194,6 +209,10 @@ if useMaPLGeneratorSerialized {
 ?>
         for uint32 i = 0; i < schemaClass.attributes.count; i++ {
             SchemaAttribute attribute = schemaClass.attributes[i];
+            if attribute.annotations.contains("omit") {
+                continue;
+            }
+        
             string attributeName = attribute.name;
 <?            case BYTECODE_${schemaNamespace}_${className}_${attributeName}:
 ?>
@@ -385,12 +404,15 @@ ${indent}                guard let enumValue = ${schemaNamespace}_${typeName}(ra
 
     ${overrideSpecifier}func writeAttributes(toData data: inout Data) {
 ?>
-    if schemaClass.attributes.count > 0 {
+    if hasAttributes {
 <?        var bytecodeSignifier: UInt32
 ?>
     }
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
         string attributeName = attribute.name;
         
         // Check this value against the default value. Elide if it matches the default.
@@ -553,7 +575,7 @@ ${indent}        data.append(0)
     if schemaClass.superclass != NULL {
 <?        super.writeAttributes(toData: &data)
 ?>
-    } else if schemaClass.attributes.count == 0 {
+    } else if !hasAttributes {
 <?        // No-op.
 ?>
     }

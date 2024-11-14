@@ -18,6 +18,10 @@ while true {
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute schemaAttr = schemaClass.attributes[i];
         
+        if schemaAttr.annotations.contains("omit") {
+            continue;
+        }
+        
         string attrHashName = schemaAttr.annotations.contains("originalName") ? schemaAttr.annotations["originalName"] : schemaAttr.name;
         string attributeDescriptor = "ATTRIBUTE_" + schemaClass.namespace + "_" + classHashName + "_" + attrHashName;
         uint32 attributeHash = (uint32)hash(attributeDescriptor);

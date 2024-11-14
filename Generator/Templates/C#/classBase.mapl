@@ -40,9 +40,23 @@ if schemaClass.superclass != NULL {
 <?public class ${className}_generated${superclassDeclaration} {
 ?>
 
-if schemaClass.attributes.count > 0 {
+// The "omit" annotation causes the attribute to be ignored. Instead of checking for a non-zero
+// number of attributes in `schemaClass.attributes`, determine if there are any non-omitted attributes.
+bool hasAttributes = false;
+for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
+    SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+    if (!attribute.annotations.contains("omit")) {
+        hasAttributes = true;
+        break;
+    }
+}
+
+if hasAttributes {
     for uint32 attrIndex = 0; attrIndex < schemaClass.attributes.count; attrIndex++ {
         SchemaAttribute attribute = schemaClass.attributes[attrIndex];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
         bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
         
         // Map the type of this attribute from its EaSL type to its Swift type.
@@ -195,13 +209,16 @@ if useMaPLGeneratorSerialized {
 
     public ${overrideSpecifier}MaPLGeneratorSerializedParseStatus initializeAttribute(BinaryReader reader, uint attributeBytecode, bool flipEndian, System.Collections.Generic.List<byte> stringReader) {
 ?>
-    if schemaClass.attributes.count > 0 {
+    if hasAttributes {
 <?        switch (attributeBytecode) {
             case MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_END:
                 return MaPLGeneratorSerializedParseStatus.Completed;
 ?>
         for uint32 i = 0; i < schemaClass.attributes.count; i++ {
             SchemaAttribute attribute = schemaClass.attributes[i];
+            if attribute.annotations.contains("omit") {
+                continue;
+            }
             string attributeName = attribute.name;
 <?            case MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_${attributeName}: {
 ?>
@@ -336,6 +353,9 @@ ${indent}                }
 ?>
     for uint32 i = 0; i < schemaClass.attributes.count; i++ {
         SchemaAttribute attribute = schemaClass.attributes[i];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
         string attributeName = attribute.name;
         
         // Check this value against the default value. Elide if it matches the default.
@@ -445,7 +465,7 @@ ${indent}        writer.Write((byte)0);
     if schemaClass.superclass != NULL {
 <?        base.writeAttributes(writer);
 ?>
-    } else if schemaClass.attributes.count == 0 {
+    } else if !hasAttributes {
 <?        // No-op.
 ?>
     }
