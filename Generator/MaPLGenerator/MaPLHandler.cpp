@@ -101,6 +101,57 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             }
             return MaPLUint64(hash);
         }
+        case MaPLSymbols_GLOBAL_length_string: {
+            return MaPLUint64(strlen(argv[0].stringValue));
+        }
+        case MaPLSymbols_GLOBAL_substring_string_uint64: {
+            const char *string = argv[0].stringValue;
+            unsigned long stringLength = strlen(string);
+            unsigned long startIndex = argv[1].uint64Value;
+            if (startIndex >= stringLength) {
+                return MaPLStringByValue("");
+            }
+            return MaPLStringByValue(string+startIndex);
+        }
+        case MaPLSymbols_GLOBAL_substring_string_uint64_uint64: {
+            const char *string = argv[0].stringValue;
+            unsigned long stringLength = strlen(string);
+            unsigned long startIndex = argv[1].uint64Value;
+            if (startIndex >= stringLength) {
+                return MaPLStringByValue("");
+            }
+            unsigned long substringLength = argv[2].uint64Value;
+            if ((startIndex+substringLength) >= stringLength) {
+                substringLength = stringLength - startIndex;
+            }
+            char substring[substringLength+1];
+            strncpy(substring, string+startIndex, substringLength);
+            substring[substringLength] = 0;
+            return MaPLStringByValue(substring);
+        }
+        case MaPLSymbols_GLOBAL_indexOf_string_string: {
+            const char *searchedString = argv[0].stringValue;
+            const char *found = strstr(searchedString, argv[1].stringValue);
+            if(!found) {
+                return MaPLInt64(-1);
+            }
+            // Subtract memory addresses to calculate the index.
+            return MaPLInt64(found - searchedString);
+        }
+        case MaPLSymbols_GLOBAL_lastIndexOf_string_string: {
+            const char* found;
+            const char* nextFound = argv[0].stringValue;
+            do {
+                found = nextFound;
+                nextFound = strstr(found+1, argv[1].stringValue);
+            } while(nextFound);
+            
+            if (!found) {
+                return MaPLInt64(-1);
+            }
+            // Subtract memory addresses to calculate the index.
+            return MaPLInt64(found - argv[0].stringValue);
+        }
         case MaPLSymbols_GLOBAL_outputToFile_string: {
             delete _outputStream;
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);

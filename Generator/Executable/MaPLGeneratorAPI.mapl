@@ -124,10 +124,19 @@
 #global void executeMaPLScript(string filePath);
 
 /**
+ * String manipulation.
+ */
+#global uint64 length(string string);
+#global uint64 hash(string plaintext);
+#global string substring(string string, uint64 startIndex);
+#global string substring(string string, uint64 startIndex, uint64 length);
+#global int64 indexOf(string searched, string match);
+#global int64 lastIndexOf(string searched, string match);
+
+/**
  * Misc utilities.
  */
 #global string commandLineFlag(string flagName);
-#global uint64 hash(string plaintext);
 // Logs an error and causes MaPLGenerator to halt execution.
 #global void error(string errorMessage);
 #global bool deviceIsLittleEndian;
