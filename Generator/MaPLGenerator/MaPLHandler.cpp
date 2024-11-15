@@ -152,6 +152,26 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             // Subtract memory addresses to calculate the index.
             return MaPLInt64(found - argv[0].stringValue);
         }
+        case MaPLSymbols_GLOBAL_toUpper_string: {
+            const char *string = argv[0].stringValue;
+            unsigned long stringLength = strlen(string);
+            char copiedString[stringLength+1];
+            for(int i = 0; i < stringLength; i++) {
+                copiedString[i] = toupper(string[i]);
+            }
+            copiedString[stringLength] = 0;
+            return MaPLStringByValue(copiedString);
+        }
+        case MaPLSymbols_GLOBAL_toLower_string: {
+            const char *string = argv[0].stringValue;
+            unsigned long stringLength = strlen(string);
+            char copiedString[stringLength+1];
+            for(int i = 0; i < stringLength; i++) {
+                copiedString[i] = tolower(string[i]);
+            }
+            copiedString[stringLength] = 0;
+            return MaPLStringByValue(copiedString);
+        }
         case MaPLSymbols_GLOBAL_outputToFile_string: {
             delete _outputStream;
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);

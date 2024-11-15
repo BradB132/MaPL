@@ -132,6 +132,8 @@
 #global string substring(string string, uint64 startIndex, uint64 length);
 #global int64 indexOf(string searched, string match);
 #global int64 lastIndexOf(string searched, string match);
+#global string toUpper(string string);
+#global string toLower(string string);
 
 /**
  * Misc utilities.
