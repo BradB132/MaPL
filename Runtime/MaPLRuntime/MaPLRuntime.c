@@ -28,9 +28,6 @@ typedef struct {
     bool isDeadCodepath;
     MaPLExecutionState executionState;
     MaPLRuntimeError errorType;
-    MaPLParameter *parameterList;
-    const char **taggedStringParameterList;
-    MaPLParameterCount parameterListCount;
 } MaPLExecutionContext;
 
 uint8_t evaluateChar(MaPLExecutionContext *context);
@@ -258,25 +255,23 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     
     MaPLSymbol symbol = readSymbol(context);
  
-    // Create the list of parameters.
+    // Resolve the values of all parameters.
     MaPLParameterCount paramCount = readParameterCount(context);
-    
-    // This requires an allocation because the size of these arrays is not compile time constant,
-    // but they can be reused over the lifetime of the script. This optimization is possible because
-    // MaPL doesn't do recursion within a single `MaPLExecutionContext`.
-    if (paramCount > context->parameterListCount) {
-        context->parameterListCount = paramCount;
-        context->parameterList = realloc(context->parameterList, sizeof(MaPLParameter) * paramCount);
-        context->taggedStringParameterList = realloc(context->taggedStringParameterList, sizeof(char *) * paramCount);
-    }
-    
-    memset(context->taggedStringParameterList, 0, sizeof(char *) * paramCount);
+#if defined(_MSC_VER)
+    // MSVC doesn't support variable length arrays, use malloc.
+    MaPLParameter *parameterList = (MaPLParameter *)malloc(sizeof(MaPLParameter) * paramCount);
+    const char **taggedStringParameterList = (const char **)malloc(sizeof(char *) * paramCount);
+#else
+    MaPLParameter parameterList[paramCount];
+    const char *taggedStringParameterList[paramCount];
+#endif
+    memset(taggedStringParameterList, 0, sizeof(char *) * paramCount);
     for (MaPLParameterCount i = 0; i < paramCount; i++) {
-        context->parameterList[i] = evaluateParameter(context);
-        if (context->parameterList[i].dataType == MaPLDataType_string) {
+        parameterList[i] = evaluateParameter(context);
+        if (parameterList[i].dataType == MaPLDataType_string) {
             // Untag the string and store the tagged pointer for later release.
-            context->taggedStringParameterList[i] = (char *)context->parameterList[i].stringValue;
-            context->parameterList[i].stringValue = untagString((char *)context->parameterList[i].stringValue);
+            taggedStringParameterList[i] = (char *)parameterList[i].stringValue;
+            parameterList[i].stringValue = untagString((char *)parameterList[i].stringValue);
         }
     }
     
@@ -289,14 +284,19 @@ MaPLParameter evaluateFunctionInvocation(MaPLExecutionContext *context) {
     if (context->executionState == MaPLExecutionState_continue && !context->isDeadCodepath) {
         returnValue = context->callbacks->invokeFunction(invokedOnPointer,
                                                          symbol,
-                                                         context->parameterList,
+                                                         parameterList,
                                                          paramCount);
     }
     
     // Clean up string params.
     for (MaPLParameterCount i = 0; i < paramCount; i++) {
-        freeStringIfNeeded(context->taggedStringParameterList[i]);
+        freeStringIfNeeded(taggedStringParameterList[i]);
     }
+    
+#if defined(_MSC_VER)
+    free(parameterList);
+    free(taggedStringParameterList);
+#endif
     
     return returnValue;
 }
@@ -1812,9 +1812,6 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     context.callbacks = callbacks;
     context.isDeadCodepath = false;
     context.executionState = MaPLExecutionState_continue;
-    context.parameterList = NULL;
-    context.taggedStringParameterList = NULL;
-    context.parameterListCount = 0;
 
     // The first byte indicates big vs little endian (equals 1 if little endian).
     // If these bytes don't match, then the script was compiled with a different
@@ -1852,8 +1849,4 @@ void executeMaPLScript(const void* scriptBuffer, MaPLBytecodeLength bufferLength
     }
     
     free(allocatedTables);
-    if (context.parameterListCount) {
-        free(context.parameterList);
-        free(context.taggedStringParameterList);
-    }
 }
