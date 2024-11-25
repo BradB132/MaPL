@@ -124,10 +124,19 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             if ((startIndex+substringLength) >= stringLength) {
                 substringLength = stringLength - startIndex;
             }
+#if defined(_MSC_VER)
+            // MSVC doesn't support variable length arrays, use malloc.
+            char *substring = (char *)malloc(sizeof(char) * (substringLength+1));
+#else
             char substring[substringLength+1];
+#endif
             strncpy(substring, string+startIndex, substringLength);
             substring[substringLength] = 0;
-            return MaPLStringByValue(substring);
+            MaPLParameter returnValue = MaPLStringByValue(substring);
+#if defined(_MSC_VER)
+            free(substring);
+#endif
+            return returnValue;
         }
         case MaPLSymbols_GLOBAL_indexOf_string_string: {
             const char *searchedString = argv[0].stringValue;
@@ -137,6 +146,66 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             }
             // Subtract memory addresses to calculate the index.
             return MaPLInt64(found - searchedString);
+        }
+        case MaPLSymbols_GLOBAL_replaceAll_string_string_string: {
+            // Check to make sure the substring exists in the searched string.
+            const char* found = strstr(argv[0].stringValue, argv[1].stringValue);
+            if(!found) {
+                // No match found, return the original string.
+                return MaPLStringByValue(argv[0].stringValue);
+            }
+            
+            // Count the number of occurrences of the matching string.
+            unsigned long arg1Length = strlen(argv[1].stringValue);
+            unsigned long arg2Length = strlen(argv[2].stringValue);
+            const char* nextStr = found;
+            int foundCount = 1;
+            while(1)
+            {
+                nextStr = nextStr+arg1Length;
+                nextStr = strstr(nextStr, argv[1].stringValue);
+                if(nextStr)
+                    foundCount++;
+                else
+                    break;
+            }
+            
+            // Calculate the size of the new string.
+#if defined(_MSC_VER)
+            // MSVC doesn't support variable length arrays, use malloc.
+            char *returnedString = (char *)malloc(sizeof(char) * (strlen(argv[0].stringValue)+foundCount*(arg2Length-arg1Length) + 1));
+#else
+            char returnedString[strlen(argv[0].stringValue)+foundCount*(arg2Length-arg1Length) + 1];
+#endif
+            
+            // Loop to perform all of the replacements.
+            unsigned long copyFromIndex = 0;
+            unsigned long copyToIndex = 0;
+            for (int i = 0; i < foundCount; i++) {
+                // Copy everything before the replacement.
+                unsigned long copyAmount = found-(argv[0].stringValue+copyFromIndex);
+                memcpy(returnedString+copyToIndex, argv[0].stringValue+copyFromIndex, copyAmount);
+                
+                // Adjust counters.
+                copyFromIndex += (copyAmount+arg1Length);
+                copyToIndex += copyAmount;
+                
+                // Copy the replacement string.
+                memcpy(returnedString+copyToIndex, argv[2].stringValue, arg2Length);
+                
+                // adjust the counter.
+                copyToIndex += arg2Length;
+                found = strstr(found+arg1Length, argv[1].stringValue);
+            }
+            
+            // copy the end of the string.
+            strcpy(returnedString+copyToIndex, argv[0].stringValue+copyFromIndex);
+            
+            MaPLParameter returnValue = MaPLStringByValue(returnedString);
+#if defined(_MSC_VER)
+            free(returnedString);
+#endif
+            return returnValue;
         }
         case MaPLSymbols_GLOBAL_lastIndexOf_string_string: {
             const char* found;
@@ -155,22 +224,46 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         case MaPLSymbols_GLOBAL_toUpper_string: {
             const char *string = argv[0].stringValue;
             unsigned long stringLength = strlen(string);
+            
+#if defined(_MSC_VER)
+            // MSVC doesn't support variable length arrays, use malloc.
+            char *copiedString = (char *)malloc(sizeof(char) * (stringLength+1));
+#else
             char copiedString[stringLength+1];
+#endif
+            
             for(int i = 0; i < stringLength; i++) {
                 copiedString[i] = toupper(string[i]);
             }
             copiedString[stringLength] = 0;
-            return MaPLStringByValue(copiedString);
+            
+            MaPLParameter returnValue = MaPLStringByValue(copiedString);
+#if defined(_MSC_VER)
+            free(copiedString);
+#endif
+            return returnValue;
         }
         case MaPLSymbols_GLOBAL_toLower_string: {
             const char *string = argv[0].stringValue;
             unsigned long stringLength = strlen(string);
+            
+#if defined(_MSC_VER)
+            // MSVC doesn't support variable length arrays, use malloc.
+            char *copiedString = (char *)malloc(sizeof(char) * (stringLength+1));
+#else
             char copiedString[stringLength+1];
+#endif
+            
             for(int i = 0; i < stringLength; i++) {
                 copiedString[i] = tolower(string[i]);
             }
             copiedString[stringLength] = 0;
-            return MaPLStringByValue(copiedString);
+            
+            MaPLParameter returnValue = MaPLStringByValue(copiedString);
+#if defined(_MSC_VER)
+            free(copiedString);
+#endif
+            return returnValue;
         }
         case MaPLSymbols_GLOBAL_outputToFile_string: {
             delete _outputStream;

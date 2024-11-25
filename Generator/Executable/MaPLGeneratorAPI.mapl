@@ -134,6 +134,7 @@
 #global int64 lastIndexOf(string searched, string match);
 #global string toUpper(string string);
 #global string toLower(string string);
+#global string replaceAll(string string, string oldString, string newString);
 
 /**
  * Misc utilities.
