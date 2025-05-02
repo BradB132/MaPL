@@ -269,7 +269,7 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
             delete _outputStream;
             std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
             createDirectoriesIfNeeded(normalizedPath);
-            _outputStream = new std::ofstream(normalizedPath);
+            _outputStream = new std::ofstream(normalizedPath, std::ios::out | std::ios::binary);
             printf("Outputting to file: '%s'\n", normalizedPath.u8string().c_str());
             return MaPLVoid();
         }

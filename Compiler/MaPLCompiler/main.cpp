@@ -152,7 +152,7 @@ int main(int argc, const char ** argv) {
             fprintf(stderr, "No '.maplb' file was saved for '%s' because no output file was specified.\n", scriptPath.u8string().c_str());
             continue;
         }
-        std::ofstream bytecodeOutputStream(outputFileMap.at(scriptPath));
+        std::ofstream bytecodeOutputStream(outputFileMap.at(scriptPath), std::ios::out | std::ios::binary);
         bytecodeOutputStream.write((char *)&(bytecode[0]), bytecode.size());
     }
     
