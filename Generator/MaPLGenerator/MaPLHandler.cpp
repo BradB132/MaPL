@@ -338,6 +338,10 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         case MaPLSymbols_StringSet_insert_string:
             ((std::unordered_set<std::string> *)invokedOnPointer)->insert(argv[0].stringValue);
             return MaPLVoid();
+        case MaPLSymbols_StringSet_remove_string: {
+            size_t eraseCount = ((std::unordered_set<std::string> *)invokedOnPointer)->erase(argv[0].stringValue);
+            return MaPLBool(eraseCount != 0);
+        }
         default:
             if (invokedOnPointer) {
                 MaPLInterface *maPLInterface = static_cast<MaPLInterface *>(invokedOnPointer);
