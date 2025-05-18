@@ -99,7 +99,7 @@ if hasAttributes {
             } else if attribute.typeIsClass {
                 <?;?>
             } else if attribute.typeIsEnum {
-                <? = (${dataType}.${attribute.typeName})0?>
+                <? = (${dataType})0;?>
             } else if attribute.isStringType {
                 <? = "";?>
             } else if attribute.typeName == "bool" {
