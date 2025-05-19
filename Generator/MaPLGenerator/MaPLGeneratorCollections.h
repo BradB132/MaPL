@@ -30,6 +30,9 @@ public:
     }
     
     virtual MaPLParameter invokeSubscript(MaPLParameter index) {
+        if (index.uint32Value >= _backingVector.size()) {
+            return MaPLUninitialized();
+        }
         return parameterForTemplate(_backingVector[index.uint32Value]);
     }
     
