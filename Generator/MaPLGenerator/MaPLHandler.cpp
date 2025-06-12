@@ -36,6 +36,7 @@ static MaPLArrayMap<Schema *> *_schemas;
 static const std::unordered_map<std::string, std::string> *_flags;
 static std::unordered_map<std::string, std::vector<uint8_t>> _bytecodeCache;
 static std::unordered_set<std::string> _stringSet;
+static std::unordered_set<std::string> _spellcheckDictionary;
 
 std::filesystem::path normalizedParamPath(const char *pathParam) {
     std::filesystem::path path = pathParam;
@@ -53,6 +54,22 @@ void createDirectoriesIfNeeded(const std::filesystem::path &path) {
     }
     createDirectoriesIfNeeded(parentDirectory);
     std::filesystem::create_directory(parentDirectory);
+}
+
+std::string removeSuffix(const std::string& str, const std::string& suffix) {
+    if (suffix.size() <= str.size() &&
+        std::equal(suffix.rbegin(), suffix.rend(), str.rbegin())) {
+        return str.substr(0, str.size() - suffix.size());
+    }
+    return str;
+}
+
+bool spellcheckWord(const std::string& word) {
+    // Spellcheck by removing the possessive "'s" if it exists.
+    if (_spellcheckDictionary.find(removeSuffix(word, "'s")) == _spellcheckDictionary.end()) {
+        return false;
+    }
+    return true;
 }
 
 static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionSymbol, const MaPLParameter *argv, MaPLParameterCount argc) {
@@ -341,6 +358,53 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         case MaPLSymbols_StringSet_remove_string: {
             size_t eraseCount = ((std::unordered_set<std::string> *)invokedOnPointer)->erase(argv[0].stringValue);
             return MaPLBool(eraseCount != 0);
+        }
+        case MaPLSymbols_GLOBAL_loadSpellcheckDictionary_string: {
+            std::filesystem::path normalizedPath = normalizedParamPath(argv[0].stringValue);
+            std::ifstream file(normalizedPath);
+            std::string word;
+            while (std::getline(file, word)) {
+                for (auto& ch : word) ch = std::tolower(static_cast<unsigned char>(ch));
+                _spellcheckDictionary.insert(word);
+            }
+            return MaPLVoid();
+        }
+        case MaPLSymbols_GLOBAL_spellcheck_string: {
+            // Tokenize the string into words. Spellcheck each word.
+            std::string token;
+            std::string spellingErrors;
+            bool success = true;
+            bool hasLetter = false;
+            for (const char* p = argv[0].stringValue; *p != '\0'; ++p) {
+                char ch = *p;
+                if (std::isalpha(static_cast<unsigned char>(ch))) {
+                    token += std::tolower(ch);
+                    hasLetter = true;
+                } else if (std::isdigit(static_cast<unsigned char>(ch)) || ch == '\'') {
+                    token += ch;
+                } else {
+                    if (!token.empty() && hasLetter) {
+                        if (!spellcheckWord(token)) {
+                            success = false;
+                            spellingErrors += token;
+                            spellingErrors += "\n";
+                        }
+                    }
+                    token.clear();
+                    hasLetter = false;
+                }
+            }
+            if (!token.empty() && hasLetter) {
+                if (!spellcheckWord(token)) {
+                    success = false;
+                    spellingErrors += token;
+                    spellingErrors += "\n";
+                }
+            }
+            if (!success) {
+                fprintf(stderr, "Spelling error in \"%s\":\n%s", argv[0].stringValue, spellingErrors.c_str());
+            }
+            return MaPLBool(success);
         }
         default:
             if (invokedOnPointer) {

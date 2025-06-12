@@ -138,6 +138,12 @@
 #global string replaceAll(string string, string oldString, string newString);
 
 /**
+ * Spell check.
+ */
+#global void loadSpellcheckDictionary(string filePath); // A newline-separated list of words to add to the dictionary.
+#global bool spellcheck(string sentence);
+
+/**
  * Misc utilities.
  */
 #global string commandLineFlag(string flagName);
