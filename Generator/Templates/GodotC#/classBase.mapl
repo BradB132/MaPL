@@ -198,83 +198,81 @@ if useMaPLGeneratorSerialized {
     }
 
     public ${overrideSpecifier}MaPLGeneratorSerializedParseStatus initializeAttribute(FileAccess fileAccess, uint attributeBytecode, System.Collections.Generic.List<byte> stringReader) {
-?>
-    if hasAttributes {
-<?        switch (attributeBytecode) {
+        switch (attributeBytecode) {
             case MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_END:
                 return MaPLGeneratorSerializedParseStatus.Completed;
 ?>
-        for uint32 i = 0; i < schemaClass.attributes.count; i++ {
-            SchemaAttribute attribute = schemaClass.attributes[i];
-            if attribute.annotations.contains("omit") {
-                continue;
-            }
-            string attributeName = attribute.name;
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute attribute = schemaClass.attributes[i];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
+        string attributeName = attribute.name;
 <?            case MaPLGeneratorSerialized.BYTECODE_${schemaNamespace}_${className}_${attributeName}: {
 ?>
-            // Handle lists of values.
-            bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
-            string indent = requiresList ? "    " : "";
-            if requiresList {
-                string listLength;
-                if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
+        // Handle lists of values.
+        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
+        string indent = requiresList ? "    " : "";
+        if requiresList {
+            string listLength;
+            if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
 <?                uint ${attributeName}Length = fileAccess.Get32();
 ?>
-                    listLength = attributeName + "Length";
-                } else {  // Fixed length
-                    listLength = (string)attribute.minOccurrences;
-                }
+                listLength = attributeName + "Length";
+            } else {  // Fixed length
+                listLength = (string)attribute.minOccurrences;
+            }
 <?                ${attributeName}.Clear();
                 ${attributeName}.Capacity = (int)${listLength};
                 for (int i = 0; i < ${listLength}; i++) {
 ?>
-            }
+        }
 
-            // Read ivar values.
-            string typeName = attribute.typeName;
-            if attribute.typeIsClass {
-                string typeNamespace = attribute.typeNamespace;
-                SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
-                bool classIsOptional = attribute.defaultValues.count > 0;
+        // Read ivar values.
+        string typeName = attribute.typeName;
+        if attribute.typeIsClass {
+            string typeNamespace = attribute.typeNamespace;
+            SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
+            bool classIsOptional = attribute.defaultValues.count > 0;
 <?${indent}                uint classBytecode = fileAccess.Get32();
 ?>
-                if attributeClass.descendantClasses.count > 0 {
+            if attributeClass.descendantClasses.count > 0 {
 <?${indent}                ${typeNamespace}.${typeName} createdObject;
 ${indent}                switch (classBytecode) {
 ${indent}                    case MaPLGeneratorSerialized.BYTECODE_${typeNamespace}_${typeName}_BEGIN:
 ${indent}                        createdObject = new ${typeNamespace}.${typeName}();
 ${indent}                        break;
 ?>
-                    for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
-                        SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
+                for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
+                    SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
 <?${indent}                    case MaPLGeneratorSerialized.BYTECODE_${descendant.namespace}_${descendant.name}_BEGIN:
 ${indent}                        createdObject = new ${descendant.namespace}.${descendant.name}();
 ${indent}                        break;
 ?>
-                    }
+                }
 <?${indent}                    default:
 ${indent}                        return MaPLGeneratorSerializedParseStatus.Error;
 ${indent}                }
 ?>
-                } else {
+            } else {
 <?${indent}                ${typeNamespace}.${typeName} createdObject = new ${typeNamespace}.${typeName}();
 ?>
-                }
-                
-                if requiresList {
+            }
+            
+            if requiresList {
 <?${indent}                ${attributeName}.Add(createdObject);
 ?>
-                } else {
+            } else {
 <?${indent}                ${attributeName} = createdObject;
 ?>
-                }
+            }
 <?${indent}                if (!createdObject.initializeObject(fileAccess, classBytecode, stringReader)) {
 ${indent}                    return MaPLGeneratorSerializedParseStatus.Error;
 ${indent}                }
 ?>
-            } else {
-                string primitiveValue;
-                if attribute.isStringType {
+        } else {
+            string primitiveValue;
+            if attribute.isStringType {
 <?${indent}                stringReader.Clear();
 ${indent}                byte nextByte = (byte)fileAccess.Get8();
 ${indent}                while (nextByte != 0) {
@@ -282,48 +280,47 @@ ${indent}                    stringReader.Add(nextByte);
 ${indent}                    nextByte = (byte)fileAccess.Get8();
 ${indent}                }
 ?>
-                    primitiveValue = "System.Text.Encoding.UTF8.GetString(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(stringReader))";
-                } else if typeName == "int32" {
-                    primitiveValue = "(int)fileAccess.Get32()";
-                } else if typeName == "uint32" {
-                    primitiveValue = "fileAccess.Get32()";
-                } else if typeName == "int64" {
-                    primitiveValue = "(long)fileAccess.Get64()";
-                } else if typeName == "uint64" {
-                    primitiveValue = "fileAccess.Get64()";
-                } else if typeName == "float64" {
-                    primitiveValue = "System.BitConverter.UInt64BitsToDouble(fileAccess.Get64())";
-                } else if typeName == "float32" {
-                    primitiveValue = "System.BitConverter.UInt32BitsToSingle(fileAccess.Get32())";
-                } else if typeName == "bool" {
-                    primitiveValue = "fileAccess.Get8() != 0";
-                } else if typeName == "char" {
-                    primitiveValue = "fileAccess.Get8()";
-                } else if attribute.typeIsEnum {
-                    primitiveValue = "(" + schemaNamespace + "." + typeName + ")fileAccess.Get32()";
-                }
-                if requiresList {
+                primitiveValue = "System.Text.Encoding.UTF8.GetString(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(stringReader))";
+            } else if typeName == "int32" {
+                primitiveValue = "(int)fileAccess.Get32()";
+            } else if typeName == "uint32" {
+                primitiveValue = "fileAccess.Get32()";
+            } else if typeName == "int64" {
+                primitiveValue = "(long)fileAccess.Get64()";
+            } else if typeName == "uint64" {
+                primitiveValue = "fileAccess.Get64()";
+            } else if typeName == "float64" {
+                primitiveValue = "System.BitConverter.UInt64BitsToDouble(fileAccess.Get64())";
+            } else if typeName == "float32" {
+                primitiveValue = "System.BitConverter.UInt32BitsToSingle(fileAccess.Get32())";
+            } else if typeName == "bool" {
+                primitiveValue = "fileAccess.Get8() != 0";
+            } else if typeName == "char" {
+                primitiveValue = "fileAccess.Get8()";
+            } else if attribute.typeIsEnum {
+                primitiveValue = "(" + schemaNamespace + "." + typeName + ")fileAccess.Get32()";
+            }
+            if requiresList {
 <?${indent}                ${attributeName}.Add(${primitiveValue});
 ?>
-                } else {
+            } else {
 <?${indent}                ${attributeName} = ${primitiveValue};
 ?>
-                }
             }
+        }
 
-            if requiresList {
+        if requiresList {
 <?                }
 ?>
-            }
+        }
 <?                return MaPLGeneratorSerializedParseStatus.Success;
             }
 ?>
-        }
+    }
 <?            default:
                 break;
         }
 ?>
-    }
     if schemaClass.superclass != NULL {
 <?        return base.initializeAttribute(fileAccess, attributeBytecode, stringReader);
 ?>

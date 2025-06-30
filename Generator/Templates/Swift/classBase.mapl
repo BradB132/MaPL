@@ -196,9 +196,7 @@ if useMaPLGeneratorSerialized {
     }
 
     ${overrideSpecifier}func initializeAttribute(withData data: [UInt8], dataIndex: inout Int) -> MaPLGeneratorSerializedParseStatus {
-?>
-    if hasAttributes {
-<?        if (dataIndex+4 > data.count) {
+        if (dataIndex+4 > data.count) {
             return .error
         }
         let nextAttributeName = UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24
@@ -207,44 +205,44 @@ if useMaPLGeneratorSerialized {
             case BYTECODE_${schemaNamespace}_${className}_END:
                 return .completed
 ?>
-        for uint32 i = 0; i < schemaClass.attributes.count; i++ {
-            SchemaAttribute attribute = schemaClass.attributes[i];
-            if attribute.annotations.contains("omit") {
-                continue;
-            }
-        
-            string attributeName = attribute.name;
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute attribute = schemaClass.attributes[i];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
+    
+        string attributeName = attribute.name;
 <?            case BYTECODE_${schemaNamespace}_${className}_${attributeName}:
 ?>
-            // Handle lists of values.
-            bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
-            string indent = requiresList ? "    " : "";
-            if requiresList {
-                string listLength;
-                if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
+        // Handle lists of values.
+        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
+        string indent = requiresList ? "    " : "";
+        if requiresList {
+            string listLength;
+            if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
 <?                if dataIndex+4 > data.count {
                     return .error
                 }
                 let ${attributeName}Length: UInt32 = UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24
                 dataIndex += 4
 ?>
-                    listLength = attributeName + "Length";
-                } else {  // Fixed length
-                    listLength = (string)attribute.minOccurrences;
-                }
+                listLength = attributeName + "Length";
+            } else {  // Fixed length
+                listLength = (string)attribute.minOccurrences;
+            }
 <?                ${attributeName}.removeAll()
                 ${attributeName}.reserveCapacity(Int(${listLength}))
                 for _ in 0..<${listLength} {
 ?>
-            }
+        }
 
-            // Read ivar values.
-            string typeName = attribute.typeName;
-            if attribute.typeIsClass {
-                string typeNamespace = attribute.typeNamespace;
-                SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
-                bool classIsOptional = attribute.defaultValues.count > 0;
-                if attributeClass.descendantClasses.count > 0 {
+        // Read ivar values.
+        string typeName = attribute.typeName;
+        if attribute.typeIsClass {
+            string typeNamespace = attribute.typeNamespace;
+            SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
+            bool classIsOptional = attribute.defaultValues.count > 0;
+            if attributeClass.descendantClasses.count > 0 {
 <?${indent}                if dataIndex+4 > data.count {
 ${indent}                    return .error
 ${indent}                }
@@ -253,33 +251,33 @@ ${indent}                switch (UInt32(data[dataIndex]) | UInt32(data[dataIndex
 ${indent}                    case BYTECODE_${typeNamespace}_${typeName}_BEGIN:
 ${indent}                        createdObject = ${typeNamespace}_${typeName}()
 ?>
-                    for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
-                        SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
+                for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
+                    SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
 <?${indent}                    case BYTECODE_${descendant.namespace}_${descendant.name}_BEGIN:
 ${indent}                        createdObject = ${descendant.namespace}_${descendant.name}()
 ?>
-                    }
+                }
 <?${indent}                    default:
 ${indent}                        return .error
 ${indent}                }
 ?>
-                } else {
+            } else {
 <?${indent}                let createdObject = ${typeNamespace}_${typeName}()
 ?>
-                }
-                
-                if requiresList {
+            }
+            
+            if requiresList {
 <?${indent}                ${attributeName}.append(createdObject)
 ?>
-                } else {
+            } else {
 <?${indent}                ${attributeName} = createdObject
 ?>
-                }
+            }
 <?${indent}                if !createdObject.initializeObject(withData: data, dataIndex: &dataIndex) {
 ${indent}                    return .error
 ${indent}                }
 ?>
-            } else if attribute.isStringType {
+        } else if attribute.isStringType {
 <?${indent}                var stringEndIndex = dataIndex
 ${indent}                while stringEndIndex < data.count {
 ${indent}                    if data[stringEndIndex] == 0 {
@@ -288,38 +286,37 @@ ${indent}                    }
 ${indent}                    stringEndIndex += 1
 ${indent}                }
 ?>
-                if requiresList {
+            if requiresList {
 <?${indent}                ${attributeName}.append(String(decoding: data[dataIndex..<stringEndIndex], as: UTF8.self))
 ?>
-                } else {
+            } else {
 <?${indent}                ${attributeName} = String(decoding: data[dataIndex..<stringEndIndex], as: UTF8.self)
 ?>
-                }
+            }
 <?${indent}                dataIndex += (stringEndIndex - dataIndex) + 1
 ?>
+        } else {
+            uint32 primitiveSize;
+            if typeName == "int64" || typeName == "float64" || typeName == "uint64" {
+                primitiveSize = 8;
+            } else if typeName == "bool" || typeName == "char" {
+                primitiveSize = 1;
             } else {
-                uint32 primitiveSize;
-                if typeName == "int64" || typeName == "float64" || typeName == "uint64" {
-                    primitiveSize = 8;
-                } else if typeName == "bool" || typeName == "char" {
-                    primitiveSize = 1;
-                } else {
-                    primitiveSize = 4;
-                }
-                
+                primitiveSize = 4;
+            }
 <?${indent}                if (dataIndex+${primitiveSize} > data.count) {
 ${indent}                    return .error
 ${indent}                }
 ?>
 
-                string primitiveValue;
-                if typeName == "int32" {
+            string primitiveValue;
+            if typeName == "int32" {
 <?${indent}                let bitPattern: UInt32 = UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24
 ?>
-                    primitiveValue = "Int32(bitPattern: bitPattern)";
-                } else if typeName == "uint32" {
-                    primitiveValue = "UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24";
-                } else if typeName == "int64" || typeName == "uint64" || typeName == "float64" {
+                primitiveValue = "Int32(bitPattern: bitPattern)";
+            } else if typeName == "uint32" {
+                primitiveValue = "UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24";
+            } else if typeName == "int64" || typeName == "uint64" || typeName == "float64" {
 <?${indent}                // Split `bitPattern` declaration into multiple statements, otherwise the compiler will complain that it takes too long to typecheck.
 ${indent}                var bitPattern: UInt64 = UInt64(data[dataIndex])
 ${indent}                bitPattern |= UInt64(data[dataIndex+1]) << 8
@@ -330,55 +327,54 @@ ${indent}                bitPattern |= UInt64(data[dataIndex+5]) << 40
 ${indent}                bitPattern |= UInt64(data[dataIndex+6]) << 48
 ${indent}                bitPattern |= UInt64(data[dataIndex+7]) << 56
 ?>
-                    if typeName == "int64" {
-                        primitiveValue = "Int64(bitPattern: bitPattern)";
-                    } else if typeName == "uint64" {
-                        primitiveValue = "bitPattern";
-                    } else { // float64.
-                        primitiveValue = "Float64(bitPattern: bitPattern)";
-                    }
-                } else if typeName == "float32" {
+                if typeName == "int64" {
+                    primitiveValue = "Int64(bitPattern: bitPattern)";
+                } else if typeName == "uint64" {
+                    primitiveValue = "bitPattern";
+                } else { // float64.
+                    primitiveValue = "Float64(bitPattern: bitPattern)";
+                }
+            } else if typeName == "float32" {
 <?${indent}                let bitPattern: UInt32 = UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24
 ?>
-                    primitiveValue = "Float32(bitPattern: bitPattern)";
-                } else if typeName == "bool" {
-                    primitiveValue = "data[dataIndex] != 0";
-                } else if typeName == "char" {
-                    primitiveValue = "data[dataIndex]";
-                } else if attribute.typeIsEnum {
+                primitiveValue = "Float32(bitPattern: bitPattern)";
+            } else if typeName == "bool" {
+                primitiveValue = "data[dataIndex] != 0";
+            } else if typeName == "char" {
+                primitiveValue = "data[dataIndex]";
+            } else if attribute.typeIsEnum {
 <?${indent}                let rawValue: UInt32 = UInt32(data[dataIndex]) | UInt32(data[dataIndex+1]) << 8 | UInt32(data[dataIndex+2]) << 16 | UInt32(data[dataIndex+3]) << 24
 ${indent}                guard let enumValue = ${schemaNamespace}_${typeName}(rawValue: rawValue) else { return .error }
 ?>
-                    primitiveValue = "enumValue";
-                }
-                if requiresList {
+                primitiveValue = "enumValue";
+            }
+            if requiresList {
 <?${indent}                ${attributeName}.append(${primitiveValue})
 ?>
-                } else {
+            } else {
 <?${indent}                ${attributeName} = ${primitiveValue}
 ?>
-                }
+            }
 <?${indent}                dataIndex += ${primitiveSize}
 ?>
-            }
+        }
 
-            if requiresList {
+        if requiresList {
 <?                }
 ?>
-            }
+        }
 <?                return .success
 ?>
-        }
+    }
 <?            default:
 ?>
-        if schemaClass.superclass != NULL {
+    if schemaClass.superclass != NULL {
 <?                dataIndex -= 4
 ?>
-        }
+    }
 <?                break
         }
 ?>
-    }
     if schemaClass.superclass != NULL {
 <?        return super.initializeAttribute(withData: data, dataIndex: &dataIndex)
 ?>

@@ -217,9 +217,7 @@ bool ${schemaNamespace}::${className}_generated::initializeObjectWithData(uint8_
 }
 
 MaPLGeneratorSerializedParseStatus ${schemaNamespace}::${className}_generated::initializeAttributeWithData(uint8_t *data, size_t *dataIndex, size_t dataLength) {
-?>
-    if hasAttributes {
-<?    if (*dataIndex+sizeof(uint32_t) > dataLength) {
+    if (*dataIndex+sizeof(uint32_t) > dataLength) {
         return MaPLGeneratorSerializedParseStatus_error;
     }
     uint32_t nextAttributeName = *((uint32_t*)(data+*dataIndex));
@@ -228,45 +226,45 @@ MaPLGeneratorSerializedParseStatus ${schemaNamespace}::${className}_generated::i
         case BYTECODE_${schemaNamespace}_${className}_END:
             return MaPLGeneratorSerializedParseStatus_completed;
 ?>
-        for uint32 i = 0; i < schemaClass.attributes.count; i++ {
-            SchemaAttribute attribute = schemaClass.attributes[i];
-            if attribute.annotations.contains("omit") {
-                continue;
-            }
-            string attributeName = attribute.name;
+    for uint32 i = 0; i < schemaClass.attributes.count; i++ {
+        SchemaAttribute attribute = schemaClass.attributes[i];
+        if attribute.annotations.contains("omit") {
+            continue;
+        }
+        string attributeName = attribute.name;
 <?        case BYTECODE_${schemaNamespace}_${className}_${attributeName}: {
 ?>
-            // Handle lists of values.
-            bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
-            string indent = requiresList ? "    " : "";
-            if requiresList {
-                string listLength;
-                if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
+        // Handle lists of values.
+        bool requiresList = attribute.minOccurrences < 1 || attribute.maxOccurrences > 1;
+        string indent = requiresList ? "    " : "";
+        if requiresList {
+            string listLength;
+            if attribute.minOccurrences != attribute.maxOccurrences {  // Variable length.
 <?            if (*dataIndex+sizeof(uint32_t) > dataLength) {
                 return MaPLGeneratorSerializedParseStatus_error;
             }
             uint32_t ${attributeName}Length = *((uint32_t*)(data+*dataIndex));
             *dataIndex += sizeof(uint32_t);
 ?>
-                    listLength = attributeName + "Length";
-                } else {  // Fixed length
-                    listLength = (string)attribute.minOccurrences;
-                }
-                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                listLength = attributeName + "Length";
+            } else {  // Fixed length
+                listLength = (string)attribute.minOccurrences;
+            }
+            string collectionIvar = useMaPLInterface ? "._backingVector" : "";
 <?            ${attributeName}${collectionIvar}.clear();
             ${attributeName}${collectionIvar}.reserve(${listLength});
             for (uint32_t ${attributeName}Index = 0; ${attributeName}Index < ${listLength}; ${attributeName}Index++) {
 ?>
-            }
+        }
 
-            // Read ivar values.
-            string typeName = attribute.typeName;
-            if attribute.typeIsClass {
-                string typeNamespace = attribute.typeNamespace;
-                SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
-                bool hasDescendants = attributeClass.descendantClasses.count > 0;
-                bool classIsPointer = hasDescendants || attribute.defaultValues.count > 0;
-                if hasDescendants {
+        // Read ivar values.
+        string typeName = attribute.typeName;
+        if attribute.typeIsClass {
+            string typeNamespace = attribute.typeNamespace;
+            SchemaClass attributeClass = schemas[attribute.typeNamespace].classes[typeName];
+            bool hasDescendants = attributeClass.descendantClasses.count > 0;
+            bool classIsPointer = hasDescendants || attribute.defaultValues.count > 0;
+            if hasDescendants {
 <?${indent}            if (*dataIndex+sizeof(uint32_t) > dataLength) {
 ${indent}                return MaPLGeneratorSerializedParseStatus_error;
 ${indent}            }
@@ -276,111 +274,109 @@ ${indent}                case BYTECODE_${typeNamespace}_${typeName}_BEGIN:
 ${indent}                    createdObject = new ${typeNamespace}::${typeName}();
 ${indent}                    break;
 ?>
-                    for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
-                        SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
+                for uint32 descendantIndex = 0; descendantIndex < attributeClass.descendantClasses.count; descendantIndex++ {
+                    SchemaClass descendant = attributeClass.descendantClasses[descendantIndex];
 <?${indent}                case BYTECODE_${descendant.namespace}_${descendant.name}_BEGIN:
 ${indent}                    createdObject = new ${descendant.namespace}::${descendant.name}();
 ${indent}                    break;
 ?>
-                    }
+                }
 <?${indent}                default:
 ${indent}                    return MaPLGeneratorSerializedParseStatus_error;
 ${indent}            }
 ?>
-                } else if classIsPointer {
+            } else if classIsPointer {
 <?${indent}            ${typeNamespace}::${typeName}* createdObject = new ${typeNamespace}::${typeName}();
 ?>
-                }
-                
-                if requiresList {
-                    string collectionIvar = useMaPLInterface ? "._backingVector" : "";
-                    if classIsPointer {
+            }
+            
+            if requiresList {
+                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+                if classIsPointer {
 <?${indent}            ${attributeName}${collectionIvar}.push_back(createdObject);
 ?>
-                    } else {
+                } else {
 <?${indent}            ${typeNamespace}::${typeName}& createdObject = ${attributeName}${collectionIvar}.emplace_back();
 ?>
-                    }
-                } else if classIsPointer {
+                }
+            } else if classIsPointer {
 <?${indent}            ${attributeName} = createdObject;
 ?>
-                }
-                string objectToMember = classIsPointer ? "->" : ".";
-                string objectName = requiresList ? "createdObject" : attributeName;
-                
+            }
+            string objectToMember = classIsPointer ? "->" : ".";
+            string objectName = requiresList ? "createdObject" : attributeName;
 <?${indent}            if (!${objectName}${objectToMember}initializeObjectWithData(data, dataIndex, dataLength)) {
 ${indent}                return MaPLGeneratorSerializedParseStatus_error;
 ${indent}            }
 ?>
-            } else if attribute.isStringType {
+        } else if attribute.isStringType {
 <?${indent}            size_t stringLength = strlen((char*)(data+*dataIndex))+1;
 ${indent}            if (*dataIndex+stringLength > dataLength) {
 ${indent}                return MaPLGeneratorSerializedParseStatus_error;
 ${indent}            }
 ?>
-                if requiresList {
-                    string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+            if requiresList {
+                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
 <?${indent}            ${attributeName}${collectionIvar}.push_back((char*)(data+*dataIndex));
 ?>
-                } else {
+            } else {
 <?${indent}            ${attributeName} = (char*)(data+*dataIndex);
 ?>
-                }
+            }
 <?${indent}            *dataIndex += stringLength;
 ?>
-            } else {
-                string primitiveType;
-                if typeName == "int32" {
-                    primitiveType = "int32_t";
-                } else if typeName == "uint32" {
-                    primitiveType = "uint32_t";
-                } else if typeName == "int64" {
-                    primitiveType = "int64_t";
-                } else if typeName == "uint64" {
-                    primitiveType = "uint64_t";
-                } else if typeName == "float32" {
-                    primitiveType = "float";
-                } else if typeName == "float64" {
-                    primitiveType = "double";
-                } else if typeName == "bool" || typeName == "char" {
-                    primitiveType = "uint8_t";
-                } else if attribute.typeIsEnum {
-                    primitiveType = attribute.typeNamespace + "::" + typeName;
-                }
+        } else {
+            string primitiveType;
+            if typeName == "int32" {
+                primitiveType = "int32_t";
+            } else if typeName == "uint32" {
+                primitiveType = "uint32_t";
+            } else if typeName == "int64" {
+                primitiveType = "int64_t";
+            } else if typeName == "uint64" {
+                primitiveType = "uint64_t";
+            } else if typeName == "float32" {
+                primitiveType = "float";
+            } else if typeName == "float64" {
+                primitiveType = "double";
+            } else if typeName == "bool" || typeName == "char" {
+                primitiveType = "uint8_t";
+            } else if attribute.typeIsEnum {
+                primitiveType = attribute.typeNamespace + "::" + typeName;
+            }
 <?${indent}            if (*dataIndex+sizeof(${primitiveType}) > dataLength) {
 ${indent}                return MaPLGeneratorSerializedParseStatus_error;
 ${indent}            }
 ?>
-                if requiresList {
-                    string collectionIvar = useMaPLInterface ? "._backingVector" : "";
+            if requiresList {
+                string collectionIvar = useMaPLInterface ? "._backingVector" : "";
 <?${indent}            ${attributeName}${collectionIvar}.push_back(*((${primitiveType}*)(data+*dataIndex)));
 ?>
-                } else {
+            } else {
 <?${indent}            ${attributeName} = *((${primitiveType}*)(data+*dataIndex));
 ?>
-                }
+            }
 <?${indent}            *dataIndex += sizeof(${primitiveType});
 ?>
-            }
+        }
 
-            if requiresList {
+        if requiresList {
 <?            }
 ?>
-            }
+        }
 <?        }
             return MaPLGeneratorSerializedParseStatus_success;
 ?>
-        }
+    }
 <?        default:
 ?>
-        if schemaClass.superclass != NULL {
+    if schemaClass.superclass != NULL {
 <?            *dataIndex -= sizeof(uint32_t);
 ?>
-        }
+    }
 <?            break;
     }
 ?>
-    }
     if schemaClass.superclass != NULL {
 <?    return ${schemaClass.superclass.namespace}::${schemaClass.superclass.name}::initializeAttributeWithData(data, dataIndex, dataLength);
 ?>
