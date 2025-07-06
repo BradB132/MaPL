@@ -166,63 +166,21 @@ static MaPLParameter invokeFunction(void *invokedOnPointer, MaPLSymbol functionS
         }
         case MaPLSymbols_GLOBAL_replaceAll_string_string_string: {
             // Check to make sure the substring exists in the searched string.
-            const char* found = strstr(argv[0].stringValue, argv[1].stringValue);
-            if(!found) {
+            if(!strstr(argv[0].stringValue, argv[1].stringValue)) {
                 // No match found, return the original string.
                 return MaPLStringByValue(argv[0].stringValue);
             }
             
-            // Count the number of occurrences of the matching string.
-            unsigned long arg1Length = strlen(argv[1].stringValue);
-            unsigned long arg2Length = strlen(argv[2].stringValue);
-            const char* nextStr = found;
-            int foundCount = 1;
-            while(1)
-            {
-                nextStr = nextStr+arg1Length;
-                nextStr = strstr(nextStr, argv[1].stringValue);
-                if(nextStr)
-                    foundCount++;
-                else
-                    break;
+            // A matching substring exists. Leverage `std::string` to perform replacement.
+            std::string searchedString = argv[0].stringValue;
+            std::string oldSubstring = argv[1].stringValue;
+            std::string newSubstring = argv[2].stringValue;
+            size_t pos = 0;
+            while ((pos = searchedString.find(oldSubstring, pos)) != std::string::npos) {
+                searchedString.replace(pos, oldSubstring.length(), newSubstring);
+                 pos += newSubstring.length();
             }
-            
-            // Calculate the size of the new string.
-#if defined(_MSC_VER)
-            // MSVC doesn't support variable length arrays, use malloc.
-            char *returnedString = (char *)malloc(sizeof(char) * (strlen(argv[0].stringValue)+foundCount*(arg2Length-arg1Length) + 1));
-#else
-            char returnedString[strlen(argv[0].stringValue)+foundCount*(arg2Length-arg1Length) + 1];
-#endif
-            
-            // Loop to perform all of the replacements.
-            unsigned long copyFromIndex = 0;
-            unsigned long copyToIndex = 0;
-            for (int i = 0; i < foundCount; i++) {
-                // Copy everything before the replacement.
-                unsigned long copyAmount = found-(argv[0].stringValue+copyFromIndex);
-                memcpy(returnedString+copyToIndex, argv[0].stringValue+copyFromIndex, copyAmount);
-                
-                // Adjust counters.
-                copyFromIndex += (copyAmount+arg1Length);
-                copyToIndex += copyAmount;
-                
-                // Copy the replacement string.
-                memcpy(returnedString+copyToIndex, argv[2].stringValue, arg2Length);
-                
-                // adjust the counter.
-                copyToIndex += arg2Length;
-                found = strstr(found+arg1Length, argv[1].stringValue);
-            }
-            
-            // copy the end of the string.
-            strcpy(returnedString+copyToIndex, argv[0].stringValue+copyFromIndex);
-            
-            MaPLParameter returnValue = MaPLStringByValue(returnedString);
-#if defined(_MSC_VER)
-            free(returnedString);
-#endif
-            return returnValue;
+            return MaPLStringByValue(searchedString.c_str());
         }
         case MaPLSymbols_GLOBAL_lastIndexOf_string_string: {
             const char* found;
