@@ -42,7 +42,7 @@
     readonly ArrayMap<string> annotations;
 }
 
-#type SchemaEnumCase {
+#type SchemaEnumCase : MaPLGeneratorObject {
     readonly string name;
     readonly ArrayMap<string> annotations;
 }
