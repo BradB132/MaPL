@@ -172,7 +172,6 @@ set(SOURCE_FILES
     ../Compiler/MaPLCompiler/MaPLFileCache.cpp
     ../Compiler/MaPLCompiler/MaPLFile.cpp
     ../Compiler/MaPLCompiler/MaPLCompilerHelpers.cpp
-    ../Runtime/MaPLRuntime/MaPLRuntime.c
     tinyxml2/tinyxml2.cpp
     EaSL/generated_c++/EaSLLexer.cpp
     EaSL/generated_c++/EaSLParser.cpp
@@ -183,6 +182,10 @@ set(SOURCE_FILES
     MaPLGenerator/main.cpp
 )
 
+add_library(mapl_runtime_c
+    ../Runtime/MaPLRuntime/MaPLRuntime.c
+)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/Executable")
 
 add_definitions(-DANTLR4CPP_STATIC)
@@ -190,9 +193,19 @@ add_definitions(-DANTLR4CPP_STATIC)
 # Create executable
 add_executable(MaPLGenerator ${SOURCE_FILES})
 
+# Hack to fix stricter MSVC behavior.
+target_compile_options(MaPLGenerator PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/FIchrono>
+)
+
 # A bunch of linking logic copied from ANTLR.
 find_package(Threads REQUIRED)
 target_link_libraries(MaPLGenerator Threads::Threads)
+
+target_link_libraries(MaPLGenerator
+    mapl_runtime_c
+    Threads::Threads
+)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   set(disabled_compile_warnings "/wd4251")

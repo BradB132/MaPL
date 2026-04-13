@@ -16,7 +16,7 @@ enum ArgumentExpectation {
 };
 
 bool pathHasExtension(const std::filesystem::path &path, const std::string &extension) {
-    std::string pathExtension = path.extension();
+    std::string pathExtension = path.extension().string();
     std::transform(pathExtension.begin(), pathExtension.end(), pathExtension.begin(), [](unsigned char c){
         return std::tolower(c);
     });
@@ -129,7 +129,7 @@ int main(int argc, const char ** argv) {
     }
     
     // Assign the filename of the symbol output path as the prefix.
-    options.symbolsPrefix = symbolOutputPath.filename();
+    options.symbolsPrefix = symbolOutputPath.filename().string();
     options.symbolsPrefix = options.symbolsPrefix.substr(0, options.symbolsPrefix.length()-2);
     
     MaPLCompileResult result = compileMaPL(scriptPaths, options);

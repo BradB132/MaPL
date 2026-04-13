@@ -169,6 +169,11 @@ add_definitions(-DANTLR4CPP_STATIC)
 # Create executable
 add_executable(MaPLCompiler ${SOURCE_FILES})
 
+# Hack to fix stricter MSVC behavior.
+target_compile_options(MaPLCompiler PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/FIchrono>
+)
+
 # A bunch of linking logic copied from ANTLR.
 find_package(Threads REQUIRED)
 target_link_libraries(MaPLCompiler Threads::Threads)
